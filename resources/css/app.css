@@ -3,7 +3,103 @@
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
 
+/* Aktifkan dark mode berbasis class (toggle manual via tombol) */
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+    --font-sans: 'Manrope', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
+
+    /* Dipakai lewat class font-display untuk heading */
+    --font-display: 'Manrope', ui-sans-serif, system-ui, sans-serif;
+}
+
+
+html, body {
+    /* Untuk Firefox */
+    scrollbar-width: none;
+    
+    /* Untuk Internet Explorer dan Edge versi lama */
+    -ms-overflow-style: none;  
+}
+
+/* Untuk Browser berbasis Chromium (Chrome, Safari, Edge Modern, Opera) */
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+    display: none;
+}
+
+/* ================= Navbar Text Animation ================= */
+
+.nav-text {
+    position: relative;
+    display: block;
+    overflow: hidden;
+    height: 16px;
+}
+
+.nav-text-top,
+.nav-text-bottom {
+    display: block;
+    line-height: 16px;
+    will-change: transform;
+}
+
+.nav-text-bottom {
+    position: absolute;
+    inset: 0;
+    transform: translateY(100%);
+}
+
+.login-text {
+    height: 1.3em; /* tinggi mask, cukup untuk menampung descender "g" dsb */
+}
+
+.letter-mask {
+    display: inline-block;
+    overflow: hidden;
+    height: 100%;
+    vertical-align: top;
+}
+
+.letter-track {
+    height: 200%; /* 2x tinggi mask */
+    display: flex;
+    flex-direction: column;
+}
+
+.letter-track .letter {
+    height: 50%; /* masing-masing baris = tinggi mask asli */
+    display: flex;
+    align-items: center;
+    line-height: 1;
+}
+
+/* ================= FAQ Accordion ================= */
+
+.faq-icon {
+    transition: transform 0.3s ease;
+}
+
+.faq-item.is-open .faq-icon {
+    transform: rotate(45deg);
+}
+
+.faq-item.is-open .faq-panel {
+    grid-template-rows: 1fr;
+}
+
+/* ================= Blinking Dot ================= */
+
+@keyframes blink-opacity {
+    0%, 100% {
+        opacity: 0.4;
+    }
+    50% {
+        opacity: 0.8;
+    }
+}
+
+.blink-dot {
+    animation: blink-opacity 1s ease-in-out infinite;
 }
