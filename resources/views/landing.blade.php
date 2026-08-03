@@ -12,7 +12,7 @@
         </a>
 
         {{-- Nav Links dengan indikator "rolling" ala cantor8 --}}
-        <div id="nav-pill" class="relative hidden md:flex items-center gap-1 rounded-[2px] bg-black/70 backdrop-blur px-1 py-1">
+        <div id="nav-pill" class="relative hidden md:flex items-center gap-1 rounded-[2px] bg-black/70 dark:bg-blue-950/70 backdrop-blur px-1 py-1">
             <span
                 id="nav-indicator"
                 class="absolute top-1 left-0 h-[calc(93%-0.3rem)] rounded-[1px] bg-white pointer-events-none will-change-transform"
@@ -55,7 +55,7 @@
         </div>
 
         <div
-            class="hidden sm:flex items-center gap-1 rounded-[2px] bg-black/70 backdrop-blur border border-white/10 p-0.5"
+            class="hidden sm:flex items-center gap-1 rounded-[2px] bg-black/70 dark:bg-blue-900/70 backdrop-blur border border-white/10 p-0.5"
         >
             {{-- Dark/Light Mode Toggle --}}
             <button
@@ -131,7 +131,7 @@
         <div
             id="ascii-3d-container"
             data-animate="hero-visual"
-            class="pointer-events-none absolute right-6 lg:right-10 top-1/2 -translate-y-1/2 w-[320px] h-[320px] lg:w-[600px] lg:h-[600px] hidden lg:block text-blue-900 dark:text-slate-200"
+            class="pointer-events-none absolute right-6 lg:left-160 top-1/2 -translate-y-1/2 w-[320px] h-[320px] lg:w-[800px] lg:h-[800px] hidden lg:block text-blue-900 dark:text-slate-200"
         ></div>
 
         <div data-animate="hero-text" class="relative z-10">
@@ -187,20 +187,70 @@
     </div>
 </section>
 
+{{-- ===================== TRUSTED BY SECTION ===================== --}}
+<section id="tentang" class="py-32 bg-slate-50 dark:bg-slate-950 transition-colors duration-300">
+    <div class="max-w-[100vw]mx-auto px-6 lg:px-8 text-center">
+
+        <h2 data-animate="bento" class="mt-20 font-display text-3xl lg:text-5xl font-medium text-blue-950 leading-none tracking-tighter dark:text-white">
+            Dipercaya oleh <br class="hidden sm:block" /> Mitra Unit Usaha Sekolah.
+        </h2>
+
+        <p data-animate="bento" class="mt-5 text-blue-950/70 dark:text-white/70 max-w-md mx-auto font-semibold leading-tight tracking-tight">
+            Kolaborasi kami tidak berhenti di sistem. Kami bekerja bersama unit usaha, penyedia
+            layanan, dan mitra sekolah untuk memastikan setiap transaksi tercatat rapi dan
+            dapat dipertanggungjawabkan.
+        </p>
+
+        <div class="mt-32 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 lg:grid-rows-3 gap-3">
+
+            {{-- Baris 1: satu card sendirian di kolom 3 --}}
+            <div data-animate="bento" class="lg:col-start-3 lg:row-start-1 aspect-[16/10] rounded-[3px] bg-blue-800 dark:bg-blue-950 border border-white/10 flex items-center justify-center">
+                <span class="font-display font-bold text-white text-sm tracking-wide">Mitra 1</span>
+            </div>
+
+            {{-- Baris 2: 5 card, gap di kolom 3 --}}
+            <div data-animate="bento" class="lg:col-start-1 lg:row-start-2 aspect-[16/10] rounded-[3px] bg-blue-800 dark:bg-blue-950 border border-white/10 flex items-center justify-center">
+                <span class="font-display font-bold text-white text-sm tracking-tight">Mitra 2</span>
+            </div>
+            <div data-animate="bento" class="lg:col-start-2 lg:row-start-2 aspect-[16/10] rounded-[3px] bg-blue-800 dark:bg-blue-950 border border-white/10 flex items-center justify-center">
+                <span class="font-display font-bold text-white text-sm tracking-tight">Mitra 3</span>
+            </div>
+            <div data-animate="bento" class="lg:col-start-4 lg:row-start-2 aspect-[16/10] rounded-[3px] bg-blue-800 dark:bg-blue-950 border border-white/10 flex items-center justify-center">
+                <span class="font-display font-bold text-white text-sm tracking-tight">Mitra 4</span>
+            </div>
+            <div data-animate="bento" class="lg:col-start-5 lg:row-start-2 aspect-[16/10] rounded-[3px] bg-blue-800 dark:bg-blue-950 border border-white/10 flex items-center justify-center">
+                <span class="font-display font-bold text-white text-sm tracking-tight">Mitra 5</span>
+            </div>
+            <div data-animate="bento" class="lg:col-start-6 lg:row-start-2 aspect-[16/10] rounded-[3px] bg-blue-800 dark:bg-blue-950 border border-white/10 flex items-center justify-center">
+                <span class="font-display font-bold text-white text-sm tracking-tight">Mitra 6</span>
+            </div>
+
+            {{-- Baris 3: 2 card menyebar, kolom 3 dan 5 --}}
+            <div data-animate="bento" class="lg:col-start-3 lg:row-start-3 aspect-[16/10] rounded-[3px] bg-blue-800 dark:bg-blue-950 border border-white/10 flex items-center justify-center">
+                <span class="font-display font-bold text-white text-sm tracking-tight">Mitra 7</span>
+            </div>
+            <div data-animate="bento" class="lg:col-start-5 lg:row-start-3 aspect-[16/10] rounded-[3px] bg-blue-800 dark:bg-blue-950 border border-white/10 flex items-center justify-center">
+                <span class="font-display font-bold text-white text-sm tracking-tight">Mitra 8</span>
+            </div>
+
+        </div>
+    </div>
+</section>
+
 {{-- ===================== FITUR UNGGULAN ===================== --}}
-<section class="relative overflow-hidden dark:bg-blue-800 py-24 lg:py-50 px-6 lg:px-8 transition-colors duration-300">
+<section class="relative overflow-hidden dark:bg-slate-950 py-24 lg:py-50 px-6 lg:px-8 transition-colors duration-300">
 
     <div class="relative max-w-7xl mx-auto">
 
 
         <div class="flex justify-start gap-2 flex-col">
             <div class="flex justify-start gap-2 items-center">
-                <span class="h-1 w-1 mt-2 ml-1 shrink-0 bg-blue-950 blink-dot"></span>
-                <p class="mt-3 text-sm lg:text-[12px] font-bold uppercase tracking-tight text-blue-950/70">
+                <span class="h-1 w-1 mt-2 ml-1 shrink-0 bg-slate-950 dark:bg-white blink-dot"></span>
+                <p class="mt-3 text-sm lg:text-[12px] font-bold uppercase tracking-tight text-blue-950/70 dark:text-white">
                     Fitur
                 </p>
             </div>
-            <h2 class="font-display text-4xl sm:text-5xl lg:text-4xl font-semibold leading-none tracking-tighter text-blue-950 max-w-3xl">
+            <h2 class="font-display text-4xl sm:text-5xl lg:text-4xl font-semibold leading-none tracking-tighter text-blue-950 max-w-3xl dark:text-white">
                 Di Garis Depan <br />
                 Pengelolaan Usaha Sekolah.
             </h2>
@@ -211,105 +261,53 @@
         {{-- List fitur, tersusun menyerong (staggered) --}}
         <div class="mt-24 lg:mt-52 flex flex-col gap-20 lg:gap-48">
 
-            <div class="lg:ml-[55%] max-w-sm flex items-start gap-3" data-animate="fitur-item">
-                <span class="mt-2.5 h-1.5 w-1.5 shrink-0 bg-blue-950 blink-dot"></span>
+            <div class="lg:ml-[55%] max-w-xs flex items-start gap-3" data-animate="fitur-item">
+                <span class="mt-2.5 h-1.5 w-1.5 shrink-0 bg-slate-950 dark:bg-white blink-dot"></span>
                 <div>
-                    <h3 class="font-display text-2xl lg:text-3xl font-medium tracking-tighter text-blue-950">
+                    <h3 class="font-display text-2xl lg:text-3xl font-medium tracking-tighter text-blue-950  dark:text-white">
                         Pencatatan Transaksi
                     </h3>
-                    <p class="mt-3 text-sm lg:text-sm font-semibold leading-tight tracking-tight text-blue-950/70">
+                    <p class="mt-3 text-sm lg:text-sm font-semibold leading-tight tracking-tight text-blue-950/70 dark:text-white">
                         Setiap transaksi unit usaha tercatat otomatis dengan detail lengkap — waktu, nominal, dan kategori — sehingga arus kas selalu bisa dipantau secara real-time oleh admin unit maupun pusat.
                     </p>
                 </div>
             </div>
 
-            <div class="lg:ml-[18%] max-w-md flex items-start gap-3" data-animate="fitur-item">
-                <span class="mt-2.5 h-1.5 w-1.5 shrink-0 bg-blue-950 blink-dot"></span>
+            <div class="lg:ml-[18%] max-w-sm flex items-start gap-3" data-animate="fitur-item">
+                <span class="mt-2.5 h-1.5 w-1.5 shrink-0 bg-blue-950 dark:bg-white blink-dot"></span>
                 <div>
-                    <h3 class="font-display text-2xl lg:text-3xl font-medium tracking-tighter text-blue-950">
+                    <h3 class="font-display text-2xl lg:text-3xl font-medium tracking-tighter text-blue-950  dark:text-white">
                         Laporan Keuangan Konsolidasi
                     </h3>
-                    <p class="mt-3 text-sm lg:text-sm font-semibold leading-tight tracking-tight text-blue-950/70">
+                    <p class="mt-3 text-sm lg:text-sm font-semibold leading-tight tracking-tight text-blue-950/70  dark:text-white">
                         Gabungkan laporan dari seluruh unit usaha ke dalam satu tampilan ringkas. Admin pusat dapat memantau performa keuangan sekolah secara menyeluruh tanpa perlu merekap manual satu per satu.
                     </p>
                 </div>
             </div>
 
-            <div class="lg:ml-[42%] max-w-md flex items-start gap-3" data-animate="fitur-item">
-                <span class="mt-2.5 h-1.5 w-1.5 shrink-0 bg-blue-950 blink-dot"></span>
+            <div class="lg:ml-[42%] max-w-sm flex items-start gap-3" data-animate="fitur-item">
+                <span class="mt-2.5 h-1.5 w-1.5 shrink-0 bg-blue-950 blink-dot dark:bg-white"></span>
                 <div>
-                    <h3 class="font-display text-2xl lg:text-3xl font-medium tracking-tighter text-blue-950">
+                    <h3 class="font-display text-2xl lg:text-3xl font-medium tracking-tighter text-blue-950 dark:text-white">
                         Multi Admin &amp; Hak Akses
                     </h3>
-                    <p class="mt-3 text-sm lg:text-sm font-semibold leading-tight tracking-tight text-blue-950/70">
+                    <p class="mt-3 text-sm lg:text-sm font-semibold leading-tight tracking-tight text-blue-950/70 dark:text-white">
                         Setiap unit usaha bisa dikelola oleh lebih dari satu admin dengan tingkat akses yang dapat diatur, menjaga keamanan data sekaligus memudahkan pembagian tanggung jawab operasional.
                     </p>
                 </div>
             </div>
 
-            <div class="lg:ml-[8%] max-w-md flex items-start gap-3" data-animate="fitur-item">
-                <span class="mt-2.5 h-1.5 w-1.5 shrink-0 bg-blue-950 blink-dot"></span>
+            <div class="lg:ml-[8%] max-w-sm flex items-start gap-3" data-animate="fitur-item">
+                <span class="mt-2.5 h-1.5 w-1.5 shrink-0 bg-blue-950 dark:bg-white blink-dot"></span>
                 <div>
-                    <h3 class="font-display text-2xl lg:text-3xl font-medium tracking-tighter text-blue-950">
+                    <h3 class="font-display text-2xl lg:text-3xl font-medium tracking-tighter text-blue-950 dark:text-white">
                         Keamanan Data
                     </h3>
-                    <p class="mt-3 text-sm lg:text-sm font-semibold leading-tight tracking-tight text-blue-950/70">
+                    <p class="mt-3 text-sm lg:text-sm font-semibold leading-tight tracking-tight text-blue-950/70 dark:text-white">
                         Seluruh data transaksi dan laporan disimpan dengan enkripsi serta sistem cadangan berkala, memastikan informasi sekolah tetap aman dan mudah dipulihkan kapan pun diperlukan.
                     </p>
                 </div>
             </div>
-
-        </div>
-
-    </div>
-</section>
-
-{{-- ===================== TRUSTED BY SECTION ===================== --}}
-<section id="tentang" class="py-32 bg-slate-50 dark:bg-slate-950 transition-colors duration-300">
-    <div class="max-w-[100vw]]mx-auto px-6 lg:px-8 text-center">
-
-        <h2 data-animate="bento" class="mt-20 font-display text-3xl lg:text-5xl font-medium text-blue-950 leading-none tracking-tighter">
-            Dipercaya oleh <br class="hidden sm:block" /> Mitra Unit Usaha Sekolah.
-        </h2>
-
-        <p data-animate="bento" class="mt-5 text-blue-950/70 max-w-md mx-auto font-semibold leading-tight tracking-tight">
-            Kolaborasi kami tidak berhenti di sistem. Kami bekerja bersama unit usaha, penyedia
-            layanan, dan mitra sekolah untuk memastikan setiap transaksi tercatat rapi dan
-            dapat dipertanggungjawabkan.
-        </p>
-
-        <div class="mt-32 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 lg:grid-rows-3 gap-3">
-
-            {{-- Baris 1: satu card sendirian di kolom 3 --}}
-            <div data-animate="bento" class="lg:col-start-3 lg:row-start-1 aspect-[16/10] rounded-[3px] bg-blue-800 border border-white/10 flex items-center justify-center">
-                <span class="font-display font-bold text-white text-sm tracking-wide">Mitra 1</span>
-            </div>
-
-            {{-- Baris 2: 5 card, gap di kolom 3 --}}
-            <div data-animate="bento" class="lg:col-start-1 lg:row-start-2 aspect-[16/10] rounded-[3px] bg-blue-800 border border-white/10 flex items-center justify-center">
-                <span class="font-display font-bold text-white text-sm tracking-tight">Mitra 2</span>
-            </div>
-            <div data-animate="bento" class="lg:col-start-2 lg:row-start-2 aspect-[16/10] rounded-[3px] bg-blue-800 border border-white/10 flex items-center justify-center">
-                <span class="font-display font-bold text-white text-sm tracking-tight">Mitra 3</span>
-            </div>
-            <div data-animate="bento" class="lg:col-start-4 lg:row-start-2 aspect-[16/10] rounded-[3px] bg-blue-800 border border-white/10 flex items-center justify-center">
-                <span class="font-display font-bold text-white text-sm tracking-tight">Mitra 4</span>
-            </div>
-            <div data-animate="bento" class="lg:col-start-5 lg:row-start-2 aspect-[16/10] rounded-[3px] bg-blue-800 border border-white/10 flex items-center justify-center">
-                <span class="font-display font-bold text-white text-sm tracking-tight">Mitra 5</span>
-            </div>
-            <div data-animate="bento" class="lg:col-start-6 lg:row-start-2 aspect-[16/10] rounded-[3px] bg-blue-800 border border-white/10 flex items-center justify-center">
-                <span class="font-display font-bold text-white text-sm tracking-tight">Mitra 6</span>
-            </div>
-
-            {{-- Baris 3: 2 card menyebar, kolom 3 dan 5 --}}
-            <div data-animate="bento" class="lg:col-start-3 lg:row-start-3 aspect-[16/10] rounded-[3px] bg-blue-800 border border-white/10 flex items-center justify-center">
-                <span class="font-display font-bold text-white text-sm tracking-tight">Mitra 7</span>
-            </div>
-            <div data-animate="bento" class="lg:col-start-5 lg:row-start-3 aspect-[16/10] rounded-[3px] bg-blue-800 border border-white/10 flex items-center justify-center">
-                <span class="font-display font-bold text-white text-sm tracking-tight">Mitra 8</span>
-            </div>
-
         </div>
     </div>
 </section>
@@ -318,9 +316,9 @@
 <div
     class="pixel-divider relative grid w-full overflow-hidden"
     data-section-light="#172554"
-    data-section-dark="rgb(2, 6, 23)"
+    data-section-dark="rgb(15, 23, 42)"
     data-accent-light="rgb(37, 91, 157)"
-    data-accent-dark="rgb(59, 130, 246)"
+    data-accent-dark="rgb(52, 64, 82)"
     data-prev-light="#f8fafc"
     data-prev-dark="rgb(2, 6, 23)"
 ></div>
@@ -374,7 +372,7 @@
         <div id="horizontal-track" class="flex h-full items-center gap-18 px-6 lg:px-8 snap-x snap-mandatory will-change-transform">
 
             {{-- Step 1 --}}
-            <div class="howitworks-card snap-center shrink-0 w-[85vw] sm:w-[340px] h-[75%] lg:h-[65%] lg:-translate-y-20 rounded-[3px] bg-blue-900 dark:bg-blue-700 p-3 relative overflow-hidden flex flex-col">
+            <div class="howitworks-card snap-center shrink-0 w-[85vw] sm:w-[340px] h-[75%] lg:h-[65%] lg:-translate-y-20 rounded-[3px] bg-blue-900 dark:bg-blue-950 p-3 relative overflow-hidden flex flex-col">
                 <div class="relative z-10 flex items-start justify-between">
                     <span class="px-2.5 py-0.5 rounded-[1px] bg-white/15 text-white text-[10px] font-semibold uppercase tracking-wide">Akun</span>
                     <span class="flex h-9 w-9 items-center justify-center rounded-[3px] bg-white">
@@ -397,7 +395,7 @@
             </div>
 
             {{-- Step 2 --}}
-            <div class="howitworks-card snap-center shrink-0 w-[85vw] sm:w-[340px] h-[75%] lg:h-[65%] lg:translate-y-20 rounded-[3px] bg-blue-900 dark:bg-blue-700 p-3 relative overflow-hidden flex flex-col">
+            <div class="howitworks-card snap-center shrink-0 w-[85vw] sm:w-[340px] h-[75%] lg:h-[65%] lg:translate-y-20 rounded-[3px] bg-blue-900 dark:bg-blue-950 p-3 relative overflow-hidden flex flex-col">
                 <div class="relative z-10 flex items-start justify-between">
                     <span class="px-2.5 py-0.5 rounded-[1px] bg-white/15 text-white text-[10px] font-semibold uppercase tracking-wide">Setup</span>
                     <span class="flex h-9 w-9 items-center justify-center rounded-[3px] bg-white">
@@ -420,7 +418,7 @@
             </div>
 
             {{-- Step 3 --}}
-            <div class="howitworks-card snap-center shrink-0 w-[85vw] sm:w-[300px] h-[75%] lg:h-[65%] rounded-[3px] lg:-translate-y-5 bg-blue-900 dark:bg-blue-700 p-3 relative overflow-hidden flex flex-col">
+            <div class="howitworks-card snap-center shrink-0 w-[85vw] sm:w-[300px] h-[75%] lg:h-[65%] rounded-[3px] lg:-translate-y-5 bg-blue-900 dark:bg-blue-950 p-3 relative overflow-hidden flex flex-col">
                 <div class="relative z-10 flex items-start justify-between">
                     <span class="px-2.5 py-0.5 rounded-[1px] bg-white/15 text-white text-[10px] font-semibold uppercase tracking-wide">Transaksi</span>
                     <span class="flex h-9 w-9 items-center justify-center rounded-[3px] bg-white">
@@ -443,7 +441,7 @@
             </div>
 
             {{-- Step 4 --}}
-            <div class="howitworks-card snap-center shrink-0 w-[85vw] sm:w-[300px] h-[75%] lg:h-[65%] lg:-translate-y-16 rounded-[3px] bg-blue-900 dark:bg-blue-700 p-3 relative overflow-hidden flex flex-col">
+            <div class="howitworks-card snap-center shrink-0 w-[85vw] sm:w-[300px] h-[75%] lg:h-[65%] lg:-translate-y-16 rounded-[3px] bg-blue-900 dark:bg-blue-950 p-3 relative overflow-hidden flex flex-col">
                 <div class="relative z-10 flex items-start justify-between">
                     <span class="px-2.5 py-0.5 rounded-[1px] bg-white/15 text-white text-[10px] font-semibold uppercase tracking-wide">Laporan</span>
                     <span class="flex h-9 w-9 items-center justify-center rounded-[3px] bg-white">
@@ -466,7 +464,7 @@
             </div>
 
             {{-- Step 5 --}}
-            <div class="howitworks-card snap-center shrink-0 w-[85vw] sm:w-[300px] h-[75%] lg:h-[65%] lg:translate-y-10 rounded-[3px] bg-blue-900 dark:bg-blue-700 p-3 relative overflow-hidden flex flex-col">
+            <div class="howitworks-card snap-center shrink-0 w-[85vw] sm:w-[300px] h-[75%] lg:h-[65%] lg:translate-y-10 rounded-[3px] bg-blue-900 dark:bg-blue-950 p-3 relative overflow-hidden flex flex-col">
                 <div class="relative z-10 flex items-start justify-between">
                     <span class="px-2.5 py-0.5 rounded-[1px] bg-white/15 text-white text-[10px] font-semibold uppercase tracking-wide">Integrasi</span>
                     <span class="flex h-9 w-9 items-center justify-center rounded-[3px] bg-white">
@@ -489,7 +487,7 @@
             </div>
 
             {{-- Step 6 --}}
-            <div class="howitworks-card snap-center shrink-0 w-[85vw] sm:w-[300px] h-[75%] lg:h-[65%] lg:-translate-y-4 rounded-[3px] bg-blue-900 dark:bg-blue-700 p-3 relative overflow-hidden flex flex-col">
+            <div class="howitworks-card snap-center shrink-0 w-[85vw] sm:w-[300px] h-[75%] lg:h-[65%] lg:-translate-y-4 rounded-[3px] bg-blue-900 dark:bg-blue-950 p-3 relative overflow-hidden flex flex-col">
                 <div class="relative z-10 flex items-start justify-between">
                     <span class="px-2.5 py-0.5 rounded-[1px] bg-white/15 text-white text-[10px] font-semibold uppercase tracking-wide">Keamanan</span>
                     <span class="flex h-9 w-9 items-center justify-center rounded-[3px] bg-white">
@@ -516,7 +514,7 @@
 </section>
 
 {{-- ===================== ABOUT ===================== --}}
-<section id="tentang" class="relative bg-blue-950 dark:bg-slate-950 p-6 transition-colors duration-300 overflow-hidden">
+<section class="relative bg-blue-950 dark:bg-slate-900 p-6 transition-colors duration-300 overflow-hidden">
     <div class="flex flex-col lg:flex-row min-h-[600px] lg:min-h-screen my-30">
 
         {{-- Kiri: Gambar (60%) --}}
@@ -585,11 +583,11 @@
 <div
     class="pixel-divider relative grid w-full overflow-hidden"
     data-section-light="#f8fafc"
-    data-section-dark="rgb(15, 23, 42)"
+    data-section-dark="rgb(2, 6, 23)"
     data-accent-light="rgb(230, 241, 255)"
-    data-accent-dark="rgb(59, 130, 246)"
+    data-accent-dark="rgb(52, 64, 82)"
     data-prev-light="#172554"
-    data-prev-dark="rgb(2, 6, 23)"
+    data-prev-dark="rgb(15, 23, 42)""
 ></div>
 
 {{-- ===================== FAQ ===================== --}}
@@ -688,7 +686,7 @@
 
                     <div class="faq-panel grid grid-rows-[0fr] transition-[grid-template-rows] duration-600 ease-out">
                         <div class="overflow-hidden">
-                            <p class="pb-6 text-sm lg:text-sm tracking-tight text-blue-900/70 dark:text-blue-900/70 max-w-2xl">
+                            <p class="pb-6 text-sm lg:text-sm tracking-tight text-blue-900/70 dark:text-slate-400 max-w-2xl">
                                 Tidak ada batasan jumlah admin. Setiap unit usaha bisa memiliki lebih dari satu admin dengan hak akses yang dapat diatur sesuai kebutuhan.
                             </p>
                         </div>
@@ -714,7 +712,7 @@
 
                     <div class="faq-panel grid grid-rows-[0fr] transition-[grid-template-rows] duration-600 ease-out">
                         <div class="overflow-hidden">
-                            <p class="pb-6 text-sm lg:text-sm tracking-tight text-blue-900/70 dark:text-slate-400 max-w-2xl">
+                            <p class="pb-6 text-sm lg:text-sm tracking-tight text-blue-900/70  dark:text-slate-400 max-w-2xl">
                                 Ya. Setiap data disimpan dengan enkripsi dan sistem cadangan (backup) berkala untuk mencegah kehilangan data.
                             </p>
                         </div>
@@ -728,7 +726,7 @@
 </section>
 
 {{-- ===================== FOOTER ===================== --}}
-<footer class="bg-slate-950 dark:bg-slate-950 pt-20 pb-5 px-6 lg:px-8 transition-colors duration-300">
+<footer class="bg-slate-950 dark:bg-slate-900 pt-20 pb-5 px-6 lg:px-8 transition-colors duration-300">
     <div class="max-w-7xl mx-auto">
         <div class="grid grid-cols-1 lg:grid-cols-[1fr_1fr] gap-12 lg:gap-28 pb-40">
 
@@ -743,11 +741,11 @@
                     <input
                         type="email"
                         placeholder="Alamat E-mail"
-                        class="flex-1 rounded-[3px] border border-white/15 bg-transparent px-4 py-2 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-white/40 transition-colors"
+                        class="flex-1 rounded-[1px] border border-white/15 bg-transparent px-4 py-2 text-xs text-white placeholder:text-slate-500 focus:outline-none focus:border-white/40 transition-colors"
                     />
                     <button
                         type="submit"
-                        class="rounded-[3px] bg-blue-900 hover:bg-blue-800 px-6 py-2 text-sm font-medium tracking-tighter text-white transition-colors"
+                        class="rounded-[1px] bg-blue-900 hover:bg-blue-800 px-6 py-2 text-xs font-medium tracking-tighter text-white transition-colors"
                     >
                         Berlangganan
                     </button>
@@ -760,7 +758,7 @@
                 {{-- Baris atas: Sistem & Fitur --}}
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <p class="text-xs font-semibold uppercase tracking-tighter text-slate-500 mb-4">
+                        <p class="text-xs font-semibold uppercase tracking-tighter text-white/50 mb-4">
                             Sistem
                         </p>
                         <ul class="space-y-1 text-[12px] font-medium tracking-tighter">
@@ -773,7 +771,7 @@
                     </div>
 
                     <div>
-                        <p class="text-xs font-semibold uppercase tracking-tighter text-slate-500 mb-4">
+                        <p class="text-xs font-semibold uppercase tracking-tighter text-white/50 mb-4">
                             Fitur
                         </p>
                         <ul class="space-y-1 text-[12px] font-medium tracking-tighter">
@@ -789,7 +787,7 @@
                 {{-- Baris bawah: Bantuan & Kontak --}}
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <p class="text-xs font-semibold uppercase tracking-tighter text-slate-500 mb-4">
+                        <p class="text-xs font-semibold uppercase tracking-tighter text-white/50 mb-4">
                             Bantuan
                         </p>
                         <ul class="space-y-1 text-[12px] font-medium tracking-tighter">
@@ -799,7 +797,7 @@
                     </div>
 
                     <div>
-                        <p class="text-xs font-semibold uppercase tracking-tighter text-slate-500 mb-4">
+                        <p class="text-xs font-semibold uppercase tracking-tighter text-white/50 mb-4">
                             Kontak
                         </p>
                         <ul class="space-y-1 text-[12px] font-medium tracking-tighter">

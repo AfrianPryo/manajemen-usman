@@ -10,7 +10,7 @@ export function initSmoothScroll() {
         easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
         smoothWheel: true,      // aktifkan smooth untuk scroll mouse/trackpad
         wheelMultiplier: 0.7,     // sensitivitas per "tick" scroll mouse
-        touchMultiplier: 1.5,   // sensitivitas untuk swipe di touchscreen
+        touchMultiplier: 1.7,   // sensitivitas untuk swipe di touchscreen
         lerp: 0.1,               // alternatif ke duration/easing (lihat catatan di bawah)
     });
 
