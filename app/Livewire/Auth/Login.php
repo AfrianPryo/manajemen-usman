@@ -30,7 +30,7 @@ class Login extends Component
     protected function messages(): array
     {
         return [
-            'identity.required' => 'Email atau NIP wajib diisi.',
+            'identity.required' => 'Username atau NIP wajib diisi.',
             'password.required' => 'Password wajib diisi.',
             'password.min'      => 'Password minimal 8 karakter.',
         ];
@@ -57,8 +57,8 @@ class Login extends Component
 
         /** @var User|null $user */
         $user = User::where('username', $this->identity)
-            ->orWhere('email', $this->identity)
             ->orWhere('nip', $this->identity)
+            ->orWhere('email', $this->identity)
             ->first();
 
         // Validasi kredensial
@@ -67,7 +67,7 @@ class Login extends Component
 
             AuthLog::log('login.failed', $user?->id, $this->identity, 'Kredensial salah');
 
-            $this->addError('identity', 'Email/NIP atau password salah.');
+            $this->addError('identity', 'Username/NIP atau password salah.');
             return;
         }
 
@@ -89,7 +89,7 @@ class Login extends Component
         Auth::login($user);
         session()->regenerate();
 
-        // 🟢 Simpan last login info & ID Sesi Aktif untuk Single Session Check
+        // Simpan last login info & ID Sesi Aktif untuk Single Session Check
         $user->update([
             'last_login_at'      => now(),
             'last_login_ip'      => request()->ip(),

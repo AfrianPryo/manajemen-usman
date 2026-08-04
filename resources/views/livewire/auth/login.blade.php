@@ -18,7 +18,7 @@
             {{-- Form Login --}}
             <form wire:submit="login" class="mt-8 space-y-6">
 
-                {{-- 🟢 Alert Flash Session Error (Termasuk Sesi Berakhir dari Single Session Middleware) --}}
+                {{-- Alert Flash Session Error --}}
                 @if (session()->has('error'))
                     <div class="p-4 text-sm text-red-800 rounded-lg bg-red-50 border border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800" role="alert">
                         <div class="flex items-center">
@@ -30,7 +30,7 @@
                     </div>
                 @endif
 
-                {{-- Flash Session Status (Pengoperasian Sukses/Notifikasi Umum) --}}
+                {{-- Flash Session Status --}}
                 @if (session()->has('status'))
                     <div class="p-4 text-sm text-green-800 rounded-lg bg-green-50 border border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800" role="alert">
                         <span class="font-medium">{{ session('status') }}</span>
@@ -45,10 +45,10 @@
                 @endif
 
                 <div class="space-y-4">
-                    {{-- Field Identity (Username / Email / NIP) --}}
+                    {{-- Field Identity (Username / NIP) --}}
                     <div>
                         <label for="identity" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                            Username / Email / NIP
+                            Username / NIP
                         </label>
                         <input
                             wire:model="identity"
@@ -56,7 +56,7 @@
                             type="text"
                             autocomplete="username"
                             class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-slate-800 text-gray-900 dark:text-white text-sm"
-                            placeholder="Masukkan username, email, atau NIP"
+                            placeholder="Masukkan Username atau NIP"
                         >
                         @error('identity') <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
                     </div>
@@ -94,7 +94,7 @@
                     </div>
                 </div>
 
-                {{-- Submit Button dengan Loading State --}}
+                {{-- Submit Button --}}
                 <div>
                     <button
                         type="submit"

@@ -19,20 +19,21 @@ return new class extends Migration
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             
-            // Relasi ke Unit Usaha (Foreign Key diisi sederhana agar tidak memicu error urutan eksekusi)
+            // Relasi ke Unit Usaha
             $table->unsignedBigInteger('unit_id')->nullable();
             
-            // Informasi Tambahan Personel
+            // Informasi Personel
             $table->string('nip')->nullable()->unique();
             $table->string('phone')->nullable();
-            $table->string('employee_status')->nullable();
+            $table->string('employee_status')->nullable(); // tetap, part_time, magang
             $table->string('profile_photo_path', 2048)->nullable();
             
             // Status Akun & Keamanan
             $table->boolean('is_active')->default(true);
             $table->boolean('must_change_password')->default(true);
             
-            // Logging
+            // Session Check & Logging
+            $table->string('current_session_id')->nullable();
             $table->timestamp('last_login_at')->nullable();
             $table->string('last_login_ip', 45)->nullable();
             

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -27,7 +28,7 @@ class User extends Authenticatable
         'must_change_password',
         'last_login_at',
         'last_login_ip',
-        'current_session_id', // 🟢 Ditambahkan untuk mendukung fitur Single Active Session
+        'current_session_id',
     ];
 
     protected $hidden = [
@@ -42,6 +43,27 @@ class User extends Authenticatable
         'must_change_password' => 'boolean',
         'password'             => 'hashed',
     ];
+
+    /**
+     * Accessor: ID Resmi untuk Laporan/PDF (NIP jika ada, atau '-' untuk non-NIP)
+     */
+    public function getOfficialIdAttribute(): string
+    {
+        return !empty($this->nip) ? $this->nip : '-';
+    }
+
+    /**
+     * Accessor: Format Identitas Lengkap untuk Audit Log & Dashboard Navigation
+     */
+    public function getFormattedIdentityAttribute(): string
+    {
+        if (!empty($this->nip)) {
+            return "{$this->name} (NIP: {$this->nip})";
+        }
+
+        $statusLabel = ucfirst(str_replace('_', ' ', $this->employee_status ?? 'Non-NIP'));
+        return "{$this->name} ({$statusLabel})";
+    }
 
     public function unit(): BelongsTo
     {
