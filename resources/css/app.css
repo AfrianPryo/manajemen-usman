@@ -103,3 +103,20 @@ body::-webkit-scrollbar {
 .blink-dot {
     animation: blink-opacity 1s ease-in-out infinite;
 }
+
+.split-line {
+    display: block;
+    overflow: hidden;
+}
+.split-line-inner {
+    display: inline-block;
+    will-change: transform, opacity;
+}
+
+/* cegah flash teks asli sebelum JS selesai split */
+[data-reveal-text] {
+    visibility: hidden;
+}
+[data-reveal-text].reveal-ready {
+    visibility: visible;
+}

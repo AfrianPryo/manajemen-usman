@@ -79,10 +79,14 @@ function initNavIndicator() {
     const sections = navLinks
         .map((link) => {
             const href = link.getAttribute("href");
-
-            if (!href.startsWith("#")) return null;
-
-            return document.querySelector(href);
+            // Pastikan href ada, dimulai dari #, dan panjangnya lebih dari 1 karakter (bukan hanya "#")
+            if (!href || !href.startsWith("#") || href.length === 1) return null;
+            
+            try {
+                return document.querySelector(href);
+            } catch (e) {
+                return null; // Mencegah crash jika ID tidak valid secara querySelector
+            }
         })
         .filter(Boolean);
 
@@ -429,67 +433,66 @@ function initHorizontalScroll() {
 
     const cards = [...track.querySelectorAll(".howitworks-card")];
 
-    ScrollTrigger.matchMedia({
+    let mm = gsap.matchMedia();
 
-        "(min-width: 1024px)": function () {
+    mm.add("(min-width: 1024px)", () => {
+        // ==========================================
+        // 1. LOGIKA DESKTOP (Jalan saat layar >= 1024px)
+        // ==========================================
+        let spacer = track.querySelector(".howitworks-trail-spacer");
+        if (!spacer) {
+            spacer = document.createElement("div");
+            spacer.className = "howitworks-trail-spacer";
+            spacer.style.cssText = "flex-shrink:0; width:10px; height:1px; pointer-events:none;";
+            track.appendChild(spacer);
+        }
 
-            // Tambah elemen spacer kosong di akhir track sebagai trailing gap.
-            // Pendekatan ini lebih reliable daripada paddingRight karena
-            // overflow:hidden / will-change pada track kadang mengabaikan padding.
-            let spacer = track.querySelector(".howitworks-trail-spacer");
-            if (!spacer) {
-                spacer = document.createElement("div");
-                spacer.className = "howitworks-trail-spacer";
-                spacer.style.cssText = "flex-shrink:0; width:10px; height:1px; pointer-events:none;";
-                track.appendChild(spacer);
-            }
+        const getScrollDistance = () => track.scrollWidth - wrapper.offsetWidth;
 
-            const getScrollDistance = () => track.scrollWidth - wrapper.offsetWidth;
+        const tween = gsap.to(track, {
+            x: () => -getScrollDistance(),
+            ease: "none",
+        });
 
-            const tween = gsap.to(track, {
-                x: () => -getScrollDistance(),
-                ease: "none",
+        const updateCardScale = () => {
+            const wrapperRect = wrapper.getBoundingClientRect();
+            const centerX = wrapperRect.left + wrapperRect.width / 2;
+
+            cards.forEach((card) => {
+                const cardRect = card.getBoundingClientRect();
+                const cardCenterX = cardRect.left + cardRect.width / 2;
+                const distance = Math.abs(centerX - cardCenterX);
+                const maxDistance = wrapperRect.width / 2;
+                const proximity = Math.max(0, 1 - distance / maxDistance);
+
+                gsap.set(card, { scale: 0.92 + proximity * 0.18 });
             });
+        };
 
-            const updateCardScale = () => {
-                const wrapperRect = wrapper.getBoundingClientRect();
-                const centerX = wrapperRect.left + wrapperRect.width / 2;
+        ScrollTrigger.create({
+            trigger: wrapper,
+            start: "top top",
+            end: () => `+=${getScrollDistance()}`,
+            pin: true,
+            animation: tween,
+            scrub: 1,
+            invalidateOnRefresh: true,
+            onUpdate: updateCardScale,
+            onRefresh: updateCardScale,
+        });
 
-                cards.forEach((card) => {
-                    const cardRect = card.getBoundingClientRect();
-                    const cardCenterX = cardRect.left + cardRect.width / 2;
-                    const distance = Math.abs(centerX - cardCenterX);
-                    const maxDistance = wrapperRect.width / 2;
-                    const proximity = Math.max(0, 1 - distance / maxDistance);
+        updateCardScale();
 
-                    gsap.set(card, { scale: 0.92 + proximity * 0.18 });
-                });
-            };
+        // ==========================================
+        // 2. CLEANUP (Jalan otomatis saat layar < 1024px)
+        // ==========================================
+        return () => {
+            const currentSpacer = track.querySelector(".howitworks-trail-spacer");
+            if (currentSpacer) currentSpacer.remove();
 
-            ScrollTrigger.create({
-                trigger: wrapper,
-                start: "top top",
-                end: () => `+=${getScrollDistance()}`,
-                pin: true,
-                animation: tween,
-                scrub: 1,
-                invalidateOnRefresh: true,
-                onUpdate: updateCardScale,
-                onRefresh: updateCardScale,
-            });
-
-            updateCardScale();
-        },
-
-        "(max-width: 1023px)": function () {
-            // Hapus spacer jika ada
-            const spacer = track.querySelector(".howitworks-trail-spacer");
-            if (spacer) spacer.remove();
-
-            gsap.set(track, { x: 0, clearProps: "transform" });
-            gsap.set(cards, { scale: 1, clearProps: "transform" });
-        },
-
+            gsap.set(track, { clearProps: "transform" });
+            gsap.set(cards, { clearProps: "transform" });
+        };
     });
 }
 
@@ -516,6 +519,194 @@ function initFaqAccordion() {
     });
 }
 
+// ===========================================================
+// Scroll Text Reveal — split per baris (DOM-safe) + play-once
+// ===========================================================
+
+function wrapWordsPreservingTags(el) {
+    // simpan/kembalikan HTML asli agar aman di-split ulang (resize)
+    if (!el.dataset.originalHtml) {
+        el.dataset.originalHtml = el.innerHTML;
+    } else {
+        el.innerHTML = el.dataset.originalHtml;
+    }
+
+    const wrapTextNode = (node) => {
+        const tokens = node.textContent.split(/(\s+)/); // pertahankan token spasi
+        const frag = document.createDocumentFragment();
+
+        tokens.forEach((token) => {
+            if (token === "") return;
+
+            if (/^\s+$/.test(token)) {
+                frag.appendChild(document.createTextNode(token));
+                return;
+            }
+
+            const span = document.createElement("span");
+            span.className = "reveal-word";
+            span.style.display = "inline-block";
+            span.textContent = token;
+            frag.appendChild(span);
+        });
+
+        node.replaceWith(frag);
+    };
+
+    // Telusuri child node asli. Elemen non-teks seperti <br> dibiarkan
+    // apa adanya (tidak diubah jadi teks) — ini yang memperbaiki bug tag muncul.
+    const walk = (node) => {
+        [...node.childNodes].forEach((child) => {
+            if (child.nodeType === Node.TEXT_NODE) {
+                if (child.textContent.trim() !== "") {
+                    wrapTextNode(child);
+                }
+            } else if (child.nodeType === Node.ELEMENT_NODE && child.tagName !== "BR") {
+                walk(child);
+            }
+            // <br> sengaja tidak disentuh: perannya sebagai pemaksa
+            // line-break tetap berlaku saat kita ukur offsetTop di bawah
+        });
+    };
+
+    walk(el);
+}
+
+function groupWordsIntoLines(el) {
+    const words = Array.from(el.querySelectorAll(".reveal-word"));
+    if (!words.length) return [];
+
+    const lines = [];
+    let currentTop = null;
+    let currentLine = [];
+
+    words.forEach((word) => {
+        const top = word.offsetTop;
+        if (currentTop === null || Math.abs(top - currentTop) < 2) {
+            currentLine.push(word);
+            currentTop = top;
+        } else {
+            lines.push(currentLine);
+            currentLine = [word];
+            currentTop = top;
+        }
+    });
+    if (currentLine.length) lines.push(currentLine);
+
+    el.innerHTML = "";
+    const lineInners = [];
+
+    lines.forEach((lineWords) => {
+        const lineWrap = document.createElement("span");
+        lineWrap.className = "split-line";
+        
+        // --- [ PERBAIKAN 1: CSS BUNGKUSAN ] ---
+        // Membuat elemen jadi block (mengisi 1 baris penuh) 
+        // dan overflow hidden agar teks yang turun ke bawah terpotong/hilang
+        lineWrap.style.display = "block";
+        lineWrap.style.overflow = "hidden";
+
+        const lineInner = document.createElement("span");
+        lineInner.className = "split-line-inner";
+        
+        // --- [ PERBAIKAN 2: CSS INNER TEKS ] ---
+        // Elemen yang digerakkan (di-transform) wajib berupa inline-block atau block
+        lineInner.style.display = "inline-block";
+        lineInner.style.willChange = "transform, opacity";
+
+        lineWords.forEach((word, i) => {
+            lineInner.appendChild(word);
+            if (i < lineWords.length - 1) {
+                lineInner.appendChild(document.createTextNode(" "));
+            }
+        });
+
+        lineWrap.appendChild(lineInner);
+        el.appendChild(lineWrap);
+        lineInners.push(lineInner);
+    });
+
+    // el.classList.add("reveal-ready");
+    return lineInners;
+}
+
+function splitIntoLines(el) {
+    wrapWordsPreservingTags(el);
+    return groupWordsIntoLines(el);
+}
+
+function initScrollTextReveal() {
+    const targets = document.querySelectorAll("[data-reveal-text]");
+    if (!targets.length) return;
+
+    // Pastikan tersembunyi sejak awal JS dieksekusi
+    gsap.set(targets, { autoAlpha: 0 });
+
+    let scrollTriggers = [];
+
+    const build = () => {
+        scrollTriggers.forEach((st) => st.kill());
+        scrollTriggers = [];
+
+        targets.forEach((el) => {
+            const lines = splitIntoLines(el);
+            if (!lines.length) return;
+
+            // --- [ PERBAIKAN FOUC / KEDIP ] ---
+            // 1. Set posisi awal (menghilang & di bawah) SECARA INSTAN ke tiap baris (lines)
+            // SEBELUM wrapper utamanya dibuka. Ini akan dieksekusi dalam satu tick browser.
+            gsap.set(lines, { yPercent: 110, opacity: 0 });
+
+            // 2. Setelah isi barisnya aman di bawah, baru munculkan wrapper utamanya.
+            gsap.set(el, { autoAlpha: 1 });
+            el.classList.add("reveal-ready"); // Tambahkan class di sini jika dibutuhkan CSS
+
+            const tl = gsap.timeline({
+                scrollTrigger: {
+                    trigger: el,
+                    start: "top 57%", // Sedikit dinaikkan dari 50% agar lebih natural
+                    toggleActions: "play none none reverse", 
+                    invalidateOnRefresh: true,
+                },
+            });
+
+            // 3. Gunakan .to() saja karena state/posisi awal sudah kita pasang lewat gsap.set()
+            tl.to(lines, {
+                yPercent: 0,
+                opacity: 1,
+                duration: 0.65, 
+                ease: "power3.out",
+                stagger: 0.02, 
+            });
+
+            scrollTriggers.push(tl.scrollTrigger);
+        });
+    };
+
+    const pageFullyLoaded = () =>
+        new Promise((resolve) => {
+            if (document.readyState === "complete") {
+                resolve();
+            } else {
+                window.addEventListener("load", resolve, { once: true });
+            }
+        });
+
+    Promise.all([document.fonts.ready, pageFullyLoaded()]).then(() => {
+        build();
+        ScrollTrigger.refresh();
+    });
+
+    let resizeTimer;
+    window.addEventListener("resize", () => {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(() => {
+            build();
+            ScrollTrigger.refresh();
+        }, 200);
+    });
+}
+
 export function initLandingAnimations() {
     console.log("🚀 initLandingAnimations() dipanggil");
 
@@ -526,6 +717,7 @@ export function initLandingAnimations() {
     initHorizontalScroll();
     initFaqAccordion()
     initPixelDivider();
+    initScrollTextReveal(); 
 
     ScrollTrigger.refresh();
     

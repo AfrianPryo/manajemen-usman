@@ -6,13 +6,13 @@
 
 {{-- ===================== NAVBAR ===================== --}}
 <nav class="fixed inset-x-0 top-0 z-50 transition-colors duration-300">
-    <div class="max-w-7xl mx-auto px-6 lg:px-6 h-16 flex items-center justify-between">
+    <div class="relative max-w-7xl mx-auto px-6 lg:px-6 h-16 flex items-center justify-between">
         <a href="{{ route('landing') }}" class="font-display font-bold text-blue-900 dark:text-blue-400 text-lg tracking-tighter">
             SIMS<span class="text-slate-400 dark:text-slate-500 font-medium">.Usaha</span>
         </a>
 
         {{-- Nav Links dengan indikator "rolling" ala cantor8 --}}
-        <div id="nav-pill" class="relative hidden md:flex items-center gap-1 rounded-[2px] bg-black/70 dark:bg-blue-950/70 backdrop-blur px-1 py-1">
+        <div id="nav-pill" class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 hidden md:flex items-center gap-1 rounded-[2px] bg-black/70 dark:bg-blue-950/70 backdrop-blur px-1 py-1">
             <span
                 id="nav-indicator"
                 class="absolute top-1 left-0 h-[calc(93%-0.3rem)] rounded-[1px] bg-white pointer-events-none will-change-transform"
@@ -51,7 +51,6 @@
                     </span>
                 </span>
             </a>
-
         </div>
 
         <div
@@ -125,44 +124,48 @@
 
 {{-- ===================== HERO SECTION ===================== --}}
 <section id="home" class="relative overflow-hidden bg-gradient-to-b from-blue-50/60 to-slate-50 dark:from-slate-900 dark:to-slate-950 transition-colors duration-300">
-    <div class="max-w-7xl mx-auto px-6 lg:px-6 min-h-screen flex flex-col justify-end pb-10">
+    <div class="max-w-7xl mx-auto px-6 lg:px-6 min-h-screen flex flex-col justify-center pb-10">
 
         {{-- ASCII 3D — sisi kanan hero, sejajar vertikal di tengah --}}
         <div
             id="ascii-3d-container"
             data-animate="hero-visual"
-            class="pointer-events-none absolute right-6 lg:left-160 top-1/2 -translate-y-1/2 w-[320px] h-[320px] lg:w-[800px] lg:h-[800px] hidden lg:block text-blue-900 dark:text-slate-200"
+            class="pointer-events-none absolute right-6 lg:left-140 top-1/2 -translate-y-[7rem] w-[320px] h-[320px] lg:w-[180px] lg:h-[180px] hidden lg:block text-blue-900 dark:text-slate-200"
         ></div>
 
-        <div data-animate="hero-text" class="relative z-10">
-            <h1 class="max-w-[680px] font-display text-4xl lg:text-[3rem] leading-none tracking-tighter font-semibold text-slate-900 dark:text-white">
-                Kelola Unit Usaha <br> Sekolah dalam Satu Portal.
-            </h1>
-            <a            
-                href="/login"
-                class="login-cta group mt-3 inline-flex items-center gap-6 rounded-[2px] bg-blue-900 pt-1 pb-1 pl-3 pr-1 text-[11px] font-medium text-white"
-            >
-                <span
-                    class="login-text relative inline-flex items-center overflow-hidden text-[13px] font-semibold tracking-tight"
-                    data-text="Login Admin"
-                ></span>
-
-                <span class="flex h-9 w-9 items-center justify-center rounded-[3px] bg-white/90">
-                    <svg
-                        class="h-5 w-5 transition-transform duration-300 group-hover:rotate-45"
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="#1E3A8A"
-                        stroke-width="2"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                    >
-                        <path d="M7 17L17 7M17 7H8M17 7V16"/>
-                    </svg>
+        <!-- Parent utama dilepas class relative-nya agar text tepi bisa merapat ke ujung layar -->
+        <div data-animate="hero-text" class="pt-6 z-10 flex flex-col items-center self-center w-full">             
+            
+            <!-- PERBAIKAN: h1 sekarang menjadi 'relative' dan ditambahkan 'w-full' -->
+            <h1 class="relative w-full max-w-[680px] font-display text-4xl lg:text-[4rem] tracking-tighter font-medium text-slate-900 dark:text-white flex flex-col items-center text-center">                 
+                
+                <!-- ================= TEKS KECIL TEPI LAYAR ================= -->
+                <!-- Teks Tepi Kiri -->
+                <span class="absolute left-[5vw] lg:left-[5vw] top-1/2 -translate-y-1/2 text-xs font-normal tracking-normal text-slate-400 select-none whitespace-nowrap">
+                    SimsUsaha
                 </span>
-            </a>
+
+                <!-- Teks Tepi Kanan -->
+                <span class="absolute right-[5vw] lg:right-[5vw] top-1/2 -translate-y-1/2 text-xs font-normal tracking-normal text-slate-400 select-none whitespace-nowrap">
+                    SimsUsaha
+                </span>
+                <!-- ========================================================= -->
+
+                <span class="block">Kelola Unit</span>
+                <span class="block mb-1">Usaha Sekolah</span>
+                
+                <span class="flex justify-between w-full max-w-[12rem] mx-auto my-[1rem] leading-none">
+                    <span>(</span>
+                    <span>)</span>
+                </span>
+                
+                <span class="block mt-1">dalam Satu</span>
+                <span class="block">Portal.</span>             
+            </h1>
+            
+            <p class="tracking-tight text-sm mt-4 text-slate-900 dark:text-white">Platform manajemen usaha mandiri sekolah.</p>           
         </div>
+
     </div>
 
     {{-- Scroll down indicator --}}
@@ -188,14 +191,14 @@
 </section>
 
 {{-- ===================== TRUSTED BY SECTION ===================== --}}
-<section id="tentang" class="py-32 bg-slate-50 dark:bg-slate-950 transition-colors duration-300">
+<section class="py-32 bg-slate-50 dark:bg-slate-950 transition-colors duration-300">
     <div class="max-w-[100vw]mx-auto px-6 lg:px-8 text-center">
 
-        <h2 data-animate="bento" class="mt-20 font-display text-3xl lg:text-5xl font-medium text-blue-950 leading-none tracking-tighter dark:text-white">
+        <h2 data-reveal-text data-animate="bento" class="mt-20 font-display text-3xl lg:text-5xl font-medium text-blue-950 leading-none tracking-tighter dark:text-white">
             Dipercaya oleh <br class="hidden sm:block" /> Mitra Unit Usaha Sekolah.
         </h2>
 
-        <p data-animate="bento" class="mt-5 text-blue-950/70 dark:text-white/70 max-w-md mx-auto font-semibold leading-tight tracking-tight">
+        <p data-reveal-text data-animate="bento" class="mt-5 text-blue-950/70 dark:text-white/70 max-w-md mx-auto font-semibold leading-tight tracking-tight">
             Kolaborasi kami tidak berhenti di sistem. Kami bekerja bersama unit usaha, penyedia
             layanan, dan mitra sekolah untuk memastikan setiap transaksi tercatat rapi dan
             dapat dipertanggungjawabkan.
@@ -246,11 +249,11 @@
         <div class="flex justify-start gap-2 flex-col">
             <div class="flex justify-start gap-2 items-center">
                 <span class="h-1 w-1 mt-2 ml-1 shrink-0 bg-slate-950 dark:bg-white blink-dot"></span>
-                <p class="mt-3 text-sm lg:text-[12px] font-bold uppercase tracking-tight text-blue-950/70 dark:text-white">
+                <p data-reveal-text class="mt-3 text-sm lg:text-[12px] font-bold uppercase tracking-tight text-blue-950/70 dark:text-white">
                     Fitur
                 </p>
             </div>
-            <h2 class="font-display text-4xl sm:text-5xl lg:text-4xl font-semibold leading-none tracking-tighter text-blue-950 max-w-3xl dark:text-white">
+            <h2 data-reveal-text class="font-display text-4xl sm:text-5xl lg:text-4xl font-semibold leading-none tracking-tighter text-blue-950 max-w-3xl dark:text-white">
                 Di Garis Depan <br />
                 Pengelolaan Usaha Sekolah.
             </h2>
@@ -264,10 +267,10 @@
             <div class="lg:ml-[55%] max-w-xs flex items-start gap-3" data-animate="fitur-item">
                 <span class="mt-2.5 h-1.5 w-1.5 shrink-0 bg-slate-950 dark:bg-white blink-dot"></span>
                 <div>
-                    <h3 class="font-display text-2xl lg:text-3xl font-medium tracking-tighter text-blue-950  dark:text-white">
+                    <h3 data-reveal-text class="font-display text-2xl lg:text-3xl font-medium tracking-tighter text-blue-950  dark:text-white">
                         Pencatatan Transaksi
                     </h3>
-                    <p class="mt-3 text-sm lg:text-sm font-semibold leading-tight tracking-tight text-blue-950/70 dark:text-white">
+                    <p data-reveal-text class="mt-3 text-sm lg:text-sm font-semibold leading-tight tracking-tight text-blue-950/70 dark:text-white/70">
                         Setiap transaksi unit usaha tercatat otomatis dengan detail lengkap — waktu, nominal, dan kategori — sehingga arus kas selalu bisa dipantau secara real-time oleh admin unit maupun pusat.
                     </p>
                 </div>
@@ -276,10 +279,10 @@
             <div class="lg:ml-[18%] max-w-sm flex items-start gap-3" data-animate="fitur-item">
                 <span class="mt-2.5 h-1.5 w-1.5 shrink-0 bg-blue-950 dark:bg-white blink-dot"></span>
                 <div>
-                    <h3 class="font-display text-2xl lg:text-3xl font-medium tracking-tighter text-blue-950  dark:text-white">
+                    <h3 data-reveal-text class="font-display text-2xl lg:text-3xl font-medium tracking-tighter text-blue-950  dark:text-white">
                         Laporan Keuangan Konsolidasi
                     </h3>
-                    <p class="mt-3 text-sm lg:text-sm font-semibold leading-tight tracking-tight text-blue-950/70  dark:text-white">
+                    <p data-reveal-text class="mt-3 text-sm lg:text-sm font-semibold leading-tight tracking-tight text-blue-950/70  dark:text-white/70">
                         Gabungkan laporan dari seluruh unit usaha ke dalam satu tampilan ringkas. Admin pusat dapat memantau performa keuangan sekolah secara menyeluruh tanpa perlu merekap manual satu per satu.
                     </p>
                 </div>
@@ -288,10 +291,10 @@
             <div class="lg:ml-[42%] max-w-sm flex items-start gap-3" data-animate="fitur-item">
                 <span class="mt-2.5 h-1.5 w-1.5 shrink-0 bg-blue-950 blink-dot dark:bg-white"></span>
                 <div>
-                    <h3 class="font-display text-2xl lg:text-3xl font-medium tracking-tighter text-blue-950 dark:text-white">
+                    <h3 data-reveal-text class="font-display text-2xl lg:text-3xl font-medium tracking-tighter text-blue-950 dark:text-white">
                         Multi Admin &amp; Hak Akses
                     </h3>
-                    <p class="mt-3 text-sm lg:text-sm font-semibold leading-tight tracking-tight text-blue-950/70 dark:text-white">
+                    <p data-reveal-text class="mt-3 text-sm lg:text-sm font-semibold leading-tight tracking-tight text-blue-950/70 dark:text-white/70">
                         Setiap unit usaha bisa dikelola oleh lebih dari satu admin dengan tingkat akses yang dapat diatur, menjaga keamanan data sekaligus memudahkan pembagian tanggung jawab operasional.
                     </p>
                 </div>
@@ -300,10 +303,10 @@
             <div class="lg:ml-[8%] max-w-sm flex items-start gap-3" data-animate="fitur-item">
                 <span class="mt-2.5 h-1.5 w-1.5 shrink-0 bg-blue-950 dark:bg-white blink-dot"></span>
                 <div>
-                    <h3 class="font-display text-2xl lg:text-3xl font-medium tracking-tighter text-blue-950 dark:text-white">
+                    <h3 data-reveal-text class="font-display text-2xl lg:text-3xl font-medium tracking-tighter text-blue-950 dark:text-white">
                         Keamanan Data
                     </h3>
-                    <p class="mt-3 text-sm lg:text-sm font-semibold leading-tight tracking-tight text-blue-950/70 dark:text-white">
+                    <p data-reveal-text class="mt-3 text-sm lg:text-sm font-semibold leading-tight tracking-tight text-blue-950/70 dark:text-white/70">
                         Seluruh data transaksi dan laporan disimpan dengan enkripsi serta sistem cadangan berkala, memastikan informasi sekolah tetap aman dan mudah dipulihkan kapan pun diperlukan.
                     </p>
                 </div>
@@ -330,13 +333,13 @@
         <div class="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
 
             {{-- Heading kiri --}}
-            <h2 class="font-medium tracking-tighter leading-none self-start text-4xl lg:text-6xl font-bold text-white lg:max-w-sm">
+            <h2 data-reveal-text class="font-medium tracking-tighter leading-none self-start text-4xl lg:text-6xl font-bold text-white lg:max-w-sm">
                 Mulai Kelola Cerdas.
             </h2>
 
             {{-- Paragraf + tombol kanan --}}
             <div class="flex flex-col items-start gap-4 lg:items-start lg:max-w-sm">
-                <p class="text-white/80 text-left text-sm font-semibold tracking-tight leading-tight">
+                <p data-reveal-text class="text-white/80 text-left text-sm font-semibold tracking-tight leading-tight">
                     6 langkah untuk mulai mengelola unit usaha sekolah. Geser atau scroll untuk melihat tiap langkah.
                 </p>
                 <a            
@@ -514,7 +517,7 @@
 </section>
 
 {{-- ===================== ABOUT ===================== --}}
-<section class="relative bg-blue-950 dark:bg-slate-900 p-6 transition-colors duration-300 overflow-hidden">
+<section id="tentang" class="relative bg-blue-950 dark:bg-slate-900 p-6 transition-colors duration-300 overflow-hidden">
     <div class="flex flex-col lg:flex-row min-h-[600px] lg:min-h-screen my-30">
 
         {{-- Kiri: Gambar (60%) --}}
@@ -532,14 +535,14 @@
 
             {{-- Heading + deskripsi --}}
             <div>
-                <h2 class="font-display text-2xl lg:text-4xl font-medium text-white leading-tighter tracking-tighter">
+                <h2 data-reveal-text class="font-display text-2xl lg:text-4xl font-medium text-white leading-tighter tracking-tighter">
                     Built for Real-World Financial Systems
                 </h2>
             </div>
 
             {{-- Deskripsi + tombol --}}
             <div class="mt-12 lg:mt-0 flex flex-col">
-                <p class="text-white text-xs font-semibold leading-tight tracking-tight">
+                <p data-reveal-text class="text-white text-xs font-semibold leading-tight tracking-tight">
                     Platform ini memungkinkan institusi untuk mengelola aset digital dalam
                     lingkungan yang terstruktur dan patuh. Dari penerbitan aset hingga eksekusi,
                     setiap komponen dirancang untuk terintegrasi secara mulus dengan sistem
@@ -596,12 +599,12 @@
 
         {{-- Header: label kiri + heading besar kanan --}}
         <div class="grid grid-cols-1 lg:grid-cols-[440px_1fr] gap-4 lg:gap-10 items-start">
-            <span class="text-xs font-semibold uppercase tracking-tight text-blue-900 dark:text-slate-400">
+            <span data-reveal-text class="text-xs font-semibold uppercase tracking-tight text-blue-900 dark:text-slate-400">
                 FAQ
             </span>
             <div class="flex justicy-start gap-3">
                 <span class="blink-dot mt-2.5 h-2 w-2 shrink-0 bg-blue-950"></span>
-                <h2 class="font-display text-3xl lg:text-5xl font-medium leading-tighter tracking-tighter text-blue-900 dark:text-white">
+                <h2 data-reveal-text class="font-display text-3xl lg:text-5xl font-medium leading-tighter tracking-tighter text-blue-900 dark:text-white">
                     Ada pertanyaan? Cek hal sering ditanyakan.
                 </h2>
             </div>
@@ -609,7 +612,7 @@
 
         {{-- Bawah: label kiri + accordion kanan --}}
         <div class="grid grid-cols-1 lg:grid-cols-[440px_1fr] gap-4 lg:gap-10 items-start pt-8">
-            <span class="text-sm font-semibold pt-7 text-blue-900 dark:text-white">
+            <span data-reveal-text class="text-sm font-semibold pt-7 text-blue-900 dark:text-white">
                 Pertanyaan Umum
             </span>
 
@@ -620,7 +623,7 @@
                         type="button"
                         class="faq-trigger group flex w-full items-center justify-between py-6 text-left"
                     >
-                        <span class="text-base lg:text-base tracking-tighter font-semibold text-blue-900 dark:text-white">
+                        <span data-reveal-text class="text-base lg:text-base tracking-tighter font-semibold text-blue-900 dark:text-white">
                             Bagaimana cara mendaftarkan unit usaha baru?
                         </span>
 
@@ -646,7 +649,7 @@
                         type="button"
                         class="faq-trigger group flex w-full items-center justify-between py-6 text-left"
                     >
-                        <span class="text-base lg:text-base tracking-tighter font-semibold text-blue-900 dark:text-white">
+                        <span data-reveal-text class="text-base lg:text-base tracking-tighter font-semibold text-blue-900 dark:text-white">
                             Apakah laporan keuangan bisa digabung antar unit usaha?
                         </span>
 
@@ -672,7 +675,7 @@
                         type="button"
                         class="faq-trigger group flex w-full items-center justify-between py-6 text-left"
                     >
-                        <span class="text-base lg:text-base tracking-tighter font-semibold text-blue-900 dark:text-white">
+                        <span data-reveal-text class="text-base lg:text-base tracking-tighter font-semibold text-blue-900 dark:text-white">
                             Berapa jumlah admin yang bisa mengakses satu unit usaha?
                         </span>
 
@@ -698,7 +701,7 @@
                         type="button"
                         class="faq-trigger group flex w-full items-center justify-between py-6 text-left"
                     >
-                        <span class="text-base lg:text-base tracking-tighter font-semibold text-blue-900 dark:text-white">
+                        <span data-reveal-text class="text-base lg:text-base tracking-tighter font-semibold text-blue-900 dark:text-white">
                             Apakah data transaksi tersimpan aman?
                         </span>
 
