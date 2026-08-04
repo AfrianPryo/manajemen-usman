@@ -2,12 +2,16 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class AuthLog extends Model
 {
-    const UPDATED_AT = null;
+    use HasFactory;
+
+    // 🟢 Matikan penangan updated_at karena migrasi hanya menyediakan created_at
+    public const UPDATED_AT = null;
 
     protected $fillable = [
         'user_id',
@@ -18,20 +22,26 @@ class AuthLog extends Model
         'user_agent',
     ];
 
+    /**
+     * Relasi ke model User.
+     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
-    public static function log(string $event, ?int $userId = null, ?string $identifier = null, ?string $description = null): void
+    /**
+     * Helper statis untuk menyimpan log aktivitas autentikasi.
+     */
+    public static function log(string $event, ?int $userId = null, ?string $identifier = null, ?string $description = null): self
     {
-        static::create([
-            'event' => $event,
-            'user_id' => $userId,
-            'identifier' => $identifier,
+        return static::create([
+            'event'       => $event,
+            'user_id'     => $userId,
+            'identifier'  => $identifier,
             'description' => $description,
-            'ip_address' => request()->ip(),
-            'user_agent' => request()->userAgent(),
+            'ip_address'  => request()->ip(),
+            'user_agent'  => request()->userAgent(),
         ]);
     }
 }

@@ -15,6 +15,7 @@ class User extends Authenticatable
 
     protected $fillable = [
         'name',
+        'username',
         'email',
         'password',
         'unit_id',
@@ -26,6 +27,7 @@ class User extends Authenticatable
         'must_change_password',
         'last_login_at',
         'last_login_ip',
+        'current_session_id', // 🟢 Ditambahkan untuk mendukung fitur Single Active Session
     ];
 
     protected $hidden = [
@@ -34,11 +36,11 @@ class User extends Authenticatable
     ];
 
     protected $casts = [
-        'email_verified_at' => 'datetime',
-        'last_login_at' => 'datetime',
-        'is_active' => 'boolean',
+        'email_verified_at'    => 'datetime',
+        'last_login_at'        => 'datetime',
+        'is_active'            => 'boolean',
         'must_change_password' => 'boolean',
-        'password' => 'hashed',
+        'password'             => 'hashed',
     ];
 
     public function unit(): BelongsTo

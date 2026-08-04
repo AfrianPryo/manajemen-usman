@@ -11,12 +11,14 @@ class MasterAdminSeeder extends Seeder
     public function run(): void
     {
         $masterAdmin = User::updateOrCreate(
-            ['email' => 'admin@sekolah.sch.id'],
+            ['username' => 'admin.master'], // 🟢 Disesuaikan menggunakan username login
             [
-                'name' => 'Master Admin',
-                'password' => Hash::make('Password123!'),
-                'is_active' => true,
-                'must_change_password' => true,
+                'name'                 => 'Master Admin',
+                'email'                => 'admin@sekolah.sch.id',
+                'password'             => Hash::make('Password123!'),
+                'unit_id'              => null,
+                'is_active'            => true,
+                'must_change_password' => false, // Master admin awal tidak perlu force pass change
             ]
         );
 

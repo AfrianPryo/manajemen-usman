@@ -14,11 +14,31 @@ return new class extends Migration
         Schema::create('users', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->string('email')->unique();
+            $table->string('username')->unique();
+            $table->string('email')->unique()->nullable();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
+            
+            // Relasi ke Unit Usaha (Foreign Key diisi sederhana agar tidak memicu error urutan eksekusi)
+            $table->unsignedBigInteger('unit_id')->nullable();
+            
+            // Informasi Tambahan Personel
+            $table->string('nip')->nullable()->unique();
+            $table->string('phone')->nullable();
+            $table->string('employee_status')->nullable();
+            $table->string('profile_photo_path', 2048)->nullable();
+            
+            // Status Akun & Keamanan
+            $table->boolean('is_active')->default(true);
+            $table->boolean('must_change_password')->default(true);
+            
+            // Logging
+            $table->timestamp('last_login_at')->nullable();
+            $table->string('last_login_ip', 45)->nullable();
+            
             $table->rememberToken();
             $table->timestamps();
+            $table->softDeletes();
         });
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {
@@ -42,8 +62,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('users');
-        Schema::dropIfExists('password_reset_tokens');
         Schema::dropIfExists('sessions');
+        Schema::dropIfExists('password_reset_tokens');
+        Schema::dropIfExists('users');
     }
 };

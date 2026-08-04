@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Unit extends Model
 {
@@ -19,18 +20,27 @@ class Unit extends Model
         'is_active' => 'boolean',
     ];
 
+    /**
+     * Relasi ke seluruh User yang terikat pada unit ini.
+     */
     public function users(): HasMany
     {
         return $this->hasMany(User::class);
     }
 
-    public function admin(): HasMany
+    /**
+     * Relasi khusus ke 1 Admin Unit yang aktif pada unit ini.
+     */
+    public function admin(): HasOne
     {
-        return $this->hasMany(User::class)
+        return $this->hasOne(User::class)
                     ->where('is_active', true)
                     ->role('unit-admin');
     }
 
+    /**
+     * Scope untuk menyaring unit yang aktif.
+     */
     public function scopeActive($query)
     {
         return $query->where('is_active', true);
