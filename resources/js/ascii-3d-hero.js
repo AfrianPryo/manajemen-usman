@@ -1,12 +1,10 @@
 /**
- * ascii-3d-hero.js (Optimized)
+ * ascii-3d-hero.js (Fixed & Optimized)
  * -----------------------------------------------------------------------
- * Merender model .glb/.gltf sebagai ASCII art 3D.
- * Optimasi tambahan:
- *   - Mencegah Layout Thrashing (kalkulasi posisi kursor di-throttle ke frame).
- *   - Idle Frame Skipping (tidak merender ulang AsciiEffect jika model 
- *     sedang diam/tidak berputar, sangat menghemat CPU/Baterai).
- *   - High-performance context untuk WebGL.
+ * FIXED:
+ *   - Bug baseQuat dipanggil sebelum deklarasi (ReferenceError).
+ *   - IndexSizeError dari AsciiEffect saat container display:none.
+ *   - Render loop tetap jalan di container 0-dimensi.
  * -----------------------------------------------------------------------
  */
 
@@ -37,6 +35,13 @@ export function initAsciiHero({
         return { destroy: () => {} };
     }
 
+    // 🔴 FIX #2: Skip inisialisasi jika container disembunyikan (mobile)
+    // Karena class Tailwind "hidden lg:block" membuat width = 0 di mobile
+    if (container.clientWidth === 0 || container.clientHeight === 0) {
+        console.info("[ascii-3d-hero] container hidden (mobile), skip inisialisasi");
+        return { destroy: () => {} };
+    }
+
     const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (prefersReducedMotion) {
         autoRotate = false;
@@ -59,7 +64,6 @@ export function initAsciiHero({
     fill.position.set(-4, -2, -3);
     scene.add(ambient, key, fill);
 
-    // Optimasi: Memberitahu browser untuk memprioritaskan performa
     const renderer = new THREE.WebGLRenderer({ 
         alpha: true, 
         antialias: false,
@@ -106,9 +110,12 @@ export function initAsciiHero({
     const pivot = new THREE.Group();
     scene.add(pivot);
 
-    let basePosition = new THREE.Vector3();
+    // 🔴 FIX #1: Deklarasikan baseQuat DI SINI (sebelum dipakai)
+    const baseQuat = new THREE.Quaternion();
+    const basePosition = new THREE.Vector3();
+
     const loader = new GLTFLoader();
-    let forceRender = true; // Trigger render saat model baru dimuat
+    let forceRender = true;
 
     loader.load(
         modelUrl,
@@ -129,27 +136,26 @@ export function initAsciiHero({
             if (frontOffsetX !== 0 || frontOffsetY !== 0 || frontOffsetZ !== 0) {
                 pivot.rotation.set(frontOffsetX, frontOffsetY, frontOffsetZ, "XYZ");
             }
+            
+            // Sekarang aman karena baseQuat sudah dideklarasikan di atas
             baseQuat.copy(pivot.quaternion);
 
             pivot.add(model);
-            forceRender = true; // Paksa render ulang agar model tampil
+            forceRender = true;
         },
         undefined,
         (err) => console.error("[ascii-3d-hero] gagal load model:", err)
     );
 
     // =====================================================
-    // Tilt Parallax (Optimized)
+    // Tilt Parallax
     // =====================================================
     const mouseNdc = new THREE.Vector2(0, 0);
-    const baseQuat = new THREE.Quaternion();
     const tiltQuat = new THREE.Quaternion();
     const targetQuat = new THREE.Quaternion();
     const euler = new THREE.Euler();
     const targetPos = new THREE.Vector3();
 
-    // Optimasi: Simpan posisi kursor sementara. 
-    // Jangan lakukan getBoundingClientRect() di sini (mencegah Layout Thrashing).
     let mouseX = 0, mouseY = 0;
     let hasNewMousePos = false;
 
@@ -161,8 +167,8 @@ export function initAsciiHero({
 
     const onMouseLeave = () => {
         mouseNdc.set(0, 0);
-        hasNewMousePos = false; // Batalkan perhitungan posisi baru
-        forceRender = true;     // Pastikan render dipanggil agar kembali ke titik (0,0)
+        hasNewMousePos = false;
+        forceRender = true;
     };
 
     if (tiltCursor) {
@@ -184,15 +190,14 @@ export function initAsciiHero({
         targetQuat.copy(tiltQuat).multiply(baseQuat);
 
         let isMoving = false;
-        const EPSILON = 0.0005; // Ambang batas berhenti
+        const EPSILON = 0.0005;
 
-        // Kalkulasi jarak putaran saat ini dengan target
         const angleDiff = pivot.quaternion.angleTo(targetQuat);
         if (angleDiff > EPSILON) {
             pivot.quaternion.slerp(targetQuat, tiltDamping);
             isMoving = true;
         } else {
-            pivot.quaternion.copy(targetQuat); // Snap jika sudah sangat dekat
+            pivot.quaternion.copy(targetQuat);
         }
 
         if (parallaxAmount > 0) {
@@ -210,15 +215,19 @@ export function initAsciiHero({
             }
         }
 
-        return isMoving; // True jika masih proses interpolasi bergerak
+        return isMoving;
     };
 
     // =====================================================
-    // Resize
+    // Resize (dengan proteksi width/height 0)
     // =====================================================
     const resize = () => {
-        const w = container.clientWidth || 1;
-        const h = container.clientHeight || 1;
+        const w = container.clientWidth;
+        const h = container.clientHeight;
+        
+        // 🔴 FIX #2: Skip jika container disembunyikan
+        if (w === 0 || h === 0) return;
+        
         camera.aspect = w / h;
         camera.updateProjectionMatrix();
         effect.setSize(w, h);
@@ -230,7 +239,7 @@ export function initAsciiHero({
     resize();
 
     // =====================================================
-    // Render Loop
+    // Render Loop (dengan proteksi)
     // =====================================================
     let isVisible = false;
     let rafId = null;
@@ -240,14 +249,18 @@ export function initAsciiHero({
         rafId = requestAnimationFrame(renderFrame);
         const dt = clock.getDelta();
         let needsRender = forceRender;
-        forceRender = false; // Reset setelah dipicu
+        forceRender = false;
+
+        // 🔴 FIX #3: Skip render jika container tidak terlihat (display:none)
+        if (container.clientWidth === 0 || container.clientHeight === 0) {
+            return;
+        }
 
         if (model && autoRotate) {
             pivot.rotation.y += rotateSpeed * dt;
-            needsRender = true; // Selalu butuh render kalau berputar otomatis
+            needsRender = true;
         }
 
-        // Kalkulasi posisi mouse yang sesungguhnya di dalam frame (efisien)
         if (hasNewMousePos) {
             if (cursorSource === "container") {
                 const rect = container.getBoundingClientRect();
@@ -266,16 +279,18 @@ export function initAsciiHero({
             if (moving) needsRender = true;
         }
 
-        // Optimasi Terbesar: Hanya eksekusi render jika ada yang berubah
         if (needsRender) {
-            effect.render(scene, camera);
+            // Double-check sebelum render (mencegah IndexSizeError)
+            if (container.clientWidth > 0 && container.clientHeight > 0) {
+                effect.render(scene, camera);
+            }
         }
     };
 
     const startLoop = () => {
         if (rafId === null) {
             clock.getDelta(); 
-            forceRender = true; // Paksa render saat baru terlihat di layar
+            forceRender = true;
             renderFrame();
         }
     };

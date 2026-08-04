@@ -37,6 +37,7 @@ function initThemeToggle() {
 }
 
 function initNavIndicator() {
+    const navBar = document.querySelector("nav");
     const navContainer = document.getElementById("nav-pill");
     const indicator = document.getElementById("nav-indicator");
 
@@ -73,34 +74,56 @@ function initNavIndicator() {
     });
 
     // =====================================
-    // Sections
+    // Sections (urut sesuai urutan link di navbar,
+    // yang otomatis sama dengan urutan DOM section)
     // =====================================
 
     const sections = navLinks
         .map((link) => {
             const href = link.getAttribute("href");
-            // Pastikan href ada, dimulai dari #, dan panjangnya lebih dari 1 karakter (bukan hanya "#")
             if (!href || !href.startsWith("#") || href.length === 1) return null;
-            
+
             try {
-                return document.querySelector(href);
+                const el = document.querySelector(href);
+                return el ? { link, el } : null;
             } catch (e) {
-                return null; // Mencegah crash jika ID tidak valid secara querySelector
+                return null;
             }
         })
         .filter(Boolean);
 
-    let activeLink = navLinks[0];
+    if (!sections.length) return;
+
+    let activeLink = sections[0].link;
 
     // =====================================
-    // Indicator (langsung pindah)
+    // Indicator — pindah dengan efek BLINK
+    // (fade out cepat -> snap ke posisi baru -> fade in cepat)
     // =====================================
 
-    const moveIndicatorTo = (link) => {
+    const blinkTween = { current: null };
+
+    const moveIndicatorTo = (link, animate = true) => {
         if (!link) return;
 
-        indicator.style.transform = `translateX(${link.offsetLeft}px)`;
-        indicator.style.width = `${link.offsetWidth}px`;
+        const x = link.offsetLeft;
+        const width = link.offsetWidth;
+
+        if (blinkTween.current) {
+            blinkTween.current.kill();
+            blinkTween.current = null;
+        }
+
+        if (animate) {
+            blinkTween.current = gsap
+                .timeline({ overwrite: "auto" })
+                .to(indicator, { opacity: 0, duration: 0.09, ease: "power1.in" })
+                .set(indicator, { x, width })
+                .to(indicator, { opacity: 1, duration: 0.09, ease: "power1.out" });
+        } else {
+            // Langsung snap tanpa animasi apapun (dipakai untuk initial state & resize)
+            gsap.set(indicator, { x, width, opacity: 1 });
+        }
     };
 
     // =====================================
@@ -115,14 +138,12 @@ function initNavIndicator() {
                     "dark:text-blue-900",
                     "font-semibold"
                 );
-
                 span.classList.add("text-white");
             });
         });
 
         link.querySelectorAll(".nav-track span").forEach((span) => {
             span.classList.remove("text-white");
-
             span.classList.add(
                 "text-blue-950",
                 "dark:text-blue-900",
@@ -131,73 +152,128 @@ function initNavIndicator() {
         });
     };
 
+    const setActive = (link, animate = true) => {
+        if (!link || link === activeLink) return;
+
+        activeLink = link;
+        moveIndicatorTo(link, animate);
+        setActiveStyles(link);
+        navLinks.forEach((l) => l.classList.toggle("is-active", l === link));
+    };
+
     // =====================================
-    // Initial
+    // Scrollspy — cari section aktif berdasarkan reference line
     // =====================================
 
-    requestAnimationFrame(() => {
-        moveIndicatorTo(activeLink);
-        setActiveStyles(activeLink);
-    });
+    const getReferenceLine = () => {
+        const navHeight = navBar?.offsetHeight || 64;
+        return navHeight + window.innerHeight * 0.35;
+    };
 
-    ScrollTrigger.refresh();
+    const updateActiveSection = () => {
+        // Paling atas halaman -> selalu Home
+        if (window.scrollY < 10) {
+            setActive(sections[0].link);
+            return;
+        }
 
-    sections.forEach((section) => {
+        // Sudah mentok bawah -> paksa section terakhir aktif.
+        const atBottom =
+            Math.ceil(window.innerHeight + window.scrollY) >=
+            document.documentElement.scrollHeight - 2;
 
-        ScrollTrigger.create({
-            trigger: section,
-            start: "top center",
-            end: "bottom center",
+        if (atBottom) {
+            setActive(sections[sections.length - 1].link);
+            return;
+        }
 
-            onEnter: () => {
-                const link = navLinks.find(
-                    l => l.getAttribute("href") === `#${section.id}`
-                );
+        const refLine = getReferenceLine();
+        let current = sections[0].link;
 
-                if (!link) return;
-
-                activeLink = link;
-                moveIndicatorTo(activeLink);
-                setActiveStyles(activeLink);
-            },
-
-            onEnterBack: () => {
-                const link = navLinks.find(
-                    l => l.getAttribute("href") === `#${section.id}`
-                );
-
-                if (!link) return;
-
-                activeLink = link;
-                moveIndicatorTo(activeLink);
-                setActiveStyles(activeLink);
+        for (const { link, el } of sections) {
+            const top = el.getBoundingClientRect().top;
+            if (top <= refLine) {
+                current = link;
+            } else {
+                break;
             }
+        }
 
-        });
+        setActive(current);
+    };
 
+    // Throttle via requestAnimationFrame biar smooth & hemat performa
+    let ticking = false;
+    window.addEventListener(
+        "scroll",
+        () => {
+            if (!ticking) {
+                requestAnimationFrame(() => {
+                    updateActiveSection();
+                    ticking = false;
+                });
+                ticking = true;
+            }
+        },
+        { passive: true }
+    );
+
+    // Resize: posisi/lebar link berubah + tinggi section bisa berubah
+    window.addEventListener("resize", () => {
+        moveIndicatorTo(activeLink, false);
+        updateActiveSection();
     });
 
     // =====================================
-    // Resize
+    // Initial state — DUA TAHAP untuk menghindari bug
+    // indikator "meluber" saat refresh di section bawah (mis. FAQ):
+    //
+    // 1) Snap cepat begitu DOM siap, biar tidak ada indikator kosong/loncat.
+    // 2) Setelah font web & seluruh halaman benar-benar termuat,
+    //    ukur ulang & snap lagi — karena offsetLeft/offsetWidth link
+    //    bisa salah dihitung kalau diukur sebelum font asli ter-swap
+    //    (masih pakai font fallback yang lebar/pendeknya beda).
     // =====================================
 
-    window.addEventListener("resize", () => {
-        moveIndicatorTo(activeLink);
+    const syncIndicatorNow = () => {
+        updateActiveSection();
+        moveIndicatorTo(activeLink, false);
+        setActiveStyles(activeLink);
+    };
+
+    // Tahap 1: snap secepatnya
+    requestAnimationFrame(syncIndicatorNow);
+
+    // Tahap 2: snap ulang setelah font & load event selesai
+    const fontsReady = document.fonts ? document.fonts.ready : Promise.resolve();
+    const pageLoaded = new Promise((resolve) => {
+        if (document.readyState === "complete") {
+            resolve();
+        } else {
+            window.addEventListener("load", resolve, { once: true });
+        }
+    });
+
+    Promise.all([fontsReady, pageLoaded]).then(() => {
+        requestAnimationFrame(syncIndicatorNow);
     });
 }
 
-
 function initLoginButtonHover() {
-    const buttons = document.querySelectorAll('a[href="/login"]');
+    // Mencari semua elemen teks login
+    const loginTexts = document.querySelectorAll(".login-text");
 
-    if (!buttons.length) return;
+    if (!loginTexts.length) return;
 
-    buttons.forEach((button) => {
-        const textEl = button.querySelector(".login-text");
-        if (!textEl) return;
+    loginTexts.forEach((textEl) => {
+        // Mendapatkan elemen induk 'a' terdekat dari .login-text
+        const button = textEl.closest("a");
+        if (!button) return;
 
         const label = textEl.dataset.text || textEl.textContent.trim();
+        if (!label) return;
 
+        // Reset konten HTML agar tidak terjadi duplikasi saat re-init
         textEl.innerHTML = "";
         const tracks = [];
 
@@ -222,23 +298,21 @@ function initLoginButtonHover() {
         const tl = gsap.timeline({
             paused: true,
             defaults: {
-                duration: 0.22,
+                duration: 0.3,
                 ease: "expo.out",
             },
         });
 
-        // yPercent relatif terhadap tinggi track sendiri (200%),
-        // jadi -50% = tepat 1x tinggi mask, tanpa perlu ukur pixel sama sekali
         tl.to(tracks, {
             yPercent: -50,
             stagger: 0.01,
         });
 
+        // Menambahkan listener mouseenter & mouseleave ke tombol induk (a)
         button.addEventListener("mouseenter", () => tl.play());
         button.addEventListener("mouseleave", () => tl.reverse());
     });
 }
-
 document.fonts.ready.then(() => {
     initLoginButtonHover();
 });
@@ -425,6 +499,7 @@ function initPixelDivider() {
         });
     });
 }
+
 function initHorizontalScroll() {
     const wrapper = document.getElementById("horizontal-wrapper");
     const track = document.getElementById("horizontal-track");

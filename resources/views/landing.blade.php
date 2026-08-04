@@ -4,6 +4,7 @@
 
 @section('content')
 
+
 {{-- ===================== NAVBAR ===================== --}}
 <nav class="fixed inset-x-0 top-0 z-50 transition-colors duration-300">
     <div class="relative max-w-7xl mx-auto px-6 lg:px-6 h-16 flex items-center justify-between">
@@ -26,14 +27,6 @@
                     </span>
                 </span>
             </a>
-            <a href="#tentang" class="nav-link nav-fade-item relative z-10 px-4 py-1.5">
-                <span class="relative block h-4 overflow-hidden">
-                    <span class="nav-track flex flex-col will-change-transform">
-                        <span class="leading-4 text-[11px] font-semibold tracking-tight">Tentang</span>
-                        <span class="leading-4 text-[11px] font-semibold tracking-tight">Tentang</span>
-                    </span>
-                </span>
-            </a>
             <a href="#cara-kerja" class="nav-link nav-fade-item relative z-10 px-4 py-1.5">
                 <span class="relative block h-4 overflow-hidden">
                     <span class="nav-track flex flex-col will-change-transform">
@@ -42,7 +35,14 @@
                     </span>
                 </span>
             </a>
-
+            <a href="#tentang" class="nav-link nav-fade-item relative z-10 px-4 py-1.5">
+                <span class="relative block h-4 overflow-hidden">
+                    <span class="nav-track flex flex-col will-change-transform">
+                        <span class="leading-4 text-[11px] font-semibold tracking-tight">Tentang</span>
+                        <span class="leading-4 text-[11px] font-semibold tracking-tight">Tentang</span>
+                    </span>
+                </span>
+            </a>
             <a href="#faq" class="nav-link nav-fade-item relative z-10 px-4 py-1.5">
                 <span class="relative block h-4 overflow-hidden">
                     <span class="nav-track flex flex-col will-change-transform">
@@ -94,10 +94,7 @@
             </button>
 
             {{-- CTA --}}
-            <a
-                href="/login"
-                class="group inline-flex items-center gap-2 rounded-[1px] bg-white pt-[3px] pb-[3px] pl-2 pr-1 text-[11px] font-medium text-blue-900"
-            >
+            <a href="{{ route('login') }}" class="group inline-flex items-center gap-2 rounded-[1px] bg-white pt-[3px] pb-[3px] pl-2 pr-1 text-[11px] font-medium text-blue-900">
                 <span
                     class="login-text relative inline-flex items-center overflow-hidden text-[12px] font-[450] tracking-tight"
                     data-text="Login Admin"

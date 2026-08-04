@@ -26,7 +26,7 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @stack('styles')
 </head>
-<body class="bg-slate-50 dark:bg-slate-950 font-sans text-slate-700 dark:text-slate-300 antialiased transition-colors duration-300">
+<body data-page="landing" class="bg-slate-50 dark:bg-slate-950 font-sans text-slate-700 dark:text-slate-300 antialiased transition-colors duration-300">
 
     @yield('content')
 
