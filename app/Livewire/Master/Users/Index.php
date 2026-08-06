@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Livewire\Master\Users;
 
 use App\Models\Unit;
@@ -7,144 +6,177 @@ use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Layout;
-use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithPagination;
 
 #[Layout('components.layouts.app')]
-#[Title('Manajemen Admin')]
 class Index extends Component
 {
     use WithPagination;
 
-    // Filter & Search
     public string $search = '';
-
-    // State Modal & Form Input
     public bool $showCreateModal = false;
 
+    // Form Inputs
     public string $name = '';
-    public string $employee_status = 'tetap'; // tetap, part_time, magang
+    public string $employee_status = 'tetap';
     public string $nip = '';
+    public string $role = 'unit-admin';
     public ?int $unit_id = null;
-    public string $role = 'unit-admin'; // unit-admin, master-admin
 
-    // Store Kredensial Sementara setelah berhasil buat user
+    // Alert / Modal Kredensial (Buat Akun / Reset Password)
     public ?array $createdCredentials = null;
-
-    public function updatingSearch(): void
-    {
-        $this->resetPage();
-    }
 
     public function openCreateModal(): void
     {
-        $this->resetForm();
+        $this->reset(['name', 'employee_status', 'nip', 'role', 'unit_id']);
+        $this->resetValidation();
         $this->showCreateModal = true;
     }
 
     public function closeCreateModal(): void
     {
         $this->showCreateModal = false;
-        $this->resetForm();
     }
 
-    public function resetForm(): void
+    public function updatingSearch(): void
     {
-        $this->reset(['name', 'employee_status', 'nip', 'unit_id', 'role']);
-        $this->resetValidation();
+        $this->resetPage();
     }
 
     public function save(): void
     {
-        // 1. Validasi
         $rules = [
-            'name'            => 'required|string|max:255',
+            'name' => 'required|string|max:100',
             'employee_status' => 'required|in:tetap,part_time,magang',
-            'role'            => 'required|in:master-admin,unit-admin',
-            'unit_id'         => $this->role === 'unit-admin' ? 'required|exists:units,id' : 'nullable',
+            'role' => 'required|in:master-admin,unit-admin',
         ];
 
         if ($this->employee_status === 'tetap') {
             $rules['nip'] = 'required|numeric|digits:18|unique:users,nip';
-        } else {
-            $rules['nip'] = 'nullable|numeric|digits:18|unique:users,nip';
+        }
+
+        if ($this->role === 'unit-admin') {
+            $rules['unit_id'] = 'required|exists:units,id';
         }
 
         $this->validate($rules);
 
-        // 2. Auto-generate Username & Password
-        $username = $this->generateUniqueUsername();
-        $plainPassword = 'Sims#' . rand(1000, 9999);
+        // Auto-generate Username & Password
+        $username = Str::slug($this->name, '.') . '.' . rand(100, 999);
+        $plainPassword = Str::random(8);
 
-        // 3. Simpan Data User
         $user = User::create([
-            'name'                 => $this->name,
-            'employee_status'      => $this->employee_status,
-            'nip'                  => $this->employee_status === 'tetap' ? $this->nip : null,
-            'username'             => $username,
-            'unit_id'              => $this->role === 'master-admin' ? null : $this->unit_id,
-            'password'             => Hash::make($plainPassword),
+            'name' => $this->name,
+            'username' => $username,
+            'password' => Hash::make($plainPassword),
+            'employee_status' => $this->employee_status,
+            'nip' => $this->employee_status === 'tetap' ? $this->nip : null,
+            'unit_id' => $this->role === 'unit-admin' ? $this->unit_id : null,
+            'is_active' => true,
             'must_change_password' => true,
-            'is_active'            => true,
         ]);
 
-        $user->assignRole($this->role);
+        if (method_exists($user, 'assignRole')) {
+            $user->assignRole($this->role);
+        }
 
-        // 4. Kredensial untuk Alert Sukses
         $this->createdCredentials = [
-            'name'     => $user->name,
-            'username' => $username,
+            'title' => '🎉 Akun Admin Berhasil Dibuat!',
+            'name' => $user->name,
+            'username' => $user->username,
             'password' => $plainPassword,
-            'status'   => ucfirst(str_replace('_', ' ', $user->employee_status)),
         ];
 
-        $this->showCreateModal = false;
-        $this->resetForm();
+        $this->closeCreateModal();
     }
 
-    private function generateUniqueUsername(): string
+    /**
+     * Mengubah Status Aktif / Nonaktif User
+     */
+    public function toggleUserStatus($userId): void
     {
-        // Pegawai tetap: Gunakan NIP murni angka
-        if ($this->employee_status === 'tetap' && !empty($this->nip)) {
-            return preg_replace('/[^0-9]/', '', $this->nip);
+        if ((int) $userId === (int) auth()->id()) {
+            return;
         }
 
-        // Non-NIP: Slug nama + urutan jika terdapat duplikasi
-        $baseSlug = Str::slug(Str::words($this->name, 2, ''), '.');
-        $username = $baseSlug ?: 'user';
-        $counter = 1;
-
-        while (User::where('username', $username)->exists()) {
-            $username = $baseSlug . $counter;
-            $counter++;
-        }
-
-        return $username;
+        $user = User::findOrFail($userId);
+        $user->is_active = !$user->is_active;
+        $user->save();
     }
 
-    public function toggleUserStatus(int $userId): void
+    /**
+     * Reset Password User ke Password Acak Baru
+     */
+    public function resetPassword($userId): void
     {
         $user = User::findOrFail($userId);
-        $user->update(['is_active' => !$user->is_active]);
+        $newPassword = Str::random(8);
+
+        $user->password = Hash::make($newPassword);
+        $user->must_change_password = true; // Wajibkan ganti password saat login
+        $user->save();
+
+        $this->createdCredentials = [
+            'title' => '🔑 Password Berhasil Direset!',
+            'name' => $user->name,
+            'username' => $user->username,
+            'password' => $newPassword,
+        ];
+    }
+
+    /**
+     * Menghapus akun admin secara permanen (Hanya jika status Nonaktif).
+     */
+    public function deleteUser(int $id): void
+    {
+        // Proteksi 1: Cegah menghapus akun sendiri
+        if ($id === auth()->id()) {
+            session()->flash('error', 'Anda tidak dapat menghapus akun Anda sendiri.');
+            return;
+        }
+
+        $user = User::withTrashed()->findOrFail($id);
+
+        // Proteksi 2: Cegah menghapus akun yang masih AKTIF
+        if ($user->is_active) {
+            session()->flash('error', 'Akun admin hanya dapat dihapus jika statusnya NONAKTIF. Silakan nonaktifkan akun terlebih dahulu.');
+            return;
+        }
+
+        // Hapus permanen
+        if (method_exists($user, 'forceDelete')) {
+            $user->forceDelete();
+        } else {
+            $user->delete();
+        }
+
+        session()->flash('message', 'Akun admin berhasil dihapus secara permanen.');
     }
 
     public function render()
     {
-        $users = User::with(['unit', 'roles'])
-            ->when($this->search, function ($q) {
-                $q->where(function ($query) {
-                    $query->where('name', 'like', "%{$this->search}%")
-                        ->orWhere('username', 'like', "%{$this->search}%")
-                        ->orWhere('nip', 'like', "%{$this->search}%");
-                });
+        $users = User::query()
+            ->with(['unit', 'roles'])
+            ->when($this->search, function ($query) {
+                $query->where('name', 'like', '%' . $this->search . '%')
+                    ->orWhere('username', 'like', '%' . $this->search . '%')
+                    ->orWhere('nip', 'like', '%' . $this->search . '%');
             })
             ->latest()
             ->paginate(10);
 
+        $units = Unit::all();
+
         return view('livewire.master.users.index', [
             'users' => $users,
-            'units' => Unit::where('is_active', true)->orderBy('name')->get(),
+            'units' => $units,
+            'totalUsers' => User::count(),
+            'activeUsers' => User::where('is_active', true)->count(),
+            'inactiveUsers' => User::where('is_active', false)->count(),
+            'totalUnits' => Unit::count(),
+            'activeUnits' => Unit::where('is_active', true)->count(),     // <-- Tambahkan ini
+            'inactiveUnits' => Unit::where('is_active', false)->count(), // <-- Tambahkan ini
         ]);
     }
 }

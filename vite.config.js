@@ -6,7 +6,11 @@ import tailwindcss from '@tailwindcss/vite';
 export default defineConfig({
     plugins: [
         laravel({
-            input: ['resources/css/app.css', 'resources/js/app.js'],
+            input: [
+                'resources/css/app.css',
+                'resources/js/app.js',
+                'resources/js/ascii-3d-hero.js', // 👈 Ditambahkan agar dikenali oleh Vite & {{ Vite::asset(...) }}
+            ],
             refresh: true,
             fonts: [
                 bunny('Instrument Sans', {

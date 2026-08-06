@@ -739,7 +739,7 @@ function initScrollTextReveal() {
             const tl = gsap.timeline({
                 scrollTrigger: {
                     trigger: el,
-                    start: "top 57%", // Sedikit dinaikkan dari 50% agar lebih natural
+                    start: "top 70%", // Sedikit dinaikkan dari 50% agar lebih natural
                     toggleActions: "play none none reverse", 
                     invalidateOnRefresh: true,
                 },
@@ -790,34 +790,47 @@ export function initLandingAnimations() {
     initLoginButtonHover();
     initNavFade();
     initHorizontalScroll();
-    initFaqAccordion()
+    initFaqAccordion();
     initPixelDivider();
     initScrollTextReveal(); 
 
     ScrollTrigger.refresh();
-    
-    // ---------- Hero: fade-in & slide-up ----------
+}
+
+// ===========================================================
+// Animasi Hero (Dipanggil otomatis oleh loader.js)
+// ===========================================================
+export function playHeroAnimations() {
+    gsap.set("#main-content", { autoAlpha: 1 });
     const heroText = document.querySelector('[data-animate="hero-text"]');
     const heroVisual = document.querySelector('[data-animate="hero-visual"]');
 
     if (heroText) {
-        gsap.from(heroText.children, {
-            opacity: 0,
-            y: 30,
-            duration: 0.8,
-            ease: "power2.out",
-            stagger: 0.12,
-        });
+        gsap.fromTo(
+            heroText.children,
+            { opacity: 0, y: 30 },
+            {
+                opacity: 1,
+                y: 0,
+                duration: 0.8,
+                ease: "power2.out",
+                stagger: 0.12,
+            }
+        );
     }
 
     if (heroVisual) {
-        gsap.from(heroVisual, {
-            opacity: 0,
-            y: 40,
-            scale: 0.97,
-            duration: 1,
-            delay: 0.2,
-            ease: "power2.out",
-        });
+        gsap.fromTo(
+            heroVisual,
+            { opacity: 0, y: 40, scale: 0.97 },
+            {
+                opacity: 1,
+                y: 0,
+                scale: 1,
+                duration: 1,
+                delay: 0.2,
+                ease: "power2.out",
+            }
+        );
     }
 }

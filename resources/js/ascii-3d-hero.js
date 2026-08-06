@@ -12,12 +12,26 @@ import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { AsciiEffect } from "three/examples/jsm/effects/AsciiEffect.js";
 
+// 🔴 TAMBAHKAN DUA BARIS INI:
+let resolveModelLoaded;
+export const modelLoadedPromise = new Promise((resolve) => {
+    resolveModelLoaded = resolve;
+});
+
+const originalGetContext = HTMLCanvasElement.prototype.getContext;
+HTMLCanvasElement.prototype.getContext = function (type, attributes) {
+    if (type === '2d') {
+        attributes = Object.assign({}, attributes, { willReadFrequently: true });
+    }
+    return originalGetContext.call(this, type, attributes);
+};
+
 export function initAsciiHero({
     containerSelector,
     modelUrl,
     characters = " -+01@",
     resolution = 0.3,
-    modelScale = 0.8,
+    modelScale = 1.1,
     autoRotate = true,
     rotateSpeed = 0.25,
     tiltCursor = true,
@@ -25,20 +39,20 @@ export function initAsciiHero({
     tiltDamping = 0.06,
     tiltMaxAngle = 0.5,
     parallaxAmount = 0.1,
-    frontOffsetX = 0,
-    frontOffsetY = -Math.PI / 2,
+    frontOffsetX = Math.PI / 2,
+    frontOffsetY = 0,
     frontOffsetZ = 0,
 } = {}) {
     const container = document.querySelector(containerSelector);
     if (!container) {
         console.warn(`[ascii-3d-hero] container "${containerSelector}" tidak ditemukan`);
+        resolveModelLoaded?.(); // <-- Tambahkan baris ini
         return { destroy: () => {} };
     }
 
-    // 🔴 FIX #2: Skip inisialisasi jika container disembunyikan (mobile)
-    // Karena class Tailwind "hidden lg:block" membuat width = 0 di mobile
     if (container.clientWidth === 0 || container.clientHeight === 0) {
         console.info("[ascii-3d-hero] container hidden (mobile), skip inisialisasi");
+        resolveModelLoaded?.(); // <-- Tambahkan baris ini
         return { destroy: () => {} };
     }
 
@@ -57,11 +71,15 @@ export function initAsciiHero({
     const camera = new THREE.PerspectiveCamera(35, 1, 0.1, 100);
     camera.position.set(0, 0, 6);
 
-    const ambient = new THREE.AmbientLight(0xffffff, 0.6);
-    const key = new THREE.DirectionalLight(0xffffff, 1.4);
+    const ambient = new THREE.AmbientLight(0xffffff, 2); // Dari 0.6 ke 1.0
+
+    // Turunkan sedikit kontras key light
+    const key = new THREE.DirectionalLight(0xffffff, 1.0); // Dari 1.4 ke 1.0
     key.position.set(3, 4, 5);
-    const fill = new THREE.DirectionalLight(0xffffff, 0.5);
+
+    const fill = new THREE.DirectionalLight(0xffffff, 0.6);
     fill.position.set(-4, -2, -3);
+
     scene.add(ambient, key, fill);
 
     const renderer = new THREE.WebGLRenderer({ 
@@ -142,11 +160,15 @@ export function initAsciiHero({
 
             pivot.add(model);
             forceRender = true;
+
+            resolveModelLoaded?.();
         },
         undefined,
-        (err) => console.error("[ascii-3d-hero] gagal load model:", err)
+        (err) => {
+            console.error("[ascii-3d-hero] gagal load model:", err);
+            resolveModelLoaded?.(); // <-- Tambahkan ini di callback error
+        }
     );
-
     // =====================================================
     // Tilt Parallax
     // =====================================================
