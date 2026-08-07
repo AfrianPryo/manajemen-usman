@@ -10,6 +10,7 @@ return new class extends Migration
     {
         Schema::create('finance_transactions', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('unit_id')->constrained()->cascadeOnDelete(); // Tambahkan ini
             $table->foreignId('finance_category_id')->constrained()->cascadeOnDelete();
             $table->enum('type', ['income', 'expense']);
             $table->unsignedBigInteger('amount');

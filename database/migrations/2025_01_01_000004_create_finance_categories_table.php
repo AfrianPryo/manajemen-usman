@@ -10,6 +10,7 @@ return new class extends Migration
     {
         Schema::create('finance_categories', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('unit_id')->constrained()->cascadeOnDelete(); // Tambahkan ini
             $table->string('name');
             $table->enum('type', ['income', 'expense']);
             $table->timestamps();

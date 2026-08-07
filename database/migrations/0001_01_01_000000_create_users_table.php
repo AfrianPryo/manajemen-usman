@@ -19,8 +19,8 @@ return new class extends Migration
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             
-            // Relasi ke Unit Usaha
-            $table->unsignedBigInteger('unit_id')->nullable();
+            // Perbaikan Foreign Key ke tabel units
+            $table->foreignId('unit_id')->nullable()->constrained('units')->nullOnDelete();
             
             // Informasi Personel
             $table->string('nip')->nullable()->unique();

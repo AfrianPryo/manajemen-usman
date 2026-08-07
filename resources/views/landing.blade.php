@@ -833,7 +833,7 @@
             />
             <span 
                 id="loader-counter" 
-                class="absolute -right-6 -top-2 translate-x-full font-mono tracking-tight text-sm tabular-nums text-white/90 md:text-base"
+                class="absolute -right-[5px] -top-2 translate-x-full font-mono tracking-tight text-sm tabular-nums text-white/90 md:text-base"
                 aria-live="polite"
             >
                 [0]

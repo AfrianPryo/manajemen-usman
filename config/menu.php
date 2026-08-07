@@ -2,11 +2,14 @@
 // config/menu.php
 
 return [
-    // ================= DASHBOARD =================
+    // ================= ANALYTICS =================
     [
-        'label' => 'Dashboard',
-        'route' => 'master.dashboard',
+        'label' => 'Analytics',
         'roles' => ['master-admin'],
+        'children' => [
+            ['label' => 'Dashboard', 'route' => 'master.dashboard', 'roles' => ['master-admin']],
+            ['label' => 'Statistik Usaha', 'route' => 'master.analytics.index', 'roles' => ['master-admin']],
+        ],
     ],
 
     // ================= MASTER MANAGEMENT =================
@@ -28,15 +31,6 @@ return [
             ['label' => 'Transaksi', 'route' => 'master.transactions.index', 'roles' => ['master-admin']],
             ['label' => 'Inventaris', 'route' => 'master.inventory.index', 'roles' => ['master-admin']],
             ['label' => 'Laporan', 'route' => 'master.reports.index', 'roles' => ['master-admin']],
-        ],
-    ],
-
-    // ================= ANALYTICS =================
-    [
-        'label' => 'Analytics',
-        'roles' => ['master-admin'],
-        'children' => [
-            ['label' => 'Statistik Usaha', 'route' => 'master.analytics.index', 'roles' => ['master-admin']],
         ],
     ],
 
