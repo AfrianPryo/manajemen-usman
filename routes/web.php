@@ -13,7 +13,7 @@ use App\Livewire\Master\Inventory\Index as InventoryIndex;
 use App\Livewire\Master\Reports\Index as ReportsIndex;
 use App\Livewire\Master\Analytics\Index as AnalyticsIndex;
 use App\Livewire\Master\Activities\Index as ActivitiesIndex;
-use App\Livewire\Master\AuditLogs\Index as AuditLogsIndex;
+use App\Livewire\Master\AuditLog\Index as AuditLogsIndex;
 use App\Livewire\Master\Settings\Index as SettingsIndex;
 use App\Livewire\Master\Profile\Index as ProfileIndex;
 

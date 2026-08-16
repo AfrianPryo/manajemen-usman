@@ -13,6 +13,9 @@ return new class extends Migration
             $table->string('name');
             $table->string('slug')->unique();
             $table->string('department'); // PPLG, TO, MPLB, PM, Akuntansi
+            $table->enum('category', ['ritel', 'jasa'])->default('ritel'); // Hanya Ritel (Produk/Toko) & Jasa
+            $table->string('pic_name')->nullable();
+            $table->string('phone', 20)->nullable();
             $table->text('description')->nullable();
             $table->boolean('is_active')->default(true);
             $table->timestamps();

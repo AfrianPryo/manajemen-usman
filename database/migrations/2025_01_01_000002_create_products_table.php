@@ -10,15 +10,17 @@ return new class extends Migration
     {
         Schema::create('products', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('unit_id')->constrained()->cascadeOnDelete(); // Tambahkan ini
+            $table->foreignId('unit_id')->constrained()->cascadeOnDelete();
             $table->foreignId('category_id')->constrained()->cascadeOnDelete();
-            $table->string('code'); // Hapus ->unique() dari sini
+            $table->string('code');
             $table->string('name');
-            $table->string('unit_type')->default('pcs'); // Ubah 'unit' menjadi 'unit_type'
+            $table->string('unit_type')->default('pcs');
             $table->unsignedBigInteger('purchase_price')->default(0);
             $table->unsignedBigInteger('selling_price')->default(0);
             $table->integer('stock')->default(0);
             $table->integer('min_stock')->default(5);
+            $table->text('description')->nullable();
+            $table->string('image')->nullable();
             $table->timestamps();
 
             // Kode barang unik khusus per unit usaha

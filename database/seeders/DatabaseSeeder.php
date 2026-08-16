@@ -12,7 +12,8 @@ class DatabaseSeeder extends Seeder
             RoleSeeder::class,
             UnitSeeder::class,
             MasterAdminSeeder::class,
-            UnitAdminSeeder::class, // 🟢 Tambahkan UnitAdminSeeder
+            UnitAdminSeeder::class,
+            FinanceCategorySeeder::class,
         ]);
     }
 }

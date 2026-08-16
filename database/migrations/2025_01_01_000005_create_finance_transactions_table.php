@@ -10,13 +10,17 @@ return new class extends Migration
     {
         Schema::create('finance_transactions', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('unit_id')->constrained()->cascadeOnDelete(); // Tambahkan ini
+            $table->foreignId('unit_id')->constrained()->cascadeOnDelete();
             $table->foreignId('finance_category_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('user_id')->nullable()->constrained()->nullOnDelete();
+            $table->string('reference_no')->nullable();
             $table->enum('type', ['income', 'expense']);
+            $table->enum('status', ['completed', 'pending', 'cancelled'])->default('completed');
+            $table->string('payment_method')->nullable();
             $table->unsignedBigInteger('amount');
             $table->string('description')->nullable();
             $table->date('transaction_date');
-            $table->foreignId('user_id')->nullable()->constrained()->nullOnDelete();
+            $table->string('proof_file')->nullable();
             $table->timestamps();
         });
     }

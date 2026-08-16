@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -45,24 +44,23 @@ class User extends Authenticatable
     ];
 
     /**
-     * Accessor: ID Resmi untuk Laporan/PDF (NIP jika ada, atau '-' untuk non-NIP)
+     * Accessor: ID Resmi untuk Laporan/PDF
      */
     public function getOfficialIdAttribute(): string
     {
-        return !empty($this->nip) ? $this->nip : '-';
+        return ($this->employee_status === 'nip' && !empty($this->nip)) ? $this->nip : '-';
     }
 
     /**
-     * Accessor: Format Identitas Lengkap untuk Audit Log & Dashboard Navigation
+     * Accessor: Format Identitas Lengkap untuk Audit Log & Navigation
      */
     public function getFormattedIdentityAttribute(): string
     {
-        if (!empty($this->nip)) {
+        if ($this->employee_status === 'nip' && !empty($this->nip)) {
             return "{$this->name} (NIP: {$this->nip})";
         }
 
-        $statusLabel = ucfirst(str_replace('_', ' ', $this->employee_status ?? 'Non-NIP'));
-        return "{$this->name} ({$statusLabel})";
+        return "{$this->name} (Non-NIP)";
     }
 
     public function unit(): BelongsTo

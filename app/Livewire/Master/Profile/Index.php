@@ -1,75 +1,82 @@
 <?php
 
-namespace App\Livewire\Master\Profile;
+namespace App\Livewire\Master\Profile; // <-- Pastikan ini Profile, BUKAN Settings
 
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
-use Livewire\Attributes\Layout;
-use Livewire\Attributes\Title;
 use Livewire\Component;
+use Livewire\WithFileUploads;
+use Livewire\Attributes\Layout;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rules\Password;
 
 #[Layout('components.layouts.app')]
-#[Title('Profil Saya')]
 class Index extends Component
 {
+    use WithFileUploads;
+
     public string $name = '';
     public string $email = '';
-    public string $nip = '';
     public string $phone = '';
-    public string $employee_status = '';
+    public $avatar;
+    public ?string $existingAvatar = null;
 
+    // Password Form
     public string $current_password = '';
     public string $new_password = '';
     public string $new_password_confirmation = '';
 
-    public function mount()
+    public function mount(): void
     {
-        $user = Auth::user();
-        $this->name = $user->name;
-        $this->email = $user->email;
-        $this->nip = $user->nip ?? '';
+        $user = auth()->user();
+        $this->name = $user->name ?? '';
+        $this->email = $user->email ?? '';
         $this->phone = $user->phone ?? '';
-        $this->employee_status = $user->employee_status ?? '';
+        $this->existingAvatar = $user->avatar ?? null;
     }
 
-    public function updateProfile()
+    public function updateProfile(): void
     {
-        $user = Auth::user();
+        $user = auth()->user();
 
         $this->validate([
-            'name' => 'required|string|max:255',
-            'nip' => 'nullable|string|max:50',
-            'phone' => 'nullable|string|max:20',
-            'employee_status' => 'nullable|in:Guru,Pegawai,Siswa',
+            'name'   => 'required|string|max:100',
+            'email'  => 'required|email|max:100|unique:users,email,' . $user->id,
+            'phone'  => 'nullable|string|max:20',
+            'avatar' => 'nullable|image|max:2048',
         ]);
 
-        $user->update([
-            'name' => $this->name,
-            'nip' => $this->nip ?: null,
-            'phone' => $this->phone ?: null,
-            'employee_status' => $this->employee_status ?: null,
-        ]);
+        $data = [
+            'name'  => $this->name,
+            'email' => $this->email,
+            'phone' => $this->phone,
+        ];
 
-        session()->flash('success', 'Profil berhasil diperbarui.');
+        if ($this->avatar) {
+            if ($user->avatar) {
+                Storage::disk('public')->delete($user->avatar);
+            }
+            $data['avatar'] = $this->avatar->store('avatars', 'public');
+            $this->existingAvatar = $data['avatar'];
+            $this->reset('avatar');
+        }
+
+        $user->update($data);
+        session()->flash('success_profile', 'Profil pengguna berhasil diperbarui.');
     }
 
-    public function updatePassword()
+    public function updatePassword(): void
     {
-        $user = Auth::user();
-
         $this->validate([
-            'current_password' => ['required', 'current_password'],
-            'new_password' => ['required', 'min:8', 'confirmed', 'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/'],
-        ], [
-            'new_password.regex' => 'Password harus mengandung huruf besar, huruf kecil, dan angka.',
+            'current_password' => 'required|current_password',
+            'new_password'     => ['required', 'confirmed', Password::defaults()],
         ]);
 
-        $user->update([
-            'password' => $this->new_password,
+        auth()->user()->update([
+            'password' => Hash::make($this->new_password),
         ]);
 
         $this->reset(['current_password', 'new_password', 'new_password_confirmation']);
-        session()->flash('success', 'Password berhasil diubah.');
+        session()->flash('success_password', 'Kata sandi berhasil diubah.');
     }
 
     public function render()

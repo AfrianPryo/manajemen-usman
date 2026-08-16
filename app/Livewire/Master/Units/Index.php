@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Livewire\Master\Units;
 
 use App\Models\Unit;
@@ -76,7 +77,7 @@ class Index extends Component
         $rules = [
             'name' => 'required|string|max:100|unique:units,name,' . $this->unitId,
             'department' => 'required|string|max:50',
-            'category' => 'required|in:ritel,jasa,kuliner,sewa,lainnya',
+            'category' => 'required|in:ritel,jasa',
             'pic_name' => 'nullable|string|max:100',
             'phone' => 'nullable|string|max:20',
             'description' => 'nullable|string|max:500',

@@ -73,9 +73,6 @@
             <option value="">Semua Kategori</option>
             <option value="ritel">Ritel</option>
             <option value="jasa">Jasa</option>
-            <option value="kuliner">Kuliner</option>
-            <option value="sewa">Sewa</option>
-            <option value="lainnya">Lainnya</option>
         </select>
         <select wire:model.live="statusFilter" class="px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-900 text-gray-900 dark:text-white text-sm">
             <option value="">Semua Status</option>
@@ -228,9 +225,6 @@
                             <select wire:model="category" class="w-full px-3 py-2 border rounded-lg text-sm bg-white dark:bg-slate-900 border-gray-300 dark:border-slate-700 dark:text-white">
                                 <option value="ritel">Ritel</option>
                                 <option value="jasa">Jasa</option>
-                                <option value="kuliner">Kuliner</option>
-                                <option value="sewa">Sewa</option>
-                                <option value="lainnya">Lainnya</option>
                             </select>
                             @error('category') <span class="text-xs text-red-500">{{ $message }}</span> @enderror
                         </div>

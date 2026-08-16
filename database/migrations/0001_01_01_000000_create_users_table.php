@@ -6,9 +6,6 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('users', function (Blueprint $table) {
@@ -19,13 +16,12 @@ return new class extends Migration
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             
-            // Perbaikan Foreign Key ke tabel units
             $table->foreignId('unit_id')->nullable()->constrained('units')->nullOnDelete();
             
             // Informasi Personel
             $table->string('nip')->nullable()->unique();
             $table->string('phone')->nullable();
-            $table->string('employee_status')->nullable(); // tetap, part_time, magang
+            $table->string('employee_status')->default('nip'); // nip, non_nip
             $table->string('profile_photo_path', 2048)->nullable();
             
             // Status Akun & Keamanan
@@ -58,9 +54,6 @@ return new class extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('sessions');

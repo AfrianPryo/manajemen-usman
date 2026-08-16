@@ -11,15 +11,30 @@ class FinanceTransaction extends Model
     use HasFactory;
 
     protected $fillable = [
-        'finance_category_id', 'type', 'amount',
-        'description', 'transaction_date', 'user_id',
+        'unit_id',
+        'finance_category_id',
+        'user_id',
+        'reference_no',
+        'type', // 'income', 'expense'
+        'status', // 'completed', 'pending', 'cancelled'
+        'payment_method', // 'cash', 'transfer', 'qris', etc.
+        'amount',
+        'description',
+        'transaction_date',
+        'proof_file',
     ];
 
     protected function casts(): array
     {
         return [
             'transaction_date' => 'date',
+            'amount' => 'decimal:2',
         ];
+    }
+    
+    public function unit(): BelongsTo
+    {
+        return $this->belongsTo(Unit::class);
     }
 
     public function category(): BelongsTo
