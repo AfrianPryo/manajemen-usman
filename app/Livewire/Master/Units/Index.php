@@ -2,13 +2,14 @@
 
 namespace App\Livewire\Master\Units;
 
+use App\Models\AuditLog;
 use App\Models\Unit;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithPagination;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 #[Layout('components.layouts.app')]
 class Index extends Component
@@ -99,9 +100,33 @@ class Index extends Component
 
         if ($this->isEditing && $this->unitId) {
             $unit = Unit::findOrFail($this->unitId);
+            $oldValues = $unit->getAttributes();
+
             $unit->update($data);
+
+            // Audit Log: Edit Unit Usaha
+            AuditLog::record(
+                event: 'UNIT_UPDATED',
+                identifier: $unit->name,
+                description: "Admin memperbarui data unit usaha: {$unit->name}",
+                oldValues: $oldValues,
+                newValues: $unit->getAttributes()
+            );
+
+            session()->flash('message', 'Unit usaha berhasil diperbarui.');
         } else {
-            Unit::create($data);
+            $unit = Unit::create($data);
+
+            // Audit Log: Tambah Unit Usaha Baru
+            AuditLog::record(
+                event: 'UNIT_CREATED',
+                identifier: $unit->name,
+                description: "Admin menambahkan unit usaha baru: {$unit->name}",
+                oldValues: null,
+                newValues: $unit->getAttributes()
+            );
+
+            session()->flash('message', 'Unit usaha berhasil ditambahkan.');
         }
 
         $this->closeModal();
@@ -110,8 +135,23 @@ class Index extends Component
     public function toggleUnitStatus(int $id): void
     {
         $unit = Unit::findOrFail($id);
+        $oldStatus = $unit->is_active;
+
         $unit->is_active = !$unit->is_active;
         $unit->save();
+
+        $statusText = $unit->is_active ? 'Aktif' : 'Nonaktif';
+
+        // Audit Log: Ubah Status Unit Usaha
+        AuditLog::record(
+            event: 'UNIT_STATUS_UPDATED',
+            identifier: $unit->name,
+            description: "Admin mengubah status unit usaha '{$unit->name}' menjadi {$statusText}",
+            oldValues: ['is_active' => $oldStatus],
+            newValues: ['is_active' => $unit->is_active]
+        );
+
+        session()->flash('message', "Status unit usaha berhasil diubah menjadi {$statusText}.");
     }
 
     /**
@@ -126,6 +166,9 @@ class Index extends Component
             session()->flash('error', 'Unit usaha hanya dapat dihapus jika statusnya NONAKTIF.');
             return;
         }
+
+        $unitName = $unit->name;
+        $oldValues = $unit->getAttributes();
 
         // Lepas relasi admin/user berdasarkan jenis relasinya
         if (method_exists($unit, 'users')) {
@@ -146,6 +189,15 @@ class Index extends Component
         } else {
             $unit->delete();
         }
+
+        // Audit Log: Hapus Unit Usaha
+        AuditLog::record(
+            event: 'UNIT_DELETED',
+            identifier: $unitName,
+            description: "Admin menghapus unit usaha: {$unitName}",
+            oldValues: $oldValues,
+            newValues: null
+        );
 
         session()->flash('message', 'Unit usaha berhasil dihapus secara permanen.');
     }

@@ -4,6 +4,7 @@ namespace App\Livewire\Master\Transactions;
 
 use App\Exports\TransactionTemplateExport;
 use App\Imports\TransactionsImport;
+use App\Models\AuditLog; // <-- 1. Import Model AuditLog
 use App\Models\FinanceCategory;
 use App\Models\FinanceTransaction;
 use App\Models\Unit;
@@ -58,7 +59,11 @@ class Index extends Component
 
     // Import Properties
     public bool $showImportModal = false;
+    public bool $showErrorModal = false;
+    public array $importErrors = [];
     public $excel_file = null;
+
+    public int $perPage = 15;
 
     // Lifecycle Hooks Reset Page
     public function updatingSearch(): void { $this->resetPage(); }
@@ -67,6 +72,7 @@ class Index extends Component
     public function updatingUnitFilter(): void { $this->resetPage(); }
     public function updatingStartDate(): void { $this->resetPage(); }
     public function updatingEndDate(): void { $this->resetPage(); }
+    public function updatingPerPage(): void { $this->resetPage(); }
 
     public function updatedFormUnitId(): void { $this->form_finance_category_id = null; }
     public function updatedFormType(): void { $this->form_finance_category_id = null; }
@@ -174,6 +180,7 @@ class Index extends Component
 
         if ($this->isEditing) {
             $transaction = FinanceTransaction::findOrFail($this->editingTransactionId);
+            $oldValues = $transaction->getAttributes();
 
             if ($this->form_proof_file) {
                 if ($transaction->proof_file && Storage::disk('public')->exists($transaction->proof_file)) {
@@ -183,26 +190,37 @@ class Index extends Component
             }
 
             $transaction->update($data);
+
+            // Audit Log: Edit Transaksi
+            AuditLog::record(
+                event: 'TRANSACTION_UPDATED',
+                identifier: $transaction->reference_no,
+                description: "Admin memperbarui data transaksi No. Ref: {$transaction->reference_no}",
+                oldValues: $oldValues,
+                newValues: $transaction->getAttributes()
+            );
+
             session()->flash('message', 'Transaksi berhasil diperbarui.');
         } else {
             if ($this->form_proof_file) {
                 $data['proof_file'] = $this->form_proof_file->store('proofs', 'public');
             }
 
-            FinanceTransaction::create($data);
+            $transaction = FinanceTransaction::create($data);
+
+            // Audit Log: Transaksi Baru
+            $typeText = $transaction->type === 'income' ? 'Pemasukan' : 'Pengeluaran';
+            AuditLog::record(
+                event: 'TRANSACTION_CREATED',
+                identifier: $transaction->reference_no,
+                description: "Admin mencatat transaksi {$typeText} baru: No. Ref {$transaction->reference_no} sebesar Rp " . number_format($transaction->amount, 0, ',', '.'),
+                newValues: $transaction->getAttributes()
+            );
+
             session()->flash('message', 'Transaksi baru berhasil dicatat.');
         }
 
         $this->closeCreateModal();
-    }
-
-    // 1. Tambahkan properti $perPage di bagian properti class
-    public int $perPage = 15;
-
-    // 2. Tambahkan lifecycle hook reset halaman saat perPage berubah
-    public function updatingPerPage(): void
-    {
-        $this->resetPage();
     }
 
     // Detail Modal Methods
@@ -232,13 +250,24 @@ class Index extends Component
         ]);
 
         if ($this->selectedTransaction) {
-            if ($this->selectedTransaction->proof_file && Storage::disk('public')->exists($this->selectedTransaction->proof_file)) {
-                Storage::disk('public')->delete($this->selectedTransaction->proof_file);
+            $oldProof = $this->selectedTransaction->proof_file;
+
+            if ($oldProof && Storage::disk('public')->exists($oldProof)) {
+                Storage::disk('public')->delete($oldProof);
             }
 
             $path = $this->proofFile->store('proofs', 'public');
             $this->selectedTransaction->update(['proof_file' => $path]);
             $this->selectedTransaction->refresh();
+
+            // Audit Log: Unggah Bukti
+            AuditLog::record(
+                event: 'TRANSACTION_PROOF_UPLOADED',
+                identifier: $this->selectedTransaction->reference_no,
+                description: "Admin mengunggah bukti pembayaran transaksi No. Ref: {$this->selectedTransaction->reference_no}",
+                oldValues: ['proof_file' => $oldProof],
+                newValues: ['proof_file' => $path]
+            );
 
             $this->reset(['proofFile']);
             session()->flash('message', 'Bukti transaksi berhasil diunggah.');
@@ -248,12 +277,23 @@ class Index extends Component
     public function deleteProof(): void
     {
         if ($this->selectedTransaction && $this->selectedTransaction->proof_file) {
-            if (Storage::disk('public')->exists($this->selectedTransaction->proof_file)) {
-                Storage::disk('public')->delete($this->selectedTransaction->proof_file);
+            $oldProof = $this->selectedTransaction->proof_file;
+
+            if (Storage::disk('public')->exists($oldProof)) {
+                Storage::disk('public')->delete($oldProof);
             }
 
             $this->selectedTransaction->update(['proof_file' => null]);
             $this->selectedTransaction->refresh();
+
+            // Audit Log: Hapus Bukti
+            AuditLog::record(
+                event: 'TRANSACTION_PROOF_DELETED',
+                identifier: $this->selectedTransaction->reference_no,
+                description: "Admin menghapus berkas bukti pembayaran transaksi No. Ref: {$this->selectedTransaction->reference_no}",
+                oldValues: ['proof_file' => $oldProof],
+                newValues: null
+            );
 
             session()->flash('message', 'Bukti transaksi berhasil dihapus.');
         }
@@ -264,7 +304,25 @@ class Index extends Component
     {
         if (empty($this->selectedRows)) return;
 
-        FinanceTransaction::whereIn('id', $this->selectedRows)->delete();
+        $transactions = FinanceTransaction::whereIn('id', $this->selectedRows)->get();
+
+        foreach ($transactions as $transaction) {
+            // Audit Log: Hapus Per Transaksi
+            AuditLog::record(
+                event: 'TRANSACTION_DELETED',
+                identifier: $transaction->reference_no ?? "ID: {$transaction->id}",
+                description: "Admin menghapus transaksi No. Ref: {$transaction->reference_no}",
+                oldValues: $transaction->getAttributes(),
+                newValues: null
+            );
+
+            if ($transaction->proof_file && Storage::disk('public')->exists($transaction->proof_file)) {
+                Storage::disk('public')->delete($transaction->proof_file);
+            }
+
+            $transaction->delete();
+        }
+
         $this->selectedRows = [];
         $this->selectAll = false;
         session()->flash('message', 'Transaksi terpilih berhasil dihapus.');
@@ -274,7 +332,25 @@ class Index extends Component
     {
         if (empty($this->selectedRows)) return;
 
-        FinanceTransaction::whereIn('id', $this->selectedRows)->update(['status' => $status]);
+        $transactions = FinanceTransaction::whereIn('id', $this->selectedRows)->get();
+
+        foreach ($transactions as $transaction) {
+            $oldStatus = $transaction->status;
+            
+            if ($oldStatus !== $status) {
+                $transaction->update(['status' => $status]);
+
+                // Audit Log: Update Status Massal
+                AuditLog::record(
+                    event: 'TRANSACTION_STATUS_UPDATED',
+                    identifier: $transaction->reference_no,
+                    description: "Admin mengubah status transaksi {$transaction->reference_no} dari '{$oldStatus}' menjadi '{$status}'",
+                    oldValues: ['status' => $oldStatus],
+                    newValues: ['status' => $status]
+                );
+            }
+        }
+
         $this->selectedRows = [];
         $this->selectAll = false;
         session()->flash('message', 'Status transaksi berhasil diperbarui.');
@@ -294,6 +370,12 @@ class Index extends Component
         $this->reset('excel_file');
     }
 
+    public function closeErrorModal(): void
+    {
+        $this->showErrorModal = false;
+        $this->importErrors = [];
+    }
+
     public function downloadTemplate()
     {
         return Excel::download(new TransactionTemplateExport, 'Template_Import_Transaksi.xlsx');
@@ -307,7 +389,52 @@ class Index extends Component
             'excel_file' => 'Berkas Excel'
         ]);
 
-        Excel::import(new TransactionsImport, $this->excel_file->getRealPath());
+        $fileName = $this->excel_file->getClientOriginalName();
+        $import = new TransactionsImport();
+        Excel::import($import, $this->excel_file->getRealPath());
+
+        // Cek jika terdapat kegagalan validasi baris dari Excel
+        if ($import->failures()->isNotEmpty()) {
+            $this->importErrors = [];
+            
+            foreach ($import->failures() as $failure) {
+                $attr = $failure->attribute();
+                $columnName = $import->customValidationAttributes()[$attr] ?? $attr;
+                $rowValues  = $failure->values();
+
+                foreach ($failure->errors() as $error) {
+                    $this->importErrors[] = [
+                        'row'      => $failure->row(),
+                        'column'   => $columnName,
+                        'value'    => $rowValues[$attr] ?? '(Kosong)',
+                        'messages' => $error,
+                    ];
+                }
+            }
+
+            // Audit Log: Impor Gagal
+            AuditLog::record(
+                event: 'TRANSACTION_IMPORT_FAILED',
+                identifier: $fileName,
+                description: "Admin gagal melakukan impor data transaksi dari berkas '{$fileName}'. Terdapat kesalahan validasi."
+            );
+
+            $this->showImportModal = false;
+            $this->showErrorModal = true;
+            return;
+        }
+
+        // Audit Log: Impor Sukses
+        AuditLog::record(
+            event: 'TRANSACTION_IMPORTED',
+            identifier: $fileName,
+            description: "Admin berhasil mengimpor data transaksi melalui berkas Excel",
+            newValues: [
+                'nama_file'   => $fileName,
+                'ukuran_file' => round($this->excel_file->getSize() / 1024, 2) . ' KB',
+                'waktu_impor' => now()->translatedFormat('d F Y H:i:s'),
+            ]
+        );
 
         $this->closeImportModal();
         session()->flash('message', 'Data transaksi dari Excel berhasil diimpor.');
@@ -350,7 +477,7 @@ class Index extends Component
         $transactions = $this->getTransactionsQuery()
             ->latest('transaction_date')
             ->latest('id')
-            ->paginate($this->perPage); // Ganti angka 15 dengan $this->perPage
+            ->paginate($this->perPage);
 
         $categories = $this->form_unit_id
             ? FinanceCategory::query()

@@ -9,9 +9,9 @@
 
     <!-- Filter & Search Card -->
     <div class="bg-white dark:bg-slate-800 rounded-md border border-neutral-100 dark:border-slate-700 p-4 space-y-3 shadow-sm shadow-black/[0.02]">
-        <div class="grid grid-cols-1 gap-3 md:grid-cols-12">
+        <div class="grid grid-cols-1 gap-3 md:grid-cols-12 items-center">
             <!-- Search Bar -->
-            <div class="md:col-span-8">
+            <div class="md:col-span-4">
                 <label for="search_log" class="sr-only">Cari Log</label>
                 <div class="relative">
                     <div class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-neutral-400">
@@ -24,14 +24,14 @@
                         name="search_log"
                         wire:model.live.debounce.300ms="search"
                         type="text" 
-                        placeholder="Cari kata kunci, identifier, atau nama user..." 
+                        placeholder="Cari kata kunci, identifier, nama user..." 
                         class="w-full pl-10 pr-4 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-full bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/10 focus:border-emerald-400"
                     >
                 </div>
             </div>
 
             <!-- Filter Event -->
-            <div class="md:col-span-4">
+            <div class="md:col-span-3">
                 <label for="event_filter" class="sr-only">Filter Event</label>
                 <select 
                     id="event_filter"
@@ -44,6 +44,48 @@
                         <option value="{{ $event }}">{{ str_replace('_', ' ', $event) }}</option>
                     @endforeach
                 </select>
+            </div>
+
+            <!-- Tanggal Mulai -->
+            <div class="md:col-span-2">
+                <label for="start_date" class="block text-[10px] font-bold uppercase tracking-wider text-neutral-400 mb-1 ml-2 md:hidden">Dari Tanggal</label>
+                <input 
+                    id="start_date"
+                    name="start_date"
+                    type="date" 
+                    wire:model.live="startDate"
+                    title="Tanggal Mulai"
+                    class="w-full px-3.5 py-2 text-xs font-medium text-neutral-600 dark:text-neutral-300 bg-white dark:bg-slate-900 border border-neutral-200 dark:border-slate-700 rounded-full focus:outline-none focus:ring-2 focus:ring-emerald-500/10 focus:border-emerald-400"
+                >
+            </div>
+
+            <!-- Tanggal Selesai -->
+            <div class="md:col-span-2">
+                <label for="end_date" class="block text-[10px] font-bold uppercase tracking-wider text-neutral-400 mb-1 ml-2 md:hidden">Sampai Tanggal</label>
+                <input 
+                    id="end_date"
+                    name="end_date"
+                    type="date" 
+                    wire:model.live="endDate"
+                    title="Tanggal Selesai"
+                    class="w-full px-3.5 py-2 text-xs font-medium text-neutral-600 dark:text-neutral-300 bg-white dark:bg-slate-900 border border-neutral-200 dark:border-slate-700 rounded-full focus:outline-none focus:ring-2 focus:ring-emerald-500/10 focus:border-emerald-400"
+                >
+            </div>
+
+            <!-- Reset Filter -->
+            <div class="md:col-span-1 flex items-center justify-end">
+                @if($search || $eventFilter || $startDate || $endDate)
+                    <button 
+                        wire:click="resetFilters" 
+                        title="Reset Filter"
+                        class="w-full py-2 px-3 text-xs font-semibold text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/50 rounded-full hover:bg-rose-100 dark:hover:bg-rose-900/50 transition-all flex items-center justify-center gap-1 cursor-pointer"
+                    >
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                        <span class="md:hidden">Reset</span>
+                    </button>
+                @endif
             </div>
         </div>
     </div>
@@ -58,7 +100,6 @@
                         <th scope="col" class="px-4 py-3.5">Pengguna</th>
                         <th scope="col" class="px-4 py-3.5">Tipe Event</th>
                         <th scope="col" class="px-4 py-3.5">Identifier</th>
-                        <th scope="col" class="px-4 py-3.5">Deskripsi Aktivitas</th>
                         <th scope="col" class="px-4 py-3.5 text-center">Aksi</th>
                     </tr>
                 </thead>
@@ -88,9 +129,6 @@
                             <td class="px-4 py-3.5 whitespace-nowrap font-mono text-xs text-neutral-600 dark:text-neutral-300">
                                 {{ $log->identifier ?? '-' }}
                             </td>
-                            <td class="px-4 py-3.5 text-xs text-neutral-600 dark:text-neutral-300 max-w-md truncate">
-                                {{ $log->description ?? '-' }}
-                            </td>
                             <td class="px-4 py-3.5 text-center whitespace-nowrap">
                                 <button 
                                     wire:click="openDetail({{ $log->id }})" 
@@ -102,8 +140,8 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="px-6 py-12 text-center text-xs text-neutral-400">
-                                Belum ada riwayat audit log yang tercatat.
+                            <td colspan="5" class="px-6 py-12 text-center text-xs text-neutral-400">
+                                Belum ada riwayat audit log yang sesuai dengan filter.
                             </td>
                         </tr>
                     @endforelse
@@ -122,7 +160,6 @@
             </div>
 
             <div class="w-full md:w-auto flex justify-end">
-                {{-- Memanggil custom-pagination blade --}}
                 {{ $logs->links('components.custom-pagination') }}
             </div>
         </div>
@@ -141,8 +178,17 @@
                     <button wire:click="closeDetail" class="text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 text-2xl font-bold leading-none cursor-pointer">&times;</button>
                 </div>
 
-                <!-- Modal Body (Diff View) -->
+                <!-- Modal Body -->
                 <div class="p-6 space-y-4 max-h-[70vh] overflow-y-auto text-xs">
+                    <!-- Deskripsi Aktivitas -->
+                    <div class="p-4 bg-neutral-50 dark:bg-slate-900/50 rounded-md border border-neutral-100 dark:border-slate-700">
+                        <h4 class="text-[11px] font-bold uppercase tracking-wider text-neutral-400 mb-1">Deskripsi Aktivitas</h4>
+                        <p class="text-xs font-medium text-neutral-800 dark:text-neutral-200 leading-relaxed">
+                            {{ $selectedLog->description ?? 'Tidak ada deskripsi aktivitas.' }}
+                        </p>
+                    </div>
+
+                    <!-- Diff View (Old & New Values) -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <!-- Data Sebelum (Old Values) -->
                         <div class="p-4 bg-rose-50/50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-900/50 rounded-md">

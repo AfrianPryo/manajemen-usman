@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\MassPrunable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class AuditLog extends Model
 {
+    use MassPrunable;
+
     protected $fillable = [
         'user_id',
         'event',
@@ -22,6 +25,15 @@ class AuditLog extends Model
         'old_values' => 'array',
         'new_values' => 'array',
     ];
+
+    /**
+     * Kriteria log yang akan dihapus otomatis oleh pembersih latar belakang (Cron / Scheduler).
+     */
+    public function prunable()
+    {
+        // Otomatis menghapus log yang dibuat >= 90 hari yang lalu
+        return static::where('created_at', '<=', now()->subDays(90));
+    }
 
     public function user(): BelongsTo
     {

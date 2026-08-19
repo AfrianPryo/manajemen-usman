@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Master\Users;
 
+use App\Models\AuditLog;
 use App\Models\Unit;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
@@ -92,6 +93,19 @@ class Index extends Component
             $user->assignRole($this->role);
         }
 
+        // Hapus password dari array yang akan disimpan ke Audit Log demi keamanan
+        $newValues = $user->getAttributes();
+        unset($newValues['password']);
+
+        // Audit Log: Buat Akun Admin Baru
+        AuditLog::record(
+            event: 'ADMIN_CREATED',
+            identifier: $user->username,
+            description: "Admin membuat akun baru: {$user->name} ({$user->username})",
+            oldValues: null,
+            newValues: array_merge($newValues, ['assigned_role' => $this->role])
+        );
+
         $this->createdCredentials = [
             'title' => '🎉 Akun Admin Berhasil Dibuat!',
             'name' => $user->name,
@@ -147,6 +161,10 @@ class Index extends Component
 
         $user = User::findOrFail($this->editingUserId);
 
+        // Capture data lama sebelum update (Sanitasi Password)
+        $oldValues = $user->getAttributes();
+        unset($oldValues['password']);
+
         $user->update([
             'name' => $this->name,
             'employee_status' => $this->employee_status,
@@ -160,19 +178,46 @@ class Index extends Component
             $user->assignRole($this->role);
         }
 
+        // Capture data baru setelah update (Sanitasi Password)
+        $newValues = $user->getAttributes();
+        unset($newValues['password']);
+
+        // Audit Log: Update Data Admin
+        AuditLog::record(
+            event: 'ADMIN_UPDATED',
+            identifier: $user->username,
+            description: "Admin memperbarui data akun: {$user->name} ({$user->username})",
+            oldValues: $oldValues,
+            newValues: array_merge($newValues, ['assigned_role' => $this->role])
+        );
+
         session()->flash('message', 'Data admin berhasil diperbarui.');
         $this->closeCreateModal();
     }
 
     public function toggleUserStatus($userId): void
     {
+        // Proteksi Keamanan: Cegah menonaktifkan akun sendiri
         if ((int) $userId === (int) auth()->id()) {
             return;
         }
 
         $user = User::findOrFail($userId);
+        $oldStatus = $user->is_active;
+
         $user->is_active = !$user->is_active;
         $user->save();
+
+        $statusText = $user->is_active ? 'Aktif' : 'Nonaktif';
+
+        // Audit Log: Ubah Status Akun
+        AuditLog::record(
+            event: 'ADMIN_STATUS_UPDATED',
+            identifier: $user->username,
+            description: "Admin mengubah status akun '{$user->username}' menjadi {$statusText}",
+            oldValues: ['is_active' => $oldStatus],
+            newValues: ['is_active' => $user->is_active]
+        );
     }
 
     public function resetPassword($userId): void
@@ -184,6 +229,15 @@ class Index extends Component
         $user->must_change_password = true;
         $user->save();
 
+        // Audit Log: Reset Password (Tanpa mencatat password plain-text demi keamanan)
+        AuditLog::record(
+            event: 'ADMIN_PASSWORD_RESET',
+            identifier: $user->username,
+            description: "Admin melakukan reset password untuk akun '{$user->username}'",
+            oldValues: null,
+            newValues: ['must_change_password' => true]
+        );
+
         $this->createdCredentials = [
             'title' => '🔑 Password Berhasil Direset!',
             'name' => $user->name,
@@ -194,6 +248,7 @@ class Index extends Component
 
     public function deleteUser(int $id): void
     {
+        // Proteksi Keamanan: Cegah hapus akun sendiri
         if ($id === auth()->id()) {
             session()->flash('error', 'Anda tidak dapat menghapus akun Anda sendiri.');
             return;
@@ -201,16 +256,31 @@ class Index extends Component
 
         $user = User::withTrashed()->findOrFail($id);
 
+        // Proteksi Keamanan: Cegah hapus akun yang masih AKTIF
         if ($user->is_active) {
             session()->flash('error', 'Akun admin hanya dapat dihapus jika statusnya NONAKTIF. Silakan nonaktifkan akun terlebih dahulu.');
             return;
         }
+
+        $userName = $user->name;
+        $username = $user->username;
+        $oldValues = $user->getAttributes();
+        unset($oldValues['password']); // Sanitasi Password
 
         if (method_exists($user, 'forceDelete')) {
             $user->forceDelete();
         } else {
             $user->delete();
         }
+
+        // Audit Log: Hapus Akun Admin
+        AuditLog::record(
+            event: 'ADMIN_DELETED',
+            identifier: $username,
+            description: "Admin menghapus akun secara permanen: {$userName} ({$username})",
+            oldValues: $oldValues,
+            newValues: null
+        );
 
         session()->flash('message', 'Akun admin berhasil dihapus secara permanen.');
     }

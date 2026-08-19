@@ -7,6 +7,7 @@ use App\Imports\ProductsImport;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\Unit;
+use App\Models\AuditLog;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
@@ -16,7 +17,6 @@ use Livewire\Component;
 use Livewire\WithFileUploads;
 use Livewire\WithPagination;
 use Maatwebsite\Excel\Facades\Excel;
-use App\Models\AuditLog;
 
 #[Layout('components.layouts.app')]
 #[Title('Inventaris Produk')]
@@ -71,6 +71,12 @@ class Index extends Component
     public bool $showImportModal = false;
     public $importFile;
 
+    // =========================================================================
+    // STATE MODAL PERINGATAN / ERROR IMPORT (SESUAI DENGAN BLADE)
+    // =========================================================================
+    public bool $showErrorModal = false;
+    public array $importErrors = [];
+
     // Lifecycle Hooks Filter
     public function updatingSearch(): void { $this->resetPage(); }
     public function updatingUnitFilter(): void { $this->resetPage(); }
@@ -102,6 +108,12 @@ class Index extends Component
         $this->resetErrorBag('importFile');
     }
 
+    public function closeImportErrorModal(): void
+    {
+        $this->showErrorModal = false;
+        $this->importErrors = [];
+    }
+
     public function downloadTemplate()
     {
         return Excel::download(new ProductTemplateExport, 'template_import_produk.xlsx');
@@ -110,14 +122,59 @@ class Index extends Component
     public function importProducts(): void
     {
         $this->validate([
-            'importFile' => 'required|file|mimes:xlsx,xls,csv|max:2048',
+            'importFile' => 'required|file|mimes:xlsx,xls,csv|max:5120',
         ], [
             'importFile.required' => 'File berkas wajib diunggah.',
             'importFile.mimes'    => 'Format file harus berupa .xlsx, .xls, atau .csv',
-            'importFile.max'      => 'Ukuran berkas maksimal 2 MB.',
+            'importFile.max'      => 'Ukuran berkas maksimal 5 MB.',
         ]);
 
-        Excel::import(new ProductsImport, $this->importFile);
+        $import = new ProductsImport();
+
+        // Eksekusi Import
+        Excel::import($import, $this->importFile);
+
+        // Tangkap Peringatan / Kesalahan Validasi per Baris
+        if ($import->failures()->isNotEmpty()) {
+            $this->importErrors = [];
+            $customAttributes = $import->customValidationAttributes();
+
+            foreach ($import->failures() as $failure) {
+                $attr = $failure->attribute();
+                $columnLabel = $customAttributes[$attr] ?? ucwords(str_replace('_', ' ', $attr));
+
+                // Struktur array ini langsung dicetak oleh foreach di Blade Anda
+                $this->importErrors[] = [
+                    'row'      => $failure->row(),                          // Baris ke-N
+                    'column'   => $columnLabel,                            // Nama Kolom
+                    'value'    => $failure->values()[$attr] ?? '-',        // Input pengguna
+                    'messages' => implode(', ', $failure->errors()),       // Keterangan Masalah
+                ];
+            }
+
+            AuditLog::record(
+                event: 'PRODUCT_IMPORT_FAILED',
+                identifier: $this->importFile->getClientOriginalName(),
+                description: 'Admin gagal melakukan impor produk. Terdapat kesalahan validasi pada berkas Excel.'
+            );
+
+            $this->closeImportModal();
+            $this->showErrorModal = true; // Menampilkan Modal Error Blade
+            return;
+        }
+
+        // Catat ke Audit Log
+        AuditLog::record(
+            event: 'PRODUCT_IMPORTED',
+            identifier: $this->importFile->getClientOriginalName(),
+            description: 'Admin melakukan impor produk melalui Excel',
+            newValues: [
+                'nama_file'   => $this->importFile->getClientOriginalName(),
+                'ukuran_file' => round($this->importFile->getSize() / 1024, 2) . ' KB',
+                'format'      => $this->importFile->getClientOriginalExtension(),
+                'waktu_impor' => now()->translatedFormat('d F Y H:i:s'),
+            ]
+        );
 
         $this->closeImportModal();
         session()->flash('success', 'Data produk berhasil diimport.');
@@ -125,7 +182,7 @@ class Index extends Component
 
     public function exportProducts(): void
     {
-        // Opsional: Tambahkan logika export seluruh produk jika diperlukan
+        // Opsional: Logika export seluruh produk
     }
 
     // =========================================================================
@@ -163,6 +220,13 @@ class Index extends Component
             'category_unit_id.required' => 'Unit Usaha wajib dipilih.',
         ]);
 
+        $isEdit = $this->isEditingCategory;
+
+        // 1. Ambil oldValues SEBELUM data di-update
+        $oldCategory = $isEdit ? Category::find($this->editingCategoryId) : null;
+        $oldValues = $oldCategory ? $oldCategory->getAttributes() : null;
+
+        // 2. Eksekusi updateOrCreate cukup SATU kali
         $category = Category::updateOrCreate(
             ['id' => $this->editingCategoryId],
             [
@@ -175,7 +239,17 @@ class Index extends Component
             $this->form_category_id = $category->id;
         }
 
-        $isEdit = $this->isEditingCategory;
+        // 3. Catat Audit Log
+        AuditLog::record(
+            event: $isEdit ? 'CATEGORY_UPDATED' : 'CATEGORY_CREATED',
+            identifier: (string) $category->id,
+            description: $isEdit 
+                ? "Admin memperbarui kategori produk: {$category->name}" 
+                : "Admin menambahkan kategori produk baru: {$category->name}",
+            oldValues: $oldValues,
+            newValues: $category->getAttributes()
+        );
+
         $this->resetCategoryForm();
         session()->flash('category_success', $isEdit ? 'Kategori berhasil diperbarui.' : 'Kategori berhasil ditambahkan.');
     }
@@ -198,11 +272,25 @@ class Index extends Component
             return;
         }
 
+        // 1. Ambil data SEBELUM dihapus
+        $categoryName = $category->name;
+        $oldValues = $category->getAttributes();
+
+        // 2. Hapus data (cukup 1 kali)
         $category->delete();
 
         if ($this->editingCategoryId === $id) {
             $this->resetCategoryForm();
         }
+
+        // 3. Catat Audit Log
+        AuditLog::record(
+            event: 'CATEGORY_DELETED',
+            identifier: (string) $id,
+            description: "Admin menghapus kategori produk: {$categoryName}",
+            oldValues: $oldValues,
+            newValues: null
+        );
 
         session()->flash('category_success', 'Kategori berhasil dihapus.');
     }
@@ -258,6 +346,7 @@ class Index extends Component
         } elseif ($this->stock_type === 'set') {
             $newStock = $this->stock_quantity;
         }
+
         AuditLog::record(
             event: 'STOCK_ADJUSTMENT',
             identifier: $this->selectedProduct->code ?? "ID: {$this->selectedProduct->id}",
@@ -323,7 +412,6 @@ class Index extends Component
     public function generateProductCode(): void
     {
         $prefix = 'PRD-';
-        
         do {
             $code = $prefix . strtoupper(Str::random(6));
         } while (
@@ -331,7 +419,6 @@ class Index extends Component
                 ->when($this->form_unit_id, fn($q) => $q->where('unit_id', $this->form_unit_id))
                 ->exists()
         );
-
         $this->form_code = $code;
     }
 
@@ -356,12 +443,10 @@ class Index extends Component
             'form_image'          => 'nullable|image|max:2048',
         ]);
 
-        // Ambil data lama jika dalam mode edit
         $oldProduct = $this->isEditing ? Product::find($this->editingProductId) : null;
         $oldValues = $oldProduct ? $oldProduct->getAttributes() : null;
 
         $imagePath = $this->existingImage;
-
         if ($this->form_image) {
             if ($this->isEditing && $this->existingImage) {
                 Storage::disk('public')->delete($this->existingImage);
@@ -386,7 +471,6 @@ class Index extends Component
             ]
         );
 
-        // Catat ke Audit Log
         AuditLog::record(
             event: $this->isEditing ? 'PRODUCT_UPDATED' : 'PRODUCT_CREATED',
             identifier: $product->code,
@@ -400,6 +484,7 @@ class Index extends Component
         $this->closeCreateModal();
         session()->flash('success', $this->isEditing ? 'Produk berhasil diperbarui.' : 'Produk berhasil ditambahkan.');
     }
+
     private function resetProductForm(): void
     {
         $this->reset([
@@ -458,13 +543,12 @@ class Index extends Component
         $products = Product::whereIn('id', $this->selectedRows)->get();
 
         foreach ($products as $product) {
-            // Catat ke Audit Log sebelum produk di-delete
             AuditLog::record(
                 event: 'PRODUCT_DELETED',
                 identifier: $product->code ?? "ID: {$product->id}",
                 description: "Admin menghapus produk (Bulk Delete): {$product->name}",
                 oldValues: $product->only(['id', 'name', 'code', 'selling_price', 'stock']),
-                newValues: []
+                newValues: null
             );
 
             if ($product->image) {
@@ -482,21 +566,18 @@ class Index extends Component
     public function deleteProduct(int $id): void
     {
         $product = Product::findOrFail($id);
-
         $productName = $product->name;
         $productCode = $product->code ?? "ID: {$id}";
         $oldValues   = $product->only(['id', 'name', 'code', 'purchase_price', 'selling_price', 'stock', 'unit_id', 'category_id']);
 
-        // 1. Catat Audit Log TERLEBIH DAHULU
         AuditLog::record(
             event: 'PRODUCT_DELETED',
             identifier: $productCode,
             description: "Admin menghapus produk: {$productName}",
             oldValues: $oldValues,
-            newValues: []
+            newValues: null
         );
 
-        // 2. Hapus gambar dan record database
         if ($product->image) {
             Storage::disk('public')->delete($product->image);
         }

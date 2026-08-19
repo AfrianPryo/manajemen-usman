@@ -3,6 +3,7 @@
 namespace App\Livewire\Master;
 
 use App\Models\AuthLog;
+use App\Models\FinanceTransaction;
 use App\Models\Unit;
 use App\Models\User;
 use Carbon\Carbon;
@@ -29,6 +30,15 @@ class Dashboard extends Component
     public string $searchUnit = '';
 
     // ------------------------------------------
+    // FILTER PERIODE WAKTU (SESUAI PILIHAN WIDGET)
+    // ------------------------------------------
+    #[Url(as: 'period', history: true)]
+    public string $periodFilter = 'this_month';
+
+    public $startDate;
+    public $endDate;
+
+    // ------------------------------------------
     // STATE MODAL & FORM UNIT USAHA
     // ------------------------------------------
     public bool $showModal = false;
@@ -47,7 +57,6 @@ class Dashboard extends Component
     // STATE MODAL & FORM TAMBAH ADMIN
     // ------------------------------------------
     public bool $showCreateAdminModal = false;
-
     public string $admin_name = '';
     public string $employee_status = 'nip'; // Default: nip
     public string $nip = '';
@@ -56,6 +65,72 @@ class Dashboard extends Component
 
     // Popup Modal Kredensial Baru (Username & Password)
     public ?array $createdCredentials = null;
+
+    // ------------------------------------------
+    // LIFECYCLE HOOKS FILTER PERIODE
+    // ------------------------------------------
+    public function mount(): void
+    {
+        $this->applyPeriodFilter();
+    }
+
+    public function updatedPeriodFilter(): void
+    {
+        $this->applyPeriodFilter();
+    }
+
+    public function updatedStartDate(): void
+    {
+        if ($this->periodFilter !== 'custom') {
+            $this->periodFilter = 'custom';
+        }
+    }
+
+    public function updatedEndDate(): void
+    {
+        if ($this->periodFilter !== 'custom') {
+            $this->periodFilter = 'custom';
+        }
+    }
+
+    private function applyPeriodFilter(): void
+    {
+        switch ($this->periodFilter) {
+            case 'today':
+                $this->startDate = Carbon::now()->toDateString();
+                $this->endDate   = Carbon::now()->toDateString();
+                break;
+            case 'this_week':
+                $this->startDate = Carbon::now()->startOfWeek()->toDateString();
+                $this->endDate   = Carbon::now()->endOfWeek()->toDateString();
+                break;
+            case 'this_quarter':
+                $this->startDate = Carbon::now()->startOfQuarter()->toDateString();
+                $this->endDate   = Carbon::now()->endOfQuarter()->toDateString();
+                break;
+            case 'this_year':
+                $this->startDate = Carbon::now()->startOfYear()->toDateString();
+                $this->endDate   = Carbon::now()->endOfYear()->toDateString();
+                break;
+            case 'last_month':
+                $this->startDate = Carbon::now()->subMonth()->startOfMonth()->toDateString();
+                $this->endDate   = Carbon::now()->subMonth()->endOfMonth()->toDateString();
+                break;
+            case 'custom':
+                if (!$this->startDate) {
+                    $this->startDate = Carbon::now()->startOfMonth()->toDateString();
+                }
+                if (!$this->endDate) {
+                    $this->endDate = Carbon::now()->toDateString();
+                }
+                break;
+            case 'this_month':
+            default:
+                $this->startDate = Carbon::now()->startOfMonth()->toDateString();
+                $this->endDate   = Carbon::now()->toDateString();
+                break;
+        }
+    }
 
     /**
      * Membuka Modal Tambah Admin Baru
@@ -245,7 +320,6 @@ class Dashboard extends Component
                 $lastLogin = $user->last_login_at 
                     ? Carbon::parse($user->last_login_at)->format('Y-m-d H:i')
                     : '-';
-
                 $isMaster = method_exists($user, 'isMasterAdmin') && $user->isMasterAdmin();
 
                 $sheet->setCellValue("A{$row}", $noAdmin++);
@@ -279,7 +353,6 @@ class Dashboard extends Component
 
             foreach ($units as $unit) {
                 $pj = $unit->users->first();
-
                 $sheet->setCellValue("A{$row}", $noUnit++);
                 $sheet->setCellValue("B{$row}", $unit->name);
                 $sheet->setCellValue("C{$row}", $unit->department ?? '-');
@@ -314,6 +387,22 @@ class Dashboard extends Component
     {
         Carbon::setLocale('id');
 
+        // Rentang tanggal berdasarkan filter periode
+        $start = Carbon::parse($this->startDate)->startOfDay();
+        $end   = Carbon::parse($this->endDate)->endOfDay();
+
+        // Label teks periode untuk dikirim ke view Blade
+        $periodLabel = match ($this->periodFilter) {
+            'today'        => 'Hari Ini',
+            'this_week'    => 'Minggu Ini',
+            'this_month'   => 'Bulan Ini',
+            'this_quarter' => 'Kuartal Ini',
+            'this_year'    => 'Tahun Ini',
+            'last_month'   => 'Bulan Lalu',
+            'custom'       => $start->translatedFormat('d M Y') . ' - ' . $end->translatedFormat('d M Y'),
+            default        => 'Bulan Ini',
+        };
+
         $units = Unit::with('users')
             ->when($this->searchUnit, fn ($q) => $q->where('name', 'like', '%' . $this->searchUnit . '%')
                                                   ->orWhere('department', 'like', '%' . $this->searchUnit . '%'))
@@ -333,25 +422,55 @@ class Dashboard extends Component
 
         $logs = AuthLog::latest()->limit(6)->get();
 
+        // TRANSAKSI TERKINI
+        $recentTransactions = FinanceTransaction::with('unit')
+            ->latest('transaction_date')
+            ->latest('id')
+            ->limit(6)
+            ->get();
+
         $allUnitsCount    = Unit::count();
         $activeUnitsCount = Unit::where('is_active', true)->count();
 
         // -------------------------------------------------------------
-        // DATA KONTRIBUSI OMZET PER UNIT USAHA
-        // Total Omzet: Rp 148.500.000
+        // DATA KONTRIBUSI OMZET PER UNIT USAHA (DINAMIS & TERFILTER)
         // -------------------------------------------------------------
+        $unitContributions = FinanceTransaction::query()
+            ->join('units', 'finance_transactions.unit_id', '=', 'units.id')
+            ->where('finance_transactions.type', 'income')
+            ->where('finance_transactions.status', 'completed')
+            ->whereBetween('finance_transactions.transaction_date', [$start, $end])
+            ->selectRaw('units.name, SUM(finance_transactions.amount) as total_income')
+            ->groupBy('units.id', 'units.name')
+            ->orderByDesc('total_income')
+            ->get();
+
+        $grandTotalContribution = $unitContributions->sum('total_income');
+
         $revenueContribution = [
-            'labels'      => ['Bengkel TO', 'Tefa PPLG', 'Kantin MPLB', 'Ritel PM', 'Jasa Akuntansi'],
-            'series'      => [51975000, 37125000, 26730000, 17820000, 14850000], // Nominal (Rp)
-            'percentages' => [35, 25, 18, 12, 10], // Persentase (%)
+            'labels'      => [],
+            'series'      => [],
+            'percentages' => []
         ];
+
+        foreach ($unitContributions as $contrib) {
+            $val = (float) $contrib->total_income;
+
+            $revenueContribution['labels'][]      = $contrib->name;
+            $revenueContribution['series'][]      = $val;
+            $revenueContribution['percentages'][] = $grandTotalContribution > 0 
+                ? round(($val / $grandTotalContribution) * 100, 1) 
+                : 0;
+        }
 
         return view('livewire.master.dashboard', [
             'units'               => $units,
             'users'               => $users,
             'logs'                => $logs,
-            'totalRevenue'        => 'Rp ' . number_format(array_sum($revenueContribution['series']), 0, ',', '.'),
-            'revenueContribution' => $revenueContribution, // <-- Dikirim ke View
+            'recentTransactions'  => $recentTransactions,
+            'totalRevenue'        => 'Rp ' . number_format($grandTotalContribution, 0, ',', '.'),
+            'periodLabel'         => $periodLabel,
+            'revenueContribution' => $revenueContribution,
             'totalUnits'          => $allUnitsCount,
             'activeUnits'         => $activeUnitsCount,
             'inactiveUnits'       => $allUnitsCount - $activeUnitsCount,

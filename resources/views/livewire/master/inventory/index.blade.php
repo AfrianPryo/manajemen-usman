@@ -735,12 +735,81 @@
                                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                 </svg>
-                                <span>Memproses...</span>
                             </span>
                         </button>
                     </div>
                 </form>
             </div>
         </div>
+    @endif
+
+    {{-- Modal Detail Error Import Excel --}}
+    @if($showErrorModal)
+    <div class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-fadeIn">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl max-w-2xl w-full p-6 shadow-2xl border border-neutral-200 dark:border-slate-700">
+            
+            {{-- Header Modal --}}
+            <div class="flex items-start justify-between border-b border-neutral-100 dark:border-slate-700/80 pb-4 mb-4">
+                <div class="flex items-center gap-3">
+                    <div class="p-2.5 rounded-xl bg-rose-50 text-rose-600 dark:bg-rose-950/50 dark:text-rose-400 shrink-0">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="text-base font-bold text-neutral-900 dark:text-white">Import File Dibatalkan</h3>
+                        <p class="text-xs text-neutral-500 dark:text-neutral-400">Ditemukan data yang tidak sesuai pada baris dan kolom berikut:</p>
+                    </div>
+                </div>
+                <button type="button" wire:click="$set('showErrorModal', false)" class="text-neutral-400 hover:text-neutral-600 dark:hover:text-white">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+
+            {{-- Tabel Rincian Lokasi Error --}}
+            <div class="max-h-64 overflow-y-auto border border-neutral-200 dark:border-slate-700 rounded-xl mb-5">
+                <table class="w-full text-left border-collapse text-xs">
+                    <thead class="bg-neutral-50 dark:bg-slate-900 text-neutral-600 dark:text-neutral-400 font-semibold sticky top-0 z-10 border-b dark:border-slate-700">
+                        <tr>
+                            <th class="p-3 text-center w-20">Baris</th>
+                            <th class="p-3">Nama Kolom</th>
+                            <th class="p-3">Input Pengguna</th>
+                            <th class="p-3">Keterangan Masalah</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-neutral-100 dark:divide-slate-700/60 bg-white dark:bg-slate-800 text-neutral-700 dark:text-neutral-300">
+                        @foreach($importErrors as $err)
+                            <tr class="hover:bg-rose-50/40 dark:hover:bg-rose-950/20 transition-colors">
+                                <td class="p-3 text-center font-bold text-rose-600 dark:text-rose-400 bg-rose-50/30 dark:bg-rose-950/10">
+                                    Baris {{ $err['row'] }}
+                                </td>
+                                <td class="p-3 font-semibold text-neutral-800 dark:text-neutral-200">
+                                    {{ $err['column'] }}
+                                </td>
+                                <td class="p-3">
+                                    <code class="px-2 py-0.5 rounded bg-neutral-100 dark:bg-slate-700 text-neutral-800 dark:text-neutral-200 font-mono text-[11px]">
+                                        {{ $err['value'] }}
+                                    </code>
+                                </td>
+                                <td class="p-3 text-rose-600 dark:text-rose-400 font-medium">
+                                    {{ $err['messages'] }}
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+
+            {{-- Action Buttons --}}
+            <div class="flex items-center justify-between pt-2">
+                <span class="text-xs text-neutral-400">Total item bermasalah: <strong>{{ count($importErrors) }}</strong></span>
+                <button type="button" 
+                        wire:click="$set('showErrorModal', false)" 
+                        class="px-4 py-2 text-xs font-semibold text-white bg-neutral-900 hover:bg-neutral-800 dark:bg-slate-700 dark:hover:bg-slate-600 rounded-lg transition-all shadow-sm">
+                    Perbaiki File & Coba Lagi
+                </button>
+            </div>
+        </div>
+    </div>
     @endif
 </div>

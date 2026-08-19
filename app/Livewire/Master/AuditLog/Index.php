@@ -16,13 +16,27 @@ class Index extends Component
 
     public string $search = '';
     public string $eventFilter = '';
+    public string $startDate = '';
+    public string $endDate = '';
     public int $perPage = 15;
 
     public bool $showDetailModal = false;
     public ?AuditLog $selectedLog = null;
 
+    // Reset halaman otomatis ketika filter berubah
     public function updatingSearch(): void { $this->resetPage(); }
     public function updatingEventFilter(): void { $this->resetPage(); }
+    public function updatingStartDate(): void { $this->resetPage(); }
+    public function updatingEndDate(): void { $this->resetPage(); }
+
+    /**
+     * Reset seluruh filter ke kondisi awal.
+     */
+    public function resetFilters(): void
+    {
+        $this->reset(['search', 'eventFilter', 'startDate', 'endDate']);
+        $this->resetPage();
+    }
 
     public function openDetail(int $id): void
     {
@@ -48,6 +62,8 @@ class Index extends Component
                 });
             })
             ->when($this->eventFilter, fn ($q) => $q->where('event', $this->eventFilter))
+            ->when($this->startDate, fn ($q) => $q->whereDate('created_at', '>=', $this->startDate))
+            ->when($this->endDate, fn ($q) => $q->whereDate('created_at', '<=', $this->endDate))
             ->latest()
             ->paginate($this->perPage);
 
