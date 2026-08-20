@@ -1,21 +1,24 @@
 <?php
 
 use App\Livewire\Auth\Login;
+use App\Livewire\Master\Activities\Index as ActivitiesIndex;
+use App\Livewire\Master\Analytics\Index as AnalyticsIndex;
+use App\Livewire\Master\Asset\Index as AssetIndex; // Import Baru
+use App\Livewire\Master\AuditLog\Index as AuditLogsIndex;
+use App\Livewire\Master\Dashboard as MasterDashboard;
+use App\Livewire\Master\Inventory\Index as InventoryIndex;
+use App\Livewire\Master\Profile\Index as ProfileIndex;
+use App\Livewire\Master\RecurringTransaction\Index as RecurringTransactionIndex; // Import Baru
+use App\Livewire\Master\Reports\Index as ReportsIndex;
+use App\Livewire\Master\Settings\Index as SettingsIndex;
+use App\Livewire\Master\Transactions\Index as TransactionsIndex;
+use App\Livewire\Master\Units\Index as UnitsIndex;
+use App\Livewire\Master\Users\Index as UsersIndex;
+use App\Livewire\Master\Vendor\Index as VendorIndex; // Import Baru
 use App\Livewire\Password\ChangePassword;
 use App\Livewire\Unit\Dashboard as UnitDashboard;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
-use App\Livewire\Master\Dashboard as MasterDashboard;
-use App\Livewire\Master\Units\Index as UnitsIndex;
-use App\Livewire\Master\Users\Index as UsersIndex;
-use App\Livewire\Master\Transactions\Index as TransactionsIndex;
-use App\Livewire\Master\Inventory\Index as InventoryIndex;
-use App\Livewire\Master\Reports\Index as ReportsIndex;
-use App\Livewire\Master\Analytics\Index as AnalyticsIndex;
-use App\Livewire\Master\Activities\Index as ActivitiesIndex;
-use App\Livewire\Master\AuditLog\Index as AuditLogsIndex;
-use App\Livewire\Master\Settings\Index as SettingsIndex;
-use App\Livewire\Master\Profile\Index as ProfileIndex;
 
 /*
 |--------------------------------------------------------------------------
@@ -86,10 +89,13 @@ Route::middleware(['auth', 'user.active', 'single.session'])->group(function () 
             // Master Management
             Route::get('/units', UnitsIndex::class)->name('units.index');
             Route::get('/users', UsersIndex::class)->name('users.index');
+            Route::get('/vendors', VendorIndex::class)->name('vendors.index'); // Route Baru
             
             // Operasional
             Route::get('/transactions', TransactionsIndex::class)->name('transactions.index');
+            Route::get('/recurring-transactions', RecurringTransactionIndex::class)->name('recurring-transactions.index'); // Route Baru
             Route::get('/inventory', InventoryIndex::class)->name('inventory.index');
+            Route::get('/assets', AssetIndex::class)->name('assets.index'); // Route Baru
             Route::get('/reports', ReportsIndex::class)->name('reports.index');
             
             // Analytics

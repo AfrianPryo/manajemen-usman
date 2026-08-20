@@ -19,6 +19,7 @@ return [
         'children' => [
             ['label' => 'Unit Usaha', 'route' => 'master.units.index', 'roles' => ['master-admin']],
             ['label' => 'Admin', 'route' => 'master.users.index', 'roles' => ['master-admin']],
+            ['label' => 'Vendor', 'route' => 'master.vendors.index', 'roles' => ['master-admin']], // Baru
             // ['label' => 'Role & Permission', 'route' => 'master.roles.index', 'roles' => ['master-admin']], // Opsional
         ],
     ],
@@ -29,7 +30,9 @@ return [
         'roles' => ['master-admin'],
         'children' => [
             ['label' => 'Transaksi', 'route' => 'master.transactions.index', 'roles' => ['master-admin']],
+            ['label' => 'Transaksi Berulang', 'route' => 'master.recurring-transactions.index', 'roles' => ['master-admin']], // Baru
             ['label' => 'Inventaris', 'route' => 'master.inventory.index', 'roles' => ['master-admin']],
+            ['label' => 'Aset Unit Usaha', 'route' => 'master.assets.index', 'roles' => ['master-admin']], // Baru
             ['label' => 'Laporan', 'route' => 'master.reports.index', 'roles' => ['master-admin']],
         ],
     ],
