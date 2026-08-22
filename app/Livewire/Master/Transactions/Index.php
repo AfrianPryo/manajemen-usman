@@ -17,6 +17,7 @@ use Livewire\Component;
 use Livewire\WithFileUploads;
 use Livewire\WithPagination;
 use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\TransactionExport;
 
 #[Layout('components.layouts.app')]
 #[Title('Monitoring Transaksi')]
@@ -454,6 +455,31 @@ class Index extends Component
             ->when($this->statusFilter, fn ($q) => $q->where('status', $this->statusFilter))
             ->when($this->startDate, fn ($q) => $q->whereDate('transaction_date', '>=', $this->startDate))
             ->when($this->endDate, fn ($q) => $q->whereDate('transaction_date', '<=', $this->endDate));
+    }
+
+    public function exportData()
+    {
+        $filters = [
+            'search'      => $this->search,
+            'unitFilter'  => $this->unitFilter,
+            'typeFilter'  => $this->typeFilter,
+            'statusFilter'=> $this->statusFilter,
+            'startDate'   => $this->startDate,
+            'endDate'     => $this->endDate,
+        ];
+
+        $fileName = 'Data_Transaksi_' . now()->format('Ymd_His') . '.xlsx';
+
+        // Audit Log: Export Data
+        AuditLog::record(
+            event: 'TRANSACTION_EXPORTED',
+            identifier: $fileName,
+            description: "Admin mengekspor data transaksi ke Excel" . 
+                ($this->unitFilter ? " (Unit ID: {$this->unitFilter})" : '') .
+                ($this->startDate || $this->endDate ? " periode {$this->startDate} s/d {$this->endDate}" : ''),
+        );
+
+        return Excel::download(new TransactionExport($filters), $fileName);
     }
 
     public function render()

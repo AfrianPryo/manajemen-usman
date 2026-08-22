@@ -17,6 +17,7 @@ use Livewire\Component;
 use Livewire\WithFileUploads;
 use Livewire\WithPagination;
 use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\ProductExport;
 
 #[Layout('components.layouts.app')]
 #[Title('Inventaris Produk')]
@@ -180,9 +181,26 @@ class Index extends Component
         session()->flash('success', 'Data produk berhasil diimport.');
     }
 
-    public function exportProducts(): void
+    public function exportProducts()
     {
-        // Opsional: Logika export seluruh produk
+        $filters = [
+            'search'         => $this->search,
+            'unitFilter'     => $this->unitFilter,
+            'categoryFilter' => $this->categoryFilter,
+            'stockFilter'    => $this->stockFilter,
+        ];
+
+        $fileName = 'Data_Produk_' . now()->format('Ymd_His') . '.xlsx';
+
+        AuditLog::record(
+            event: 'PRODUCT_EXPORTED',
+            identifier: $fileName,
+            description: 'Admin mengekspor data produk ke Excel' .
+                ($this->unitFilter ? " (Unit ID: {$this->unitFilter})" : '') .
+                ($this->stockFilter ? " status stok: {$this->stockFilter}" : ''),
+        );
+
+        return Excel::download(new ProductExport($filters), $fileName);
     }
 
     // =========================================================================
@@ -561,7 +579,23 @@ class Index extends Component
         session()->flash('success', 'Produk terpilih berhasil dihapus.');
     }
 
-    public function exportSelected(): void {}
+    public function exportSelected()
+    {
+        if (empty($this->selectedRows)) {
+            session()->flash('error', 'Pilih minimal satu produk terlebih dahulu untuk diekspor.');
+            return;
+        }
+
+        $fileName = 'Data_Produk_Terpilih_' . now()->format('Ymd_His') . '.xlsx';
+
+        AuditLog::record(
+            event: 'PRODUCT_EXPORTED',
+            identifier: $fileName,
+            description: 'Admin mengekspor ' . count($this->selectedRows) . ' produk terpilih ke Excel',
+        );
+
+        return Excel::download(new ProductExport([], $this->selectedRows), $fileName);
+    }
 
     public function deleteProduct(int $id): void
     {

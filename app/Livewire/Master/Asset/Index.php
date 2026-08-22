@@ -7,11 +7,16 @@ use Livewire\Attributes\Layout;
 use Livewire\WithPagination;
 use Illuminate\Support\Str;
 use App\Models\Asset;
+use App\Exports\AssetTemplateExport;
+use App\Exports\AssetExport;
+use App\Imports\AssetsImport;
+use Maatwebsite\Excel\Facades\Excel;
+use Livewire\WithFileUploads;
 
 #[Layout('layouts.app')]
 class Index extends Component
 {
-    use WithPagination;
+    use WithPagination, WithFileUploads;
 
     // Filter & Search
     public $search = '';
@@ -39,6 +44,12 @@ class Index extends Component
     public $assigned_to = '';
     public $location = '';
     public $notes = '';
+
+    // Import/Export Properties
+    public bool $showImportModal = false;
+    public bool $showErrorModal = false;
+    public array $importErrors = [];
+    public $excel_file = null;
 
     protected function rules()
     {
@@ -176,6 +187,99 @@ class Index extends Component
             ->when($this->statusFilter, fn($q) => $q->where('status', $this->statusFilter))
             ->when($this->categoryFilter, fn($q) => $q->where('category', $this->categoryFilter))
             ->latest();
+    }
+
+    // =========================================================================
+    // EXCEL IMPORT & EXPORT
+    // =========================================================================
+
+    public function openImportModal(): void
+    {
+        $this->reset('excel_file');
+        $this->resetValidation();
+        $this->showImportModal = true;
+    }
+
+    public function closeImportModal(): void
+    {
+        $this->showImportModal = false;
+        $this->reset('excel_file');
+    }
+
+    public function closeErrorModal(): void
+    {
+        $this->showErrorModal = false;
+        $this->importErrors = [];
+    }
+
+    public function downloadTemplate()
+    {
+        return Excel::download(new AssetTemplateExport, 'Template_Import_Aset.xlsx');
+    }
+
+    public function importExcel(): void
+    {
+        $this->validate([
+            'excel_file' => 'required|file|mimes:xlsx,xls|max:5120',
+        ], [], [
+            'excel_file' => 'Berkas Excel'
+        ]);
+
+        $fileName = $this->excel_file->getClientOriginalName();
+        $import = new AssetsImport();
+        Excel::import($import, $this->excel_file->getRealPath());
+
+        // Cek jika terdapat kegagalan validasi baris dari Excel
+        if ($import->failures()->isNotEmpty()) {
+            $this->importErrors = [];
+
+            foreach ($import->failures() as $failure) {
+                $attr = $failure->attribute();
+                $columnName = $import->customValidationAttributes()[$attr] ?? $attr;
+                $rowValues  = $failure->values();
+
+                foreach ($failure->errors() as $error) {
+                    $this->importErrors[] = [
+                        'row'      => $failure->row(),
+                        'column'   => $columnName,
+                        'value'    => $rowValues[$attr] ?? '(Kosong)',
+                        'messages' => $error,
+                    ];
+                }
+            }
+
+            $this->showImportModal = false;
+            $this->showErrorModal = true;
+            return;
+        }
+
+        $this->closeImportModal();
+        session()->flash('message', 'Data aset dari Excel berhasil diimpor.');
+    }
+
+    public function exportData()
+    {
+        $filters = [
+            'search'         => $this->search,
+            'statusFilter'   => $this->statusFilter,
+            'categoryFilter' => $this->categoryFilter,
+        ];
+
+        $fileName = 'Data_Aset_' . now()->format('Ymd_His') . '.xlsx';
+
+        return Excel::download(new AssetExport($filters), $fileName);
+    }
+
+    public function exportSelected()
+    {
+        if (empty($this->selectedRows)) {
+            session()->flash('message', 'Pilih minimal satu aset terlebih dahulu untuk diekspor.');
+            return;
+        }
+
+        $fileName = 'Data_Aset_Terpilih_' . now()->format('Ymd_His') . '.xlsx';
+
+        return Excel::download(new AssetExport([], $this->selectedRows), $fileName);
     }
 
     public function render()

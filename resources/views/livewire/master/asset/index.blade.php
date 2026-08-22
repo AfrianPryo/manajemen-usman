@@ -60,11 +60,22 @@
 
     {{-- Action Header --}}
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-2">
-        <div>
-            <h1 class="text-lg font-bold text-neutral-900 dark:text-white tracking-tight">Manajemen Aset</h1>
-            <p class="text-xs text-neutral-400">Kelola, lacak nilai, dan pantau status inventaris aset Anda.</p>
-        </div>
         <div class="flex items-center gap-2.5 shrink-0">
+            {{-- Tombol Export --}}
+            <button wire:click="exportData" class="px-3.5 py-2 text-xs font-semibold text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800 rounded-full hover:bg-sky-100 dark:hover:bg-sky-900/40 transition-all flex items-center gap-1.5 cursor-pointer">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
+                <span>Export Excel</span>
+            </button>
+
+            {{-- Tombol Import --}}
+            <button wire:click="openImportModal" class="px-3.5 py-2 text-xs font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-full hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition-all flex items-center gap-1.5 cursor-pointer">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/></svg>
+                <span>Import Excel</span>
+            </button>
+        </div>
+
+        <div class="flex items-center gap-2.5 shrink-0">
+            {{-- Tombol Tambah Aset --}}
             <button wire:click="openModal" class="px-4 py-2 text-xs font-bold text-white bg-red-600 hover:bg-red-700 rounded-full transition-all flex items-center gap-2 shadow-sm shadow-red-600/20 cursor-pointer">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
                 <span>Tambah Aset</span>
@@ -355,5 +366,108 @@
                 </form>
             </div>
         </div>
+    @endif
+
+    {{-- Modal Import Excel --}}
+    @if($showImportModal)
+        <div class="fixed inset-0 z-50 flex items-center justify-center bg-neutral-900/50 backdrop-blur-sm p-4">
+            <div class="bg-white dark:bg-slate-800 w-full max-w-md rounded-md border border-neutral-200 dark:border-slate-700 shadow-xl overflow-hidden animate-in fade-in zoom-in duration-150">
+                <div class="p-4 border-b border-neutral-100 dark:border-slate-700 flex items-center justify-between">
+                    <h3 class="text-sm font-bold text-neutral-900 dark:text-white">Import Aset Massal</h3>
+                    <button wire:click="closeImportModal" class="text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 text-lg font-bold">&times;</button>
+                </div>
+
+                <form wire:submit.prevent="importExcel" class="p-4 space-y-4 text-xs">
+                    <div class="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/50 rounded-md p-3 text-amber-800 dark:text-amber-300 space-y-1">
+                        <p class="font-bold">Petunjuk Pengisian:</p>
+                        <ul class="list-disc list-inside space-y-0.5 text-[11px] text-amber-700 dark:text-amber-400">
+                            <li>Unduh template terlebih dahulu untuk format yang sesuai.</li>
+                            <li>Gunakan pilihan dropdown yang tersedia pada kolom Excel (Kategori, Status, Kondisi).</li>
+                            <li>Pastikan format tanggal menggunakan <code class="font-bold">YYYY-MM-DD</code>.</li>
+                            <li>Kosongkan kolom Tag Aset jika ingin sistem membuatkan kode otomatis.</li>
+                        </ul>
+                    </div>
+
+                    <div>
+                        <button type="button" wire:click="downloadTemplate" class="w-full py-2 px-3 text-xs font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-md hover:bg-emerald-100 transition flex items-center justify-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
+                            Unduh Template (.XLSX)
+                        </button>
+                    </div>
+
+                    <div>
+                        <label class="block font-medium text-neutral-700 dark:text-neutral-300 mb-1">Unggah Berkas Excel</label>
+                        <input type="file" wire:model="excel_file" accept=".xlsx, .xls" class="w-full text-xs border border-neutral-200 dark:border-slate-700 rounded p-1.5 bg-neutral-50 dark:bg-slate-900 text-neutral-800 dark:text-neutral-200">
+
+                        <div wire:loading wire:target="excel_file" class="text-amber-600 mt-1">Membaca file...</div>
+                        @error('excel_file') <span class="text-rose-500 text-xs mt-1 block">{{ $message }}</span> @enderror
+                    </div>
+
+                    <div class="pt-2 flex items-center justify-end gap-2 border-t border-neutral-100 dark:border-slate-700">
+                        <button type="button" wire:click="closeImportModal" class="px-3 py-1.5 text-xs font-semibold text-neutral-600 dark:text-neutral-300 bg-neutral-100 dark:bg-slate-700 rounded hover:bg-neutral-200">Batal</button>
+                        <button type="submit" wire:loading.attr="disabled" class="px-4 py-1.5 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded transition flex items-center gap-1.5">
+                            <span wire:loading.remove wire:target="importExcel">Import Data</span>
+                            <span wire:loading wire:target="importExcel">Memproses...</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    @endif
+
+    {{-- Modal Detail Error Import Excel --}}
+    @if($showErrorModal)
+    <div class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-fadeIn">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl max-w-2xl w-full p-6 shadow-2xl border border-neutral-200 dark:border-slate-700">
+            <div class="flex items-start justify-between border-b border-neutral-100 dark:border-slate-700/80 pb-4 mb-4">
+                <div class="flex items-center gap-3">
+                    <div class="p-2.5 rounded-xl bg-rose-50 text-rose-600 dark:bg-rose-950/50 dark:text-rose-400 shrink-0">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="text-base font-bold text-neutral-900 dark:text-white">Import File Dibatalkan</h3>
+                        <p class="text-xs text-neutral-500 dark:text-neutral-400">Ditemukan data yang tidak sesuai pada baris dan kolom berikut:</p>
+                    </div>
+                </div>
+                <button type="button" wire:click="closeErrorModal" class="text-neutral-400 hover:text-neutral-600 dark:hover:text-white">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+
+            <div class="max-h-64 overflow-y-auto border border-neutral-200 dark:border-slate-700 rounded-xl mb-5">
+                <table class="w-full text-left border-collapse text-xs">
+                    <thead class="bg-neutral-50 dark:bg-slate-900 text-neutral-600 dark:text-neutral-400 font-semibold sticky top-0 z-10 border-b dark:border-slate-700">
+                        <tr>
+                            <th class="p-3 text-center w-20">Baris</th>
+                            <th class="p-3">Nama Kolom</th>
+                            <th class="p-3">Input Pengguna</th>
+                            <th class="p-3">Keterangan Masalah</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-neutral-100 dark:divide-slate-700/60 bg-white dark:bg-slate-800 text-neutral-700 dark:text-neutral-300">
+                        @foreach($importErrors as $err)
+                            <tr class="hover:bg-rose-50/40 dark:hover:bg-rose-950/20 transition-colors">
+                                <td class="p-3 text-center font-bold text-rose-600 dark:text-rose-400 bg-rose-50/30 dark:bg-rose-950/10">Baris {{ $err['row'] }}</td>
+                                <td class="p-3 font-semibold text-neutral-800 dark:text-neutral-200">{{ $err['column'] }}</td>
+                                <td class="p-3">
+                                    <code class="px-2 py-0.5 rounded bg-neutral-100 dark:bg-slate-700 text-neutral-800 dark:text-neutral-200 font-mono text-[11px]">{{ $err['value'] }}</code>
+                                </td>
+                                <td class="p-3 text-rose-600 dark:text-rose-400 font-medium">{{ $err['messages'] }}</td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="flex items-center justify-between pt-2">
+                <span class="text-xs text-neutral-400">Total item bermasalah: <strong>{{ count($importErrors) }}</strong></span>
+                <button type="button" wire:click="closeErrorModal" class="px-4 py-2 text-xs font-semibold text-white bg-neutral-900 hover:bg-neutral-800 dark:bg-slate-700 dark:hover:bg-slate-600 rounded-lg transition-all shadow-sm">
+                    Perbaiki File & Coba Lagi
+                </button>
+            </div>
+        </div>
+    </div>
     @endif
 </div>

@@ -532,49 +532,6 @@
             </table>
         </div>
     </div>
-
-        {{-- Tabel Produk Terlaris (Full Width) --}}
-        <div class="bg-white dark:bg-slate-800 rounded-md border border-neutral-100 dark:border-slate-700 overflow-hidden shadow-sm shadow-black/[0.02]">
-            <div class="p-5 border-b border-neutral-100 dark:border-slate-700">
-                <h2 class="text-base font-bold text-neutral-900 dark:text-white">5 Produk/Jasa Terlaris</h2>
-                <p class="text-xs text-neutral-400 mt-0.5">Item paling banyak diminati pelanggan</p>
-            </div>
-
-            <div class="w-full">
-                <table class="w-full text-sm text-left table-auto">
-                    <thead class="bg-neutral-50/70 dark:bg-slate-900/50 text-[11px] font-semibold uppercase tracking-wider text-neutral-400 border-b border-neutral-100 dark:border-slate-700">
-                        <tr>
-                            <th class="px-4 sm:px-5 py-3.5">Nama Produk / Jasa</th>
-                            <th class="px-4 sm:px-5 py-3.5 text-right">Terjual</th>
-                            <th class="px-4 sm:px-5 py-3.5 text-right">Total Nilai</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-neutral-100 dark:divide-slate-700">
-                        @forelse($topProducts as $product)
-                            <tr class="hover:bg-neutral-50/60 dark:hover:bg-slate-700/30 transition-colors">
-                                <td class="px-4 sm:px-5 py-3.5 font-semibold text-neutral-900 dark:text-white text-xs sm:text-sm">
-                                    {{ $product->name }}
-                                </td>
-                                <td class="px-4 sm:px-5 py-3.5 text-right text-xs text-neutral-600 dark:text-neutral-300 font-medium">
-                                    {{ number_format($product->qty_sold, 0, ',', '.') }} unit
-                                </td>
-                                <td class="px-4 sm:px-5 py-3.5 text-right text-xs font-bold text-sky-600 dark:text-sky-400">
-                                    Rp {{ number_format($product->total_sales, 0, ',', '.') }}
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="3" class="px-4 sm:px-5 py-8 text-center text-xs text-neutral-400">
-                                    Belum ada data tersedia.
-                                </td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-    </div>
 </div>
 
 {{-- Scripts --}}

@@ -2,11 +2,13 @@
 
 namespace App\Livewire\Master\AuditLog;
 
+use App\Exports\AuditLogExport;
 use App\Models\AuditLog;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithPagination;
+use Maatwebsite\Excel\Facades\Excel;
 
 #[Layout('components.layouts.app')]
 #[Title('Audit Log Sistem')]
@@ -48,6 +50,22 @@ class Index extends Component
     {
         $this->showDetailModal = false;
         $this->selectedLog = null;
+    }
+
+    /**
+     * Export audit log sistem (mengikuti filter yang sedang aktif: search, event, rentang tanggal).
+     */
+    public function exportLog()
+    {
+        return Excel::download(
+            new AuditLogExport([
+                'search'      => $this->search,
+                'eventFilter' => $this->eventFilter,
+                'startDate'   => $this->startDate,
+                'endDate'     => $this->endDate,
+            ]),
+            'audit-log-sistem-' . now()->format('Y-m-d_His') . '.xlsx'
+        );
     }
 
     public function render()

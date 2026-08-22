@@ -185,7 +185,7 @@
                 {{-- Left: Path Breadcrumb --}}
                 <div class="flex items-center gap-2 text-xs font-medium text-slate-500">
                     
-                    {{-- Parent / Kategori (misal: Master / Admin / UMS Sekolah) --}}
+                    {{-- Parent / Kategori --}}
                     <div class="flex items-center gap-1.5 px-2 py-1 text-slate-700 font-semibold">
                         <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
@@ -205,7 +205,7 @@
                     </div>
                 </div>
 
-                {{-- Right: Light/Dark Mode, Notification Bell & User Role Badge --}}
+                {{-- Right: Light/Dark Mode, Notification Component & User Role Badge --}}
                 <div class="flex items-center gap-3">
 
                     {{-- Toggle Light / Dark Mode --}}
@@ -232,91 +232,24 @@
                                 class="p-1.5 text-slate-500 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors focus:outline-none"
                                 :title="darkMode ? 'Beralih ke Mode Terang' : 'Beralih ke Mode Gelap'">
                             
-                            {{-- Icon Moon (Tampil saat Light Mode) --}}
+                            {{-- Icon Moon --}}
                             <svg x-show="!darkMode" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
                             </svg>
 
-                            {{-- Icon Sun (Tampil saat Dark Mode) --}}
+                            {{-- Icon Sun --}}
                             <svg x-show="darkMode" x-cloak class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
                             </svg>
                         </button>
                     </div>
 
-                    {{-- Wrapper Notifikasi Sidebar --}}
-                    <div x-data="{ open: false }" @keydown.window.escape="open = false" class="relative">
-                        {{-- Tombol Trigger Bell --}}
-                        <button @click="open = true" 
-                                class="relative p-1.5 text-slate-500 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors focus:outline-none cursor-pointer">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
-                            </svg>
-                            {{-- Indicator Dot --}}
-                            <span class="absolute top-1 right-1 w-2 h-2 bg-rose-500 rounded-full ring-2 ring-white dark:ring-slate-900"></span>
-                        </button>
+                    {{-- PEMANGGILAN KOMPONEN LIVEWIRE --}}
+                    <livewire:notification-sidebar 
+                        :role="$role ?? 'master'"
+                        :view-all-url="$viewAllUrl ?? '#'"
+                    />
 
-                        {{-- Backdrop Gelap --}}
-                        <div x-show="open" 
-                            x-transition:enter="ease-out duration-300"
-                            x-transition:enter-start="opacity-0"
-                            x-transition:enter-end="opacity-100"
-                            x-transition:leave="ease-in duration-200"
-                            x-transition:leave-start="opacity-100"
-                            x-transition:leave-end="opacity-0"
-                            @click="open = false"
-                            class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50"
-                            style="display: none;">
-                        </div>
-
-                        {{-- Sidebar Panel (Slide-Over Dari Kanan) --}}
-                        <div x-show="open"
-                            x-transition:enter="transform transition ease-in-out duration-300"
-                            x-transition:enter-start="translate-x-full"
-                            x-transition:enter-end="translate-x-0"
-                            x-transition:leave="transform transition ease-in-out duration-300"
-                            x-transition:leave-start="translate-x-0"
-                            x-transition:leave-end="translate-x-full"
-                            class="fixed inset-y-0 right-0 w-full sm:w-80 md:w-96 bg-white dark:bg-slate-900 shadow-2xl border-l border-slate-200 dark:border-slate-800 z-50 flex flex-col"
-                            style="display: none;">
-
-                            {{-- Sidebar Header --}}
-                            <div class="p-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-800/30">
-                                <div class="flex items-center gap-2">
-                                    <span class="font-bold text-sm text-slate-900 dark:text-slate-100">Notifikasi</span>
-                                    <span class="text-[10px] bg-rose-50 text-rose-600 font-semibold px-2 py-0.5 rounded-md border border-rose-100 dark:bg-rose-950/50 dark:border-rose-900 dark:text-rose-400">Baru</span>
-                                </div>
-                                <button @click="open = false" 
-                                        class="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                                    </svg>
-                                </button>
-                            </div>
-
-                            {{-- Sidebar Body (Scrollable untuk Banyak Notifikasi) --}}
-                            <div class="flex-1 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800 text-xs">
-                                {{-- Item Notifikasi 1 --}}
-                                <a href="#" class="block p-4 hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors">
-                                    <p class="font-bold text-slate-800 dark:text-slate-200">Tagihan Rutin Dibuat</p>
-                                    <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Sewa Kantin Vendor A berhasil dieksekusi.</p>
-                                    <span class="text-[10px] text-slate-400 dark:text-slate-500 mt-1.5 block">Baru saja</span>
-                                </a>
-
-                                {{-- Item Notifikasi 2 --}}
-                                <a href="#" class="block p-4 hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors">
-                                    <p class="font-bold text-slate-800 dark:text-slate-200">Pembayaran Diterima</p>
-                                    <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Transaksi #TRX-99281 telah berhasil divalidasi oleh sistem.</p>
-                                    <span class="text-[10px] text-slate-400 dark:text-slate-500 mt-1.5 block">2 jam yang lalu</span>
-                                </a>
-                            </div>
-
-                            {{-- Sidebar Footer --}}
-                            <div class="p-3 border-t border-slate-100 dark:border-slate-800 text-center bg-slate-50/50 dark:bg-slate-800/30 shrink-0">
-                                <a href="#" class="text-xs font-semibold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white">Lihat Semua Notifikasi &rarr;</a>
-                            </div>
-                        </div>
-                    </div>
                 </div>
             </header>
 

@@ -12,6 +12,7 @@ class RecurringTransaction extends Model
 
     protected $fillable = [
         'unit_id',
+        'finance_category_id', // Tambahkan kolom ini
         'title',
         'type',
         'amount',
@@ -45,5 +46,11 @@ class RecurringTransaction extends Model
         return $this->belongsTo(Unit::class);
     }
 
-
+    /**
+     * Relasi ke kategori keuangan
+     */
+    public function category(): BelongsTo
+    {
+        return $this->belongsTo(FinanceCategory::class, 'finance_category_id');
+    }
 }

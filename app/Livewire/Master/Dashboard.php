@@ -13,11 +13,8 @@ use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\Url;
 use Livewire\Component;
-use PhpOffice\PhpSpreadsheet\Spreadsheet;
-use PhpOffice\PhpSpreadsheet\Style\Alignment;
-use PhpOffice\PhpSpreadsheet\Style\Fill;
-use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
-use Symfony\Component\HttpFoundation\StreamedResponse;
+use App\Exports\DashboardExport;
+use Maatwebsite\Excel\Facades\Excel;
 
 #[Layout('components.layouts.app')]
 #[Title('Dashboard Master Admin')]
@@ -277,110 +274,88 @@ class Dashboard extends Component
     }
 
     /**
-     * Ekspor Data Laporan ke Format Excel (.xlsx)
+     * Ekspor seluruh data Dashboard Master Admin ke Excel (multi-sheet)
      */
-    public function export(): StreamedResponse
+    public function export()
     {
+        $start = Carbon::parse($this->startDate)->startOfDay();
+        $end   = Carbon::parse($this->endDate)->endOfDay();
+
+        $periodLabel = match ($this->periodFilter) {
+            'today'        => 'Hari Ini',
+            'this_week'    => 'Minggu Ini',
+            'this_month'   => 'Bulan Ini',
+            'this_quarter' => 'Kuartal Ini',
+            'this_year'    => 'Tahun Ini',
+            'last_month'   => 'Bulan Lalu',
+            'custom'       => $start->translatedFormat('d M Y') . ' - ' . $end->translatedFormat('d M Y'),
+            default        => 'Bulan Ini',
+        };
+
+        // Kontribusi Omzet per Unit — DIPERKAYA dengan jumlah transaksi, rata-rata, rentang tanggal
+        $unitContributions = FinanceTransaction::query()
+            ->join('units', 'finance_transactions.unit_id', '=', 'units.id')
+            ->where('finance_transactions.type', 'income')
+            ->where('finance_transactions.status', 'completed')
+            ->whereBetween('finance_transactions.transaction_date', [$start, $end])
+            ->selectRaw('
+                units.name,
+                SUM(finance_transactions.amount) as total_income,
+                COUNT(finance_transactions.id) as trx_count,
+                AVG(finance_transactions.amount) as avg_amount,
+                MIN(finance_transactions.transaction_date) as first_trx_date,
+                MAX(finance_transactions.transaction_date) as last_trx_date
+            ')
+            ->groupBy('units.id', 'units.name')
+            ->orderByDesc('total_income')
+            ->get();
+
+        $grandTotalContribution = $unitContributions->sum('total_income');
+
+        $revenueContribution = [
+            'labels' => [], 'series' => [], 'percentages' => [],
+            'counts' => [], 'averages' => [], 'firstDates' => [], 'lastDates' => [],
+        ];
+
+        foreach ($unitContributions as $contrib) {
+            $val = (float) $contrib->total_income;
+            $revenueContribution['labels'][]      = $contrib->name;
+            $revenueContribution['series'][]      = $val;
+            $revenueContribution['percentages'][] = $grandTotalContribution > 0
+                ? round(($val / $grandTotalContribution) * 100, 1)
+                : 0;
+            $revenueContribution['counts'][]     = (int) $contrib->trx_count;
+            $revenueContribution['averages'][]   = (float) $contrib->avg_amount;
+            $revenueContribution['firstDates'][] = $contrib->first_trx_date;
+            $revenueContribution['lastDates'][]  = $contrib->last_trx_date;
+        }
+
+        $allUnitsCount    = Unit::count();
+        $activeUnitsCount = Unit::where('is_active', true)->count();
+
+        $summary = [
+            'totalRevenue'       => $grandTotalContribution,
+            'totalUnits'         => $allUnitsCount,
+            'activeUnits'        => $activeUnitsCount,
+            'inactiveUnits'      => $allUnitsCount - $activeUnitsCount,
+            'totalAdmins'        => User::all()->filter(fn ($u) => method_exists($u, 'isUnitAdmin') ? $u->isUnitAdmin() : true)->count(),
+            'totalTransactions'  => (int) $unitContributions->sum('trx_count'),
+            'avgTransactionValue'=> $unitContributions->sum('trx_count') > 0
+                ? $grandTotalContribution / $unitContributions->sum('trx_count')
+                : 0,
+        ];
+
+        $filters = [
+            'searchAdmin' => $this->searchAdmin,
+            'searchUnit'  => $this->searchUnit,
+        ];
+
         $fileName = 'Laporan_Master_Admin_' . now()->format('Ymd_His') . '.xlsx';
 
-        return response()->streamDownload(function () {
-            $spreadsheet = new Spreadsheet();
-            $sheet = $spreadsheet->getActiveSheet();
-            $sheet->setTitle('Laporan');
-
-            $row = 1;
-
-            // 1. DATA ADMIN
-            $sheet->setCellValue("A{$row}", 'DATA ADMIN');
-            $sheet->getStyle("A{$row}")->getFont()->setBold(true)->setSize(12);
-            $row++;
-
-            $headersAdmin = ['No', 'Nama', 'Username', 'Role', 'Unit Kerja', 'Status', 'Login Terakhir'];
-            $sheet->fromArray($headersAdmin, null, "A{$row}");
-
-            $sheet->getStyle("A{$row}:G{$row}")->getFont()->setBold(true);
-            $sheet->getStyle("A{$row}:G{$row}")->getFill()
-                  ->setFillType(Fill::FILL_SOLID)
-                  ->getStartColor()->setARGB('EEEEEE');
-            $row++;
-
-            $users = User::with(['unit', 'roles'])
-                ->when($this->searchAdmin, function ($query) {
-                    $query->where(function ($q) {
-                        $q->where('name', 'like', '%' . $this->searchAdmin . '%')
-                          ->orWhere('username', 'like', '%' . $this->searchAdmin . '%')
-                          ->orWhere('email', 'like', '%' . $this->searchAdmin . '%');
-                    });
-                })
-                ->orderBy('name')
-                ->get();
-
-            $noAdmin = 1;
-            foreach ($users as $user) {
-                $lastLogin = $user->last_login_at 
-                    ? Carbon::parse($user->last_login_at)->format('Y-m-d H:i')
-                    : '-';
-                $isMaster = method_exists($user, 'isMasterAdmin') && $user->isMasterAdmin();
-
-                $sheet->setCellValue("A{$row}", $noAdmin++);
-                $sheet->setCellValue("B{$row}", $user->name);
-                $sheet->setCellValue("C{$row}", $user->username ?? explode('@', $user->email)[0]);
-                $sheet->setCellValue("D{$row}", $isMaster ? 'Master Admin' : 'Admin Unit');
-                $sheet->setCellValue("E{$row}", $isMaster ? 'Semua Unit' : ($user->unit->name ?? '-'));
-                $sheet->setCellValue("F{$row}", $user->is_active ? 'Aktif' : 'Nonaktif');
-                $sheet->setCellValue("G{$row}", $lastLogin);
-                $row++;
-            }
-
-            $row += 2;
-
-            // 2. DATA UNIT USAHA
-            $sheet->setCellValue("A{$row}", 'DATA UNIT USAHA');
-            $sheet->getStyle("A{$row}")->getFont()->setBold(true)->setSize(12);
-            $row++;
-
-            $headersUnit = ['No', 'Nama Unit', 'Jurusan', 'Status', 'Nama PJ', 'Username PJ'];
-            $sheet->fromArray($headersUnit, null, "A{$row}");
-
-            $sheet->getStyle("A{$row}:F{$row}")->getFont()->setBold(true);
-            $sheet->getStyle("A{$row}:F{$row}")->getFill()
-                  ->setFillType(Fill::FILL_SOLID)
-                  ->getStartColor()->setARGB('EEEEEE');
-            $row++;
-
-            $units = Unit::with('users')->orderBy('name')->get();
-            $noUnit = 1;
-
-            foreach ($units as $unit) {
-                $pj = $unit->users->first();
-                $sheet->setCellValue("A{$row}", $noUnit++);
-                $sheet->setCellValue("B{$row}", $unit->name);
-                $sheet->setCellValue("C{$row}", $unit->department ?? '-');
-                $sheet->setCellValue("D{$row}", $unit->is_active ? 'Aktif' : 'Nonaktif');
-                $sheet->setCellValue("E{$row}", $pj ? $pj->name : '-');
-                $sheet->setCellValue("F{$row}", $pj ? ($pj->username ?? explode('@', $pj->email)[0]) : '-');
-                $row++;
-            }
-
-            // 3. ALIGNMENT & AUTO-FIT
-            $highestColumn = $sheet->getHighestColumn();
-            $highestRow    = $sheet->getHighestRow();
-
-            $sheet->getStyle("A1:{$highestColumn}{$highestRow}")
-                  ->getAlignment()
-                  ->setHorizontal(Alignment::HORIZONTAL_LEFT);
-
-            foreach (range('A', $highestColumn) as $col) {
-                $sheet->getColumnDimension($col)->setAutoSize(true);
-            }
-
-            $writer = new Xlsx($spreadsheet);
-            $writer->save('php://output');
-        }, $fileName, [
-            'Content-Type'        => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-            'Content-Disposition' => 'attachment; filename="' . $fileName . '"',
-            'Cache-Control'       => 'max-age=0',
-        ]);
+        return Excel::download(
+            new DashboardExport($summary, $filters, $revenueContribution, $periodLabel),
+            $fileName
+        );
     }
 
     public function render()
