@@ -15,8 +15,10 @@ use App\Exports\AssetExport;
 use App\Imports\AssetsImport;
 use Maatwebsite\Excel\Facades\Excel;
 use Livewire\WithFileUploads;
+use Livewire\Attributes\Title;
 
 #[Layout('layouts.app')]
+#[Title('Manajemen Aset Usaha')]
 class Index extends Component
 {
     use WithPagination, WithFileUploads;

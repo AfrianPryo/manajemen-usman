@@ -21,10 +21,13 @@
             <div class="flex flex-col flex-1 overflow-y-auto">
                 
                 {{-- Logo Header --}}
+                @php
+                    $appName = \App\Models\Setting::get('app_name', 'USMAN - Usaha Mandiri Sekolah');
+                @endphp
                 <div class="h-12 flex items-center px-4 font-bold text-sm text-slate-900 border-b border-slate-100 shrink-0 tracking-tight">
                     <span class="flex items-center gap-2">
-                        <span class="h-6 w-6 rounded-full bg-slate-900 text-white flex items-center justify-center font-extrabold text-[11px] shadow-xs">U</span>
-                        UMS Sekolah
+                        <span class="h-6 w-6 rounded-full bg-slate-900 text-white flex items-center justify-center font-extrabold text-[11px] shadow-xs">{{ strtoupper(substr($appName, 0, 1)) }}</span>
+                        <span class="truncate max-w-[160px]">{{ $appName }}</span>
                     </span>
                 </div>
 
@@ -194,7 +197,7 @@
         <div class="flex-1 flex flex-col overflow-hidden bg-[#f8f9fa]">
 
             {{-- HEADER STYLE REFERENSI (BREADCRUMB HEADER) --}}
-            <header class="h-14 bg-white border-b border-slate-200/70 flex items-center justify-between px-6 shrink-0">
+            <header class="h-12 bg-white border-b border-slate-200/70 flex items-center justify-between px-6 shrink-0">
                 
                 {{-- Left: Path Breadcrumb --}}
                 <div class="flex items-center gap-2 text-xs font-medium text-slate-500">

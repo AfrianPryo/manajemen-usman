@@ -11,8 +11,10 @@ use Livewire\Attributes\Layout;
 use Livewire\Attributes\On;
 use Livewire\Component;
 use Livewire\WithPagination;
+use Livewire\Attributes\Title;
 
 #[Layout('components.layouts.app')]
+#[Title('Manajemen Admin')]
 class Index extends Component
 {
     use WithPagination;

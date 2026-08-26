@@ -22,12 +22,6 @@
             Profil Admin
         </button>
 
-        <button wire:click="setTab('preferences')"
-            class="px-4 py-2 text-xs font-bold rounded-md transition-all flex items-center gap-2 {{ $activeTab === 'preferences' ? 'bg-red-600 text-white shadow-sm' : 'text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200' }}">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><circle cx="12" cy="12" r="3"/></svg>
-            Preferensi Sistem
-        </button>
-
         <button wire:click="setTab('features')"
             class="px-4 py-2 text-xs font-bold rounded-md transition-all flex items-center gap-2 {{ $activeTab === 'features' ? 'bg-red-600 text-white shadow-sm' : 'text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200' }}">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/></svg>
@@ -233,78 +227,31 @@
         </div>
     @endif
 
-    <!-- TAB 2: PREFERENSI SISTEM -->
-    @if($activeTab === 'preferences')
-        <form wire:submit="savePreferences" class="bg-white dark:bg-slate-800 rounded-md border border-neutral-100 dark:border-slate-700 shadow-sm shadow-black/[0.02] p-6 space-y-6">
-            <div>
-                <h2 class="text-sm font-bold text-neutral-900 dark:text-white">Parameter Aplikasi</h2>
-                <p class="text-xs text-neutral-400 mt-0.5">Atur batasan waktu sesi, format mata uang, dan jumlah tampilan data.</p>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                    <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Nama Aplikasi</label>
-                    <input type="text" wire:model="appName" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-red-500">
-                    @error('appName') <p class="text-[11px] text-rose-500 mt-0.5">{{ $message }}</p> @enderror
-                </div>
-
-                <div>
-                    <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Simbol Mata Uang</label>
-                    <input type="text" wire:model="currencySymbol" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-red-500">
-                    @error('currencySymbol') <p class="text-[11px] text-rose-500 mt-0.5">{{ $message }}</p> @enderror
-                </div>
-
-                <div>
-                    <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Session Timeout (Menit)</label>
-                    <input type="number" wire:model="sessionTimeout" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-red-500">
-                    @error('sessionTimeout') <p class="text-[11px] text-rose-500 mt-0.5">{{ $message }}</p> @enderror
-                </div>
-
-                <div>
-                    <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Default Data per Halaman (Pagination)</label>
-                    <select wire:model="itemsPerPage" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-red-500 cursor-pointer">
-                        <option value="5">5 Item</option>
-                        <option value="10">10 Item</option>
-                        <option value="25">25 Item</option>
-                        <option value="50">50 Item</option>
-                    </select>
-                </div>
-
-                <div>
-                    <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Zona Waktu</label>
-                    <select wire:model="timezone" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-red-500 cursor-pointer">
-                        <option value="Asia/Jakarta">WIB (Asia/Jakarta)</option>
-                        <option value="Asia/Makassar">WITA (Asia/Makassar)</option>
-                        <option value="Asia/Jayapura">WIT (Asia/Jayapura)</option>
-                    </select>
-                </div>
-
-                <div class="flex items-center gap-3 pt-6">
-                    <input type="checkbox" id="maintenanceMode" wire:model="maintenanceMode" class="w-4 h-4 text-red-600 rounded border-neutral-300 focus:ring-red-500/20 cursor-pointer">
-                    <label for="maintenanceMode" class="text-xs font-semibold text-neutral-700 dark:text-neutral-300 cursor-pointer">
-                        Aktifkan Mode Perbaikan (Maintenance)
-                    </label>
-                </div>
-            </div>
-
-            <div class="flex justify-end pt-4 border-t border-neutral-100 dark:border-slate-700">
-                <button type="submit" class="px-5 py-2 text-xs font-bold text-white bg-red-600 hover:bg-red-700 rounded-md transition-all flex items-center gap-2 shadow-sm">
-                    <span wire:loading.remove wire:target="savePreferences">Simpan Preferensi</span>
-                    <span wire:loading wire:target="savePreferences">Menyimpan...</span>
-                </button>
-            </div>
-        </form>
-    @endif
-
-    <!-- TAB 3: FITUR & MODUL -->
+    <!-- TAB 2: FITUR & MODUL -->
     @if($activeTab === 'features')
         <form wire:submit="saveFeatures" class="bg-white dark:bg-slate-800 rounded-md border border-neutral-100 dark:border-slate-700 shadow-sm shadow-black/[0.02] p-6 space-y-6">
             <div>
-                <h2 class="text-sm font-bold text-neutral-900 dark:text-white">Akses Fitur & Otomatisasi</h2>
-                <p class="text-xs text-neutral-400 mt-0.5">Atur modul aktif dan hak akses umum untuk unit usaha.</p>
+                <h2 class="text-sm font-bold text-neutral-900 dark:text-white">Fitur & Modul</h2>
+                <p class="text-xs text-neutral-400 mt-0.5">Atur identitas aplikasi, modul aktif, dan hak akses untuk unit usaha ritel maupun jasa.</p>
             </div>
 
+            <!-- Bagian: Parameter Aplikasi -->
             <div class="space-y-4">
+                <h3 class="text-[11px] font-bold text-neutral-500 dark:text-neutral-400 uppercase tracking-wide">Parameter Aplikasi</h3>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Nama Aplikasi</label>
+                        <input type="text" wire:model="appName" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-red-500">
+                        @error('appName') <p class="text-[11px] text-rose-500 mt-0.5">{{ $message }}</p> @enderror
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bagian: Akses Fitur & Otomatisasi -->
+            <div class="pt-4 space-y-4 border-t border-neutral-100 dark:border-slate-700">
+                <h3 class="text-[11px] font-bold text-neutral-500 dark:text-neutral-400 uppercase tracking-wide">Akses Fitur & Otomatisasi</h3>
+
                 <div>
                     <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Kategori Unit Usaha Default</label>
                     <select wire:model="defaultCategory" class="w-full md:w-1/2 px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-red-500 cursor-pointer">
@@ -314,7 +261,7 @@
                     @error('defaultCategory') <p class="text-[11px] text-rose-500 mt-0.5">{{ $message }}</p> @enderror
                 </div>
 
-                <div class="pt-4 space-y-3 border-t border-neutral-100 dark:border-slate-700">
+                <div class="space-y-3">
                     <label class="flex items-center gap-3 cursor-pointer">
                         <input type="checkbox" wire:model="allowMultiUnitAdmin" class="w-4 h-4 text-red-600 rounded border-neutral-300 focus:ring-red-500/20 cursor-pointer">
                         <div>
@@ -368,7 +315,7 @@
 
             <div class="flex justify-end pt-4 border-t border-neutral-100 dark:border-slate-700">
                 <button type="submit" class="px-5 py-2 text-xs font-bold text-white bg-red-600 hover:bg-red-700 rounded-md transition-all flex items-center gap-2 shadow-sm">
-                    <span wire:loading.remove wire:target="saveFeatures">Simpan Fitur</span>
+                    <span wire:loading.remove wire:target="saveFeatures">Simpan Pengaturan</span>
                     <span wire:loading wire:target="saveFeatures">Menyimpan...</span>
                 </button>
             </div>

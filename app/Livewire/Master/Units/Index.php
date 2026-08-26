@@ -10,8 +10,10 @@ use Illuminate\Support\Str;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithPagination;
+use Livewire\Attributes\Title;
 
 #[Layout('components.layouts.app')]
+#[Title('Unit Usaha')]
 class Index extends Component
 {
     use WithPagination;

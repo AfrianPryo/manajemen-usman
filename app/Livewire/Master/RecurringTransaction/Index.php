@@ -15,8 +15,10 @@ use App\Notifications\SystemNotification;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
+use Livewire\Attributes\Title;
 
 #[Layout('layouts.app')]
+#[Title('Manajemen Transaksi Berulang')]
 class Index extends Component
 {
     use WithPagination;

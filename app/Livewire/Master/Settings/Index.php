@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Master\Settings;
 
+use App\Models\AuditLog;
 use App\Models\Setting;
 use App\Services\FonnteOtpService;
 use Illuminate\Support\Facades\Auth;
@@ -11,8 +12,10 @@ use Illuminate\Validation\Rules\Password;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithFileUploads;
+use Livewire\Attributes\Title;
 
 #[Layout('components.layouts.app')]
+#[Title('Settings')]
 class Index extends Component
 {
     use WithFileUploads;
@@ -36,21 +39,17 @@ class Index extends Component
     public bool $passwordOtpRequested = false;
     public string $passwordOtp = '';
 
-    // 1b. Ubah Nomor WhatsApp (2 langkah: request OTP -> verifikasi OTP)
+    // 1b. Ubah Nomor WhatsApp (2 langkah: request OTP -> ver===ifikasi OTP)
     public string $newPhone = '';
     public string $phoneChangePassword = '';
     public bool $phoneOtpRequested = false;
     public string $phoneOtp = '';
 
-    // 2. Preferensi Sistem
+    // 2. Fitur & Modul — Parameter Aplikasi
     public string $appName = '';
-    public int $sessionTimeout = 120;
-    public int $itemsPerPage = 10;
-    public string $timezone = 'Asia/Jakarta';
-    public string $currencySymbol = 'Rp';
     public bool $maintenanceMode = false;
 
-    // 3. Modul & Fitur
+    // 2a. Fitur & Modul — Akses Fitur & Otomatisasi
     public bool $allowMultiUnitAdmin = true;
     public string $defaultCategory = 'ritel';
 
@@ -72,12 +71,8 @@ class Index extends Component
         $this->nip            = $user->nip ?? '';
         $this->existingAvatar = $user->profile_photo_path;
 
-        $this->appName         = Setting::get('app_name', 'USMAN - Usaha Mandiri Sekolah');
-        $this->currencySymbol  = Setting::get('currency_symbol', 'Rp');
-        $this->sessionTimeout  = (int) Setting::get('session_timeout', 120);
-        $this->itemsPerPage    = (int) Setting::get('items_per_page', 10);
-        $this->timezone        = Setting::get('timezone', 'Asia/Jakarta');
-        $this->maintenanceMode = (bool) Setting::get('maintenance_mode', false);
+        $this->appName          = Setting::get('app_name', 'USMAN - Usaha Mandiri Sekolah');
+        $this->maintenanceMode  = (bool) Setting::get('maintenance_mode', false);
 
         $this->defaultCategory     = Setting::get('default_category', 'ritel');
         $this->allowMultiUnitAdmin = (bool) Setting::get('allow_multi_unit_admin', true);
@@ -117,6 +112,9 @@ class Index extends Component
             $this->reset('avatar');
         }
 
+        // Audit log: simpan nilai lama sebelum ditimpa
+        $oldValues = $user->only(['name', 'username', 'email', 'employee_status', 'nip']);
+
         $user->update([
             'name'               => $this->name,
             'username'           => $this->username,
@@ -125,6 +123,14 @@ class Index extends Component
             'nip'                => $this->employeeStatus === 'nip' ? $this->nip : null,
             'profile_photo_path' => $this->existingAvatar,
         ]);
+
+        AuditLog::record(
+            event: 'PROFILE_UPDATED',
+            identifier: $user->username,
+            description: 'Admin master memperbarui data profil (nama/username/email/status kepegawaian).',
+            oldValues: $oldValues,
+            newValues: $user->only(['name', 'username', 'email', 'employee_status', 'nip']),
+        );
 
         session()->flash('success', 'Profil admin master berhasil disimpan.');
     }
@@ -182,6 +188,13 @@ class Index extends Component
         $user->update([
             'password' => $this->newPassword, // otomatis di-hash lewat cast 'hashed' pada model User
         ]);
+
+        // Audit log: catat aktivitas ubah password (nilai password itu sendiri TIDAK dicatat)
+        AuditLog::record(
+            event: 'PASSWORD_CHANGED',
+            identifier: $user->username,
+            description: 'Admin master berhasil mengubah password melalui verifikasi OTP WhatsApp.',
+        );
 
         // Logout semua sesi lain (device/browser lain) demi keamanan
         Auth::logoutOtherDevices($this->newPassword);
@@ -257,14 +270,20 @@ class Index extends Component
         $user->update(['phone' => $this->newPhone]);
         $this->phone = $this->newPhone;
 
-        // TODO: catat ke tabel audit log (old_phone, new_phone, ip, user_id, timestamp)
-        // dan idealnya kirim notifikasi WA terakhir ke nomor lama: "Nomor Anda telah diganti."
+        // Audit log: catat perubahan nomor WhatsApp
+        AuditLog::record(
+            event: 'PHONE_CHANGED',
+            identifier: $user->username,
+            description: 'Admin master mengubah nomor WhatsApp terdaftar melalui verifikasi OTP.',
+            oldValues: ['phone' => $oldPhone],
+            newValues: ['phone' => $this->newPhone],
+        );
+
+        // TODO: idealnya kirim notifikasi WA terakhir ke nomor lama: "Nomor Anda telah diganti."
 
         $this->reset(['newPhone', 'phoneChangePassword', 'phoneOtp', 'phoneOtpRequested']);
 
         session()->flash('success', 'Nomor WhatsApp berhasil diperbarui.');
-
-        unset($oldPhone); // dipakai kalau nanti audit log/notifikasi ditambahkan
     }
 
     public function cancelPhoneOtp(): void
@@ -273,35 +292,45 @@ class Index extends Component
         $this->reset(['phoneOtp', 'phoneOtpRequested']);
     }
 
-    public function savePreferences(): void
-    {
-        $this->validate([
-            'appName'        => 'required|string|max:50',
-            'sessionTimeout' => 'required|integer|min:5|max:1440',
-            'itemsPerPage'   => 'required|integer|in:5,10,25,50,100',
-            'timezone'       => 'required|string',
-            'currencySymbol' => 'required|string|max:5',
-        ]);
-
-        Setting::set('app_name', $this->appName);
-        Setting::set('currency_symbol', $this->currencySymbol);
-        Setting::set('session_timeout', $this->sessionTimeout);
-        Setting::set('items_per_page', $this->itemsPerPage);
-        Setting::set('timezone', $this->timezone);
-        Setting::set('maintenance_mode', $this->maintenanceMode);
-
-        session()->flash('success', 'Preferensi sistem berhasil diperbarui.');
-    }
-
+    /*
+    |--------------------------------------------------------------------------
+    | FITUR & MODUL — gabungan Parameter Aplikasi (dulu tab "Preferensi Sistem")
+    | dan Akses Fitur & Otomatisasi (dulu tab "Fitur & Modul") dalam satu tab
+    | dan satu aksi simpan.
+    |--------------------------------------------------------------------------
+    */
     public function saveFeatures(): void
     {
         $this->validate([
+            // Parameter Aplikasi
+            'appName' => 'required|string|max:50',
+
+            // Akses Fitur & Otomatisasi
             'defaultCategory' => 'required|in:ritel,jasa',
             'waProvider'      => 'nullable|string|in:fonnte,wablas,twilio,lainnya',
             'waSenderNumber'  => 'required_if:enableWaNotifications,true|nullable|string|max:20',
             'waApiKey'        => 'required_if:enableWaNotifications,true|nullable|string|max:255',
         ]);
 
+        $user = Auth::user();
+
+        // Audit log: ambil nilai lama sebelum ditimpa.
+        // Catatan: 'wa_api_key' sengaja TIDAK ikut dicatat (data sensitif/kredensial).
+        $oldValues = [
+            'app_name'                => Setting::get('app_name'),
+            'maintenance_mode'        => (bool) Setting::get('maintenance_mode', false),
+            'default_category'       => Setting::get('default_category'),
+            'allow_multi_unit_admin' => (bool) Setting::get('allow_multi_unit_admin', true),
+            'enable_wa_notifications'=> (bool) Setting::get('enable_wa_notifications', false),
+            'wa_provider'            => Setting::get('wa_provider'),
+            'wa_sender_number'       => Setting::get('wa_sender_number'),
+        ];
+
+        // Parameter Aplikasi
+        Setting::set('app_name', $this->appName);
+        Setting::set('maintenance_mode', $this->maintenanceMode);
+
+        // Akses Fitur & Otomatisasi
         Setting::set('default_category', $this->defaultCategory);
         Setting::set('allow_multi_unit_admin', $this->allowMultiUnitAdmin);
 
@@ -310,7 +339,23 @@ class Index extends Component
         Setting::set('wa_sender_number', $this->waSenderNumber);
         Setting::set('wa_api_key', $this->waApiKey);
 
-        session()->flash('success', 'Pengaturan fitur berhasil diperbarui.');
+        AuditLog::record(
+            event: 'SETTINGS_UPDATED',
+            identifier: $user->username ?? null,
+            description: 'Admin master memperbarui pengaturan Fitur & Modul.',
+            oldValues: $oldValues,
+            newValues: [
+                'app_name'                => $this->appName,
+                'maintenance_mode'        => $this->maintenanceMode,
+                'default_category'        => $this->defaultCategory,
+                'allow_multi_unit_admin'  => $this->allowMultiUnitAdmin,
+                'enable_wa_notifications' => $this->enableWaNotifications,
+                'wa_provider'             => $this->waProvider,
+                'wa_sender_number'        => $this->waSenderNumber,
+            ],
+        );
+
+        session()->flash('success', 'Pengaturan fitur & modul berhasil diperbarui.');
     }
 
     public function render()

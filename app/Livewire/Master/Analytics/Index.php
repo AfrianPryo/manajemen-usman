@@ -7,13 +7,14 @@ use Livewire\Attributes\Layout;
 use App\Models\Unit;
 use App\Models\FinanceTransaction;
 use App\Models\Expense;
-use App\Models\Product;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Carbon\CarbonPeriod;
+use Livewire\Attributes\Title;
 
 #[Layout('layouts.app')]
+#[Title('Statistik Usaha')]
 class Index extends Component
 {
     public $selectedUnit = '';

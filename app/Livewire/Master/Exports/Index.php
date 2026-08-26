@@ -29,7 +29,7 @@ use Maatwebsite\Excel\Excel as ExcelFormat;
 use ZipArchive;
 
 #[Layout('components.layouts.app')]
-#[Title('Export & Import Data')]
+#[Title('Export Data')]
 class Index extends Component
 {
     public ?string $openPanel = null;
