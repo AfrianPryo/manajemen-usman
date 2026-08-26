@@ -19,5 +19,12 @@ class Vendor extends Model
         'website',
         'address',
         'id_number',
+        'contract_start_date',
+        'contract_end_date',
+    ];
+
+    protected $casts = [
+        'contract_start_date' => 'date',
+        'contract_end_date' => 'date',
     ];
 }

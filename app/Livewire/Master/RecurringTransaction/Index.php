@@ -10,6 +10,7 @@ use App\Models\RecurringTransaction;
 use App\Models\FinanceTransaction;
 use App\Models\FinanceCategory;
 use App\Models\User;
+use App\Models\AuditLog;
 use App\Notifications\SystemNotification;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Auth;
@@ -87,13 +88,15 @@ class Index extends Component
         foreach ($dueTransactions as $item) {
             if ($item->auto_approve) {
                 // Cari ID kategori fallback jika data lama belum terisi
-                $categoryId = $item->finance_category_id 
-                    ?? $item->category_id 
-                    ?? FinanceCategory::where('type', $item->type)->value('id');
+                $categoryId = $item->finance_category_id
+                    ?? $item->category_id
+                    ?? FinanceCategory::where('type', $item->type)
+                        ->where('unit_id', $item->unit_id)
+                        ->value('id');
 
                 if ($categoryId) {
                     // JIKA OTOMATIS: Dibuat langsung ke transaksi resmi & majukan tanggal
-                    FinanceTransaction::create([
+                    $trx = FinanceTransaction::create([
                         'unit_id'             => $item->unit_id,
                         'finance_category_id' => $categoryId,
                         'user_id'             => Auth::id() ?? 1,
@@ -104,6 +107,30 @@ class Index extends Component
                         'description'         => $item->title . ' (Otomatis dibuat dari Transaksi Berulang)',
                         'transaction_date'    => now(),
                     ]);
+
+                    AuditLog::record(
+                        'RECURRING_TRANSACTION_AUTO_RUN',
+                        $item->title,
+                        "Transaksi otomatis dibuat dari transaksi berulang '{$item->title}' sejumlah Rp " . number_format($item->amount, 0, ',', '.') . ".",
+                        null,
+                        $trx->toArray()
+                    );
+
+                    // Kirim notifikasi pengingat (bukan konfirmasi) bahwa transaksi sudah diproses otomatis
+                    $targetUsers = User::all();
+
+                    foreach ($targetUsers as $user) {
+                        $user->notify(new SystemNotification(
+                            title: 'Transaksi Berulang Diproses Otomatis',
+                            message: "Transaksi '{$item->title}' (Rp " . number_format($item->amount, 0, ',', '.') . ") telah dibuat otomatis ke Transaksi Keuangan.",
+                            badge: 'Otomatis',
+                            actionable: false,
+                            url: route('master.recurring-transactions.index'),
+                            extraData: [
+                                'recurring_transaction_id' => $item->id,
+                            ]
+                        ));
+                    }
 
                     $item->next_run_date = $this->calculateNextRunDate($item->next_run_date, $item->frequency);
                     $item->save();
@@ -155,6 +182,24 @@ class Index extends Component
     public function updatingTypeFilter() { $this->resetPage(); }
     public function updatingPerPage() { $this->resetPage(); }
 
+    /**
+     * Saat Unit Usaha diganti di form, reset kategori yang sudah dipilih
+     * supaya tidak nyangkut kategori milik unit lain.
+     */
+    public function updatedUnitId($value)
+    {
+        $this->finance_category_id = '';
+    }
+
+    /**
+     * Saat Tipe Transaksi (income/expense) diganti, reset kategori juga,
+     * karena kategori terikat pada tipe (income atau expense).
+     */
+    public function updatedType($value)
+    {
+        $this->finance_category_id = '';
+    }
+
     // Logic Pilih Semua Data
     public function updatedSelectAll($value)
     {
@@ -173,9 +218,19 @@ class Index extends Component
     {
         if (!in_array($status, ['active', 'paused'])) return;
 
+        $items = RecurringTransaction::whereIn('id', $this->selectedRows)->get(['id', 'title', 'status']);
+
         RecurringTransaction::whereIn('id', $this->selectedRows)->update([
             'status' => $status
         ]);
+
+        AuditLog::record(
+            'RECURRING_TRANSACTION_BULK_STATUS_UPDATE',
+            null,
+            count($items) . " transaksi berulang diubah statusnya menjadi '{$status}': " . $items->pluck('title')->implode(', '),
+            ['statuses' => $items->pluck('status', 'title')->all()],
+            ['status' => $status]
+        );
 
         $this->selectedRows = [];
         $this->selectAll = false;
@@ -185,7 +240,17 @@ class Index extends Component
 
     public function bulkDelete()
     {
+        $items = RecurringTransaction::whereIn('id', $this->selectedRows)->get(['id', 'title']);
+
         RecurringTransaction::whereIn('id', $this->selectedRows)->delete();
+
+        AuditLog::record(
+            'RECURRING_TRANSACTION_BULK_DELETE',
+            null,
+            count($items) . ' transaksi berulang dihapus: ' . $items->pluck('title')->implode(', '),
+            null,
+            ['ids' => $items->pluck('id')->all(), 'titles' => $items->pluck('title')->all()]
+        );
 
         $this->selectedRows = [];
         $this->selectAll = false;
@@ -219,12 +284,31 @@ class Index extends Component
 
         if ($this->editingId) {
             $transaction = RecurringTransaction::findOrFail($this->editingId);
+            $oldValues = $transaction->toArray();
             $transaction->update($validated);
+
+            AuditLog::record(
+                'RECURRING_TRANSACTION_UPDATE',
+                $transaction->title,
+                "Transaksi berulang '{$transaction->title}' diperbarui.",
+                $oldValues,
+                $transaction->fresh()->toArray()
+            );
+
             session()->flash('message', 'Transaksi berulang berhasil diperbarui.');
         } else {
             $validated['status'] = 'active';
             $validated['next_run_date'] = $this->start_date;
-            RecurringTransaction::create($validated);
+            $transaction = RecurringTransaction::create($validated);
+
+            AuditLog::record(
+                'RECURRING_TRANSACTION_CREATE',
+                $transaction->title,
+                "Transaksi berulang baru '{$transaction->title}' dibuat.",
+                null,
+                $transaction->toArray()
+            );
+
             session()->flash('message', 'Transaksi berulang berhasil dibuat.');
         }
 
@@ -237,8 +321,8 @@ class Index extends Component
         $this->editingId = $item->id;
         $this->title = $item->title;
         $this->unit_id = $item->unit_id;
-        $this->finance_category_id = $item->finance_category_id;
         $this->type = $item->type;
+        $this->finance_category_id = $item->finance_category_id;
         $this->amount = $item->amount;
         $this->frequency = $item->frequency;
         $this->start_date = $item->start_date;
@@ -252,15 +336,35 @@ class Index extends Component
     public function toggleStatus($id)
     {
         $item = RecurringTransaction::findOrFail($id);
+        $oldStatus = $item->status;
         $item->status = $item->status === 'active' ? 'paused' : 'active';
         $item->save();
+
+        AuditLog::record(
+            'RECURRING_TRANSACTION_STATUS_TOGGLE',
+            $item->title,
+            "Status transaksi berulang '{$item->title}' diubah dari '{$oldStatus}' menjadi '{$item->status}'.",
+            ['status' => $oldStatus],
+            ['status' => $item->status]
+        );
 
         session()->flash('message', 'Status transaksi berhasil diubah.');
     }
 
     public function delete($id)
     {
-        RecurringTransaction::findOrFail($id)->delete();
+        $item = RecurringTransaction::findOrFail($id);
+        $oldValues = $item->toArray();
+        $item->delete();
+
+        AuditLog::record(
+            'RECURRING_TRANSACTION_DELETE',
+            $item->title,
+            "Transaksi berulang '{$item->title}' dihapus.",
+            $oldValues,
+            null
+        );
+
         session()->flash('message', 'Transaksi berulang berhasil dihapus.');
     }
 
@@ -273,11 +377,29 @@ class Index extends Component
             ->latest();
     }
 
+    /**
+     * Kategori yang ditampilkan di dropdown form, difilter berdasarkan
+     * Unit Usaha dan Tipe Transaksi yang sedang dipilih di form.
+     * Ini yang mencegah duplikasi tampilan (sebelumnya menampilkan
+     * SEMUA kategori dari SEMUA unit sekaligus).
+     */
+    private function getAvailableCategories()
+    {
+        if (!$this->unit_id) {
+            return collect();
+        }
+
+        return FinanceCategory::where('unit_id', $this->unit_id)
+            ->where('type', $this->type)
+            ->orderBy('name')
+            ->get();
+    }
+
     public function render()
     {
         return view('livewire.master.recurring-transaction.index', [
             'units' => Unit::orderBy('name')->get(),
-            'categories' => FinanceCategory::orderBy('name')->get(),
+            'categories' => $this->getAvailableCategories(),
             'recurringTransactions' => $this->getRecurringTransactionsQuery()->paginate($this->perPage),
         ]);
     }

@@ -7,6 +7,9 @@ use Livewire\Attributes\Layout;
 use Livewire\WithPagination;
 use Illuminate\Support\Str;
 use App\Models\Asset;
+use App\Models\AuditLog;
+use App\Models\User;
+use App\Notifications\SystemNotification;
 use App\Exports\AssetTemplateExport;
 use App\Exports\AssetExport;
 use App\Imports\AssetsImport;
@@ -71,12 +74,99 @@ class Index extends Component
     public function mount()
     {
         $this->purchase_date = date('Y-m-d');
+
+        // Sinkronisasi notifikasi aset (rusak / dalam maintenance) saat halaman dibuka
+        $this->syncAllAssetNotifications();
     }
 
     public function updatingSearch() { $this->resetPage(); }
     public function updatingStatusFilter() { $this->resetPage(); }
     public function updatingCategoryFilter() { $this->resetPage(); }
     public function updatingPerPage() { $this->resetPage(); }
+
+    // =========================================================================
+    // NOTIFIKASI ASET (RUSAK / MAINTENANCE)
+    // =========================================================================
+
+    /**
+     * Jalankan pengecekan notifikasi untuk SEMUA aset.
+     * Dipanggil saat halaman dimuat & setelah proses import,
+     * karena kedua proses ini bisa memengaruhi banyak data sekaligus.
+     */
+    private function syncAllAssetNotifications(): void
+    {
+        Asset::all()->each(function (Asset $asset) {
+            $this->syncAssetNotification($asset);
+        });
+    }
+
+    /**
+     * Sinkronisasi status notifikasi untuk SATU aset:
+     * - Kirim notifikasi baru jika kondisi rusak / status maintenance dan belum ada notifikasi aktif.
+     * - Tandai notifikasi lama sebagai dibaca jika kondisinya sudah kembali normal.
+     */
+    private function syncAssetNotification(Asset $asset): void
+    {
+        $asset->refresh();
+
+        // --- Kondisi Rusak ---
+        if ($asset->condition === 'damaged') {
+            $this->fireAssetAlert(
+                $asset,
+                'asset_damaged',
+                'Aset Rusak',
+                "Aset '{$asset->name}' ({$asset->asset_tag}) dilaporkan dalam kondisi rusak. Segera tindak lanjuti perbaikan/penggantian."
+            );
+        } else {
+            $this->clearAssetAlert($asset, 'asset_damaged');
+        }
+
+        // --- Status Maintenance ---
+        if ($asset->status === 'maintenance') {
+            $this->fireAssetAlert(
+                $asset,
+                'asset_maintenance',
+                'Aset Dalam Maintenance',
+                "Aset '{$asset->name}' ({$asset->asset_tag}) sedang berstatus maintenance/servis."
+            );
+        } else {
+            $this->clearAssetAlert($asset, 'asset_maintenance');
+        }
+    }
+
+    private function fireAssetAlert(Asset $asset, string $type, string $title, string $message): void
+    {
+        foreach (User::all() as $user) {
+            $hasPending = $user->unreadNotifications()
+                ->where('data->asset_id', $asset->id)
+                ->where('data->asset_alert_type', $type)
+                ->exists();
+
+            if (!$hasPending) {
+                $user->notify(new SystemNotification(
+                    title: $title,
+                    message: $message,
+                    badge: $type === 'asset_damaged' ? 'Rusak' : 'Maintenance',
+                    actionable: false,
+                    url: url()->current(),
+                    extraData: [
+                        'asset_id'         => $asset->id,
+                        'asset_alert_type' => $type,
+                    ]
+                ));
+            }
+        }
+    }
+
+    private function clearAssetAlert(Asset $asset, string $type): void
+    {
+        foreach (User::all() as $user) {
+            $user->unreadNotifications()
+                ->where('data->asset_id', $asset->id)
+                ->where('data->asset_alert_type', $type)
+                ->update(['read_at' => now()]);
+        }
+    }
 
     public function updatedSelectAll($value)
     {
@@ -92,7 +182,24 @@ class Index extends Component
 
     public function bulkDelete()
     {
+        $assets = Asset::whereIn('id', $this->selectedRows)->get(['id', 'asset_tag', 'name']);
+
+        // Bersihkan notifikasi terkait aset yang akan dihapus
+        foreach ($assets as $asset) {
+            $this->clearAssetAlert($asset, 'asset_damaged');
+            $this->clearAssetAlert($asset, 'asset_maintenance');
+        }
+
         Asset::whereIn('id', $this->selectedRows)->delete();
+
+        AuditLog::record(
+            'ASSET_BULK_DELETE',
+            null,
+            count($assets) . ' aset dihapus: ' . $assets->pluck('asset_tag')->implode(', '),
+            null,
+            ['ids' => $assets->pluck('id')->all(), 'asset_tags' => $assets->pluck('asset_tag')->all()]
+        );
+
         $this->selectedRows = [];
         $this->selectAll = false;
         session()->flash('message', 'Aset terpilih berhasil dihapus.');
@@ -102,7 +209,23 @@ class Index extends Component
     {
         if (!in_array($status, ['available', 'assigned', 'maintenance', 'retired'])) return;
 
+        $assets = Asset::whereIn('id', $this->selectedRows)->get(['id', 'asset_tag', 'status']);
+
         Asset::whereIn('id', $this->selectedRows)->update(['status' => $status]);
+
+        AuditLog::record(
+            'ASSET_BULK_STATUS_UPDATE',
+            null,
+            count($assets) . " aset diubah statusnya menjadi '{$status}': " . $assets->pluck('asset_tag')->implode(', '),
+            ['statuses' => $assets->pluck('status', 'asset_tag')->all()],
+            ['status' => $status]
+        );
+
+        // Sinkronisasi notifikasi untuk setiap aset yang statusnya berubah
+        foreach (Asset::whereIn('id', $this->selectedRows)->get() as $asset) {
+            $this->syncAssetNotification($asset);
+        }
+
         $this->selectedRows = [];
         $this->selectAll = false;
         session()->flash('message', 'Status aset terpilih berhasil diperbarui.');
@@ -157,19 +280,57 @@ class Index extends Component
 
         if ($this->editingId) {
             $asset = Asset::findOrFail($this->editingId);
+            $oldValues = $asset->toArray();
             $asset->update($validated);
+
+            AuditLog::record(
+                'ASSET_UPDATE',
+                $asset->asset_tag,
+                "Aset '{$asset->name}' ({$asset->asset_tag}) diperbarui.",
+                $oldValues,
+                $asset->fresh()->toArray()
+            );
+
             session()->flash('message', 'Data aset berhasil diperbarui.');
         } else {
-            Asset::create($validated);
+            $asset = Asset::create($validated);
+
+            AuditLog::record(
+                'ASSET_CREATE',
+                $asset->asset_tag,
+                "Aset baru '{$asset->name}' ({$asset->asset_tag}) ditambahkan.",
+                null,
+                $asset->toArray()
+            );
+
             session()->flash('message', 'Aset baru berhasil ditambahkan.');
         }
+
+        // Sinkronisasi notifikasi kondisi & status aset
+        $this->syncAssetNotification($asset);
 
         $this->closeModal();
     }
 
     public function delete($id)
     {
-        Asset::findOrFail($id)->delete();
+        $asset = Asset::findOrFail($id);
+        $oldValues = $asset->toArray();
+
+        // Bersihkan notifikasi terkait aset yang akan dihapus
+        $this->clearAssetAlert($asset, 'asset_damaged');
+        $this->clearAssetAlert($asset, 'asset_maintenance');
+
+        $asset->delete();
+
+        AuditLog::record(
+            'ASSET_DELETE',
+            $asset->asset_tag,
+            "Aset '{$asset->name}' ({$asset->asset_tag}) dihapus.",
+            $oldValues,
+            null
+        );
+
         session()->flash('message', 'Aset berhasil dihapus.');
     }
 
@@ -253,6 +414,17 @@ class Index extends Component
             return;
         }
 
+        AuditLog::record(
+            'ASSET_IMPORT',
+            $fileName,
+            "Data aset diimpor dari berkas '{$fileName}'.",
+            null,
+            null
+        );
+
+        // Sinkronisasi notifikasi karena import bisa mengubah banyak data sekaligus
+        $this->syncAllAssetNotifications();
+
         $this->closeImportModal();
         session()->flash('message', 'Data aset dari Excel berhasil diimpor.');
     }
@@ -267,6 +439,14 @@ class Index extends Component
 
         $fileName = 'Data_Aset_' . now()->format('Ymd_His') . '.xlsx';
 
+        AuditLog::record(
+            'ASSET_EXPORT',
+            $fileName,
+            'Data aset diekspor ke Excel.',
+            null,
+            $filters
+        );
+
         return Excel::download(new AssetExport($filters), $fileName);
     }
 
@@ -278,6 +458,14 @@ class Index extends Component
         }
 
         $fileName = 'Data_Aset_Terpilih_' . now()->format('Ymd_His') . '.xlsx';
+
+        AuditLog::record(
+            'ASSET_EXPORT_SELECTED',
+            $fileName,
+            count($this->selectedRows) . ' aset terpilih diekspor ke Excel.',
+            null,
+            ['ids' => $this->selectedRows]
+        );
 
         return Excel::download(new AssetExport([], $this->selectedRows), $fileName);
     }

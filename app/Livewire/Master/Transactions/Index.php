@@ -8,6 +8,8 @@ use App\Models\AuditLog; // <-- 1. Import Model AuditLog
 use App\Models\FinanceCategory;
 use App\Models\FinanceTransaction;
 use App\Models\Unit;
+use App\Models\User;
+use App\Notifications\SystemNotification;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
@@ -66,6 +68,12 @@ class Index extends Component
 
     public int $perPage = 15;
 
+    public function mount(): void
+    {
+        // Sinkronisasi notifikasi transaksi pending saat halaman dibuka
+        $this->syncAllTransactionNotifications();
+    }
+
     // Lifecycle Hooks Reset Page
     public function updatingSearch(): void { $this->resetPage(); }
     public function updatingTypeFilter(): void { $this->resetPage(); }
@@ -77,6 +85,79 @@ class Index extends Component
 
     public function updatedFormUnitId(): void { $this->form_finance_category_id = null; }
     public function updatedFormType(): void { $this->form_finance_category_id = null; }
+
+    // =========================================================================
+    // NOTIFIKASI TRANSAKSI PENDING
+    // =========================================================================
+
+    /**
+     * Jalankan pengecekan notifikasi untuk SEMUA transaksi.
+     * Dipanggil saat halaman dimuat & setelah proses import,
+     * karena keduanya bisa memengaruhi banyak data sekaligus.
+     */
+    private function syncAllTransactionNotifications(): void
+    {
+        FinanceTransaction::all()->each(function (FinanceTransaction $transaction) {
+            $this->syncTransactionNotification($transaction);
+        });
+    }
+
+    /**
+     * Sinkronisasi status notifikasi untuk SATU transaksi:
+     * - Kirim notifikasi baru jika status 'pending' dan belum ada notifikasi aktif.
+     * - Tandai notifikasi lama sebagai dibaca jika status sudah completed/cancelled.
+     */
+    private function syncTransactionNotification(FinanceTransaction $transaction): void
+    {
+        $transaction->refresh();
+
+        if ($transaction->status === 'pending') {
+            $typeText = $transaction->type === 'income' ? 'Pemasukan' : 'Pengeluaran';
+
+            $this->fireTransactionAlert(
+                $transaction,
+                'pending_transaction',
+                'Transaksi Menunggu Konfirmasi',
+                "Transaksi {$typeText} No. Ref {$transaction->reference_no} sebesar Rp " . number_format($transaction->amount, 0, ',', '.') . " berstatus pending dan butuh tindak lanjut."
+            );
+        } else {
+            $this->clearTransactionAlert($transaction, 'pending_transaction');
+        }
+    }
+
+    private function fireTransactionAlert(FinanceTransaction $transaction, string $type, string $title, string $message): void
+    {
+        foreach (User::all() as $user) {
+            $hasPending = $user->unreadNotifications()
+                ->where('data->transaction_id', $transaction->id)
+                ->where('data->transaction_alert_type', $type)
+                ->exists();
+
+            if (!$hasPending) {
+                $user->notify(new SystemNotification(
+                    title: $title,
+                    message: $message,
+                    badge: 'Pending',
+                    actionable: false,
+                    url: url()->current(),
+                    extraData: [
+                        'transaction_id'           => $transaction->id,
+                        'transaction_alert_type'   => $type,
+                    ]
+                ));
+            }
+        }
+    }
+
+    private function clearTransactionAlert(FinanceTransaction $transaction, string $type): void
+    {
+        foreach (User::all() as $user) {
+            $user->unreadNotifications()
+                ->where('data->transaction_id', $transaction->id)
+                ->where('data->transaction_alert_type', $type)
+                ->update(['read_at' => now()]);
+        }
+    }
 
     public function updatedSelectAll($value): void
     {
@@ -221,6 +302,9 @@ class Index extends Component
             session()->flash('message', 'Transaksi baru berhasil dicatat.');
         }
 
+        // Sinkronisasi notifikasi status pending
+        $this->syncTransactionNotification($transaction);
+
         $this->closeCreateModal();
     }
 
@@ -317,6 +401,9 @@ class Index extends Component
                 newValues: null
             );
 
+            // Bersihkan notifikasi pending terkait transaksi yang akan dihapus
+            $this->clearTransactionAlert($transaction, 'pending_transaction');
+
             if ($transaction->proof_file && Storage::disk('public')->exists($transaction->proof_file)) {
                 Storage::disk('public')->delete($transaction->proof_file);
             }
@@ -350,6 +437,9 @@ class Index extends Component
                     newValues: ['status' => $status]
                 );
             }
+
+            // Sinkronisasi notifikasi (baik status berubah maupun tidak, aman untuk dijalankan)
+            $this->syncTransactionNotification($transaction);
         }
 
         $this->selectedRows = [];
@@ -436,6 +526,9 @@ class Index extends Component
                 'waktu_impor' => now()->translatedFormat('d F Y H:i:s'),
             ]
         );
+
+        // Sinkronisasi notifikasi karena import bisa menambahkan banyak transaksi pending sekaligus
+        $this->syncAllTransactionNotifications();
 
         $this->closeImportModal();
         session()->flash('message', 'Data transaksi dari Excel berhasil diimpor.');

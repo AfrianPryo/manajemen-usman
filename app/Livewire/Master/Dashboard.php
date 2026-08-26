@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Master;
 
+use App\Models\AuditLog;
 use App\Models\AuthLog;
 use App\Models\FinanceTransaction;
 use App\Models\Unit;
@@ -193,6 +194,26 @@ class Dashboard extends Component
             $user->assignRole($this->role);
         }
 
+        // Catat ke Audit Log: pembuatan akun admin baru beserta role & unit terkait.
+        // Password plain sengaja TIDAK disimpan ke log demi keamanan.
+        AuditLog::record(
+            'admin_created',
+            $user->username,
+            "Admin baru '{$user->name}' dibuat dengan role '{$this->role}'" .
+                ($this->role === 'unit-admin' && $this->admin_unit_id
+                    ? " untuk unit '" . (Unit::find($this->admin_unit_id)->name ?? $this->admin_unit_id) . "'"
+                    : ''),
+            null,
+            [
+                'name'            => $user->name,
+                'username'        => $user->username,
+                'role'            => $this->role,
+                'employee_status' => $this->employee_status,
+                'nip'             => $this->employee_status === 'nip' ? $this->nip : null,
+                'unit_id'         => $this->role === 'unit-admin' ? $this->admin_unit_id : null,
+            ]
+        );
+
         // Tampilkan modal kredensial
         $this->createdCredentials = [
             'title'    => '🎉 Akun Admin Berhasil Dibuat!',
@@ -264,8 +285,26 @@ class Dashboard extends Component
             'slug' => Str::slug($this->name),
         ]);
 
-        Unit::updateOrCreate(
+        // Ambil nilai lama SEBELUM ditimpa, khusus untuk mode edit — dipakai sebagai jejak audit.
+        $oldValues = null;
+        if ($this->isEditing && $this->unitId) {
+            $existingUnit = Unit::find($this->unitId);
+            $oldValues = $existingUnit ? $existingUnit->only(array_keys($data)) : null;
+        }
+
+        $unit = Unit::updateOrCreate(
             ['id' => $this->unitId],
+            $data
+        );
+
+        // Catat ke Audit Log: pembuatan atau perubahan data Unit Usaha.
+        AuditLog::record(
+            $this->isEditing ? 'unit_updated' : 'unit_created',
+            $unit->name,
+            $this->isEditing
+                ? "Unit Usaha '{$unit->name}' diperbarui"
+                : "Unit Usaha baru '{$unit->name}' ditambahkan",
+            $oldValues,
             $data
         );
 
@@ -351,6 +390,23 @@ class Dashboard extends Component
         ];
 
         $fileName = 'Laporan_Master_Admin_' . now()->format('Ymd_His') . '.xlsx';
+
+        // Catat ke Audit Log: ekspor laporan dashboard (aktivitas akses/unduh data agregat).
+        AuditLog::record(
+            'dashboard_export',
+            $fileName,
+            "Export laporan dashboard master admin periode '{$periodLabel}'",
+            null,
+            [
+                'period_filter' => $this->periodFilter,
+                'period_label'  => $periodLabel,
+                'start_date'    => $this->startDate,
+                'end_date'      => $this->endDate,
+                'search_admin'  => $this->searchAdmin,
+                'search_unit'   => $this->searchUnit,
+                'file_name'     => $fileName,
+            ]
+        );
 
         return Excel::download(
             new DashboardExport($summary, $filters, $revenueContribution, $periodLabel),

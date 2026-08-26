@@ -6,11 +6,15 @@ use App\Livewire\Master\Analytics\Index as AnalyticsIndex;
 use App\Livewire\Master\Asset\Index as AssetIndex;
 use App\Livewire\Master\AuditLog\Index as AuditLogsIndex;
 use App\Livewire\Master\Dashboard as MasterDashboard;
+use App\Livewire\Master\Documents\Dashboard as DocumentsDashboard;
+use App\Livewire\Master\Documents\Generate as DocumentsGenerate;
+use App\Livewire\Master\Documents\History as DocumentsHistory;
+use App\Livewire\Master\Documents\SignatureSettings as DocumentsSignatureSettings;
+use App\Livewire\Master\Documents\TemplateManager as DocumentsTemplateManager;
 use App\Livewire\Master\Exports\Index as ExportsIndex; // Import Baru
 use App\Livewire\Master\Inventory\Index as InventoryIndex;
 use App\Livewire\Master\Profile\Index as ProfileIndex;
 use App\Livewire\Master\RecurringTransaction\Index as RecurringTransactionIndex;
-use App\Livewire\Master\Reports\Index as ReportsIndex;
 use App\Livewire\Master\Settings\Index as SettingsIndex;
 use App\Livewire\Master\Transactions\Index as TransactionsIndex;
 use App\Livewire\Master\Units\Index as UnitsIndex;
@@ -86,27 +90,39 @@ Route::middleware(['auth', 'user.active', 'single.session'])->group(function () 
         // ================= MASTER ADMIN ROUTES =================
         Route::middleware('role:master-admin')->prefix('master')->name('master.')->group(function () {
             Route::get('/dashboard', MasterDashboard::class)->name('dashboard');
-            
+
             // Master Management
             Route::get('/units', UnitsIndex::class)->name('units.index');
             Route::get('/users', UsersIndex::class)->name('users.index');
             Route::get('/vendors', VendorIndex::class)->name('vendors.index');
-            
+
             // Operasional
             Route::get('/transactions', TransactionsIndex::class)->name('transactions.index');
             Route::get('/recurring-transactions', RecurringTransactionIndex::class)->name('recurring-transactions.index');
             Route::get('/inventory', InventoryIndex::class)->name('inventory.index');
             Route::get('/assets', AssetIndex::class)->name('assets.index');
-            Route::get('/reports', ReportsIndex::class)->name('reports.index');
+
+            // Dokumen Resmi (pengganti menu Laporan Konsolidasi)
+            // Sudah berada di dalam grup prefix('master')->name('master.'),
+            // jadi cukup tambah 'dokumen-resmi' & 'documents.' di sini —
+            // hasil akhirnya /master/dokumen-resmi dengan nama route master.documents.*
+            Route::prefix('dokumen-resmi')->name('documents.')->group(function () {
+                Route::get('/', DocumentsDashboard::class)->name('index');
+                Route::get('/buat', DocumentsGenerate::class)->name('generate');
+                Route::get('/riwayat', DocumentsHistory::class)->name('history');
+                Route::get('/template', DocumentsTemplateManager::class)->name('templates');
+                Route::get('/tanda-tangan', DocumentsSignatureSettings::class)->name('signature');
+            });
+
             Route::get('/exports', ExportsIndex::class)->name('exports.index'); // Route Baru
-            
+
             // Analytics
             Route::get('/analytics', AnalyticsIndex::class)->name('analytics.index');
-            
+
             // System
             Route::get('/activities', ActivitiesIndex::class)->name('activities.index');
             Route::get('/audit-logs', AuditLogsIndex::class)->name('audit-logs.index');
-            
+
             // Settings
             Route::get('/settings', SettingsIndex::class)->name('settings.index');
             Route::get('/profile', ProfileIndex::class)->name('profile.index');

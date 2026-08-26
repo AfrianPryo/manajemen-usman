@@ -5,7 +5,10 @@
     'role' => 'master'
 ])
 
-<div x-data="{ open: false }" @keydown.window.escape="open = false" class="relative">
+<div x-data="{ open: false }"
+     @keydown.window.escape="open = false"
+     wire:poll.visible.10s="$refresh"
+     class="relative">
     {{-- Trigger Bell Button --}}
     <button @click="open = true" 
             class="relative p-1.5 text-slate-500 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors focus:outline-none cursor-pointer">
@@ -51,12 +54,30 @@
                     {{ $badgeText }}
                 </span>
             </div>
-            <button @click="open = false" 
-                    class="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                </svg>
-            </button>
+
+            <div class="flex items-center gap-1">
+                {{-- Tombol Refresh Manual --}}
+                <button type="button"
+                        wire:click="$refresh"
+                        wire:loading.attr="disabled"
+                        wire:target="$refresh"
+                        title="Muat ulang notifikasi"
+                        class="p-1.5 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer disabled:opacity-50">
+                    <svg wire:loading.class="animate-spin" wire:target="$refresh"
+                         class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                    </svg>
+                </button>
+
+                {{-- Tombol Tutup --}}
+                <button @click="open = false" 
+                        class="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
         </div>
 
         {{-- Sidebar Body --}}

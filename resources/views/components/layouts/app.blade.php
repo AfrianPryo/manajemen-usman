@@ -108,6 +108,12 @@
             </div>
 
             {{-- Bottom User Profile & Pop-up Menu Pengaturan --}}
+            @php
+                // Foto profil admin master (diatur di Pengaturan Sistem > Profil Admin)
+                $sidebarPhotoPath = auth()->user()->profile_photo_path ?? null;
+                $sidebarPhotoUrl  = $sidebarPhotoPath ? asset('storage/' . $sidebarPhotoPath) : null;
+                $sidebarInitial   = strtoupper(substr(auth()->user()->name ?? 'U', 0, 1));
+            @endphp
             <div class="p-2 border-t border-slate-100 relative" x-data="{ userMenuOpen: false }">
                 {{-- Pop-up Menu Floating Upward --}}
                 <div x-show="userMenuOpen" 
@@ -122,8 +128,12 @@
                     
                     {{-- Detail User --}}
                     <div class="flex items-center gap-2.5 p-2 border-b border-slate-100 mb-1">
-                        <div class="w-7 h-7 rounded-lg bg-slate-100 text-slate-700 border border-slate-200/80 flex items-center justify-center font-bold text-xs shrink-0">
-                            {{ strtoupper(substr(auth()->user()->name ?? 'U', 0, 1)) }}
+                        <div class="w-7 h-7 rounded-lg bg-slate-100 text-slate-700 border border-slate-200/80 flex items-center justify-center font-bold text-xs shrink-0 overflow-hidden">
+                            @if ($sidebarPhotoUrl)
+                                <img src="{{ $sidebarPhotoUrl }}" alt="Foto profil" class="w-full h-full object-cover">
+                            @else
+                                {{ $sidebarInitial }}
+                            @endif
                         </div>
                         <div class="overflow-hidden">
                             <p class="text-xs font-bold text-slate-900 truncate leading-tight">{{ auth()->user()->name }}</p>
@@ -164,8 +174,12 @@
                 <button @click="userMenuOpen = !userMenuOpen" 
                         class="w-full flex items-center justify-between p-1.5 rounded-lg hover:bg-slate-50 transition-colors text-left focus:outline-none border border-transparent hover:border-slate-200/60">
                     <div class="flex items-center gap-2 overflow-hidden">
-                        <div class="w-6.5 h-6.5 rounded-md bg-slate-900 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-xs">
-                            {{ strtoupper(substr(auth()->user()->name ?? 'U', 0, 1)) }}
+                        <div class="w-6.5 h-6.5 rounded-md bg-slate-900 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-xs overflow-hidden">
+                            @if ($sidebarPhotoUrl)
+                                <img src="{{ $sidebarPhotoUrl }}" alt="Foto profil" class="w-full h-full object-cover">
+                            @else
+                                {{ $sidebarInitial }}
+                            @endif
                         </div>
                         <span class="text-xs font-semibold text-slate-800 truncate">{{ auth()->user()->name }}</span>
                     </div>

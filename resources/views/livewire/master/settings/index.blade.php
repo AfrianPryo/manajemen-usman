@@ -1,146 +1,268 @@
-<div class="p-6 max-w-5xl mx-auto space-y-6">
-    <!-- Header -->
+<div class="w-full max-w-5xl mx-auto space-y-5 text-neutral-800 dark:text-neutral-100 px-4 py-4 sm:px-6 font-sans">
+
+    {{-- Header --}}
     <div>
-        <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Pengaturan Sistem</h1>
-        <p class="text-sm text-gray-500 dark:text-gray-400">Kelola informasi sekolah, preferensi aplikasi, dan konfigurasi fitur.</p>
+        <h1 class="text-xl font-bold text-neutral-900 dark:text-white tracking-tight">Pengaturan Sistem</h1>
+        <p class="text-xs text-neutral-400 mt-0.5">Kelola profil admin master, preferensi aplikasi, dan konfigurasi fitur.</p>
     </div>
 
-    <!-- Alert Success -->
+    {{-- Flash Notification --}}
     @if (session()->has('success'))
-        <div class="bg-emerald-50 dark:bg-emerald-900/30 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-400 px-4 py-3 rounded-xl text-sm flex items-center justify-between">
-            <span class="flex items-center gap-2">
-                <svg class="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                {{ session('success') }}
-            </span>
+        <div class="p-4 rounded-md bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 text-sm flex items-center justify-between">
+            <span class="font-medium">{{ session('success') }}</span>
+            <button type="button" onclick="this.parentElement.remove()" class="text-emerald-500 hover:text-emerald-700">&times;</button>
         </div>
     @endif
 
     <!-- Navigasi Tab -->
-    <div class="border-b border-gray-200 dark:border-slate-700">
-        <nav class="flex space-x-6" aria-label="Tabs">
-            <button wire:click="setTab('profile')" 
-                class="py-3 px-1 border-b-2 font-medium text-sm transition flex items-center gap-2 {{ $activeTab === 'profile' ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400 dark:border-indigo-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-slate-200' }}">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 v5"/></svg>
-                Profil Sekolah
-            </button>
+    <div class="inline-flex flex-wrap p-1 bg-neutral-100 dark:bg-slate-900 rounded-lg gap-1">
+        <button wire:click="setTab('profile')"
+            class="px-4 py-2 text-xs font-bold rounded-md transition-all flex items-center gap-2 {{ $activeTab === 'profile' ? 'bg-red-600 text-white shadow-sm' : 'text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200' }}">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/></svg>
+            Profil Admin
+        </button>
 
-            <button wire:click="setTab('preferences')" 
-                class="py-3 px-1 border-b-2 font-medium text-sm transition flex items-center gap-2 {{ $activeTab === 'preferences' ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400 dark:border-indigo-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-slate-200' }}">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><circle cx="12" cy="12" r="3"/></svg>
-                Preferensi Sistem
-            </button>
+        <button wire:click="setTab('preferences')"
+            class="px-4 py-2 text-xs font-bold rounded-md transition-all flex items-center gap-2 {{ $activeTab === 'preferences' ? 'bg-red-600 text-white shadow-sm' : 'text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200' }}">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><circle cx="12" cy="12" r="3"/></svg>
+            Preferensi Sistem
+        </button>
 
-            <button wire:click="setTab('features')" 
-                class="py-3 px-1 border-b-2 font-medium text-sm transition flex items-center gap-2 {{ $activeTab === 'features' ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400 dark:border-indigo-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-slate-200' }}">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/></svg>
-                Fitur & Modul
-            </button>
-        </nav>
+        <button wire:click="setTab('features')"
+            class="px-4 py-2 text-xs font-bold rounded-md transition-all flex items-center gap-2 {{ $activeTab === 'features' ? 'bg-red-600 text-white shadow-sm' : 'text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200' }}">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/></svg>
+            Fitur & Modul
+        </button>
     </div>
 
-    <!-- TAB 1: PROFIL SEKOLAH -->
+    <!-- TAB 1: PROFIL ADMIN MASTER -->
     @if($activeTab === 'profile')
-        <form wire:submit="saveProfile" class="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 p-6 space-y-6">
-            <div>
-                <h2 class="text-base font-semibold text-gray-900 dark:text-white">Identitas Sekolah</h2>
-                <p class="text-xs text-gray-500 dark:text-gray-400">Atur informasi utama instansi sekolah dan logo resmi.</p>
-            </div>
+        <div class="space-y-5">
 
-            <!-- Logo Sekolah -->
-            <div class="flex items-center gap-4">
-                <div class="w-20 h-20 rounded-lg border border-gray-200 dark:border-slate-700 overflow-hidden bg-gray-50 dark:bg-slate-900 flex items-center justify-center">
-                    @if ($logo)
-                        <img src="{{ $logo->temporaryUrl() }}" class="w-full h-full object-contain p-1">
-                    @elseif ($existingLogo)
-                        <img src="{{ asset('storage/' . $existingLogo) }}" class="w-full h-full object-contain p-1">
-                    @else
-                        <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 v5"/></svg>
+            {{-- Informasi Akun (tanpa field nomor WA — pindah ke card terpisah di bawah) --}}
+            <form wire:submit="saveProfile" class="bg-white dark:bg-slate-800 rounded-md border border-neutral-100 dark:border-slate-700 shadow-sm shadow-black/[0.02] p-6 space-y-6">
+                <div>
+                    <h2 class="text-sm font-bold text-neutral-900 dark:text-white">Informasi Akun</h2>
+                    <p class="text-xs text-neutral-400 mt-0.5">Data identitas admin master yang sedang login. Foto dan nama ini akan tampil di sidebar dashboard.</p>
+                </div>
+
+                <div class="flex items-center gap-4">
+                    <div class="w-20 h-20 rounded-full border border-neutral-200 dark:border-slate-700 overflow-hidden bg-neutral-50 dark:bg-slate-900 flex items-center justify-center shrink-0">
+                        @if ($avatar)
+                            <img src="{{ $avatar->temporaryUrl() }}" class="w-full h-full object-cover">
+                        @elseif ($existingAvatar)
+                            <img src="{{ asset('storage/' . $existingAvatar) }}" class="w-full h-full object-cover">
+                        @else
+                            <span class="text-lg font-bold text-neutral-400">{{ strtoupper(substr($name ?: 'A', 0, 1)) }}</span>
+                        @endif
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Foto Profil</label>
+                        <input type="file" wire:model="avatar" accept="image/*" class="text-xs text-neutral-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-red-50 file:text-red-700 dark:file:bg-slate-700 dark:file:text-neutral-300">
+                        @error('avatar') <p class="text-[11px] text-rose-500 mt-1">{{ $message }}</p> @enderror
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Nama Lengkap</label>
+                        <input type="text" wire:model="name" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-red-500">
+                        @error('name') <p class="text-[11px] text-rose-500 mt-0.5">{{ $message }}</p> @enderror
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Username</label>
+                        <input type="text" wire:model="username" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-red-500">
+                        @error('username') <p class="text-[11px] text-rose-500 mt-0.5">{{ $message }}</p> @enderror
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Email</label>
+                        <input type="email" wire:model="email" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-red-500">
+                        @error('email') <p class="text-[11px] text-rose-500 mt-0.5">{{ $message }}</p> @enderror
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Status Kepegawaian</label>
+                        <select wire:model.live="employeeStatus" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-red-500 cursor-pointer">
+                            <option value="non-nip">Non-NIP</option>
+                            <option value="nip">NIP (Pegawai Negeri)</option>
+                        </select>
+                        @error('employeeStatus') <p class="text-[11px] text-rose-500 mt-0.5">{{ $message }}</p> @enderror
+                    </div>
+
+                    @if ($employeeStatus === 'nip')
+                        <div>
+                            <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1">NIP</label>
+                            <input type="text" wire:model="nip" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-red-500">
+                            @error('nip') <p class="text-[11px] text-rose-500 mt-0.5">{{ $message }}</p> @enderror
+                        </div>
                     @endif
                 </div>
-                <div>
-                    <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Logo Sekolah</label>
-                    <input type="file" wire:model="logo" accept="image/*" class="text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 dark:file:bg-slate-700 dark:file:text-gray-300">
-                    @error('logo') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
+
+                <div class="flex justify-end pt-4 border-t border-neutral-100 dark:border-slate-700">
+                    <button type="submit" class="px-5 py-2 text-xs font-bold text-white bg-red-600 hover:bg-red-700 rounded-md transition-all flex items-center gap-2 shadow-sm">
+                        <span wire:loading.remove wire:target="saveProfile">Simpan Profil</span>
+                        <span wire:loading wire:target="saveProfile">Menyimpan...</span>
+                    </button>
                 </div>
+            </form>
+
+            {{-- Ubah Nomor WhatsApp — 2 langkah: request OTP -> verifikasi --}}
+            <div class="bg-white dark:bg-slate-800 rounded-md border border-neutral-100 dark:border-slate-700 shadow-sm shadow-black/[0.02] p-6 space-y-6">
+                <div>
+                    <h2 class="text-sm font-bold text-neutral-900 dark:text-white">Ubah Nomor WhatsApp</h2>
+                    <p class="text-xs text-neutral-400 mt-0.5">
+                        Nomor saat ini: <span class="font-semibold text-neutral-700 dark:text-neutral-200">{{ $phone ?: 'Belum terdaftar' }}</span>.
+                        Nomor ini dipakai sebagai kanal OTP untuk verifikasi keamanan, sehingga perubahan wajib dikonfirmasi lewat OTP.
+                    </p>
+                </div>
+
+                @if (!$phoneOtpRequested)
+                    {{-- Langkah 1: input nomor baru + konfirmasi password --}}
+                    <form wire:submit="requestPhoneChangeOtp" class="space-y-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Nomor WhatsApp Baru</label>
+                                <input type="text" wire:model="newPhone" placeholder="08xxxxxxxxxx" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-red-500">
+                                @error('newPhone') <p class="text-[11px] text-rose-500 mt-0.5">{{ $message }}</p> @enderror
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Konfirmasi Password Anda</label>
+                                <input type="password" wire:model="phoneChangePassword" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-red-500">
+                                @error('phoneChangePassword') <p class="text-[11px] text-rose-500 mt-0.5">{{ $message }}</p> @enderror
+                            </div>
+                        </div>
+
+                        <div class="flex justify-end pt-4 border-t border-neutral-100 dark:border-slate-700">
+                            <button type="submit" class="px-5 py-2 text-xs font-bold text-white bg-red-600 hover:bg-red-700 rounded-md transition-all flex items-center gap-2 shadow-sm">
+                                <span wire:loading.remove wire:target="requestPhoneChangeOtp">Kirim Kode OTP</span>
+                                <span wire:loading wire:target="requestPhoneChangeOtp">Mengirim...</span>
+                            </button>
+                        </div>
+                    </form>
+                @else
+                    {{-- Langkah 2: verifikasi OTP --}}
+                    <form wire:submit="verifyPhoneChangeOtp" class="space-y-4">
+                        <div class="bg-amber-50 dark:bg-amber-950/50 border border-amber-200/60 dark:border-amber-800 text-amber-700 dark:text-amber-400 text-[11px] font-medium px-3 py-2 rounded-md">
+                            Kode OTP telah dikirim ke WhatsApp {{ $phone ? 'nomor lama Anda (untuk konfirmasi)' : 'nomor baru (untuk verifikasi kepemilikan)' }}. Kode berlaku 5 menit.
+                        </div>
+
+                        <div class="max-w-xs">
+                            <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Kode OTP (6 digit)</label>
+                            <input type="text" inputmode="numeric" maxlength="6" wire:model="phoneOtp" placeholder="123456" class="w-full px-3.5 py-2 text-sm font-bold tracking-widest text-center border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-red-500">
+                            @error('phoneOtp') <p class="text-[11px] text-rose-500 mt-0.5">{{ $message }}</p> @enderror
+                        </div>
+
+                        <div class="flex justify-end gap-2 pt-4 border-t border-neutral-100 dark:border-slate-700">
+                            <button type="button" wire:click="cancelPhoneOtp" class="px-5 py-2 text-xs font-bold text-neutral-600 dark:text-neutral-300 bg-neutral-100 dark:bg-slate-700 hover:bg-neutral-200 rounded-md transition-all">
+                                Batal
+                            </button>
+                            <button type="submit" class="px-5 py-2 text-xs font-bold text-white bg-red-600 hover:bg-red-700 rounded-md transition-all flex items-center gap-2 shadow-sm">
+                                <span wire:loading.remove wire:target="verifyPhoneChangeOtp">Verifikasi & Simpan</span>
+                                <span wire:loading wire:target="verifyPhoneChangeOtp">Memverifikasi...</span>
+                            </button>
+                        </div>
+                    </form>
+                @endif
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {{-- Ubah Password — 2 langkah: request OTP -> verifikasi --}}
+            <div class="bg-white dark:bg-slate-800 rounded-md border border-neutral-100 dark:border-slate-700 shadow-sm shadow-black/[0.02] p-6 space-y-6">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nama Sekolah</label>
-                    <input type="text" wire:model="schoolName" class="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-900 text-sm text-gray-900 dark:text-white">
-                    @error('schoolName') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
+                    <h2 class="text-sm font-bold text-neutral-900 dark:text-white">Ubah Password</h2>
+                    <p class="text-xs text-neutral-400 mt-0.5">Gunakan password yang kuat dan tidak digunakan di layanan lain. Perubahan wajib dikonfirmasi lewat OTP WhatsApp.</p>
                 </div>
 
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">NPSN</label>
-                    <input type="text" wire:model="npsn" class="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-900 text-sm text-gray-900 dark:text-white">
-                    @error('npsn') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
-                </div>
+                @if (!$passwordOtpRequested)
+                    {{-- Langkah 1: input password lama & baru --}}
+                    <form wire:submit="requestPasswordChangeOtp" class="space-y-4">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Password Saat Ini</label>
+                                <input type="password" wire:model="currentPassword" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-red-500">
+                                @error('currentPassword') <p class="text-[11px] text-rose-500 mt-0.5">{{ $message }}</p> @enderror
+                            </div>
 
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nama Kepala Sekolah</label>
-                    <input type="text" wire:model="principalName" class="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-900 text-sm text-gray-900 dark:text-white">
-                    @error('principalName') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
-                </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Password Baru</label>
+                                <input type="password" wire:model="newPassword" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-red-500">
+                                @error('newPassword') <p class="text-[11px] text-rose-500 mt-0.5">{{ $message }}</p> @enderror
+                                <p class="text-[10px] text-neutral-400 mt-1">Min. 8 karakter, kombinasi huruf besar/kecil, angka, dan simbol.</p>
+                            </div>
 
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email Sekolah</label>
-                    <input type="email" wire:model="schoolEmail" class="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-900 text-sm text-gray-900 dark:text-white">
-                    @error('schoolEmail') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
-                </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Konfirmasi Password Baru</label>
+                                <input type="password" wire:model="newPassword_confirmation" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-red-500">
+                            </div>
+                        </div>
 
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">No. Telepon Sekolah</label>
-                    <input type="text" wire:model="schoolPhone" class="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-900 text-sm text-gray-900 dark:text-white">
-                    @error('schoolPhone') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
-                </div>
+                        <div class="flex justify-end pt-4 border-t border-neutral-100 dark:border-slate-700">
+                            <button type="submit" class="px-5 py-2 text-xs font-bold text-white bg-red-600 hover:bg-red-700 rounded-md transition-all flex items-center gap-2 shadow-sm">
+                                <span wire:loading.remove wire:target="requestPasswordChangeOtp">Kirim Kode OTP</span>
+                                <span wire:loading wire:target="requestPasswordChangeOtp">Mengirim...</span>
+                            </button>
+                        </div>
+                    </form>
+                @else
+                    {{-- Langkah 2: verifikasi OTP --}}
+                    <form wire:submit="verifyPasswordChangeOtp" class="space-y-4">
+                        <div class="bg-amber-50 dark:bg-amber-950/50 border border-amber-200/60 dark:border-amber-800 text-amber-700 dark:text-amber-400 text-[11px] font-medium px-3 py-2 rounded-md">
+                            Kode OTP telah dikirim ke WhatsApp terdaftar ({{ $phone }}). Kode berlaku 5 menit. Sesi di perangkat lain akan otomatis keluar setelah password berhasil diubah.
+                        </div>
 
-                <div class="md:col-span-2">
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Alamat Lengkap</label>
-                    <textarea wire:model="schoolAddress" rows="3" class="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-900 text-sm text-gray-900 dark:text-white"></textarea>
-                    @error('schoolAddress') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
-                </div>
+                        <div class="max-w-xs">
+                            <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Kode OTP (6 digit)</label>
+                            <input type="text" inputmode="numeric" maxlength="6" wire:model="passwordOtp" placeholder="123456" class="w-full px-3.5 py-2 text-sm font-bold tracking-widest text-center border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-red-500">
+                            @error('passwordOtp') <p class="text-[11px] text-rose-500 mt-0.5">{{ $message }}</p> @enderror
+                        </div>
+
+                        <div class="flex justify-end gap-2 pt-4 border-t border-neutral-100 dark:border-slate-700">
+                            <button type="button" wire:click="cancelPasswordOtp" class="px-5 py-2 text-xs font-bold text-neutral-600 dark:text-neutral-300 bg-neutral-100 dark:bg-slate-700 hover:bg-neutral-200 rounded-md transition-all">
+                                Batal
+                            </button>
+                            <button type="submit" class="px-5 py-2 text-xs font-bold text-white bg-red-600 hover:bg-red-700 rounded-md transition-all flex items-center gap-2 shadow-sm">
+                                <span wire:loading.remove wire:target="verifyPasswordChangeOtp">Verifikasi & Ubah Password</span>
+                                <span wire:loading wire:target="verifyPasswordChangeOtp">Memverifikasi...</span>
+                            </button>
+                        </div>
+                    </form>
+                @endif
             </div>
-
-            <div class="flex justify-end pt-4 border-t border-gray-100 dark:border-slate-700">
-                <button type="submit" class="px-6 py-2 bg-indigo-600 text-white rounded-lg text-sm font-semibold hover:bg-indigo-700 transition flex items-center gap-2">
-                    <span wire:loading.remove wire:target="saveProfile">Simpan Profil Sekolah</span>
-                    <span wire:loading wire:target="saveProfile">Menyimpan...</span>
-                </button>
-            </div>
-        </form>
+        </div>
     @endif
 
     <!-- TAB 2: PREFERENSI SISTEM -->
     @if($activeTab === 'preferences')
-        <form wire:submit="savePreferences" class="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 p-6 space-y-6">
+        <form wire:submit="savePreferences" class="bg-white dark:bg-slate-800 rounded-md border border-neutral-100 dark:border-slate-700 shadow-sm shadow-black/[0.02] p-6 space-y-6">
             <div>
-                <h2 class="text-base font-semibold text-gray-900 dark:text-white">Parameter Aplikasi</h2>
-                <p class="text-xs text-gray-500 dark:text-gray-400">Atur batasan waktu sesi, format mata uang, dan jumlah tampilan data.</p>
+                <h2 class="text-sm font-bold text-neutral-900 dark:text-white">Parameter Aplikasi</h2>
+                <p class="text-xs text-neutral-400 mt-0.5">Atur batasan waktu sesi, format mata uang, dan jumlah tampilan data.</p>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nama Aplikasi</label>
-                    <input type="text" wire:model="appName" class="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-900 text-sm text-gray-900 dark:text-white">
-                    @error('appName') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
+                    <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Nama Aplikasi</label>
+                    <input type="text" wire:model="appName" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-red-500">
+                    @error('appName') <p class="text-[11px] text-rose-500 mt-0.5">{{ $message }}</p> @enderror
                 </div>
 
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Simbol Mata Uang</label>
-                    <input type="text" wire:model="currencySymbol" class="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-900 text-sm text-gray-900 dark:text-white">
-                    @error('currencySymbol') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
+                    <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Simbol Mata Uang</label>
+                    <input type="text" wire:model="currencySymbol" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-red-500">
+                    @error('currencySymbol') <p class="text-[11px] text-rose-500 mt-0.5">{{ $message }}</p> @enderror
                 </div>
 
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Session Timeout (Menit)</label>
-                    <input type="number" wire:model="sessionTimeout" class="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-900 text-sm text-gray-900 dark:text-white">
-                    @error('sessionTimeout') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
+                    <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Session Timeout (Menit)</label>
+                    <input type="number" wire:model="sessionTimeout" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-red-500">
+                    @error('sessionTimeout') <p class="text-[11px] text-rose-500 mt-0.5">{{ $message }}</p> @enderror
                 </div>
 
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Default Data per Halaman (Pagination)</label>
-                    <select wire:model="itemsPerPage" class="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-900 text-sm text-gray-900 dark:text-white">
+                    <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Default Data per Halaman (Pagination)</label>
+                    <select wire:model="itemsPerPage" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-red-500 cursor-pointer">
                         <option value="5">5 Item</option>
                         <option value="10">10 Item</option>
                         <option value="25">25 Item</option>
@@ -149,8 +271,8 @@
                 </div>
 
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Zona Waktu</label>
-                    <select wire:model="timezone" class="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-900 text-sm text-gray-900 dark:text-white">
+                    <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Zona Waktu</label>
+                    <select wire:model="timezone" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-red-500 cursor-pointer">
                         <option value="Asia/Jakarta">WIB (Asia/Jakarta)</option>
                         <option value="Asia/Makassar">WITA (Asia/Makassar)</option>
                         <option value="Asia/Jayapura">WIT (Asia/Jayapura)</option>
@@ -158,15 +280,15 @@
                 </div>
 
                 <div class="flex items-center gap-3 pt-6">
-                    <input type="checkbox" id="maintenanceMode" wire:model="maintenanceMode" class="w-4 h-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500">
-                    <label for="maintenanceMode" class="text-sm text-gray-700 dark:text-gray-300">
+                    <input type="checkbox" id="maintenanceMode" wire:model="maintenanceMode" class="w-4 h-4 text-red-600 rounded border-neutral-300 focus:ring-red-500/20 cursor-pointer">
+                    <label for="maintenanceMode" class="text-xs font-semibold text-neutral-700 dark:text-neutral-300 cursor-pointer">
                         Aktifkan Mode Perbaikan (Maintenance)
                     </label>
                 </div>
             </div>
 
-            <div class="flex justify-end pt-4 border-t border-gray-100 dark:border-slate-700">
-                <button type="submit" class="px-6 py-2 bg-indigo-600 text-white rounded-lg text-sm font-semibold hover:bg-indigo-700 transition flex items-center gap-2">
+            <div class="flex justify-end pt-4 border-t border-neutral-100 dark:border-slate-700">
+                <button type="submit" class="px-5 py-2 text-xs font-bold text-white bg-red-600 hover:bg-red-700 rounded-md transition-all flex items-center gap-2 shadow-sm">
                     <span wire:loading.remove wire:target="savePreferences">Simpan Preferensi</span>
                     <span wire:loading wire:target="savePreferences">Menyimpan...</span>
                 </button>
@@ -176,43 +298,76 @@
 
     <!-- TAB 3: FITUR & MODUL -->
     @if($activeTab === 'features')
-        <form wire:submit="saveFeatures" class="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 p-6 space-y-6">
+        <form wire:submit="saveFeatures" class="bg-white dark:bg-slate-800 rounded-md border border-neutral-100 dark:border-slate-700 shadow-sm shadow-black/[0.02] p-6 space-y-6">
             <div>
-                <h2 class="text-base font-semibold text-gray-900 dark:text-white">Akses Fitur & Otomatisasi</h2>
-                <p class="text-xs text-gray-500 dark:text-gray-400">Atur modul aktif dan hak akses umum untuk unit usaha.</p>
+                <h2 class="text-sm font-bold text-neutral-900 dark:text-white">Akses Fitur & Otomatisasi</h2>
+                <p class="text-xs text-neutral-400 mt-0.5">Atur modul aktif dan hak akses umum untuk unit usaha.</p>
             </div>
 
             <div class="space-y-4">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Kategori Unit Usaha Default</label>
-                    <select wire:model="defaultCategory" class="w-full md:w-1/2 px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-900 text-sm text-gray-900 dark:text-white">
+                    <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Kategori Unit Usaha Default</label>
+                    <select wire:model="defaultCategory" class="w-full md:w-1/2 px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-red-500 cursor-pointer">
                         <option value="ritel">Ritel (Produk / Toko)</option>
                         <option value="jasa">Jasa / Layanan</option>
                     </select>
-                    @error('defaultCategory') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
+                    @error('defaultCategory') <p class="text-[11px] text-rose-500 mt-0.5">{{ $message }}</p> @enderror
                 </div>
 
-                <div class="pt-4 space-y-3 border-t border-gray-100 dark:border-slate-700">
+                <div class="pt-4 space-y-3 border-t border-neutral-100 dark:border-slate-700">
                     <label class="flex items-center gap-3 cursor-pointer">
-                        <input type="checkbox" wire:model="allowMultiUnitAdmin" class="w-4 h-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500">
+                        <input type="checkbox" wire:model="allowMultiUnitAdmin" class="w-4 h-4 text-red-600 rounded border-neutral-300 focus:ring-red-500/20 cursor-pointer">
                         <div>
-                            <span class="text-sm font-medium text-gray-800 dark:text-gray-200">Izinkan Admin Mengelola Banyak Unit</span>
-                            <p class="text-xs text-gray-400">Satu akun admin unit dapat ditugaskan ke lebih dari 1 unit usaha.</p>
+                            <span class="text-xs font-semibold text-neutral-800 dark:text-neutral-200">Izinkan Admin Mengelola Banyak Unit</span>
+                            <p class="text-[11px] text-neutral-400">Satu akun admin unit dapat ditugaskan ke lebih dari 1 unit usaha.</p>
                         </div>
                     </label>
 
-                    <label class="flex items-center gap-3 cursor-pointer">
-                        <input type="checkbox" wire:model="enableWaNotifications" class="w-4 h-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500">
-                        <div>
-                            <span class="text-sm font-medium text-gray-800 dark:text-gray-200">Notifikasi WhatsApp</span>
-                            <p class="text-xs text-gray-400">Kirim laporan harian/transaksi dan pemberitahuan penting langsung ke nomor WhatsApp sekolah.</p>
-                        </div>
-                    </label>
+                    <!-- Notifikasi WhatsApp -->
+                    <div>
+                        <label class="flex items-center gap-3 cursor-pointer">
+                            <input type="checkbox" wire:model.live="enableWaNotifications" class="w-4 h-4 text-red-600 rounded border-neutral-300 focus:ring-red-500/20 cursor-pointer">
+                            <div>
+                                <span class="text-xs font-semibold text-neutral-800 dark:text-neutral-200">Notifikasi WhatsApp</span>
+                                <p class="text-[11px] text-neutral-400">Kirim laporan harian/transaksi, pemberitahuan penting, dan kode OTP keamanan langsung ke WhatsApp.</p>
+                            </div>
+                        </label>
+
+                        @if ($enableWaNotifications)
+                            <div class="mt-3 ml-7 pl-4 border-l-2 border-red-100 dark:border-slate-600 space-y-3">
+                                <div class="bg-blue-50 dark:bg-blue-950/50 border border-blue-200/60 dark:border-blue-800 text-blue-600 dark:text-blue-400 text-[11px] font-medium px-3 py-2 rounded-md">
+                                    Konfigurasi ini juga dipakai untuk mengirim kode OTP saat admin master mengubah password atau nomor WhatsApp di tab Profil Admin.
+                                </div>
+
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Provider WhatsApp Gateway</label>
+                                        <select wire:model="waProvider" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-red-500 cursor-pointer">
+                                            <option value="fonnte">Fonnte</option>
+                                        </select>
+                                        @error('waProvider') <p class="text-[11px] text-rose-500 mt-0.5">{{ $message }}</p> @enderror
+                                    </div>
+
+                                    <div>
+                                        <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Nomor WhatsApp Pengirim</label>
+                                        <input type="text" wire:model="waSenderNumber" placeholder="08xxxxxxxxxx" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-red-500">
+                                        @error('waSenderNumber') <p class="text-[11px] text-rose-500 mt-0.5">{{ $message }}</p> @enderror
+                                    </div>
+
+                                    <div class="md:col-span-2">
+                                        <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1">API Key / Token Fonnte</label>
+                                        <input type="password" wire:model="waApiKey" placeholder="Masukkan API Key / Token" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-red-500">
+                                        @error('waApiKey') <p class="text-[11px] text-rose-500 mt-0.5">{{ $message }}</p> @enderror
+                                    </div>
+                                </div>
+                            </div>
+                        @endif
+                    </div>
                 </div>
             </div>
 
-            <div class="flex justify-end pt-4 border-t border-gray-100 dark:border-slate-700">
-                <button type="submit" class="px-6 py-2 bg-indigo-600 text-white rounded-lg text-sm font-semibold hover:bg-indigo-700 transition flex items-center gap-2">
+            <div class="flex justify-end pt-4 border-t border-neutral-100 dark:border-slate-700">
+                <button type="submit" class="px-5 py-2 text-xs font-bold text-white bg-red-600 hover:bg-red-700 rounded-md transition-all flex items-center gap-2 shadow-sm">
                     <span wire:loading.remove wire:target="saveFeatures">Simpan Fitur</span>
                     <span wire:loading wire:target="saveFeatures">Menyimpan...</span>
                 </button>

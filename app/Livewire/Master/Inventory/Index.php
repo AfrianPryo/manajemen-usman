@@ -7,7 +7,9 @@ use App\Imports\ProductsImport;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\Unit;
+use App\Models\User;
 use App\Models\AuditLog;
+use App\Notifications\SystemNotification;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
@@ -85,10 +87,97 @@ class Index extends Component
     public function updatingCategoryFilter(): void { $this->resetPage(); }
     public function updatingPerPage(): void { $this->resetPage(); }
 
+    public function mount(): void
+    {
+        // Sinkronisasi notifikasi stok menipis/habis saat halaman dibuka
+        $this->syncAllStockNotifications();
+    }
+
     // Reset pilihan kategori saat Unit Usaha pada form produk diubah
     public function updatedFormUnitId(): void
     {
         $this->form_category_id = null;
+    }
+
+    // =========================================================================
+    // NOTIFIKASI STOK (LOW STOCK / OUT OF STOCK)
+    // =========================================================================
+
+    /**
+     * Jalankan pengecekan notifikasi stok untuk SEMUA produk.
+     * Dipanggil saat halaman dimuat & setelah proses import,
+     * karena kedua proses ini bisa mengubah banyak stok sekaligus.
+     */
+    private function syncAllStockNotifications(): void
+    {
+        Product::all()->each(function (Product $product) {
+            $this->syncStockNotification($product);
+        });
+    }
+
+    /**
+     * Sinkronisasi status notifikasi untuk SATU produk:
+     * - Kirim notifikasi baru jika stok menipis/habis dan belum ada notifikasi aktif.
+     * - Tandai notifikasi lama sebagai dibaca jika stok sudah kembali aman.
+     */
+    private function syncStockNotification(Product $product): void
+    {
+        $product->refresh();
+
+        if ($product->stock <= 0) {
+            $this->fireStockAlert(
+                $product,
+                'out_of_stock',
+                'Stok Habis',
+                "Stok produk '{$product->name}' telah habis (0 {$product->unit_type}). Segera lakukan restock."
+            );
+            $this->clearStockAlert($product, 'low_stock');
+        } elseif ($product->stock <= $product->min_stock) {
+            $this->fireStockAlert(
+                $product,
+                'low_stock',
+                'Stok Menipis',
+                "Stok produk '{$product->name}' tersisa {$product->stock} {$product->unit_type} (batas minimum: {$product->min_stock})."
+            );
+            $this->clearStockAlert($product, 'out_of_stock');
+        } else {
+            $this->clearStockAlert($product, 'low_stock');
+            $this->clearStockAlert($product, 'out_of_stock');
+        }
+    }
+
+    private function fireStockAlert(Product $product, string $type, string $title, string $message): void
+    {
+        foreach (User::all() as $user) {
+            $hasPending = $user->unreadNotifications()
+                ->where('data->product_id', $product->id)
+                ->where('data->inventory_alert_type', $type)
+                ->exists();
+
+            if (!$hasPending) {
+                $user->notify(new SystemNotification(
+                    title: $title,
+                    message: $message,
+                    badge: $type === 'out_of_stock' ? 'Stok Habis' : 'Stok Menipis',
+                    actionable: false,
+                    url: url()->current(),
+                    extraData: [
+                        'product_id'            => $product->id,
+                        'inventory_alert_type'  => $type,
+                    ]
+                ));
+            }
+        }
+    }
+
+    private function clearStockAlert(Product $product, string $type): void
+    {
+        foreach (User::all() as $user) {
+            $user->unreadNotifications()
+                ->where('data->product_id', $product->id)
+                ->where('data->inventory_alert_type', $type)
+                ->update(['read_at' => now()]);
+        }
     }
 
     // =========================================================================
@@ -176,6 +265,9 @@ class Index extends Component
                 'waktu_impor' => now()->translatedFormat('d F Y H:i:s'),
             ]
         );
+
+        // Sinkronisasi notifikasi stok karena import bisa mengubah banyak stok sekaligus
+        $this->syncAllStockNotifications();
 
         $this->closeImportModal();
         session()->flash('success', 'Data produk berhasil diimport.');
@@ -377,6 +469,9 @@ class Index extends Component
             'stock' => $newStock,
         ]);
 
+        // Sinkronisasi notifikasi stok setelah penyesuaian
+        $this->syncStockNotification($this->selectedProduct);
+
         $productName = $this->selectedProduct->name;
         $this->closeStockModal();
         session()->flash('success', "Stok produk '{$productName}' berhasil diperbarui.");
@@ -499,6 +594,9 @@ class Index extends Component
             newValues: $product->getAttributes()
         );
 
+        // Sinkronisasi notifikasi stok (relevan jika stok/min_stock diubah lewat form)
+        $this->syncStockNotification($product);
+
         $this->closeCreateModal();
         session()->flash('success', $this->isEditing ? 'Produk berhasil diperbarui.' : 'Produk berhasil ditambahkan.');
     }
@@ -569,6 +667,10 @@ class Index extends Component
                 newValues: null
             );
 
+            // Bersihkan notifikasi stok terkait produk yang dihapus
+            $this->clearStockAlert($product, 'low_stock');
+            $this->clearStockAlert($product, 'out_of_stock');
+
             if ($product->image) {
                 Storage::disk('public')->delete($product->image);
             }
@@ -611,6 +713,10 @@ class Index extends Component
             oldValues: $oldValues,
             newValues: null
         );
+
+        // Bersihkan notifikasi stok terkait produk yang dihapus
+        $this->clearStockAlert($product, 'low_stock');
+        $this->clearStockAlert($product, 'out_of_stock');
 
         if ($product->image) {
             Storage::disk('public')->delete($product->image);

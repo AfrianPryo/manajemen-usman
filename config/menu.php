@@ -32,7 +32,7 @@ return [
             ['label' => 'Transaksi Berulang', 'route' => 'master.recurring-transactions.index', 'roles' => ['master-admin']],
             ['label' => 'Inventaris', 'route' => 'master.inventory.index', 'roles' => ['master-admin']],
             ['label' => 'Aset Unit Usaha', 'route' => 'master.assets.index', 'roles' => ['master-admin']],
-            ['label' => 'Laporan', 'route' => 'master.reports.index', 'roles' => ['master-admin']],
+            ['label' => 'Laporan', 'route' => 'master.documents.index', 'roles' => ['master-admin']],
             ['label' => 'Export Data', 'route' => 'master.exports.index', 'roles' => ['master-admin']], // Baru
         ],
     ],

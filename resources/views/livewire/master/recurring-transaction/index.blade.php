@@ -241,7 +241,7 @@
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Unit Usaha <span class="text-red-500">*</span></label>
-                            <select wire:model="unit_id" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-red-500">
+                            <select wire:model.live="unit_id" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-red-500">
                                 <option value="">-- Pilih Unit Usaha --</option>
                                 @foreach($units as $unit)
                                     <option value="{{ $unit->id }}">{{ $unit->name }}</option>
@@ -252,11 +252,32 @@
 
                         <div>
                             <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Tipe Transaksi <span class="text-red-500">*</span></label>
-                            <select wire:model="type" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-red-500">
+                            <select wire:model.live="type" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-red-500">
                                 <option value="income">Pendapatan (Income)</option>
                                 <option value="expense">Pengeluaran (Expense)</option>
                             </select>
                         </div>
+                    </div>
+
+                    {{-- Kategori Keuangan --}}
+                    <div>
+                        <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Kategori Keuangan <span class="text-red-500">*</span></label>
+                        <select wire:model="finance_category_id"
+                            @if(!$unit_id) disabled @endif
+                            class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-red-500 disabled:opacity-50 disabled:cursor-not-allowed">
+                            <option value="">
+                                {{ $unit_id ? '-- Pilih Kategori Keuangan --' : '-- Pilih Unit Usaha terlebih dahulu --' }}
+                            </option>
+                            @foreach($categories as $category)
+                                <option value="{{ $category->id }}">{{ $category->name }}</option>
+                            @endforeach
+                        </select>
+                        @if($unit_id && $categories->isEmpty())
+                            <span class="text-[11px] text-amber-500 mt-0.5 block">
+                                Belum ada kategori {{ $type === 'income' ? 'pendapatan' : 'pengeluaran' }} untuk unit ini.
+                            </span>
+                        @endif
+                        @error('finance_category_id') <span class="text-[11px] text-rose-500 mt-0.5 block">{{ $message }}</span> @enderror
                     </div>
 
                     {{-- Row: Nominal & Frekuensi --}}

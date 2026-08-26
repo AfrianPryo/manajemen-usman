@@ -14,14 +14,16 @@ return new class extends Migration
         Schema::create('vendors', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->string('category')->default('perusahaan'); // <-- Tambahkan di sini
+            $table->string('category')->default('perusahaan');
             $table->string('contact_name')->nullable();
             $table->string('email')->nullable();
             $table->string('phone')->nullable();
             $table->string('website')->nullable();
             $table->text('address')->nullable();
             $table->string('id_number')->nullable();
-            $table->softDeletes(); // <-- Tambahkan baris ini
+            $table->date('contract_start_date')->nullable(); // <-- Mulai Kontrak
+            $table->date('contract_end_date')->nullable();   // <-- Selesai Kontrak
+            $table->softDeletes();
             $table->timestamps();
         });
     }

@@ -5,6 +5,7 @@ namespace App\Livewire\Master\Vendor;
 use Livewire\Component;
 use Livewire\WithPagination;
 use App\Models\Vendor;
+use App\Models\AuditLog;
 
 class Index extends Component
 {
@@ -32,6 +33,8 @@ class Index extends Component
     public $website = '';
     public $address = '';
     public $id_number = '';
+    public $contract_start_date = '';
+    public $contract_end_date = '';
 
     protected function rules()
     {
@@ -44,6 +47,8 @@ class Index extends Component
             'website' => 'nullable|string|max:255',
             'address' => 'nullable|string',
             'id_number' => 'nullable|string|max:100',
+            'contract_start_date' => 'nullable|date',
+            'contract_end_date' => 'nullable|date|after_or_equal:contract_start_date',
         ];
     }
 
@@ -68,7 +73,17 @@ class Index extends Component
     // Bulk Delete Action
     public function bulkDelete()
     {
+        $vendors = Vendor::whereIn('id', $this->selectedRows)->get(['id', 'name']);
+
         Vendor::whereIn('id', $this->selectedRows)->delete();
+
+        AuditLog::record(
+            'VENDOR_BULK_DELETE',
+            null,
+            count($vendors) . ' vendor dihapus: ' . $vendors->pluck('name')->implode(', '),
+            null,
+            ['ids' => $vendors->pluck('id')->all(), 'names' => $vendors->pluck('name')->all()]
+        );
 
         $this->selectedRows = [];
         $this->selectAll = false;
@@ -79,7 +94,11 @@ class Index extends Component
     public function openModal()
     {
         $this->resetValidation();
-        $this->reset(['vendorId', 'name', 'contact_name', 'email', 'phone', 'website', 'address', 'id_number']);
+        $this->reset([
+            'vendorId', 'name', 'contact_name', 'email', 'phone',
+            'website', 'address', 'id_number',
+            'contract_start_date', 'contract_end_date',
+        ]);
         $this->category = 'perusahaan';
         $this->isModalOpen = true;
     }
@@ -101,6 +120,12 @@ class Index extends Component
         $this->website = $vendor->website;
         $this->address = $vendor->address;
         $this->id_number = $vendor->id_number ?? '';
+        $this->contract_start_date = $vendor->contract_start_date
+            ? $vendor->contract_start_date->format('Y-m-d')
+            : '';
+        $this->contract_end_date = $vendor->contract_end_date
+            ? $vendor->contract_end_date->format('Y-m-d')
+            : '';
 
         $this->resetValidation();
         $this->isModalOpen = true;
@@ -110,7 +135,10 @@ class Index extends Component
     {
         $this->validate();
 
-        Vendor::updateOrCreate(
+        $isUpdate = (bool) $this->vendorId;
+        $oldValues = $isUpdate ? Vendor::find($this->vendorId)?->toArray() : null;
+
+        $vendor = Vendor::updateOrCreate(
             ['id' => $this->vendorId],
             [
                 'name' => $this->name,
@@ -121,7 +149,19 @@ class Index extends Component
                 'website' => $this->website,
                 'address' => $this->address,
                 'id_number' => $this->id_number,
+                'contract_start_date' => $this->contract_start_date ?: null,
+                'contract_end_date' => $this->contract_end_date ?: null,
             ]
+        );
+
+        AuditLog::record(
+            $isUpdate ? 'VENDOR_UPDATE' : 'VENDOR_CREATE',
+            $vendor->name,
+            $isUpdate
+                ? "Vendor '{$vendor->name}' diperbarui."
+                : "Vendor baru '{$vendor->name}' ditambahkan.",
+            $oldValues,
+            $vendor->toArray()
         );
 
         session()->flash('message', $this->vendorId ? 'Vendor berhasil diperbarui.' : 'Vendor berhasil ditambahkan.');
@@ -130,7 +170,18 @@ class Index extends Component
 
     public function delete($id)
     {
-        Vendor::findOrFail($id)->delete();
+        $vendor = Vendor::findOrFail($id);
+        $oldValues = $vendor->toArray();
+        $vendor->delete();
+
+        AuditLog::record(
+            'VENDOR_DELETE',
+            $vendor->name,
+            "Vendor '{$vendor->name}' dihapus.",
+            $oldValues,
+            null
+        );
+
         session()->flash('message', 'Vendor berhasil dihapus.');
     }
 

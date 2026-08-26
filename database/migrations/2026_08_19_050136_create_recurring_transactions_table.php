@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('recurring_transactions', function (Blueprint $table) {
             $table->id();
             $table->foreignId('unit_id')->constrained('units')->cascadeOnDelete();
+            $table->foreignId('finance_category_id')->nullable()->constrained('finance_categories')->nullOnDelete();
             $table->string('title');
             $table->enum('type', ['income', 'expense']);
             $table->decimal('amount', 15, 2);

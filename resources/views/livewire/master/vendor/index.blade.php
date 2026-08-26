@@ -118,79 +118,97 @@
                         <th class="p-4 w-10 text-center">
                             <input type="checkbox" wire:model.live="selectAll" class="rounded border-neutral-300 text-red-600 focus:ring-red-500/20 cursor-pointer">
                         </th>
-                        <th class="px-4 py-3.5">Nama Vendor</th>
-                        <th class="px-4 py-3.5">Kategori</th>
-                        <th class="px-4 py-3.5">Kontak Utama</th>
-                        <th class="px-4 py-3.5">Email & Telepon</th>
-                        <th class="px-4 py-3.5">Website</th>
-                        <th class="px-4 py-3.5 text-center">Aksi</th>
+                        <th class="px-4 py-3">Vendor</th>
+                        <th class="px-4 py-3">Kontak</th>
+                        <th class="px-4 py-3">Website</th>
+                        <th class="px-4 py-3">Periode Kontrak</th>
+                        <th class="px-4 py-3 text-center">Aksi</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-neutral-100 dark:divide-slate-700">
                     @forelse($vendors as $vendor)
-                        <tr wire:key="vendor-{{ $vendor->id }}" class="hover:bg-neutral-50/60 dark:hover:bg-slate-700/30 transition-colors">
+                        @php
+                            $categoryLabel = match($vendor->category) {
+                                'perusahaan' => 'Perusahaan',
+                                'pemerintah' => 'Pemerintah',
+                                'individu' => 'Individu',
+                                default => 'Lainnya',
+                            };
+                            $categoryDot = match($vendor->category) {
+                                'perusahaan' => 'bg-blue-500',
+                                'pemerintah' => 'bg-purple-500',
+                                'individu' => 'bg-emerald-500',
+                                default => 'bg-neutral-400',
+                            };
+
+                            $contractStatus = null;
+                            if ($vendor->contract_end_date) {
+                                if ($vendor->contract_end_date->isPast()) {
+                                    $contractStatus = ['dot' => 'bg-rose-500', 'text' => 'text-rose-500', 'label' => 'Berakhir'];
+                                } elseif ($vendor->contract_end_date->diffInDays(now(), false) >= -30) {
+                                    $contractStatus = ['dot' => 'bg-amber-500', 'text' => 'text-amber-600 dark:text-amber-400', 'label' => 'Segera berakhir'];
+                                }
+                            }
+                        @endphp
+                        <tr wire:key="vendor-{{ $vendor->id }}" class="hover:bg-neutral-50/60 dark:hover:bg-slate-700/30 transition-colors align-top">
                             <td class="p-4 text-center">
                                 <input type="checkbox" wire:model.live="selectedRows" value="{{ $vendor->id }}" class="rounded border-neutral-300 text-red-600 focus:ring-red-500/20 cursor-pointer">
                             </td>
 
-                            {{-- Nama Vendor --}}
-                            <td class="px-4 py-3.5 whitespace-nowrap">
-                                <div class="font-semibold text-neutral-900 dark:text-white text-xs">{{ $vendor->name }}</div>
-                                @if($vendor->id_number)
-                                    <div class="text-[11px] font-mono text-neutral-400 mt-0.5">NPWP/ID: {{ $vendor->id_number }}</div>
+                            {{-- Vendor: Nama + Kategori + ID Number --}}
+                            <td class="px-4 py-3.5">
+                                <div class="font-semibold text-neutral-900 dark:text-white text-[13px] leading-tight">{{ $vendor->name }}</div>
+                                <div class="flex items-center gap-1.5 mt-1 text-[11px] text-neutral-400">
+                                    <span class="w-1.5 h-1.5 rounded-full {{ $categoryDot }}"></span>
+                                    <span>{{ $categoryLabel }}</span>
+                                    @if($vendor->id_number)
+                                        <span class="text-neutral-300 dark:text-slate-600">&middot;</span>
+                                        <span class="font-mono">{{ $vendor->id_number }}</span>
+                                    @endif
+                                </div>
+                            </td>
+
+                            {{-- Kontak: PIC + Email + Phone --}}
+                            <td class="px-4 py-3.5 text-[12px] leading-relaxed">
+                                @if($vendor->contact_name)
+                                    <div class="font-medium text-neutral-700 dark:text-neutral-200">{{ $vendor->contact_name }}</div>
                                 @endif
-                            </td>
-
-                            {{-- Kategori Badge --}}
-                            <td class="px-4 py-3.5 whitespace-nowrap">
-                                @switch($vendor->category)
-                                    @case('perusahaan')
-                                        <span class="px-2.5 py-0.5 text-[10px] font-semibold rounded-full bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 border border-blue-200/60 dark:border-blue-800">Perusahaan</span>
-                                        @break
-                                    @case('pemerintah')
-                                        <span class="px-2.5 py-0.5 text-[10px] font-semibold rounded-full bg-purple-50 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400 border border-purple-200/60 dark:border-purple-800">Pemerintah</span>
-                                        @break
-                                    @case('individu')
-                                        <span class="px-2.5 py-0.5 text-[10px] font-semibold rounded-full bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 border border-emerald-200/60 dark:border-emerald-800">Individu</span>
-                                        @break
-                                    @default
-                                        <span class="px-2.5 py-0.5 text-[10px] font-semibold rounded-full bg-neutral-100 dark:bg-slate-700 text-neutral-600 dark:text-neutral-300 border border-neutral-200 dark:border-slate-600">Lainnya</span>
-                                @endswitch
-                            </td>
-
-                            {{-- Contact Person --}}
-                            <td class="px-4 py-3.5 whitespace-nowrap text-xs font-medium text-neutral-700 dark:text-neutral-300">
-                                {{ $vendor->contact_name ?: '-' }}
-                            </td>
-
-                            {{-- Email & Phone --}}
-                            <td class="px-4 py-3.5 space-y-0.5 text-xs">
                                 @if($vendor->email)
-                                    <div class="flex items-center gap-1.5 text-neutral-600 dark:text-neutral-300">
-                                        <svg class="w-3.5 h-3.5 text-neutral-400 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"/></svg>
-                                        <span>{{ $vendor->email }}</span>
-                                    </div>
+                                    <div class="text-neutral-500 dark:text-neutral-400">{{ $vendor->email }}</div>
                                 @endif
                                 @if($vendor->phone)
-                                    <div class="flex items-center gap-1.5 text-neutral-500 dark:text-neutral-400">
-                                        <svg class="w-3.5 h-3.5 text-neutral-400 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-2.826-1.07-5.11-3.354-6.18-6.18l1.293-.97c.362-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z"/></svg>
-                                        <span>{{ $vendor->phone }}</span>
-                                    </div>
+                                    <div class="text-neutral-500 dark:text-neutral-400">{{ $vendor->phone }}</div>
                                 @endif
-                                @if(!$vendor->email && !$vendor->phone)
+                                @if(!$vendor->contact_name && !$vendor->email && !$vendor->phone)
                                     <span class="text-neutral-400">-</span>
                                 @endif
                             </td>
 
                             {{-- Website --}}
-                            <td class="px-4 py-3.5 whitespace-nowrap text-xs">
+                            <td class="px-4 py-3.5 whitespace-nowrap text-[12px]">
                                 @if($vendor->website)
                                     <a href="{{ Str::startsWith($vendor->website, 'http') ? $vendor->website : 'https://'.$vendor->website }}" 
                                        target="_blank" 
-                                       class="text-sky-600 dark:text-sky-400 hover:underline inline-flex items-center gap-1 font-medium">
-                                        <span>{{ Str::limit($vendor->website, 18) }}</span>
-                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"/></svg>
+                                       class="text-sky-600 dark:text-sky-400 hover:underline font-medium">
+                                        {{ Str::limit($vendor->website, 20) }}
                                     </a>
+                                @else
+                                    <span class="text-neutral-400">-</span>
+                                @endif
+                            </td>
+
+                            {{-- Periode Kontrak --}}
+                            <td class="px-4 py-3.5 whitespace-nowrap text-[12px]">
+                                @if($vendor->contract_start_date || $vendor->contract_end_date)
+                                    <div class="text-neutral-600 dark:text-neutral-300">
+                                        {{ $vendor->contract_start_date?->format('d M Y') ?? '-' }} &ndash; {{ $vendor->contract_end_date?->format('d M Y') ?? '-' }}
+                                    </div>
+                                    @if($contractStatus)
+                                        <div class="flex items-center gap-1.5 mt-1 text-[11px] {{ $contractStatus['text'] }}">
+                                            <span class="w-1.5 h-1.5 rounded-full {{ $contractStatus['dot'] }}"></span>
+                                            <span>{{ $contractStatus['label'] }}</span>
+                                        </div>
+                                    @endif
                                 @else
                                     <span class="text-neutral-400">-</span>
                                 @endif
@@ -215,7 +233,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="px-6 py-12 text-center text-xs text-neutral-400">
+                            <td colspan="6" class="px-6 py-12 text-center text-xs text-neutral-400">
                                 Tidak ada data vendor yang sesuai dengan pencarian.
                             </td>
                         </tr>
@@ -327,6 +345,22 @@
                             <input type="text" wire:model="phone" 
                                    class="w-full px-3.5 py-2 border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-red-500" 
                                    placeholder="0812...">
+                        </div>
+                    </div>
+
+                    {{-- Row: Periode Kontrak --}}
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                            <label class="block font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Mulai Kontrak</label>
+                            <input type="date" wire:model="contract_start_date" 
+                                class="w-full px-3.5 py-2 border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-red-500">
+                            @error('contract_start_date') <span class="text-rose-500 text-[11px] mt-0.5 block">{{ $message }}</span> @enderror
+                        </div>
+                        <div>
+                            <label class="block font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Selesai Kontrak</label>
+                            <input type="date" wire:model="contract_end_date" 
+                                class="w-full px-3.5 py-2 border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-red-500">
+                            @error('contract_end_date') <span class="text-rose-500 text-[11px] mt-0.5 block">{{ $message }}</span> @enderror
                         </div>
                     </div>
 

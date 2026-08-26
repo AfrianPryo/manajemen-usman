@@ -260,14 +260,6 @@
                     @endforelse
                 </div>
             </div>
-
-            {{-- Tombol Export Laporan --}}
-            <div class="pt-5 border-t border-neutral-100 dark:border-slate-700 mt-6">
-                <button wire:click="export" class="w-full text-xs font-bold text-neutral-700 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white bg-neutral-50 dark:bg-slate-900 hover:bg-neutral-100 dark:hover:bg-slate-700 py-3 rounded-2xl border border-neutral-200/80 dark:border-slate-700 transition-all flex items-center justify-center gap-2 shadow-2xs group cursor-pointer">
-                    <svg class="w-4 h-4 text-neutral-400 group-hover:text-neutral-700 dark:group-hover:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                    <span>Unduh Laporan Excel</span>
-                </button>
-            </div>
         </div>
     </div>
 
