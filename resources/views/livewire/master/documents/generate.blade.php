@@ -1,6 +1,6 @@
 <div class="w-full max-w-5xl mx-auto space-y-5 text-neutral-800 dark:text-neutral-100 px-4 py-4 sm:px-6 font-sans">
 
-    <a href="{{ route('master.documents.index') }}" class="inline-flex items-center gap-1 text-xs font-semibold text-neutral-500 hover:text-red-600 dark:hover:text-red-400 transition-colors">
+    <a href="{{ route('master.documents.index') }}" class="inline-flex items-center gap-1 text-xs font-semibold text-neutral-500 hover:text-blue-900 dark:hover:text-red-400 transition-colors">
         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"/></svg>
         Kembali ke Menu Laporan
     </a>
@@ -203,7 +203,7 @@
                         <div class="max-h-48 overflow-y-auto border border-neutral-200 dark:border-slate-700 rounded-md p-2 space-y-1 bg-white dark:bg-slate-900">
                             @forelse ($assets as $asset)
                                 <label class="flex items-center gap-2 text-xs text-neutral-700 dark:text-neutral-300">
-                                    <input type="checkbox" wire:model="asset_ids" value="{{ $asset->id }}" class="rounded border-neutral-300 text-red-600 focus:ring-red-500/20">
+                                    <input type="checkbox" wire:model="asset_ids" value="{{ $asset->id }}" class="rounded border-neutral-300 text-blue-900 focus:ring-red-500/20">
                                     {{ $asset->asset_tag }} — {{ $asset->name }}
                                 </label>
                             @empty
@@ -231,7 +231,7 @@
             </div>
 
             <div class="flex justify-end pt-2">
-                <button wire:click="generate" wire:loading.attr="disabled" class="px-5 py-2 text-xs font-bold text-white bg-red-600 hover:bg-red-700 rounded-full transition-all shadow-sm shadow-red-600/20 disabled:opacity-50">
+                <button wire:click="generate" wire:loading.attr="disabled" class="px-5 py-2 text-xs font-bold text-white bg-blue-900 hover:bg-blue-950 rounded-full transition-all shadow-sm shadow-blue-900/20 disabled:opacity-50">
                     <span wire:loading.remove wire:target="generate">Buat Dokumen</span>
                     <span wire:loading wire:target="generate">Memproses...</span>
                 </button>

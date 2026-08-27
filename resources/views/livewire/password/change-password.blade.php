@@ -70,7 +70,7 @@
                                 </svg>
                             </button>
                         </div>
-                        @error('current_password') <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
+                        @error('current_password') <p class="mt-1 text-sm text-blue-900 dark:text-red-400">{{ $message }}</p> @enderror
                     </div>
 
                     {{-- Password Baru --}}
@@ -100,7 +100,7 @@
                                 </svg>
                             </button>
                         </div>
-                        @error('new_password') <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
+                        @error('new_password') <p class="mt-1 text-sm text-blue-900 dark:text-red-400">{{ $message }}</p> @enderror
                     </div>
 
                     {{-- Konfirmasi Password Baru --}}

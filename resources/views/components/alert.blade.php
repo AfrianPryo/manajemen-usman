@@ -9,7 +9,7 @@
 
     @if(session('error'))
         <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 3000)"
-             class="mb-4 rounded-lg bg-red-50 border border-red-200 text-red-700 px-4 py-3 text-sm">
+             class="mb-4 rounded-lg bg-red-50 border border-red-200 text-blue-950 px-4 py-3 text-sm">
             {{ session('error') }}
         </div>
     @endif

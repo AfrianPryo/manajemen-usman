@@ -8,7 +8,7 @@
 
     <div class="bg-white rounded-xl shadow-sm border p-5">
         <p class="text-sm text-gray-500">Saldo Bersih Bulan Ini</p>
-        <p class="text-2xl font-bold {{ $balance >= 0 ? 'text-green-600' : 'text-red-600' }}">
+        <p class="text-2xl font-bold {{ $balance >= 0 ? 'text-green-600' : 'text-blue-900' }}">
             Rp {{ number_format($balance, 0, ',', '.') }}
         </p>
     </div>

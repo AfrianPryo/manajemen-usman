@@ -7,6 +7,6 @@
     <input type="{{ $type }}" wire:model="{{ $name }}"
            {{ $attributes->merge(['class' => 'w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 text-sm']) }}>
     @error($name)
-        <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
+        <p class="text-xs text-blue-900 mt-1">{{ $message }}</p>
     @enderror
 </div>

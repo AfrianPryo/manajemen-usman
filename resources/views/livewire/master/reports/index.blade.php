@@ -25,7 +25,7 @@
                 <input type="date" wire:model="endDate" class="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-900 text-sm">
             </div>
             <div class="flex items-end gap-2">
-                <button class="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-semibold hover:bg-red-700">Export PDF</button>
+                <button class="flex-1 px-4 py-2 bg-blue-900 text-white rounded-lg text-sm font-semibold hover:bg-blue-950">Export PDF</button>
                 <button class="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-semibold hover:bg-green-700">Export Excel</button>
             </div>
         </div>
@@ -38,7 +38,7 @@
         </div>
         <div class="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 p-5">
             <p class="text-sm text-gray-500 dark:text-gray-400">Total Pengeluaran</p>
-            <p class="text-2xl font-bold text-red-600 dark:text-red-400 mt-2">Rp 0</p>
+            <p class="text-2xl font-bold text-blue-900 dark:text-red-400 mt-2">Rp 0</p>
         </div>
         <div class="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 p-5">
             <p class="text-sm text-gray-500 dark:text-gray-400">Laba Bersih</p>

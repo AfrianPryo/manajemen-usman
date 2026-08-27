@@ -3,7 +3,7 @@
         <input type="month" wire:model.live="month" class="rounded-lg border-gray-300 text-sm">
         <div class="space-x-2">
             <a href="{{ route('reports.finance.pdf', ['month' => $month]) }}" target="_blank"
-               class="bg-red-600 text-white text-sm px-4 py-2 rounded-lg hover:bg-red-700">Export PDF</a>
+               class="bg-blue-900 text-white text-sm px-4 py-2 rounded-lg hover:bg-blue-950">Export PDF</a>
             <a href="{{ route('reports.finance.excel', ['month' => $month]) }}"
                class="bg-green-600 text-white text-sm px-4 py-2 rounded-lg hover:bg-green-700">Export Excel</a>
         </div>

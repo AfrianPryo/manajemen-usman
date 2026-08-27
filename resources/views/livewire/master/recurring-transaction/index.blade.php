@@ -16,7 +16,7 @@
         </div>
 
         <div class="flex items-center gap-2.5 shrink-0">
-            <button wire:click="openModal" class="px-4 py-2 text-xs font-bold text-white bg-red-600 hover:bg-red-700 rounded-full transition-all flex items-center gap-2 shadow-sm shadow-red-600/20 cursor-pointer">
+            <button wire:click="openModal" class="px-4 py-2 text-xs font-bold text-white bg-blue-900 hover:bg-blue-950 rounded-full transition-all flex items-center gap-2 shadow-sm shadow-blue-900/20 cursor-pointer">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
                 <span>Buat Transaksi Berulang</span>
             </button>
@@ -85,7 +85,7 @@
                 <thead class="bg-neutral-50/70 dark:bg-slate-900/50 text-[11px] font-semibold uppercase tracking-wider text-neutral-400 border-b border-neutral-100 dark:border-slate-700">
                     <tr>
                         <th class="p-4 w-10 text-center">
-                            <input type="checkbox" wire:model.live="selectAll" class="rounded border-neutral-300 text-red-600 focus:ring-red-500/20 cursor-pointer">
+                            <input type="checkbox" wire:model.live="selectAll" class="rounded border-neutral-300 text-blue-900 focus:ring-red-500/20 cursor-pointer">
                         </th>
                         <th class="px-4 py-3.5">Judul & Unit</th>
                         <th class="px-4 py-3.5 text-right">Tipe & Jumlah</th>
@@ -100,7 +100,7 @@
                     @forelse($recurringTransactions as $item)
                         <tr wire:key="rec-{{ $item->id }}" class="hover:bg-neutral-50/60 dark:hover:bg-slate-700/30 transition-colors {{ $item->is_expired ? 'bg-neutral-100/60 dark:bg-slate-800/40 opacity-60' : '' }}">
                             <td class="p-4 text-center">
-                                <input type="checkbox" wire:model.live="selectedRows" value="{{ $item->id }}" class="rounded border-neutral-300 text-red-600 focus:ring-red-500/20 cursor-pointer">
+                                <input type="checkbox" wire:model.live="selectedRows" value="{{ $item->id }}" class="rounded border-neutral-300 text-blue-900 focus:ring-red-500/20 cursor-pointer">
                             </td>
 
                             <td class="px-4 py-3.5 whitespace-nowrap">
@@ -316,7 +316,7 @@
                     {{-- Card Opsi Otomatisasi (Highlighted) --}}
                     <div class="p-3.5 rounded-lg border border-sky-200/80 bg-sky-50/50 dark:border-sky-900/50 dark:bg-sky-950/20 transition-all">
                         <div class="flex items-start gap-3">
-                            <input type="checkbox" id="auto_approve" wire:model="auto_approve" class="mt-0.5 rounded border-sky-300 dark:border-sky-700 text-red-600 focus:ring-red-500/20 cursor-pointer">
+                            <input type="checkbox" id="auto_approve" wire:model="auto_approve" class="mt-0.5 rounded border-sky-300 dark:border-sky-700 text-blue-900 focus:ring-red-500/20 cursor-pointer">
                             <div class="space-y-1">
                                 <label for="auto_approve" class="text-xs font-bold text-neutral-800 dark:text-neutral-100 cursor-pointer flex items-center gap-1.5">
                                     <span>Otomatiskan ke Laporan Keuangan</span>
@@ -341,7 +341,7 @@
                         <button type="button" wire:click="closeModal" class="px-4 py-2 text-xs font-semibold text-neutral-600 dark:text-neutral-300 bg-neutral-100 dark:bg-slate-700 rounded-md hover:bg-neutral-200 dark:hover:bg-slate-600 transition-all">
                             Batal
                         </button>
-                        <button type="submit" wire:loading.attr="disabled" class="px-5 py-2 text-xs font-bold text-white bg-red-600 hover:bg-red-700 rounded-md transition-all flex items-center gap-2 shadow-sm">
+                        <button type="submit" wire:loading.attr="disabled" class="px-5 py-2 text-xs font-bold text-white bg-blue-900 hover:bg-blue-950 rounded-md transition-all flex items-center gap-2 shadow-sm">
                             <span>Simpan</span>
                         </button>
                     </div>

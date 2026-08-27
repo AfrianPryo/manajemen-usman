@@ -75,7 +75,7 @@
             </button>
 
             {{-- Tombol Tambah Transaksi --}}
-            <button wire:click="openCreateModal" class="px-4 py-2 text-xs font-bold text-white bg-red-600 hover:bg-red-700 rounded-full transition-all flex items-center gap-2 shadow-sm shadow-red-600/20 cursor-pointer">
+            <button wire:click="openCreateModal" class="px-4 py-2 text-xs font-bold text-white bg-blue-900 hover:bg-blue-950 rounded-full transition-all flex items-center gap-2 shadow-sm shadow-blue-900/20 cursor-pointer">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
                 <span>Tambah Transaksi</span>
             </button>
@@ -165,7 +165,7 @@
                 <thead class="bg-neutral-50/70 dark:bg-slate-900/50 text-[11px] font-semibold uppercase tracking-wider text-neutral-400 border-b border-neutral-100 dark:border-slate-700">
                     <tr>
                         <th class="p-4 w-10 text-center">
-                            <input type="checkbox" wire:model.live="selectAll" class="rounded border-neutral-300 text-red-600 focus:ring-red-500/20 cursor-pointer">
+                            <input type="checkbox" wire:model.live="selectAll" class="rounded border-neutral-300 text-blue-900 focus:ring-red-500/20 cursor-pointer">
                         </th>
                         <th class="px-4 py-3.5">Tanggal & Ref</th>
                         <th class="px-4 py-3.5">Unit Usaha</th>
@@ -180,7 +180,7 @@
                     @forelse($transactions as $tr)
                         <tr wire:key="tr-{{ $tr->id }}" class="hover:bg-neutral-50/60 dark:hover:bg-slate-700/30 transition-colors">
                             <td class="p-4 text-center">
-                                <input type="checkbox" wire:model.live="selectedRows" value="{{ $tr->id }}" class="rounded border-neutral-300 text-red-600 focus:ring-red-500/20 cursor-pointer">
+                                <input type="checkbox" wire:model.live="selectedRows" value="{{ $tr->id }}" class="rounded border-neutral-300 text-blue-900 focus:ring-red-500/20 cursor-pointer">
                             </td>
                             <td class="px-4 py-3.5 whitespace-nowrap">
                                 <div class="font-semibold text-neutral-900 dark:text-white text-xs">
@@ -429,7 +429,7 @@
                         <button type="button" wire:click="closeCreateModal" class="px-4 py-2 text-xs font-semibold text-neutral-600 dark:text-neutral-300 bg-neutral-100 dark:bg-slate-700 rounded-md hover:bg-neutral-200 dark:hover:bg-slate-600 transition-all">
                             Batal
                         </button>
-                        <button type="submit" wire:loading.attr="disabled" class="px-5 py-2 text-xs font-bold text-white bg-red-600 hover:bg-red-700 rounded-md transition-all flex items-center gap-2 shadow-sm">
+                        <button type="submit" wire:loading.attr="disabled" class="px-5 py-2 text-xs font-bold text-white bg-blue-900 hover:bg-blue-950 rounded-md transition-all flex items-center gap-2 shadow-sm">
                             <span wire:loading.remove>{{ $isEditing ? 'Perbarui Transaksi' : 'Simpan Transaksi' }}</span>
                             <span wire:loading>{{ $isEditing ? 'Memperbarui...' : 'Menyimpan...' }}</span>
                         </button>
@@ -504,7 +504,7 @@
                                         </div>
                                     </a>
                                 @else
-                                    <a href="{{ $fileUrl }}" target="_blank" class="inline-flex items-center gap-2 px-3 py-2 text-xs text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/50 rounded-md font-semibold hover:bg-red-100 transition">
+                                    <a href="{{ $fileUrl }}" target="_blank" class="inline-flex items-center gap-2 px-3 py-2 text-xs text-blue-900 dark:text-red-400 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/50 rounded-md font-semibold hover:bg-red-100 transition">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg>
                                         Unduh Dokumen Lampiran ({{ strtoupper($ext) }})
                                     </a>

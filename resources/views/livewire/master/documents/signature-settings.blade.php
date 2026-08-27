@@ -1,6 +1,6 @@
 <div class="w-full max-w-3xl mx-auto space-y-5 text-neutral-800 dark:text-neutral-100 px-4 py-4 sm:px-6 font-sans">
 
-    <a href="{{ route('master.documents.index') }}" class="inline-flex items-center gap-1 text-xs font-semibold text-neutral-500 hover:text-red-600 dark:hover:text-red-400 transition-colors">
+    <a href="{{ route('master.documents.index') }}" class="inline-flex items-center gap-1 text-xs font-semibold text-neutral-500 hover:text-blue-900 dark:hover:text-red-400 transition-colors">
         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"/></svg>
         Kembali ke Menu Laporan
     </a>
@@ -42,7 +42,7 @@
         </div>
 
         <label class="flex items-center gap-2 text-xs font-medium text-neutral-600 dark:text-neutral-300">
-            <input type="checkbox" wire:model="is_default" class="rounded border-neutral-300 text-red-600 focus:ring-red-500/20">
+            <input type="checkbox" wire:model="is_default" class="rounded border-neutral-300 text-blue-900 focus:ring-red-500/20">
             Jadikan tanda tangan default
         </label>
 
@@ -50,7 +50,7 @@
             @if ($editingId)
                 <button wire:click="$set('editingId', null)" class="px-4 py-2 text-xs font-semibold text-neutral-600 dark:text-neutral-300 bg-neutral-100 dark:bg-slate-700 rounded-full hover:bg-neutral-200 dark:hover:bg-slate-600 transition-all">Batal</button>
             @endif
-            <button wire:click="save" class="px-5 py-2 text-xs font-bold text-white bg-red-600 hover:bg-red-700 rounded-full transition-all shadow-sm shadow-red-600/20">Simpan</button>
+            <button wire:click="save" class="px-5 py-2 text-xs font-bold text-white bg-blue-900 hover:bg-blue-950 rounded-full transition-all shadow-sm shadow-blue-900/20">Simpan</button>
         </div>
     </div>
 

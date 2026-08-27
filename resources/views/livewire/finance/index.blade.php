@@ -5,7 +5,7 @@
             <button wire:click="create('income')" class="bg-green-600 text-white text-sm px-4 py-2 rounded-lg hover:bg-green-700">
                 + Pemasukan
             </button>
-            <button wire:click="create('expense')" class="bg-red-600 text-white text-sm px-4 py-2 rounded-lg hover:bg-red-700">
+            <button wire:click="create('expense')" class="bg-blue-900 text-white text-sm px-4 py-2 rounded-lg hover:bg-blue-950">
                 + Pengeluaran
             </button>
         </div>
@@ -27,7 +27,7 @@
                 <td class="px-4 py-3 text-gray-500">{{ $trx->description ?: '-' }}</td>
                 <td class="px-4 py-3 space-x-2">
                     <button wire:click="edit({{ $trx->id }})" class="text-indigo-600 hover:underline text-sm">Edit</button>
-                    <button wire:click="delete({{ $trx->id }})" wire:confirm="Yakin ingin menghapus transaksi ini?" class="text-red-600 hover:underline text-sm">Hapus</button>
+                    <button wire:click="delete({{ $trx->id }})" wire:confirm="Yakin ingin menghapus transaksi ini?" class="text-blue-900 hover:underline text-sm">Hapus</button>
                 </td>
             </tr>
         @empty

@@ -21,14 +21,14 @@
 
         {{-- Filter Rentang Waktu & Unit --}}
         <div class="flex flex-wrap items-center gap-2.5">
-            <select wire:model.live="selectedUnit" class="px-3.5 py-2 text-xs font-semibold text-neutral-600 dark:text-neutral-300 bg-white dark:bg-slate-900 border border-neutral-200 dark:border-slate-700 rounded-full transition-all shadow-sm shadow-black/[0.02] focus:outline-none focus:ring-2 focus:ring-red-500/10 focus:border-red-400 cursor-pointer">
+            <select wire:model.live="selectedUnit" class="px-2 py-2 text-xs font-semibold text-neutral-600 dark:text-neutral-300 bg-white dark:bg-slate-900 border border-neutral-200 dark:border-slate-700 rounded-[2px] transition-all shadow-sm shadow-black/[0.02] focus:outline-none focus:ring-2 focus:ring-blue-900/10 focus:border-blue-900 cursor-pointer">
                 <option value="">Semua Unit Usaha</option>
                 @foreach($unitsList as $unit)
                     <option value="{{ $unit->id }}">{{ $unit->name }}</option>
                 @endforeach
             </select>
 
-            <select wire:model.live="periodFilter" class="px-3.5 py-2 text-xs font-semibold text-neutral-600 dark:text-neutral-300 bg-white dark:bg-slate-900 border border-neutral-200 dark:border-slate-700 rounded-full transition-all shadow-sm shadow-black/[0.02] focus:outline-none focus:ring-2 focus:ring-red-500/10 focus:border-red-400 cursor-pointer">
+            <select wire:model.live="periodFilter" class="px-2 py-2 text-xs font-semibold text-neutral-600 dark:text-neutral-300 bg-white dark:bg-slate-900 border border-neutral-200 dark:border-slate-700 rounded-[2px] transition-all shadow-sm shadow-black/[0.02] focus:outline-none focus:ring-2 focus:ring-blue-900/10 focus:border-blue-900 cursor-pointer">
                 <option value="this_month">Bulan Ini</option>
                 <option value="last_month">Bulan Lalu</option>
                 <option value="this_year">Tahun Ini</option>
@@ -47,7 +47,7 @@
 
     {{-- ================= KARTU METRIK FINANSIAL & OPERASIONAL ================= --}}
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        
+
         {{-- Total Pendapatan --}}
         <div class="bg-white dark:bg-slate-800 rounded-md border border-neutral-100 dark:border-slate-700 p-5 shadow-sm shadow-black/[0.02]">
             <div class="flex items-center justify-between">
@@ -213,7 +213,7 @@
                         <h2 class="text-base font-extrabold text-neutral-900 dark:text-white tracking-tight">Peringkat Omzet</h2>
                         <p class="text-xs text-neutral-400 mt-0.5">Kontribusi unit bisnis</p>
                     </div>
-                    <span class="text-[11px] font-bold text-neutral-500 dark:text-neutral-400 bg-neutral-100/80 dark:bg-slate-900/80 px-2.5 py-1 rounded-full border border-neutral-200/50 dark:border-slate-700">
+                    <span class="text-[11px] font-bold text-neutral-500 dark:text-neutral-400 bg-neutral-100/80 dark:bg-slate-900/80 px-2.5 py-1 rounded-[2px] border border-neutral-200/50 dark:border-slate-700">
                         Top 5
                     </span>
                 </div>
@@ -264,7 +264,7 @@
     </div>
 
     {{-- ================= SECTION GRAFIK TREN ARUS KAS ================= --}}
-    <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700/60 p-6 shadow-sm transition-all">
+    <div class="bg-white dark:bg-slate-800 rounded-md border border-slate-100 dark:border-slate-700/60 p-6 shadow-sm transition-all">
         
         {{-- Header & Filter Grafik Arus Kas --}}
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
@@ -289,7 +289,7 @@
                 {{-- Select Filter Waktu & Custom Date --}}
                 <div class="flex items-center gap-2">
                     <div class="relative">
-                        <select wire:model.live="cashflowPeriod" class="appearance-none bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold py-2 pl-3.5 pr-8 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 cursor-pointer">
+                        <select wire:model.live="cashflowPeriod" class="appearance-none bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold py-2 pl-3.5 pr-8 rounded-[2px] focus:outline-none focus:ring-2 focus:ring-blue-500/20 cursor-pointer">
                             <option value="this_week">Minggu ini</option>
                             <option value="this_month">Bulan ini</option>
                             <option value="last_30_days">30 Hari Terakhir</option>
@@ -442,7 +442,7 @@
     <div class="flex flex-col gap-5 pt-2">
         
     {{-- Tabel Performa Seluruh Unit Usaha --}}
-    <div class="bg-white dark:bg-slate-800 rounded-2xl border border-neutral-100 dark:border-slate-700/60 overflow-hidden shadow-sm">
+    <div class="bg-white dark:bg-slate-800 rounded-md border border-neutral-100 dark:border-slate-700/60 overflow-hidden shadow-sm">
         
         {{-- Header & Filter Rentang Waktu --}}
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-5 border-b border-neutral-100 dark:border-slate-700">
@@ -454,7 +454,7 @@
             {{-- Select Filter Waktu & Custom Date Input --}}
             <div class="flex items-center gap-2">
                 <div class="relative">
-                    <select wire:model.live="unitPeriod" class="appearance-none bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold py-2 pl-3.5 pr-8 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 cursor-pointer">
+                    <select wire:model.live="unitPeriod" class="appearance-none bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold py-2 pl-3.5 pr-8 rounded-[2px] focus:outline-none focus:ring-2 focus:ring-blue-500/20 cursor-pointer">
                         <option value="this_week">Minggu ini</option>
                         <option value="this_month">Bulan ini</option>
                         <option value="last_30_days">30 Hari Terakhir</option>

@@ -21,7 +21,7 @@
             {{-- Button Tambah Admin --}}
             <button 
                 wire:click="openCreateModal" 
-                class="px-4 py-2 text-xs font-bold text-white bg-red-600 hover:bg-red-700 rounded-full transition-all flex items-center gap-2 shadow-sm shadow-red-600/20 cursor-pointer"
+                class="px-4 py-2 text-xs font-bold text-white bg-blue-900 hover:bg-blue-950 rounded-full transition-all flex items-center gap-2 shadow-sm shadow-blue-900/20 cursor-pointer"
             >
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
@@ -266,7 +266,7 @@
                         <button type="button" wire:click="closeCreateModal" class="px-4 py-2 text-xs font-semibold text-neutral-600 dark:text-neutral-300 bg-neutral-100 dark:bg-slate-700 rounded-md hover:bg-neutral-200 dark:hover:bg-slate-600 transition-all cursor-pointer">
                             Batal
                         </button>
-                        <button type="submit" wire:loading.attr="disabled" class="px-5 py-2 text-xs font-bold text-white bg-red-600 hover:bg-red-700 rounded-md transition-all flex items-center gap-2 shadow-sm cursor-pointer">
+                        <button type="submit" wire:loading.attr="disabled" class="px-5 py-2 text-xs font-bold text-white bg-blue-900 hover:bg-blue-950 rounded-md transition-all flex items-center gap-2 shadow-sm cursor-pointer">
                             <span wire:loading.remove wire:target="{{ isset($isEditing) && $isEditing ? 'updateUser' : 'save' }}">
                                 {{ isset($isEditing) && $isEditing ? 'Simpan Perubahan' : 'Simpan & Generate' }}
                             </span>
@@ -324,7 +324,7 @@
                         copied = true;
                         setTimeout(() => { $wire.set('createdCredentials', null) }, 1000);
                     "
-                    :class="copied ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-red-600 hover:bg-red-700'"
+                    :class="copied ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-blue-900 hover:bg-blue-950'"
                     class="w-full py-2.5 text-white font-bold text-xs rounded-md transition shadow-sm flex items-center justify-center gap-2 cursor-pointer"
                 >
                     <template x-if="!copied">

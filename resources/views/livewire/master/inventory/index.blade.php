@@ -2,7 +2,7 @@
     {{-- Header & Action Button --}}
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div class="flex items-center gap-2.5 shrink-0">
-            <button wire:click="openCreateModal" class="px-4 py-2 text-xs font-bold text-white bg-red-600 hover:bg-red-700 rounded-full transition-all flex items-center gap-2 shadow-sm shadow-red-600/20 cursor-pointer">
+            <button wire:click="openCreateModal" class="px-4 py-2 text-xs font-bold text-white bg-blue-900 hover:bg-blue-950 rounded-full transition-all flex items-center gap-2 shadow-sm shadow-blue-900/20 cursor-pointer">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
                 <span>Tambah Produk</span>
             </button>
@@ -140,7 +140,7 @@
                 <thead class="bg-neutral-50/70 dark:bg-slate-900/50 text-[11px] font-semibold uppercase tracking-wider text-neutral-400 border-b border-neutral-100 dark:border-slate-700">
                     <tr>
                         <th class="p-4 w-10 text-center">
-                            <input type="checkbox" wire:model.live="selectAll" class="rounded border-neutral-300 text-red-600 focus:ring-red-500/20 cursor-pointer">
+                            <input type="checkbox" wire:model.live="selectAll" class="rounded border-neutral-300 text-blue-900 focus:ring-red-500/20 cursor-pointer">
                         </th>
                         <th class="px-4 py-3.5">Produk & Kode</th>
                         <th class="px-4 py-3.5">Unit Usaha & Kategori</th>
@@ -159,7 +159,7 @@
                         @endphp
                         <tr wire:key="prod-{{ $p->id }}" class="hover:bg-neutral-50/60 dark:hover:bg-slate-700/30 transition-colors">
                             <td class="p-4 text-center">
-                                <input type="checkbox" wire:model.live="selectedRows" value="{{ $p->id }}" class="rounded border-neutral-300 text-red-600 focus:ring-red-500/20 cursor-pointer">
+                                <input type="checkbox" wire:model.live="selectedRows" value="{{ $p->id }}" class="rounded border-neutral-300 text-blue-900 focus:ring-red-500/20 cursor-pointer">
                             </td>
                             <td class="px-4 py-3.5">
                                 <div class="font-semibold text-neutral-900 dark:text-white text-xs">
@@ -324,7 +324,7 @@
                                 <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-300">
                                     Kategori Produk <span class="text-red-500">*</span>
                                 </label>
-                                <button type="button" wire:click="openCategoryModal" class="text-[11px] font-bold text-red-600 hover:text-red-700 dark:text-red-400 flex items-center gap-1 cursor-pointer">
+                                <button type="button" wire:click="openCategoryModal" class="text-[11px] font-bold text-blue-900 hover:text-blue-950 dark:text-red-400 flex items-center gap-1 cursor-pointer">
                                     <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
                                     <span>Tambah Kategori</span>
                                 </button>
@@ -437,7 +437,7 @@
                         <button type="button" wire:click="closeCreateModal" class="px-4 py-2 text-xs font-semibold text-neutral-600 dark:text-neutral-300 bg-neutral-100 dark:bg-slate-700 rounded-md hover:bg-neutral-200 dark:hover:bg-slate-600 transition-all">
                             Batal
                         </button>
-                        <button type="submit" wire:loading.attr="disabled" class="px-5 py-2 text-xs font-bold text-white bg-red-600 hover:bg-red-700 rounded-md transition-all flex items-center gap-2 shadow-sm">
+                        <button type="submit" wire:loading.attr="disabled" class="px-5 py-2 text-xs font-bold text-white bg-blue-900 hover:bg-blue-950 rounded-md transition-all flex items-center gap-2 shadow-sm">
                             <span wire:loading.remove>{{ $isEditing ? 'Perbarui Produk' : 'Simpan Produk' }}</span>
                             <span wire:loading>{{ $isEditing ? 'Memperbarui...' : 'Menyimpan...' }}</span>
                         </button>
@@ -525,7 +525,7 @@
                             <div class="sm:col-span-2 space-y-1">
                                 {{-- Spacer transparan untuk menyamakan posisi tombol dengan elemen input di layar desktop --}}
                                 <label class="hidden sm:block text-[11px] opacity-0 select-none">Submit</label>
-                                <button type="submit" wire:loading.attr="disabled" class="w-full h-9 inline-flex items-center justify-center gap-1.5 bg-red-600 hover:bg-red-700 active:bg-red-800 text-white text-xs font-semibold rounded-lg transition-all shadow-sm cursor-pointer disabled:opacity-50">
+                                <button type="submit" wire:loading.attr="disabled" class="w-full h-9 inline-flex items-center justify-center gap-1.5 bg-blue-900 hover:bg-blue-950 active:bg-red-800 text-white text-xs font-semibold rounded-lg transition-all shadow-sm cursor-pointer disabled:opacity-50">
                                     <span wire:loading.remove wire:target="saveCategory">
                                         {{ $isEditingCategory ? 'Update' : 'Simpan' }}
                                     </span>
@@ -666,7 +666,7 @@
                         <button type="button" wire:click="closeStockModal" class="px-4 h-9 text-xs font-semibold text-neutral-700 dark:text-neutral-300 bg-white dark:bg-slate-800 border border-neutral-200 dark:border-slate-700 rounded-lg hover:bg-neutral-50 dark:hover:bg-slate-700 transition-colors">
                             Batal
                         </button>
-                        <button type="submit" wire:loading.attr="disabled" class="px-5 h-9 bg-red-600 hover:bg-red-700 text-white text-xs font-semibold rounded-lg transition-all shadow-sm flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 whitespace-nowrap shrink-0">
+                        <button type="submit" wire:loading.attr="disabled" class="px-5 h-9 bg-blue-900 hover:bg-blue-950 text-white text-xs font-semibold rounded-lg transition-all shadow-sm flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 whitespace-nowrap shrink-0">
                             <span wire:loading.remove wire:target="saveStock">Simpan Stok</span>
                             <span wire:loading wire:target="saveStock" class="inline-flex items-center justify-center gap-1.5 whitespace-nowrap">
                                 <span>Menyimpan...</span>
@@ -728,7 +728,7 @@
                         <button type="button" wire:click="closeImportModal" class="w-full sm:w-28 h-9 text-xs font-semibold text-neutral-700 dark:text-neutral-300 bg-white dark:bg-slate-800 border border-neutral-200 dark:border-slate-700 rounded-lg hover:bg-neutral-50 dark:hover:bg-slate-700 transition-colors cursor-pointer">
                             Batal
                         </button>
-                        <button type="submit" wire:loading.attr="disabled" class="w-full sm:w-36 h-9 bg-red-600 hover:bg-red-700 active:bg-red-800 text-white text-xs font-semibold rounded-lg transition-all shadow-sm inline-flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 whitespace-nowrap shrink-0">
+                        <button type="submit" wire:loading.attr="disabled" class="w-full sm:w-36 h-9 bg-blue-900 hover:bg-blue-950 active:bg-red-800 text-white text-xs font-semibold rounded-lg transition-all shadow-sm inline-flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 whitespace-nowrap shrink-0">
                             <span wire:loading.remove wire:target="importProducts">Import Data</span>
                             <span wire:loading wire:target="importProducts" class="inline-flex items-center justify-center gap-1.5 whitespace-nowrap">
                                 <svg class="animate-spin h-3.5 w-3.5 text-white shrink-0" fill="none" viewBox="0 0 24 24">

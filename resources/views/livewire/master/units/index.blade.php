@@ -18,7 +18,7 @@
         <div class="flex items-center gap-2.5 shrink-0">
             <button 
                 wire:click="openCreateModal" 
-                class="px-4 py-2 text-xs font-bold text-white bg-red-600 hover:bg-red-700 rounded-full transition-all flex items-center gap-2 shadow-sm shadow-red-600/20 cursor-pointer"
+                class="px-4 py-2 text-xs font-bold text-white bg-blue-900 hover:bg-blue-950 rounded-[2px] transition-all flex items-center gap-2 shadow-sm shadow-blue-900/20 cursor-pointer"
             >
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
@@ -72,12 +72,12 @@
                     wire:model.live.debounce.300ms="search" 
                     type="text" 
                     placeholder="Cari nama unit atau PIC..."
-                    class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-full bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-red-500/10 focus:border-red-400"
+                    class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-[2px] bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-red-500/10 focus:border-red-400"
                 >
             </div>
 
             <div>
-                <select wire:model.live="departmentFilter" class="w-full px-3.5 py-2 text-xs font-semibold text-neutral-600 dark:text-neutral-300 bg-white dark:bg-slate-900 border border-neutral-200 dark:border-slate-700 rounded-full focus:outline-none focus:ring-2 focus:ring-red-500/10 focus:border-red-400 cursor-pointer">
+                <select wire:model.live="departmentFilter" class="w-full px-3.5 py-2 text-xs font-semibold text-neutral-600 dark:text-neutral-300 bg-white dark:bg-slate-900 border border-neutral-200 dark:border-slate-700 rounded-[2px] focus:outline-none focus:ring-2 focus:ring-red-500/10 focus:border-red-400 cursor-pointer">
                     <option value="">Semua Departemen/Jurusan</option>
                     <option value="PPLG">PPLG</option>
                     <option value="TO">TO</option>
@@ -88,7 +88,7 @@
             </div>
 
             <div>
-                <select wire:model.live="categoryFilter" class="w-full px-3.5 py-2 text-xs font-semibold text-neutral-600 dark:text-neutral-300 bg-white dark:bg-slate-900 border border-neutral-200 dark:border-slate-700 rounded-full focus:outline-none focus:ring-2 focus:ring-red-500/10 focus:border-red-400 cursor-pointer">
+                <select wire:model.live="categoryFilter" class="w-full px-3.5 py-2 text-xs font-semibold text-neutral-600 dark:text-neutral-300 bg-white dark:bg-slate-900 border border-neutral-200 dark:border-slate-700 rounded-[2px] focus:outline-none focus:ring-2 focus:ring-red-500/10 focus:border-red-400 cursor-pointer">
                     <option value="">Semua Kategori</option>
                     <option value="ritel">Ritel</option>
                     <option value="jasa">Jasa</option>
@@ -96,7 +96,7 @@
             </div>
 
             <div>
-                <select wire:model.live="statusFilter" class="w-full px-3.5 py-2 text-xs font-semibold text-neutral-600 dark:text-neutral-300 bg-white dark:bg-slate-900 border border-neutral-200 dark:border-slate-700 rounded-full focus:outline-none focus:ring-2 focus:ring-red-500/10 focus:border-red-400 cursor-pointer">
+                <select wire:model.live="statusFilter" class="w-full px-3.5 py-2 text-xs font-semibold text-neutral-600 dark:text-neutral-300 bg-white dark:bg-slate-900 border border-neutral-200 dark:border-slate-700 rounded-[2px] focus:outline-none focus:ring-2 focus:ring-red-500/10 focus:border-red-400 cursor-pointer">
                     <option value="">Semua Status</option>
                     <option value="1">Aktif</option>
                     <option value="0">Nonaktif</option>
@@ -310,7 +310,7 @@
 
                     {{-- Status Toggle Checkbox --}}
                     <div class="flex items-center gap-2 pt-1">
-                        <input type="checkbox" id="is_active" wire:model="is_active" class="rounded border-neutral-300 text-red-600 focus:ring-red-500/20 cursor-pointer">
+                        <input type="checkbox" id="is_active" wire:model="is_active" class="rounded border-neutral-300 text-blue-900 focus:ring-red-500/20 cursor-pointer">
                         <label for="is_active" class="text-xs font-semibold text-neutral-600 dark:text-neutral-300 cursor-pointer">Unit Usaha Aktif / Operasional</label>
                     </div>
 
@@ -319,7 +319,7 @@
                         <button type="button" wire:click="closeModal" class="px-4 py-2 text-xs font-semibold text-neutral-600 dark:text-neutral-300 bg-neutral-100 dark:bg-slate-700 rounded-md hover:bg-neutral-200 dark:hover:bg-slate-600 transition-all cursor-pointer">
                             Batal
                         </button>
-                        <button type="submit" wire:loading.attr="disabled" class="px-5 py-2 text-xs font-bold text-white bg-red-600 hover:bg-red-700 rounded-md transition-all flex items-center gap-2 shadow-sm cursor-pointer">
+                        <button type="submit" wire:loading.attr="disabled" class="px-5 py-2 text-xs font-bold text-white bg-blue-900 hover:bg-blue-950 rounded-md transition-all flex items-center gap-2 shadow-sm cursor-pointer">
                             <span wire:loading.remove wire:target="save">Simpan Unit</span>
                             <span wire:loading wire:target="save">Memproses...</span>
                         </button>

@@ -79,7 +79,7 @@
     <div class="bg-white dark:bg-slate-800 rounded-md border border-neutral-100 dark:border-slate-700 shadow-sm shadow-black/[0.02] overflow-hidden">
         <div class="p-5 pb-0 flex items-center justify-between">
             <h2 class="text-xs font-bold uppercase tracking-wider text-neutral-400">Dokumen Terbaru</h2>
-            <a href="{{ route('master.documents.history') }}" class="text-[11px] font-semibold text-red-600 dark:text-red-400 hover:underline">Lihat semua &rarr;</a>
+            <a href="{{ route('master.documents.history') }}" class="text-[11px] font-semibold text-blue-900 dark:text-red-400 hover:underline">Lihat semua &rarr;</a>
         </div>
         <div class="overflow-x-auto mt-3">
             <table class="w-full text-sm text-left">

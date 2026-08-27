@@ -76,7 +76,7 @@
 
         <div class="flex items-center gap-2.5 shrink-0">
             {{-- Tombol Tambah Aset --}}
-            <button wire:click="openModal" class="px-4 py-2 text-xs font-bold text-white bg-red-600 hover:bg-red-700 rounded-full transition-all flex items-center gap-2 shadow-sm shadow-red-600/20 cursor-pointer">
+            <button wire:click="openModal" class="px-4 py-2 text-xs font-bold text-white bg-blue-900 hover:bg-blue-950 rounded-full transition-all flex items-center gap-2 shadow-sm shadow-blue-900/20 cursor-pointer">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
                 <span>Tambah Aset</span>
             </button>
@@ -138,7 +138,7 @@
                 <thead class="bg-neutral-50/70 dark:bg-slate-900/50 text-[11px] font-semibold uppercase tracking-wider text-neutral-400 border-b border-neutral-100 dark:border-slate-700">
                     <tr>
                         <th class="p-4 w-10 text-center">
-                            <input type="checkbox" wire:model.live="selectAll" class="rounded border-neutral-300 text-red-600 focus:ring-red-500/20 cursor-pointer">
+                            <input type="checkbox" wire:model.live="selectAll" class="rounded border-neutral-300 text-blue-900 focus:ring-red-500/20 cursor-pointer">
                         </th>
                         <th class="px-4 py-3.5">Tag & Nama Aset</th>
                         <th class="px-4 py-3.5">Kategori</th>
@@ -153,14 +153,14 @@
                     @forelse($assets as $asset)
                         <tr wire:key="asset-{{ $asset->id }}" class="hover:bg-neutral-50/60 dark:hover:bg-slate-700/30 transition-colors">
                             <td class="p-4 text-center">
-                                <input type="checkbox" wire:model.live="selectedRows" value="{{ $asset->id }}" class="rounded border-neutral-300 text-red-600 focus:ring-red-500/20 cursor-pointer">
+                                <input type="checkbox" wire:model.live="selectedRows" value="{{ $asset->id }}" class="rounded border-neutral-300 text-blue-900 focus:ring-red-500/20 cursor-pointer">
                             </td>
 
                             {{-- Tag & Nama Aset --}}
                             <td class="px-4 py-3.5">
                                 <div class="font-semibold text-neutral-900 dark:text-white text-xs">{{ $asset->name }}</div>
                                 <div class="flex items-center gap-2 mt-0.5">
-                                    <span class="text-[10px] font-mono text-red-600 dark:text-red-400 font-semibold bg-red-50 dark:bg-red-950/40 px-1.5 py-0.2 rounded border border-red-100 dark:border-red-900/50">{{ $asset->asset_tag }}</span>
+                                    <span class="text-[10px] font-mono text-blue-900 dark:text-red-400 font-semibold bg-red-50 dark:bg-red-950/40 px-1.5 py-0.2 rounded border border-red-100 dark:border-red-900/50">{{ $asset->asset_tag }}</span>
                                     @if($asset->serial_number)
                                         <span class="text-[11px] font-mono text-neutral-400">S/N: {{ $asset->serial_number }}</span>
                                     @endif
@@ -359,7 +359,7 @@
                         <button type="button" wire:click="closeModal" class="px-4 py-2 text-xs font-semibold text-neutral-600 dark:text-neutral-300 bg-neutral-100 dark:bg-slate-700 rounded-md hover:bg-neutral-200 dark:hover:bg-slate-600 transition-all cursor-pointer">
                             Batal
                         </button>
-                        <button type="submit" class="px-5 py-2 text-xs font-bold text-white bg-red-600 hover:bg-red-700 rounded-md transition-all shadow-sm cursor-pointer">
+                        <button type="submit" class="px-5 py-2 text-xs font-bold text-white bg-blue-900 hover:bg-blue-950 rounded-md transition-all shadow-sm cursor-pointer">
                             {{ $editingId ? 'Simpan Perubahan' : 'Tambah Aset' }}
                         </button>
                     </div>

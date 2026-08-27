@@ -3,7 +3,7 @@
         <button wire:click="create('in')" class="bg-green-600 text-white text-sm px-4 py-2 rounded-lg hover:bg-green-700">
             + Stok Masuk
         </button>
-        <button wire:click="create('out')" class="bg-red-600 text-white text-sm px-4 py-2 rounded-lg hover:bg-red-700">
+        <button wire:click="create('out')" class="bg-blue-900 text-white text-sm px-4 py-2 rounded-lg hover:bg-blue-950">
             - Stok Keluar
         </button>
         <a href="{{ route('stock.history') }}" class="text-sm text-indigo-600 hover:underline px-2">Lihat Riwayat Mutasi &rarr;</a>

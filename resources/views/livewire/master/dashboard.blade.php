@@ -4,12 +4,12 @@
     @show-unit-form-modal.window="showUnitModal = true">
 
     {{-- ================= HEADER & QUICK ACTIONS ================= --}}
-    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-white dark:bg-slate-800 p-6 rounded-md border border-neutral-100 dark:border-slate-700 shadow-sm shadow-black/[0.02]">
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-white dark:bg-slate-800 p-5 rounded-md border border-neutral-100 dark:border-slate-700 shadow-sm shadow-black/[0.02]">
         <div>
             <div class="flex items-center gap-2.5">
-                <h1 class="text-2xl font-bold text-neutral-900 dark:text-white tracking-tight">Dashboard Master Admin</h1>
+                <h1 class="text-xl font-bold text-neutral-900 dark:text-white tracking-tight">Dashboard Master Admin</h1>
             </div>
-            <p class="text-sm text-neutral-400 mt-1">
+            <p class="text-sm tracking-tight text-neutral-400 mt-1">
                 Ikhtisar kinerja bisnis, status operasional, dan manajemen unit usaha.
             </p>
         </div>
@@ -20,7 +20,7 @@
             <button type="button"
                     wire:click="export"
                     wire:loading.attr="disabled"
-                    class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800 rounded-full hover:bg-sky-100 dark:hover:bg-sky-900/40 transition-all shadow-sm shadow-black/[0.02] cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed">
+                    class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800 rounded-[3px] hover:bg-sky-100 dark:hover:bg-sky-900/40 transition-all shadow-sm shadow-black/[0.02] cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed">
                 <svg wire:loading.remove wire:target="export" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
                 <svg wire:loading wire:target="export" class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -33,17 +33,17 @@
             {{-- Tombol + Admin Baru --}}
             <button type="button"
                     wire:click="openCreateAdminModal"
-                    class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-full hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition-all shadow-sm shadow-black/[0.02] cursor-pointer">
+                    class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-[3px] hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition-all shadow-sm shadow-black/[0.02] cursor-pointer">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M18 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zM3 19.235v-.11a6.375 6.375 0 0112.75 0v.109A12.318 12.318 0 019.374 21c-2.331 0-4.512-.645-6.374-1.766z"/></svg>
-                <span>+ Admin Baru</span>
+                <span>Admin Baru</span>
             </button>
 
             {{-- Tombol + Unit Usaha (Aksi Utama) --}}
             <button type="button"
                     wire:click="openCreateUnitModal"
-                    class="inline-flex items-center gap-2 px-4 py-2 text-xs font-bold text-white bg-red-600 hover:bg-red-700 rounded-full transition-all shadow-sm shadow-red-600/20 cursor-pointer">
+                    class="inline-flex items-center gap-2 px-4 py-2 text-xs font-bold text-white bg-blue-900 hover:bg-blue-950 rounded-[3px] transition-all shadow-sm shadow-blue-900/20 cursor-pointer">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
-                <span>+ Unit Usaha</span>
+                <span>Unit Usaha</span>
             </button>
         </div>
 
@@ -107,7 +107,7 @@
                             </div>
                         @endif
 
-                        <div class="p-3 bg-red-50/60 dark:bg-red-950/20 rounded-xl text-xs text-red-700 dark:text-red-300 space-y-1">
+                        <div class="p-3 bg-red-50/60 dark:bg-red-950/20 rounded-xl text-xs text-blue-950 dark:text-red-300 space-y-1">
                             <div>💡 <strong>Username &amp; Password</strong> akan dibuat otomatis oleh sistem.</div>
                         </div>
 
@@ -116,7 +116,7 @@
                             <button type="button" wire:click="closeCreateAdminModal" class="px-4 py-2.5 border border-neutral-200 dark:border-slate-700 rounded-full text-sm font-semibold hover:bg-neutral-50 dark:hover:bg-slate-700 dark:text-white transition-colors">
                                 Batal
                             </button>
-                            <button type="submit" wire:loading.attr="disabled" class="px-4 py-2.5 bg-red-600 text-white rounded-full text-sm font-semibold hover:bg-red-700 transition-colors shadow-sm shadow-red-600/20">
+                            <button type="submit" wire:loading.attr="disabled" class="px-4 py-2.5 bg-blue-900 text-white rounded-full text-sm font-semibold hover:bg-blue-950 transition-colors shadow-sm shadow-blue-900/20">
                                 <span wire:loading.remove wire:target="saveAdmin">Simpan &amp; Generate Kredensial</span>
                                 <span wire:loading wire:target="saveAdmin">Memproses...</span>
                             </button>
@@ -150,7 +150,7 @@
                                     copied = true;
                                     setTimeout(() => { $wire.set('createdCredentials', null); }, 800);
                                 "
-                                class="w-full py-3 bg-red-600 hover:bg-red-700 text-white rounded-full text-xs font-semibold transition flex items-center justify-center gap-2 cursor-pointer shadow-sm shadow-red-600/20">
+                                class="w-full py-3 bg-blue-900 hover:bg-blue-950 text-white rounded-full text-xs font-semibold transition flex items-center justify-center gap-2 cursor-pointer shadow-sm shadow-blue-900/20">
                             <template x-if="!copied">
                                 <span class="flex items-center gap-1.5">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 01-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 011.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 00-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 01-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 00-3.375-3.375h-1.5"/></svg>
@@ -232,7 +232,7 @@
                         </div>
 
                         <div class="flex items-center gap-2 pt-1">
-                            <input type="checkbox" id="is_active" wire:model="is_active" class="rounded border-neutral-300 text-red-600 focus:ring-red-400">
+                            <input type="checkbox" id="is_active" wire:model="is_active" class="rounded border-neutral-300 text-blue-900 focus:ring-red-400">
                             <label for="is_active" class="text-xs font-medium text-neutral-600 dark:text-neutral-300">Unit Usaha Aktif / Operasional</label>
                         </div>
 
@@ -240,7 +240,7 @@
                             <button type="button" wire:click="closeModal" class="px-4 py-2.5 border border-neutral-200 dark:border-slate-700 rounded-full text-sm font-semibold hover:bg-neutral-50 dark:hover:bg-slate-700 dark:text-white transition-colors">
                                 Batal
                             </button>
-                            <button type="submit" wire:loading.attr="disabled" class="px-4 py-2.5 bg-red-600 text-white rounded-full text-sm font-semibold hover:bg-red-700 transition-colors shadow-sm shadow-red-600/20">
+                            <button type="submit" wire:loading.attr="disabled" class="px-4 py-2.5 bg-blue-900 text-white rounded-full text-sm font-semibold hover:bg-blue-950 transition-colors shadow-sm shadow-blue-900/20">
                                 <span wire:loading.remove wire:target="save">Simpan Unit</span>
                                 <span wire:loading wire:target="save">Memproses...</span>
                             </button>
@@ -292,7 +292,7 @@
 
                     {{-- Dropdown Filter Periode --}}
                     <select wire:model.live="periodFilter" 
-                        class="px-2 py-1 text-[11px] font-medium bg-neutral-50 dark:bg-slate-900 text-neutral-700 dark:text-neutral-200 border border-neutral-200 dark:border-slate-700 rounded-md focus:ring-1 focus:ring-red-500 focus:border-red-500 outline-none transition-all cursor-pointer shrink-0">
+                        class="px-2 py-1 text-[11px] font-medium bg-neutral-50 dark:bg-slate-900 text-neutral-700 dark:text-neutral-200 border border-neutral-200 dark:border-slate-700 rounded-[2px] focus:ring-1 focus:ring-blue-900 focus:border-blue-900 outline-none transition-all cursor-pointer shrink-0">
                         <option value="today">Hari Ini</option>
                         <option value="this_week">Minggu Ini</option>
                         <option value="this_month">Bulan Ini</option>
@@ -390,7 +390,7 @@
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
 
         {{-- Widget Chart Donut (ApexCharts + Alpine.js) --}}
-        <div class="lg:col-span-2 bg-white dark:bg-slate-800 rounded-md border border-neutral-100 dark:border-slate-700 p-6 shadow-sm shadow-black/[0.02] flex flex-col justify-between">
+        <div class="lg:col-span-2 bg-white dark:bg-slate-800 rounded-md border border-neutral-100 dark:border-slate-700 p-4 shadow-sm shadow-black/[0.02] flex flex-col justify-between">
             <div class="flex items-center justify-between mb-4">
                 <div>
                     <h2 class="text-base font-extrabold text-neutral-900 dark:text-white tracking-tight">Kontribusi Omzet per Unit Usaha</h2>
@@ -479,14 +479,14 @@
         </div>
 
         {{-- Widget Rincian & Peringkat Pendapatan Unit --}}
-        <div class="bg-white dark:bg-slate-800 rounded-md border border-neutral-100 dark:border-slate-700 p-6 shadow-sm shadow-black/[0.02] flex flex-col justify-between">
+        <div class="bg-white dark:bg-slate-800 rounded-md border border-neutral-100 dark:border-slate-700 p-4 shadow-sm shadow-black/[0.02] flex flex-col justify-between">
             <div>
                 <div class="flex items-center justify-between mb-5">
                     <div>
                         <h2 class="text-base font-extrabold text-neutral-900 dark:text-white tracking-tight">Peringkat Omzet</h2>
                         <p class="text-xs text-neutral-400 mt-0.5">Kontribusi unit bisnis</p>
                     </div>
-                    <span class="text-[11px] font-bold text-neutral-500 dark:text-neutral-400 bg-neutral-100/80 dark:bg-slate-900/80 px-2.5 py-1 rounded-full border border-neutral-200/50 dark:border-slate-700">
+                    <span class="text-[11px] font-bold text-neutral-500 dark:text-neutral-400 bg-neutral-100/80 dark:bg-slate-900/80 px-2.5 py-1 rounded-[2px] border border-neutral-200/50 dark:border-slate-700">
                         Top 5
                     </span>
                 </div>
@@ -546,7 +546,7 @@
                     <input type="text"
                         wire:model.live.debounce.300ms="searchUnit"
                         placeholder="Cari unit..."
-                        class="w-48 sm:w-60 pl-9 pr-3 py-2.5 text-xs bg-white dark:bg-slate-900 border border-neutral-200 dark:border-slate-700 text-neutral-800 dark:text-neutral-100 placeholder-neutral-400 rounded-full focus:outline-none focus:ring-2 focus:ring-red-500/10 focus:border-red-400 transition-all shadow-sm shadow-black/[0.02]">
+                        class="w-48 sm:w-60 pl-9 pr-3 py-2.5 text-xs bg-white dark:bg-slate-900 border border-neutral-200 dark:border-slate-700 text-neutral-800 dark:text-neutral-100 placeholder-neutral-400 rounded-[3px] focus:outline-none focus:ring-2 focus:ring-red-500/10 focus:border-red-400 transition-all shadow-sm shadow-black/[0.02]">
                     <svg class="w-4 h-4 text-neutral-400 absolute left-3 top-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/></svg>
                 </div>
             </div>
@@ -556,13 +556,13 @@
         <div class="flex overflow-x-auto gap-3 pb-2 snap-x snap-mandatory scrollbar-thin scrollbar-thumb-neutral-200 scrollbar-track-transparent">
             @forelse ($units as $unit)
                 @php $admin = $unit->users->first(); @endphp
-                <div class="shrink-0 w-64 snap-start bg-white dark:bg-slate-800 rounded-md border border-neutral-100 dark:border-slate-700 p-4 hover:shadow-md hover:border-neutral-200 dark:hover:border-slate-600 transition-all flex flex-col justify-between group shadow-sm shadow-black/[0.02]">
+                <div class="shrink-0 w-64 snap-start bg-white dark:bg-slate-800 rounded-sm border border-neutral-100 dark:border-slate-700 p-4 hover:shadow-md hover:border-neutral-200 dark:hover:border-slate-600 transition-all flex flex-col justify-between group shadow-sm shadow-black/[0.02]">
                     <div>
                         <div class="flex items-center justify-between gap-2">
-                            <span class="h-10 w-10 rounded-2xl bg-red-50 dark:bg-red-950/50 text-red-500 dark:text-red-400 flex items-center justify-center font-bold text-xs shrink-0">
+                            <span class="h-10 w-10 rounded-sm bg-red-50 dark:bg-red-950/50 text-red-500 dark:text-red-400 flex items-center justify-center font-bold text-xs shrink-0">
                                 {{ strtoupper(substr($unit->name, 0, 1)) }}
                             </span>
-                            <span class="px-2.5 py-1 text-[10px] font-bold tracking-wide rounded-full {{ $unit->is_active ? 'bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400' : 'bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400' }}">
+                            <span class="px-2.5 py-1 text-[10px] font-bold tracking-wide rounded-[2px] {{ $unit->is_active ? 'bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400' : 'bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400' }}">
                                 {{ $unit->is_active ? 'Aktif' : 'Nonaktif' }}
                             </span>
                         </div>
@@ -581,7 +581,7 @@
                     </div>
 
                     <a href="{{ Route::has('unit.dashboard') ? route('unit.dashboard', $unit->slug ?? $unit->id) : '#' }}"
-                        class="mt-4 w-full inline-flex items-center justify-center gap-1.5 py-2.5 px-3 text-xs font-semibold text-neutral-600 dark:text-neutral-300 bg-neutral-50 dark:bg-slate-900 hover:bg-neutral-100 dark:hover:bg-slate-700 rounded-full transition-all">
+                        class="mt-4 w-full inline-flex items-center justify-center gap-1.5 py-2.5 px-3 text-xs font-semibold text-neutral-600 dark:text-neutral-300 bg-neutral-50 dark:bg-slate-900 hover:bg-neutral-100 dark:hover:bg-slate-700 rounded-[2px] transition-all">
                         <span>Buka Dashboard</span>
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>
                     </a>
@@ -604,7 +604,7 @@
                     <h2 class="text-base font-bold text-neutral-900 dark:text-white">Transaksi Terkini</h2>
                     <p class="text-xs text-neutral-400">Aktivitas keuangan terbaru dari seluruh unit usaha</p>
                 </div>
-                <a href="{{ Route::has('transactions.index') ? route('transactions.index') : '#' }}" class="text-xs font-bold text-neutral-900 dark:text-white hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors shrink-0">
+                <a href="{{ Route::has('master.transactions.index') ? route('master.transactions.index') : '#' }}" class="text-xs font-bold text-neutral-900 dark:text-white hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors shrink-0">
                     Lihat Semua &rarr;
                 </a>
             </div>
@@ -652,7 +652,7 @@
                     <h2 class="text-base font-bold text-neutral-900 dark:text-white">Log Aktivitas</h2>
                     <p class="text-xs text-neutral-400">Riwayat aksi sistem terkini dari seluruh unit</p>
                 </div>
-                <a href="#" class="text-xs font-bold text-neutral-900 dark:text-white hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors shrink-0">
+                <a href="{{ Route::has('master.audit-logs.index') ? route('master.audit-logs.index') : '#' }}" class="text-xs font-bold text-neutral-900 dark:text-white hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors shrink-0">
                     Lihat Semua Audit Log &rarr;
                 </a>
             </div>
@@ -660,14 +660,14 @@
             <div class="mt-2 space-y-1">
                 @forelse ($logs as $log)
                     @php $info = $this->eventInfo($log->event); @endphp
-                    <div class="p-3 rounded-2xl hover:bg-neutral-50 dark:hover:bg-slate-900/50 border border-transparent hover:border-neutral-100 dark:hover:border-slate-700 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <div class="p-3 rounded-md hover:bg-neutral-50 dark:hover:bg-slate-900/50 border border-transparent hover:border-neutral-100 dark:hover:border-slate-700 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                         <div class="flex items-center gap-3 min-w-0">
                             <span class="h-9 w-9 rounded-2xl bg-neutral-50 dark:bg-slate-900 text-neutral-500 dark:text-neutral-400 flex items-center justify-center shrink-0">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                             </span>
                             <div class="min-w-0">
                                 <div class="flex items-center gap-2">
-                                    <span class="px-2 py-0.5 text-[9px] font-bold rounded-md border {{ $info['class'] }}">
+                                    <span class="px-2 py-0.5 text-[9px] font-bold rounded-[2px] border {{ $info['class'] }}">
                                         {{ $info['label'] }}
                                     </span>
                                 </div>
@@ -739,7 +739,7 @@
                                     {{ (method_exists($user, 'isMasterAdmin') && $user->isMasterAdmin()) ? 'Semua Unit' : ($user->unit->name ?? '—') }}
                                 </td>
                                 <td class="px-5 py-3.5">
-                                    <span class="px-2.5 py-1 text-[10px] font-bold tracking-wide rounded-full {{ (method_exists($user, 'isMasterAdmin') && $user->isMasterAdmin()) ? 'bg-violet-50 dark:bg-violet-950/50 text-violet-600 dark:text-violet-400' : 'bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400' }}">
+                                    <span class="px-2.5 py-1 text-[10px] font-bold tracking-wide rounded-[2px] {{ (method_exists($user, 'isMasterAdmin') && $user->isMasterAdmin()) ? 'bg-violet-50 dark:bg-violet-950/50 text-violet-600 dark:text-violet-400' : 'bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400' }}">
                                         {{ (method_exists($user, 'isMasterAdmin') && $user->isMasterAdmin()) ? 'Master Admin' : 'Admin Unit' }}
                                     </span>
                                 </td>
@@ -768,7 +768,7 @@
         {{-- Footer Tabel --}}
         <div class="p-4 border-t border-neutral-100 dark:border-slate-700 bg-neutral-50/40 dark:bg-slate-900/40 flex items-center justify-between text-xs text-neutral-400">
             <span>Menampilkan {{ count($users) }} admin terdaftar</span>
-            <a href="#" class="font-bold text-neutral-900 dark:text-white hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors">Kelola Semua Admin &rarr;</a>
+            <a href="{{ Route::has('master.users.index') ? route('master.users.index') : '#' }}" class="font-bold text-neutral-900 dark:text-white hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors">Kelola Semua Admin &rarr;</a>
         </div>
     </div>
 
@@ -806,7 +806,7 @@
                     </div>
                     <div class="pt-3 flex justify-end gap-2">
                         <button type="button" @click="showAdminModal = false" class="px-4 py-2.5 text-xs font-semibold text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-slate-700 rounded-full transition-colors">Batal</button>
-                        <button type="submit" class="px-4 py-2.5 text-xs font-semibold text-white bg-red-600 rounded-full shadow-sm shadow-red-600/20 hover:bg-red-700 transition-colors">Simpan Admin</button>
+                        <button type="submit" class="px-4 py-2.5 text-xs font-semibold text-white bg-blue-900 rounded-full shadow-sm shadow-blue-900/20 hover:bg-blue-950 transition-colors">Simpan Admin</button>
                     </div>
                 </form>
             </div>
@@ -836,7 +836,7 @@
                     </div>
                     <div class="pt-3 flex justify-end gap-2">
                         <button type="button" @click="showUnitModal = false" class="px-4 py-2.5 text-xs font-semibold text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-slate-700 rounded-full transition-colors">Batal</button>
-                        <button type="submit" class="px-4 py-2.5 text-xs font-semibold text-white bg-red-600 rounded-full shadow-sm shadow-red-600/20 hover:bg-red-700 transition-colors">Simpan Unit</button>
+                        <button type="submit" class="px-4 py-2.5 text-xs font-semibold text-white bg-blue-900 rounded-full shadow-sm shadow-blue-900/20 hover:bg-blue-950 transition-colors">Simpan Unit</button>
                     </div>
                 </form>
             </div>

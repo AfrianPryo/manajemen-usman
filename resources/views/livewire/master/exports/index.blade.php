@@ -47,7 +47,7 @@
                                         ? @this.set('bulkSelected', ['trx','prod','asset','stock','fin','authlog','auditlog','dash'])
                                         : @this.set('bulkSelected', [])"
                                     @checked(count($bulkSelected) === $totalExportTypes)
-                                    class="rounded border-neutral-300 text-red-600 focus:ring-red-500/20 cursor-pointer">
+                                    class="rounded border-neutral-300 text-blue-900 focus:ring-red-500/20 cursor-pointer">
                             </th>
                             <th class="px-4 py-3.5">Jenis Data</th>
                             <th class="px-4 py-3.5">Deskripsi</th>
@@ -60,7 +60,7 @@
                         {{-- ROW: Transaksi --}}
                         <tr class="hover:bg-neutral-50/60 dark:hover:bg-slate-700/30 transition-colors">
                             <td class="p-4 text-center align-top">
-                                <input type="checkbox" wire:model.live="bulkSelected" value="trx" class="rounded border-neutral-300 text-red-600 focus:ring-red-500/20 cursor-pointer">
+                                <input type="checkbox" wire:model.live="bulkSelected" value="trx" class="rounded border-neutral-300 text-blue-900 focus:ring-red-500/20 cursor-pointer">
                             </td>
                             <td class="px-4 py-3.5 align-top whitespace-nowrap">
                                 <span class="font-semibold text-neutral-900 dark:text-white text-xs">Data Transaksi</span>
@@ -131,7 +131,7 @@
                         {{-- ROW: Inventaris --}}
                         <tr class="hover:bg-neutral-50/60 dark:hover:bg-slate-700/30 transition-colors">
                             <td class="p-4 text-center align-top">
-                                <input type="checkbox" wire:model.live="bulkSelected" value="prod" class="rounded border-neutral-300 text-red-600 focus:ring-red-500/20 cursor-pointer">
+                                <input type="checkbox" wire:model.live="bulkSelected" value="prod" class="rounded border-neutral-300 text-blue-900 focus:ring-red-500/20 cursor-pointer">
                             </td>
                             <td class="px-4 py-3.5 align-top whitespace-nowrap">
                                 <span class="font-semibold text-neutral-900 dark:text-white text-xs">Data Inventaris</span>
@@ -193,7 +193,7 @@
                         {{-- ROW: Aset --}}
                         <tr class="hover:bg-neutral-50/60 dark:hover:bg-slate-700/30 transition-colors">
                             <td class="p-4 text-center align-top">
-                                <input type="checkbox" wire:model.live="bulkSelected" value="asset" class="rounded border-neutral-300 text-red-600 focus:ring-red-500/20 cursor-pointer">
+                                <input type="checkbox" wire:model.live="bulkSelected" value="asset" class="rounded border-neutral-300 text-blue-900 focus:ring-red-500/20 cursor-pointer">
                             </td>
                             <td class="px-4 py-3.5 align-top whitespace-nowrap">
                                 <span class="font-semibold text-neutral-900 dark:text-white text-xs">Data Aset</span>
@@ -249,7 +249,7 @@
                         {{-- ROW: Stok --}}
                         <tr class="hover:bg-neutral-50/60 dark:hover:bg-slate-700/30 transition-colors">
                             <td class="p-4 text-center align-top">
-                                <input type="checkbox" wire:model.live="bulkSelected" value="stock" class="rounded border-neutral-300 text-red-600 focus:ring-red-500/20 cursor-pointer">
+                                <input type="checkbox" wire:model.live="bulkSelected" value="stock" class="rounded border-neutral-300 text-blue-900 focus:ring-red-500/20 cursor-pointer">
                             </td>
                             <td class="px-4 py-3.5 align-top whitespace-nowrap">
                                 <span class="font-semibold text-neutral-900 dark:text-white text-xs">Data Stok Barang</span>
@@ -307,7 +307,7 @@
                         {{-- ROW: Keuangan --}}
                         <tr class="hover:bg-neutral-50/60 dark:hover:bg-slate-700/30 transition-colors">
                             <td class="p-4 text-center align-top">
-                                <input type="checkbox" wire:model.live="bulkSelected" value="fin" class="rounded border-neutral-300 text-red-600 focus:ring-red-500/20 cursor-pointer">
+                                <input type="checkbox" wire:model.live="bulkSelected" value="fin" class="rounded border-neutral-300 text-blue-900 focus:ring-red-500/20 cursor-pointer">
                             </td>
                             <td class="px-4 py-3.5 align-top whitespace-nowrap">
                                 <span class="font-semibold text-neutral-900 dark:text-white text-xs">Data Keuangan</span>
@@ -357,7 +357,7 @@
                         {{-- ROW: Log Aktivitas Login --}}
                         <tr class="hover:bg-neutral-50/60 dark:hover:bg-slate-700/30 transition-colors">
                             <td class="p-4 text-center align-top">
-                                <input type="checkbox" wire:model.live="bulkSelected" value="authlog" class="rounded border-neutral-300 text-red-600 focus:ring-red-500/20 cursor-pointer">
+                                <input type="checkbox" wire:model.live="bulkSelected" value="authlog" class="rounded border-neutral-300 text-blue-900 focus:ring-red-500/20 cursor-pointer">
                             </td>
                             <td class="px-4 py-3.5 align-top whitespace-nowrap">
                                 <span class="font-semibold text-neutral-900 dark:text-white text-xs">Log Aktivitas Login</span>
@@ -405,7 +405,7 @@
                         {{-- ROW: Audit Log Sistem --}}
                         <tr class="hover:bg-neutral-50/60 dark:hover:bg-slate-700/30 transition-colors">
                             <td class="p-4 text-center align-top">
-                                <input type="checkbox" wire:model.live="bulkSelected" value="auditlog" class="rounded border-neutral-300 text-red-600 focus:ring-red-500/20 cursor-pointer">
+                                <input type="checkbox" wire:model.live="bulkSelected" value="auditlog" class="rounded border-neutral-300 text-blue-900 focus:ring-red-500/20 cursor-pointer">
                             </td>
                             <td class="px-4 py-3.5 align-top whitespace-nowrap">
                                 <span class="font-semibold text-neutral-900 dark:text-white text-xs">Audit Log Sistem</span>
@@ -461,7 +461,7 @@
                         {{-- ROW: Dashboard Master Admin --}}
                         <tr class="hover:bg-neutral-50/60 dark:hover:bg-slate-700/30 transition-colors">
                             <td class="p-4 text-center align-top">
-                                <input type="checkbox" wire:model.live="bulkSelected" value="dash" class="rounded border-neutral-300 text-red-600 focus:ring-red-500/20 cursor-pointer">
+                                <input type="checkbox" wire:model.live="bulkSelected" value="dash" class="rounded border-neutral-300 text-blue-900 focus:ring-red-500/20 cursor-pointer">
                             </td>
                             <td class="px-4 py-3.5 align-top whitespace-nowrap">
                                 <span class="font-semibold text-neutral-900 dark:text-white text-xs">Dashboard Master Admin</span>

@@ -17,13 +17,13 @@
     <!-- Navigasi Tab -->
     <div class="inline-flex flex-wrap p-1 bg-neutral-100 dark:bg-slate-900 rounded-lg gap-1">
         <button wire:click="setTab('profile')"
-            class="px-4 py-2 text-xs font-bold rounded-md transition-all flex items-center gap-2 {{ $activeTab === 'profile' ? 'bg-red-600 text-white shadow-sm' : 'text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200' }}">
+            class="px-4 py-2 text-xs font-bold rounded-md transition-all flex items-center gap-2 {{ $activeTab === 'profile' ? 'bg-blue-900 text-white shadow-sm' : 'text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200' }}">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/></svg>
             Profil Admin
         </button>
 
         <button wire:click="setTab('features')"
-            class="px-4 py-2 text-xs font-bold rounded-md transition-all flex items-center gap-2 {{ $activeTab === 'features' ? 'bg-red-600 text-white shadow-sm' : 'text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200' }}">
+            class="px-4 py-2 text-xs font-bold rounded-md transition-all flex items-center gap-2 {{ $activeTab === 'features' ? 'bg-blue-900 text-white shadow-sm' : 'text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200' }}">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/></svg>
             Fitur & Modul
         </button>
@@ -52,7 +52,7 @@
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Foto Profil</label>
-                        <input type="file" wire:model="avatar" accept="image/*" class="text-xs text-neutral-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-red-50 file:text-red-700 dark:file:bg-slate-700 dark:file:text-neutral-300">
+                        <input type="file" wire:model="avatar" accept="image/*" class="text-xs text-neutral-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-red-50 file:text-blue-950 dark:file:bg-slate-700 dark:file:text-neutral-300">
                         @error('avatar') <p class="text-[11px] text-rose-500 mt-1">{{ $message }}</p> @enderror
                     </div>
                 </div>
@@ -95,7 +95,7 @@
                 </div>
 
                 <div class="flex justify-end pt-4 border-t border-neutral-100 dark:border-slate-700">
-                    <button type="submit" class="px-5 py-2 text-xs font-bold text-white bg-red-600 hover:bg-red-700 rounded-md transition-all flex items-center gap-2 shadow-sm">
+                    <button type="submit" class="px-5 py-2 text-xs font-bold text-white bg-blue-900 hover:bg-blue-950 rounded-md transition-all flex items-center gap-2 shadow-sm">
                         <span wire:loading.remove wire:target="saveProfile">Simpan Profil</span>
                         <span wire:loading wire:target="saveProfile">Menyimpan...</span>
                     </button>
@@ -130,7 +130,7 @@
                         </div>
 
                         <div class="flex justify-end pt-4 border-t border-neutral-100 dark:border-slate-700">
-                            <button type="submit" class="px-5 py-2 text-xs font-bold text-white bg-red-600 hover:bg-red-700 rounded-md transition-all flex items-center gap-2 shadow-sm">
+                            <button type="submit" class="px-5 py-2 text-xs font-bold text-white bg-blue-900 hover:bg-blue-950 rounded-md transition-all flex items-center gap-2 shadow-sm">
                                 <span wire:loading.remove wire:target="requestPhoneChangeOtp">Kirim Kode OTP</span>
                                 <span wire:loading wire:target="requestPhoneChangeOtp">Mengirim...</span>
                             </button>
@@ -153,7 +153,7 @@
                             <button type="button" wire:click="cancelPhoneOtp" class="px-5 py-2 text-xs font-bold text-neutral-600 dark:text-neutral-300 bg-neutral-100 dark:bg-slate-700 hover:bg-neutral-200 rounded-md transition-all">
                                 Batal
                             </button>
-                            <button type="submit" class="px-5 py-2 text-xs font-bold text-white bg-red-600 hover:bg-red-700 rounded-md transition-all flex items-center gap-2 shadow-sm">
+                            <button type="submit" class="px-5 py-2 text-xs font-bold text-white bg-blue-900 hover:bg-blue-950 rounded-md transition-all flex items-center gap-2 shadow-sm">
                                 <span wire:loading.remove wire:target="verifyPhoneChangeOtp">Verifikasi & Simpan</span>
                                 <span wire:loading wire:target="verifyPhoneChangeOtp">Memverifikasi...</span>
                             </button>
@@ -193,7 +193,7 @@
                         </div>
 
                         <div class="flex justify-end pt-4 border-t border-neutral-100 dark:border-slate-700">
-                            <button type="submit" class="px-5 py-2 text-xs font-bold text-white bg-red-600 hover:bg-red-700 rounded-md transition-all flex items-center gap-2 shadow-sm">
+                            <button type="submit" class="px-5 py-2 text-xs font-bold text-white bg-blue-900 hover:bg-blue-950 rounded-md transition-all flex items-center gap-2 shadow-sm">
                                 <span wire:loading.remove wire:target="requestPasswordChangeOtp">Kirim Kode OTP</span>
                                 <span wire:loading wire:target="requestPasswordChangeOtp">Mengirim...</span>
                             </button>
@@ -216,7 +216,7 @@
                             <button type="button" wire:click="cancelPasswordOtp" class="px-5 py-2 text-xs font-bold text-neutral-600 dark:text-neutral-300 bg-neutral-100 dark:bg-slate-700 hover:bg-neutral-200 rounded-md transition-all">
                                 Batal
                             </button>
-                            <button type="submit" class="px-5 py-2 text-xs font-bold text-white bg-red-600 hover:bg-red-700 rounded-md transition-all flex items-center gap-2 shadow-sm">
+                            <button type="submit" class="px-5 py-2 text-xs font-bold text-white bg-blue-900 hover:bg-blue-950 rounded-md transition-all flex items-center gap-2 shadow-sm">
                                 <span wire:loading.remove wire:target="verifyPasswordChangeOtp">Verifikasi & Ubah Password</span>
                                 <span wire:loading wire:target="verifyPasswordChangeOtp">Memverifikasi...</span>
                             </button>
@@ -263,7 +263,7 @@
 
                 <div class="space-y-3">
                     <label class="flex items-center gap-3 cursor-pointer">
-                        <input type="checkbox" wire:model="allowMultiUnitAdmin" class="w-4 h-4 text-red-600 rounded border-neutral-300 focus:ring-red-500/20 cursor-pointer">
+                        <input type="checkbox" wire:model="allowMultiUnitAdmin" class="w-4 h-4 text-blue-900 rounded border-neutral-300 focus:ring-red-500/20 cursor-pointer">
                         <div>
                             <span class="text-xs font-semibold text-neutral-800 dark:text-neutral-200">Izinkan Admin Mengelola Banyak Unit</span>
                             <p class="text-[11px] text-neutral-400">Satu akun admin unit dapat ditugaskan ke lebih dari 1 unit usaha.</p>
@@ -273,7 +273,7 @@
                     <!-- Notifikasi WhatsApp -->
                     <div>
                         <label class="flex items-center gap-3 cursor-pointer">
-                            <input type="checkbox" wire:model.live="enableWaNotifications" class="w-4 h-4 text-red-600 rounded border-neutral-300 focus:ring-red-500/20 cursor-pointer">
+                            <input type="checkbox" wire:model.live="enableWaNotifications" class="w-4 h-4 text-blue-900 rounded border-neutral-300 focus:ring-red-500/20 cursor-pointer">
                             <div>
                                 <span class="text-xs font-semibold text-neutral-800 dark:text-neutral-200">Notifikasi WhatsApp</span>
                                 <p class="text-[11px] text-neutral-400">Kirim laporan harian/transaksi, pemberitahuan penting, dan kode OTP keamanan langsung ke WhatsApp.</p>
@@ -314,7 +314,7 @@
             </div>
 
             <div class="flex justify-end pt-4 border-t border-neutral-100 dark:border-slate-700">
-                <button type="submit" class="px-5 py-2 text-xs font-bold text-white bg-red-600 hover:bg-red-700 rounded-md transition-all flex items-center gap-2 shadow-sm">
+                <button type="submit" class="px-5 py-2 text-xs font-bold text-white bg-blue-900 hover:bg-blue-950 rounded-md transition-all flex items-center gap-2 shadow-sm">
                     <span wire:loading.remove wire:target="saveFeatures">Simpan Pengaturan</span>
                     <span wire:loading wire:target="saveFeatures">Menyimpan...</span>
                 </button>

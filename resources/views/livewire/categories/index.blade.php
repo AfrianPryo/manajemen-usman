@@ -15,7 +15,7 @@
                 <td class="px-4 py-3"><x-badge color="gray">{{ $category->products_count }} produk</x-badge></td>
                 <td class="px-4 py-3 space-x-2">
                     <button wire:click="edit({{ $category->id }})" class="text-indigo-600 hover:underline text-sm">Edit</button>
-                    <button wire:click="delete({{ $category->id }})" wire:confirm="Yakin ingin menghapus kategori ini?" class="text-red-600 hover:underline text-sm">Hapus</button>
+                    <button wire:click="delete({{ $category->id }})" wire:confirm="Yakin ingin menghapus kategori ini?" class="text-blue-900 hover:underline text-sm">Hapus</button>
                 </td>
             </tr>
         @empty
