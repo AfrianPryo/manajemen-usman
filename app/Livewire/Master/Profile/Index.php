@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire\Master\Profile; // <-- Pastikan ini Profile, BUKAN Settings
+namespace App\Livewire\Master\Profile;
 
 use Livewire\Component;
 use Livewire\WithFileUploads;

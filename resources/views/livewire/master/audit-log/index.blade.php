@@ -8,7 +8,7 @@
 
         <div class="flex items-center gap-2.5 shrink-0">
             {{-- Tombol Export Audit Log --}}
-            <button wire:click="exportLog" wire:loading.attr="disabled" class="px-3.5 py-2 text-xs font-semibold text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800 rounded-full hover:bg-sky-100 dark:hover:bg-sky-900/40 transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-60">
+            <button wire:click="exportLog" wire:loading.attr="disabled" class="px-3.5 py-2 text-xs font-semibold text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800 rounded-[3px] hover:bg-sky-100 dark:hover:bg-sky-900/40 transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-60">
                 <svg wire:loading.remove wire:target="exportLog" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
                 <span wire:loading.remove wire:target="exportLog">Export Log</span>
                 <span wire:loading wire:target="exportLog">Memproses...</span>
@@ -34,7 +34,7 @@
                         wire:model.live.debounce.300ms="search"
                         type="text" 
                         placeholder="Cari kata kunci, identifier, nama user..." 
-                        class="w-full pl-10 pr-4 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-full bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/10 focus:border-emerald-400"
+                        class="w-full pl-10 pr-4 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-[3px] bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/10 focus:border-emerald-400"
                     >
                 </div>
             </div>
@@ -46,7 +46,7 @@
                     id="event_filter"
                     name="event_filter"
                     wire:model.live="eventFilter" 
-                    class="w-full px-3.5 py-2 text-xs font-semibold text-neutral-600 dark:text-neutral-300 bg-white dark:bg-slate-900 border border-neutral-200 dark:border-slate-700 rounded-full focus:outline-none focus:ring-2 focus:ring-emerald-500/10 focus:border-emerald-400 cursor-pointer"
+                    class="w-full px-3.5 py-2 text-xs font-semibold text-neutral-600 dark:text-neutral-300 bg-white dark:bg-slate-900 border border-neutral-200 dark:border-slate-700 rounded-[3px] focus:outline-none focus:ring-2 focus:ring-emerald-500/10 focus:border-emerald-400 cursor-pointer"
                 >
                     <option value="">Semua Event Aktivitas</option>
                     @foreach($events as $event)
@@ -64,7 +64,7 @@
                     type="date" 
                     wire:model.live="startDate"
                     title="Tanggal Mulai"
-                    class="w-full px-3.5 py-2 text-xs font-medium text-neutral-600 dark:text-neutral-300 bg-white dark:bg-slate-900 border border-neutral-200 dark:border-slate-700 rounded-full focus:outline-none focus:ring-2 focus:ring-emerald-500/10 focus:border-emerald-400"
+                    class="w-full px-3.5 py-2 text-xs font-medium text-neutral-600 dark:text-neutral-300 bg-white dark:bg-slate-900 border border-neutral-200 dark:border-slate-700 rounded-[3px] focus:outline-none focus:ring-2 focus:ring-emerald-500/10 focus:border-emerald-400"
                 >
             </div>
 
@@ -77,7 +77,7 @@
                     type="date" 
                     wire:model.live="endDate"
                     title="Tanggal Selesai"
-                    class="w-full px-3.5 py-2 text-xs font-medium text-neutral-600 dark:text-neutral-300 bg-white dark:bg-slate-900 border border-neutral-200 dark:border-slate-700 rounded-full focus:outline-none focus:ring-2 focus:ring-emerald-500/10 focus:border-emerald-400"
+                    class="w-full px-3.5 py-2 text-xs font-medium text-neutral-600 dark:text-neutral-300 bg-white dark:bg-slate-900 border border-neutral-200 dark:border-slate-700 rounded-[3px] focus:outline-none focus:ring-2 focus:ring-emerald-500/10 focus:border-emerald-400"
                 >
             </div>
 
@@ -87,7 +87,7 @@
                     <button 
                         wire:click="resetFilters" 
                         title="Reset Filter"
-                        class="w-full py-2 px-3 text-xs font-semibold text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/50 rounded-full hover:bg-rose-100 dark:hover:bg-rose-900/50 transition-all flex items-center justify-center gap-1 cursor-pointer"
+                        class="w-full py-2 px-3 text-xs font-semibold text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/50 rounded-[3px] hover:bg-rose-100 dark:hover:bg-rose-900/50 transition-all flex items-center justify-center gap-1 cursor-pointer"
                     >
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
@@ -131,7 +131,7 @@
                                         default => 'bg-neutral-100 dark:bg-slate-700 text-neutral-600 dark:text-neutral-300 border-neutral-200 dark:border-slate-600'
                                     };
                                 @endphp
-                                <span class="px-2.5 py-0.5 text-[10px] font-semibold rounded-full border {{ $badgeClasses }}">
+                                <span class="px-2.5 py-0.5 text-[10px] font-semibold rounded-[3px] border {{ $badgeClasses }}">
                                     {{ str_replace('_', ' ', $log->event) }}
                                 </span>
                             </td>
@@ -141,7 +141,7 @@
                             <td class="px-4 py-3.5 text-center whitespace-nowrap">
                                 <button 
                                     wire:click="openDetail({{ $log->id }})" 
-                                    class="px-3.5 py-1.5 text-xs font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-full hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition-all cursor-pointer"
+                                    class="px-3.5 py-1.5 text-xs font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-[3px] hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition-all cursor-pointer"
                                 >
                                     Detail Data
                                 </button>

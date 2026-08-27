@@ -2,16 +2,16 @@
     {{-- Header & Action Button --}}
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div class="flex items-center gap-2.5 shrink-0">
-            <button wire:click="openCreateModal" class="px-4 py-2 text-xs font-bold text-white bg-blue-900 hover:bg-blue-950 rounded-full transition-all flex items-center gap-2 shadow-sm shadow-blue-900/20 cursor-pointer">
+            <button wire:click="openCreateModal" class="px-4 py-2 text-xs font-bold text-white bg-blue-900 hover:bg-blue-950 rounded-[3px] transition-all flex items-center gap-2 shadow-sm shadow-blue-900/20 cursor-pointer">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
                 <span>Tambah Produk</span>
             </button>
-            <button wire:click="exportProducts" class="px-3.5 py-2 text-xs font-semibold text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800 rounded-full hover:bg-sky-100 dark:hover:bg-sky-900/40 transition-all flex items-center gap-1.5 cursor-pointer">
+            <button wire:click="exportProducts" class="px-3.5 py-2 text-xs font-semibold text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800 rounded-[3px] hover:bg-sky-100 dark:hover:bg-sky-900/40 transition-all flex items-center gap-1.5 cursor-pointer">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
                 <span>Export Excel</span>
             </button>
 
-            <button wire:click="openImportModal" class="px-3.5 py-2 text-xs font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-full hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition-all flex items-center gap-1.5 cursor-pointer">
+            <button wire:click="openImportModal" class="px-3.5 py-2 text-xs font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-[3px] hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition-all flex items-center gap-1.5 cursor-pointer">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/></svg>
                 <span>Import Excel</span>
             </button>
@@ -19,7 +19,7 @@
 
         <button type="button" 
                 wire:click="openCategoryModal" 
-                class="px-3.5 py-2 text-xs font-semibold text-neutral-700 dark:text-neutral-200 bg-white dark:bg-slate-800 border border-neutral-200 dark:border-slate-700 rounded-full hover:bg-neutral-50 dark:hover:bg-slate-700 transition-all flex items-center gap-1.5 cursor-pointer shadow-sm">
+                class="px-3.5 py-2 text-xs font-semibold text-neutral-700 dark:text-neutral-200 bg-white dark:bg-slate-800 border border-neutral-200 dark:border-slate-700 rounded-[3px] hover:bg-neutral-50 dark:hover:bg-slate-700 transition-all flex items-center gap-1.5 cursor-pointer shadow-sm">
             <svg class="w-4 h-4 text-neutral-500 dark:text-neutral-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 005.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 009.568 3z"/>
                 <path stroke-linecap="round" stroke-linejoin="round" d="M6 6h.008v.008H6V6z"/>
@@ -53,11 +53,11 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
             <div class="md:col-span-2">
                 <input wire:model.live.debounce.300ms="search" type="text" placeholder="Cari Kode Produk, Nama Produk, atau Deskripsi..."
-                    class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-full bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-red-500/10 focus:border-red-400">
+                    class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-[3px] bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-red-500/10 focus:border-red-400">
             </div>
 
             <div>
-                <select wire:model.live="unitFilter" class="w-full px-3.5 py-2 text-xs font-semibold text-neutral-600 dark:text-neutral-300 bg-white dark:bg-slate-900 border border-neutral-200 dark:border-slate-700 rounded-full focus:outline-none focus:ring-2 focus:ring-red-500/10 focus:border-red-400 cursor-pointer">
+                <select wire:model.live="unitFilter" class="w-full px-3.5 py-2 text-xs font-semibold text-neutral-600 dark:text-neutral-300 bg-white dark:bg-slate-900 border border-neutral-200 dark:border-slate-700 rounded-[3px] focus:outline-none focus:ring-2 focus:ring-red-500/10 focus:border-red-400 cursor-pointer">
                     <option value="">Semua Unit Usaha</option>
                     @foreach($units as $u)
                         <option value="{{ $u->id }}">{{ $u->name }}</option>
@@ -66,7 +66,7 @@
             </div>
 
             <div>
-                <select wire:model.live="stockFilter" class="w-full px-3.5 py-2 text-xs font-semibold text-neutral-600 dark:text-neutral-300 bg-white dark:bg-slate-900 border border-neutral-200 dark:border-slate-700 rounded-full focus:outline-none focus:ring-2 focus:ring-red-500/10 focus:border-red-400 cursor-pointer">
+                <select wire:model.live="stockFilter" class="w-full px-3.5 py-2 text-xs font-semibold text-neutral-600 dark:text-neutral-300 bg-white dark:bg-slate-900 border border-neutral-200 dark:border-slate-700 rounded-[3px] focus:outline-none focus:ring-2 focus:ring-red-500/10 focus:border-red-400 cursor-pointer">
                     <option value="">Semua Status Stok</option>
                     <option value="normal">Stok Aman</option>
                     <option value="low">Stok Menipis</option>
@@ -77,7 +77,7 @@
 
         <div class="flex items-center justify-between pt-2 border-t border-neutral-100 dark:border-slate-700/60 text-xs">
             <div class="flex items-center gap-2">
-                <select wire:model.live="categoryFilter" class="px-3 py-1.5 border border-neutral-200 dark:border-slate-700 rounded-full bg-white dark:bg-slate-900 text-neutral-700 dark:text-neutral-300 focus:outline-none text-xs cursor-pointer">
+                <select wire:model.live="categoryFilter" class="px-3 py-1.5 border border-neutral-200 dark:border-slate-700 rounded-[3px] bg-white dark:bg-slate-900 text-neutral-700 dark:text-neutral-300 focus:outline-none text-xs cursor-pointer">
                     <option value="">Semua Kategori</option>
                     @foreach($categories ?? [] as $cat)
                         <option value="{{ $cat->id }}">{{ $cat->name }}</option>
@@ -85,7 +85,7 @@
                 </select>
             </div>
 
-            <button wire:click="resetFilters" class="px-3.5 py-1.5 text-xs font-semibold text-neutral-600 dark:text-neutral-300 bg-neutral-100 dark:bg-slate-700 hover:bg-neutral-200 dark:hover:bg-slate-600 rounded-full transition-all cursor-pointer">
+            <button wire:click="resetFilters" class="px-3.5 py-1.5 text-xs font-semibold text-neutral-600 dark:text-neutral-300 bg-neutral-100 dark:bg-slate-700 hover:bg-neutral-200 dark:hover:bg-slate-600 rounded-[3px] transition-all cursor-pointer">
                 Reset Filter
             </button>
         </div>
@@ -190,11 +190,11 @@
                             </td>
                             <td class="px-4 py-3.5 whitespace-nowrap text-center">
                                 @if($status === 'out')
-                                    <span class="px-2.5 py-0.5 text-[10px] font-semibold rounded-full bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 border border-rose-200/60 dark:border-rose-800">Habis</span>
+                                    <span class="px-2.5 py-0.5 text-[10px] font-semibold rounded-[3px] bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 border border-rose-200/60 dark:border-rose-800">Habis</span>
                                 @elseif($status === 'low')
-                                    <span class="px-2.5 py-0.5 text-[10px] font-semibold rounded-full bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 border border-amber-200/60 dark:border-amber-800">Menipis</span>
+                                    <span class="px-2.5 py-0.5 text-[10px] font-semibold rounded-[3px] bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 border border-amber-200/60 dark:border-amber-800">Menipis</span>
                                 @else
-                                    <span class="px-2.5 py-0.5 text-[10px] font-semibold rounded-full bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 border border-emerald-200/60 dark:border-emerald-800">Tersedia</span>
+                                    <span class="px-2.5 py-0.5 text-[10px] font-semibold rounded-[3px] bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 border border-emerald-200/60 dark:border-emerald-800">Tersedia</span>
                                 @endif
                             </td>
                             <td class="px-4 py-3.5 whitespace-nowrap text-center">
@@ -482,7 +482,7 @@
                         {{-- Header Form & Status Mode --}}
                         <div class="flex items-center justify-between pb-2 border-b border-neutral-200/60 dark:border-slate-800">
                             <div class="flex items-center gap-2">
-                                <span class="w-2 h-2 rounded-full {{ $isEditingCategory ? 'bg-amber-500' : 'bg-red-500' }}"></span>
+                                <span class="w-2 h-2 rounded-[3px] {{ $isEditingCategory ? 'bg-amber-500' : 'bg-red-500' }}"></span>
                                 <span class="text-xs font-bold text-neutral-800 dark:text-neutral-200">
                                     {{ $isEditingCategory ? 'Edit Kategori' : 'Tambah Kategori Baru' }}
                                 </span>
@@ -562,7 +562,7 @@
                                                 {{ $cat->unit->name ?? '-' }}
                                             </td>
                                             <td class="px-4 py-2.5 text-center">
-                                                <span class="px-2 py-0.5 text-[10px] font-mono rounded-full bg-neutral-100 dark:bg-slate-700 text-neutral-600 dark:text-neutral-300">
+                                                <span class="px-2 py-0.5 text-[10px] font-mono rounded-[3px] bg-neutral-100 dark:bg-slate-700 text-neutral-600 dark:text-neutral-300">
                                                     {{ $cat->products_count }} item
                                                 </span>
                                             </td>

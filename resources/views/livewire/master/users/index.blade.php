@@ -14,14 +14,14 @@
                     wire:model.live.debounce.300ms="search" 
                     type="text" 
                     placeholder="Cari nama, username, NIP..."
-                    class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-full bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-red-500/10 focus:border-red-400 shadow-sm"
+                    class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-[3px] bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-red-500/10 focus:border-red-400 shadow-sm"
                 >
             </div>
 
             {{-- Button Tambah Admin --}}
             <button 
                 wire:click="openCreateModal" 
-                class="px-4 py-2 text-xs font-bold text-white bg-blue-900 hover:bg-blue-950 rounded-full transition-all flex items-center gap-2 shadow-sm shadow-blue-900/20 cursor-pointer"
+                class="px-4 py-2 text-xs font-bold text-white bg-blue-900 hover:bg-blue-950 rounded-[3px] transition-all flex items-center gap-2 shadow-sm shadow-blue-900/20 cursor-pointer"
             >
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
@@ -64,7 +64,7 @@
 
                         {{-- Identitas Pegawai --}}
                         <td class="px-4 py-3.5 whitespace-nowrap">
-                            <span class="inline-flex items-center px-2.5 py-0.5 text-[10px] font-semibold rounded-full border {{ $user->employee_status === 'nip' ? 'bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-700/60 dark:text-slate-300 dark:border-slate-600' : 'bg-neutral-50 text-neutral-500 border-neutral-200 dark:bg-slate-900 dark:text-neutral-400 dark:border-slate-700' }}">
+                            <span class="inline-flex items-center px-2.5 py-0.5 text-[10px] font-semibold rounded-[3px] border {{ $user->employee_status === 'nip' ? 'bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-700/60 dark:text-slate-300 dark:border-slate-600' : 'bg-neutral-50 text-neutral-500 border-neutral-200 dark:bg-slate-900 dark:text-neutral-400 dark:border-slate-700' }}">
                                 {{ $user->employee_status === 'nip' ? 'NIP' : 'Non NIP' }}
                             </span>
                         </td>
@@ -82,7 +82,7 @@
 
                         {{-- Role --}}
                         <td class="px-4 py-3.5 whitespace-nowrap">
-                            <span class="inline-flex items-center px-2.5 py-0.5 text-[10px] font-semibold rounded-full border {{ method_exists($user, 'isMasterAdmin') && $user->isMasterAdmin() ? 'bg-indigo-50 text-indigo-600 dark:bg-indigo-950/50 dark:text-indigo-400 border-indigo-200/60 dark:border-indigo-800' : 'bg-sky-50 text-sky-600 dark:bg-sky-950/50 dark:text-sky-400 border-sky-200/60 dark:border-sky-800' }}">
+                            <span class="inline-flex items-center px-2.5 py-0.5 text-[10px] font-semibold rounded-[3px] border {{ method_exists($user, 'isMasterAdmin') && $user->isMasterAdmin() ? 'bg-indigo-50 text-indigo-600 dark:bg-indigo-950/50 dark:text-indigo-400 border-indigo-200/60 dark:border-indigo-800' : 'bg-sky-50 text-sky-600 dark:bg-sky-950/50 dark:text-sky-400 border-sky-200/60 dark:border-sky-800' }}">
                                 {{ method_exists($user, 'isMasterAdmin') && $user->isMasterAdmin() ? 'Master Admin' : 'Unit Admin' }}
                             </span>
                         </td>
@@ -90,7 +90,7 @@
                         {{-- Status Keaktifan --}}
                         <td class="px-4 py-3.5 whitespace-nowrap text-center">
                             @if ($user->id === auth()->id())
-                                <span class="inline-flex items-center px-2.5 py-0.5 text-[10px] font-semibold rounded-full bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-600">
+                                <span class="inline-flex items-center px-2.5 py-0.5 text-[10px] font-semibold rounded-[3px] bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-600">
                                     Aktif (Saya)
                                 </span>
                             @else
@@ -101,12 +101,12 @@
                                     class="inline-flex items-center gap-1.5 transition hover:opacity-80 cursor-pointer"
                                 >
                                     @if($user->is_active)
-                                        <span class="px-2.5 py-0.5 text-[10px] font-semibold rounded-full bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 border border-emerald-200/60 dark:border-emerald-800 flex items-center gap-1">
-                                            <span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span> Aktif
+                                        <span class="px-2.5 py-0.5 text-[10px] font-semibold rounded-[3px] bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 border border-emerald-200/60 dark:border-emerald-800 flex items-center gap-1">
+                                            <span class="h-1.5 w-1.5 rounded-[3px] bg-emerald-500"></span> Aktif
                                         </span>
                                     @else
-                                        <span class="px-2.5 py-0.5 text-[10px] font-semibold rounded-full bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 border border-rose-200/60 dark:border-rose-800 flex items-center gap-1">
-                                            <span class="h-1.5 w-1.5 rounded-full bg-rose-500"></span> Nonaktif
+                                        <span class="px-2.5 py-0.5 text-[10px] font-semibold rounded-[3px] bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 border border-rose-200/60 dark:border-rose-800 flex items-center gap-1">
+                                            <span class="h-1.5 w-1.5 rounded-[3px] bg-rose-500"></span> Nonaktif
                                         </span>
                                     @endif
                                 </button>

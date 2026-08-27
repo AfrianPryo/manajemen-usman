@@ -17,58 +17,12 @@
         </div>
         <div class="flex items-center gap-2.5 shrink-0">
             <button wire:click="openModal" 
-                    class="px-4 py-2 text-xs font-bold text-white bg-blue-900 hover:bg-blue-950 rounded-full transition-all flex items-center gap-2 shadow-sm shadow-blue-900/20 cursor-pointer">
+                    class="px-4 py-2 text-xs font-bold text-white bg-blue-900 hover:bg-blue-950 rounded-[3px] transition-all flex items-center gap-2 shadow-sm shadow-blue-900/20 cursor-pointer">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
                 </svg>
                 <span>Tambah Vendor</span>
             </button>
-        </div>
-    </div>
-
-    {{-- KPI Cards --}}
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div class="bg-white dark:bg-slate-800 rounded-md border border-neutral-100 dark:border-slate-700 p-5 shadow-sm shadow-black/[0.02]">
-            <div class="flex items-center justify-between">
-                <p class="text-xs font-medium text-neutral-400">Total Vendor</p>
-                <span class="p-2 rounded-xl bg-indigo-50 dark:bg-indigo-950/50 text-indigo-500 dark:text-indigo-400">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5m0 0h4"/>
-                    </svg>
-                </span>
-            </div>
-            <p class="mt-4 text-2xl font-bold text-neutral-900 dark:text-white tracking-tight">{{ number_format($totalVendors) }}</p>
-            <p class="mt-2 text-[11px] text-neutral-400">Penyedia mitra terdaftar</p>
-        </div>
-
-        <div class="bg-white dark:bg-slate-800 rounded-md border border-neutral-100 dark:border-slate-700 p-5 shadow-sm shadow-black/[0.02]">
-            <div class="flex items-center justify-between">
-                <p class="text-xs font-medium text-neutral-400">Status Operasional</p>
-                <span class="p-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-500">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                    </svg>
-                </span>
-            </div>
-            <div class="mt-4">
-                <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 border border-emerald-200/60 dark:border-emerald-800 inline-block">
-                    Aktif & Operasional
-                </span>
-            </div>
-            <p class="mt-2 text-[11px] text-neutral-400">Siap digunakan transaksi</p>
-        </div>
-
-        <div class="bg-white dark:bg-slate-800 rounded-md border border-neutral-100 dark:border-slate-700 p-5 shadow-sm shadow-black/[0.02]">
-            <div class="flex items-center justify-between">
-                <p class="text-xs font-medium text-neutral-400">Integrasi Sistem</p>
-                <span class="p-2 rounded-xl bg-blue-50 dark:bg-blue-950/50 text-blue-500">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 6.75L22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3l-4.5 16.5"/>
-                    </svg>
-                </span>
-            </div>
-            <p class="mt-4 text-base font-bold text-neutral-900 dark:text-white tracking-tight">Terhubung Pengeluaran</p>
-            <p class="mt-2 text-[11px] text-neutral-400">Modul Keuangan & Aset</p>
         </div>
     </div>
 
@@ -79,12 +33,12 @@
                 {{-- Search Box --}}
                 <div class="relative w-full sm:w-80">
                     <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cari nama, kontak, atau email..." 
-                           class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-full bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-red-500/10 focus:border-red-400">
+                           class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-[3px] bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-red-500/10 focus:border-red-400">
                 </div>
 
                 {{-- Filter Dropdown --}}
                 <select wire:model.live="filterCategory" 
-                        class="w-full sm:w-auto px-3.5 py-2 text-xs font-semibold text-neutral-600 dark:text-neutral-300 bg-white dark:bg-slate-900 border border-neutral-200 dark:border-slate-700 rounded-full focus:outline-none focus:ring-2 focus:ring-red-500/10 focus:border-red-400 cursor-pointer">
+                        class="w-full sm:w-auto px-3.5 py-2 text-xs font-semibold text-neutral-600 dark:text-neutral-300 bg-white dark:bg-slate-900 border border-neutral-200 dark:border-slate-700 rounded-[3px] focus:outline-none focus:ring-2 focus:ring-red-500/10 focus:border-red-400 cursor-pointer">
                     <option value="">Semua Kategori</option>
                     <option value="perusahaan">Perusahaan</option>
                     <option value="pemerintah">Pemerintah</option>
