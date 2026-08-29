@@ -1,5 +1,24 @@
 <div class="w-full max-w-[1500px] mx-auto space-y-5 text-neutral-800 dark:text-neutral-100 px-4 py-4 sm:px-6 font-sans">
 
+    @php
+        // Blade ini dipakai bersama oleh Master\Documents\Dashboard DAN
+        // Unit\Documents\Dashboard. Nama route generate/history/signature
+        // sengaja dibuat simetris di kedua sisi (master.documents.xxx vs
+        // unit.documents.xxx) supaya cukup ganti prefix di sini saja.
+        // PERBAIKAN: sebelumnya dicek dari ROLE user (hasRole('unit-admin')),
+        // yang salah saat Master Admin memantau (membuka) halaman Dokumen
+        // Resmi milik sebuah unit -- Master Admin tidak punya role unit-admin,
+        // jadi kondisi ini akan salah menganggap dia sedang di halaman Master
+        // sendiri. Konteks yang benar adalah ROUTE yang sedang aktif, bukan
+        // role -- karena itu dicek dari request()->routeIs('unit.*').
+        $isUnitAdmin = request()->routeIs('unit.*');
+        $docsPrefix = $isUnitAdmin ? 'unit.documents.' : 'master.documents.';
+        // Slug diambil dari unit yang SEDANG DIBUKA (route-model-binding
+        // {unit:slug}), bukan dari unit milik user login -- supaya tetap
+        // benar saat dibuka Master Admin yang sedang memantau unit lain.
+        $docsParams = $isUnitAdmin ? ['unit' => request()->route('unit')?->slug] : [];
+    @endphp
+
     <div>
         <h1 class="text-xl font-bold text-neutral-900 dark:text-white tracking-tight">Dokumen Resmi</h1>
         <p class="text-xs text-neutral-400 mt-1">
@@ -9,13 +28,13 @@
 
     {{-- Quick Action Cards --}}
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <a href="{{ route('master.documents.generate') }}" class="bg-white dark:bg-slate-800 rounded-md border border-neutral-100 dark:border-slate-700 shadow-sm shadow-black/[0.02] p-5 hover:border-red-300 dark:hover:border-red-800/60 transition-all">
+        <a href="{{ route($docsPrefix.'generate', $docsParams) }}" class="bg-white dark:bg-slate-800 rounded-md border border-neutral-100 dark:border-slate-700 shadow-sm shadow-black/[0.02] p-5 hover:border-red-300 dark:hover:border-red-800/60 transition-all">
             <span class="p-2 rounded-xl bg-red-50 dark:bg-red-950/50 text-red-500 dark:text-red-400 w-9 h-9 flex items-center justify-center text-lg font-bold">+</span>
             <h3 class="mt-4 text-sm font-bold text-neutral-900 dark:text-white">Buat Dokumen</h3>
             <p class="mt-1 text-[11px] text-neutral-400">Generate dokumen resmi baru dari data sistem.</p>
         </a>
 
-        <a href="{{ route('master.documents.history') }}" class="bg-white dark:bg-slate-800 rounded-md border border-neutral-100 dark:border-slate-700 shadow-sm shadow-black/[0.02] p-5 hover:border-red-300 dark:hover:border-red-800/60 transition-all">
+        <a href="{{ route($docsPrefix.'history', $docsParams) }}" class="bg-white dark:bg-slate-800 rounded-md border border-neutral-100 dark:border-slate-700 shadow-sm shadow-black/[0.02] p-5 hover:border-red-300 dark:hover:border-red-800/60 transition-all">
             <span class="p-2 rounded-xl bg-sky-50 dark:bg-sky-950/50 text-sky-500 dark:text-sky-400 w-9 h-9 flex items-center justify-center">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m6.75 12H9m6 3H9m3-12H9"/></svg>
             </span>
@@ -23,6 +42,7 @@
             <p class="mt-1 text-[11px] text-neutral-400">{{ number_format($totalDocuments) }} dokumen sudah dibuat.</p>
         </a>
 
+        @unless ($isUnitAdmin)
         <a href="{{ route('master.documents.templates') }}" class="bg-white dark:bg-slate-800 rounded-md border border-neutral-100 dark:border-slate-700 shadow-sm shadow-black/[0.02] p-5 hover:border-red-300 dark:hover:border-red-800/60 transition-all">
             <span class="p-2 rounded-xl bg-amber-50 dark:bg-amber-950/50 text-amber-500 dark:text-amber-400 w-9 h-9 flex items-center justify-center">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 9.776c.112-.017.227-.026.344-.026h15.812c.117 0 .232.009.344.026m-16.5 0a2.25 2.25 0 00-1.883 2.542l.857 6a2.25 2.25 0 002.227 1.932H19.05a2.25 2.25 0 002.227-1.932l.857-6a2.25 2.25 0 00-1.883-2.542m-16.5 0V6A2.25 2.25 0 016 3.75h3.879a1.5 1.5 0 011.06.44l2.122 2.12a1.5 1.5 0 001.06.44H18A2.25 2.25 0 0120.25 9v.776"/></svg>
@@ -30,8 +50,9 @@
             <h3 class="mt-4 text-sm font-bold text-neutral-900 dark:text-white">Kelola Template</h3>
             <p class="mt-1 text-[11px] text-neutral-400">Atur template Word ber-KOP surat per jenis dokumen.</p>
         </a>
+        @endunless
 
-        <a href="{{ route('master.documents.signature') }}" class="bg-white dark:bg-slate-800 rounded-md border border-neutral-100 dark:border-slate-700 shadow-sm shadow-black/[0.02] p-5 hover:border-red-300 dark:hover:border-red-800/60 transition-all">
+        <a href="{{ route($docsPrefix.'signature', $docsParams) }}" class="bg-white dark:bg-slate-800 rounded-md border border-neutral-100 dark:border-slate-700 shadow-sm shadow-black/[0.02] p-5 hover:border-red-300 dark:hover:border-red-800/60 transition-all">
             <span class="p-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-500 dark:text-emerald-400 w-9 h-9 flex items-center justify-center">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z"/></svg>
             </span>
@@ -79,7 +100,7 @@
     <div class="bg-white dark:bg-slate-800 rounded-md border border-neutral-100 dark:border-slate-700 shadow-sm shadow-black/[0.02] overflow-hidden">
         <div class="p-5 pb-0 flex items-center justify-between">
             <h2 class="text-xs font-bold uppercase tracking-wider text-neutral-400">Dokumen Terbaru</h2>
-            <a href="{{ route('master.documents.history') }}" class="text-[11px] font-semibold text-blue-900 dark:text-red-400 hover:underline">Lihat semua &rarr;</a>
+            <a href="{{ route($docsPrefix.'history', $docsParams) }}" class="text-[11px] font-semibold text-blue-900 dark:text-red-400 hover:underline">Lihat semua &rarr;</a>
         </div>
         <div class="overflow-x-auto mt-3">
             <table class="w-full text-sm text-left">

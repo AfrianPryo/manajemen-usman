@@ -242,7 +242,9 @@
                         <div>
                             <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Unit Usaha <span class="text-red-500">*</span></label>
                             <select wire:model.live="unit_id" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-red-500">
-                                <option value="">-- Pilih Unit Usaha --</option>
+                                @if($units->count() > 1)
+                                    <option value="">-- Pilih Unit Usaha --</option>
+                                @endif
                                 @foreach($units as $unit)
                                     <option value="{{ $unit->id }}">{{ $unit->name }}</option>
                                 @endforeach

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ $title ?? 'Dashboard' }} - Usaha Mandiri Sekolah</title>
+    <title>{{ $title ?? 'Dashboard Unit' }} - Usaha Mandiri Sekolah</title>
     <style>
         #main-content:not(.is-ready) {
             opacity: 0 !important;
@@ -32,6 +32,24 @@
                 </div>
 
                 {{-- Navigation Menu Utama --}}
+                {{-- Sidebar ini KHUSUS dashboard Unit Usaha, terpisah dari sidebar
+                     Admin Master (lihat components/layouts/app.blade.php). Sumber
+                     datanya tetap config('menu') yang sama (satu sumber kebenaran
+                     untuk seluruh rute aplikasi), tapi di sini secara eksplisit
+                     HANYA menu dengan rute berawalan "unit." yang dirender — menu
+                     khusus Master tidak akan pernah muncul di sidebar ini.
+
+                     Catatan role: item unit di config('menu') di-guard
+                     roles => ['unit-admin']. Tapi middleware 'unit.access'
+                     (routes/web.php) SENGAJA mengizinkan Master Admin memantau
+                     dashboard unit MANA PUN, bukan cuma milik unit-admin. Kalau
+                     visibility di sini hanya mengecek hasAnyRole(), sidebar akan
+                     kosong total saat halaman ini dibuka oleh Master Admin. Jadi
+                     ditambahkan fallback isMasterAdmin() supaya tetap konsisten
+                     dengan middleware-nya. --}}
+                @php
+                    $slugUnitAktif = request()->route('unit')?->slug ?? auth()->user()?->unit?->slug;
+                @endphp
                 <nav class="flex-1 py-4 px-2.5 space-y-0.5">
                     @foreach(config('menu') as $item)
                         @php
@@ -43,17 +61,19 @@
                         @continue($isSettings)
 
                         @php
-                            $canSee = is_null($item['roles']) || auth()->user()?->hasAnyRole($item['roles']);
+                            $canSee = is_null($item['roles']) || auth()->user()?->hasAnyRole($item['roles']) || auth()->user()?->isMasterAdmin();
                         @endphp
 
                         @if($canSee)
                             @if(isset($item['children']))
                                 @php
-                                    $filteredChildren = collect($item['children'])->reject(function($child) {
-                                        $cLabel = strtolower($child['label'] ?? '');
-                                        $cRoute = strtolower($child['route'] ?? '');
-                                        return str_contains($cLabel, 'pengaturan') || str_contains($cLabel, 'setting') || str_contains($cRoute, 'settings');
-                                    });
+                                    $filteredChildren = collect($item['children'])
+                                        ->filter(fn($child) => str_starts_with($child['route'] ?? '', 'unit.'))
+                                        ->reject(function($child) {
+                                            $cLabel = strtolower($child['label'] ?? '');
+                                            $cRoute = strtolower($child['route'] ?? '');
+                                            return str_contains($cLabel, 'pengaturan') || str_contains($cLabel, 'setting') || str_contains($cRoute, 'settings');
+                                        });
                                 @endphp
 
                                 @if($filteredChildren->count() > 0)
@@ -66,15 +86,16 @@
                                         {{-- Sub Menu Items --}}
                                         <div class="space-y-0.5">
                                             @foreach($filteredChildren as $child)
-                                                @continue(!is_null($child['roles']) && !auth()->user()?->hasAnyRole($child['roles']))
+                                                @continue(!is_null($child['roles']) && !auth()->user()?->hasAnyRole($child['roles']) && !auth()->user()?->isMasterAdmin())
                                                 @php
                                                     $childActive = request()->routeIs($child['route'].'*');
-                                                    // Route 'unit.*' butuh parameter {unit:slug} — sisipkan
-                                                    // otomatis dari unit milik user login. Tanpa ini, route()
-                                                    // akan lempar MissingRouteParametersException.
-                                                    $childRouteParams = str_starts_with($child['route'], 'unit.')
-                                                        ? ['unit' => auth()->user()?->unit?->slug]
-                                                        : [];
+                                                    // Semua item di sidebar ini sudah dipastikan berawalan
+                                                    // "unit." (lihat filter di atas). Slug diambil dari unit
+                                                    // yang SEDANG DIBUKA (route-model-binding {unit:slug}),
+                                                    // bukan dari unit milik user login — supaya link tetap
+                                                    // benar saat halaman ini dibuka Master Admin yang sedang
+                                                    // memantau unit lain (lihat catatan di atas @foreach).
+                                                    $childRouteParams = ['unit' => $slugUnitAktif];
                                                 @endphp
                                                 <a href="{{ route($child['route'], $childRouteParams) }}"
                                                 class="flex items-center justify-between px-2.5 py-1.5 rounded-md text-xs font-medium transition-all duration-150 {{ $childActive ? 'bg-slate-100 text-slate-900 font-semibold shadow-2xs' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900' }}">
@@ -93,11 +114,10 @@
                                 @endif
                             @else
                                 {{-- Single Menu Item --}}
+                                @continue(!str_starts_with($item['route'] ?? '', 'unit.'))
                                 @php
                                     $itemActive = request()->routeIs($item['route'].'*');
-                                    $itemRouteParams = str_starts_with($item['route'], 'unit.')
-                                        ? ['unit' => auth()->user()?->unit?->slug]
-                                        : [];
+                                    $itemRouteParams = ['unit' => $slugUnitAktif];
                                 @endphp
                                 <a href="{{ route($item['route'], $itemRouteParams) }}"
                                 class="flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all duration-150 {{ $itemActive ? 'bg-slate-100 text-slate-900 font-semibold shadow-2xs' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900' }}">
@@ -153,27 +173,27 @@
                         </div>
                     </div>
 
-                    {{-- Link Pengaturan Sistem / Profil Saya --}}
+                    {{-- Link Profil Saya --}}
                     @php
-                        // Unit-admin tidak punya akses ke Pengaturan Sistem (route
-                        // ini di-guard middleware role:master-admin), jadi untuk
-                        // role itu link ini diarahkan ke Profil Saya miliknya
-                        // sendiri (unit.profile.index) supaya tidak berujung 403.
-                        $isUnitAdmin = auth()->user()?->hasRole('unit-admin');
-
-                        if ($isUnitAdmin) {
-                            $settingsLabel = 'Profil Saya';
-                            $hasSettingsRoute = Route::has('unit.profile.index');
-                            $settingsUrl = $hasSettingsRoute
-                                ? route('unit.profile.index', ['unit' => auth()->user()->unit?->slug])
-                                : '#';
-                            $isActive = request()->routeIs('unit.profile.*');
-                        } else {
-                            $settingsLabel = 'Pengaturan Sistem';
-                            $hasSettingsRoute = Route::has('master.settings.index');
-                            $settingsUrl = $hasSettingsRoute ? route('master.settings.index') : '#';
-                            $isActive = request()->routeIs('master.settings.*');
-                        }
+                        // Sidebar Unit tidak pernah menautkan ke Pengaturan Sistem
+                        // milik Master (route itu di-guard middleware role:master-admin
+                        // dan memang di luar cakupan dashboard unit). Selalu arahkan
+                        // ke Profil Saya milik unit yang sedang login.
+                        //
+                        // unit.profile.index adalah profil PRIBADI user yang sedang
+                        // login (auth()->id(), lihat App\Livewire\Master\Profile\Index
+                        // yang diwarisi Unit\Profile\Index) -- BUKAN profil unit yang
+                        // sedang dipantau. Jadi khusus link ini tetap pakai unit milik
+                        // user login (auth()->user()->unit), bukan $slugUnitAktif, agar
+                        // Master Admin yang sedang memantau unit lain tidak diarahkan
+                        // ke halaman yang salah / 403.
+                        $settingsLabel = 'Profil Saya';
+                        $hasSettingsRoute = Route::has('unit.profile.index');
+                        $slugUnitProfil = auth()->user()?->unit?->slug ?? $slugUnitAktif;
+                        $settingsUrl = ($hasSettingsRoute && $slugUnitProfil)
+                            ? route('unit.profile.index', ['unit' => $slugUnitProfil])
+                            : '#';
+                        $isActive = request()->routeIs('unit.profile.*');
                     @endphp
 
                     <a href="{{ $settingsUrl }}" 
@@ -232,7 +252,7 @@
                         <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
                         </svg>
-                        <span>{{ $category ?? 'Master' }}</span>
+                        <span>{{ $category ?? 'Unit Usaha' }}</span>
                     </div>
 
                     {{-- Separator Slash --}}
@@ -243,7 +263,7 @@
                         <svg class="w-3.5 h-3.5 text-slate-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>
                         </svg>
-                        <span>{{ $title ?? 'Dashboard' }}</span>
+                        <span>{{ $title ?? 'Dashboard Unit' }}</span>
                     </div>
                 </div>
 
@@ -288,9 +308,17 @@
 
                     {{-- PEMANGGILAN KOMPONEN LIVEWIRE --}}
                     <livewire:notification-sidebar 
-                        :role="$role ?? 'master'"
+                        :role="$role ?? 'unit'"
                         :view-all-url="$viewAllUrl ?? '#'"
                     />
+
+                    @if(auth()->user()->isMasterAdmin())
+                        <a href="{{ route('master.dashboard') }}"
+                           class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-neutral-600 dark:text-neutral-300 bg-neutral-50 dark:bg-slate-900/40 border border-neutral-200 dark:border-slate-700 rounded-[3px] hover:bg-neutral-100 dark:hover:bg-slate-900 transition-all shadow-sm shadow-black/[0.02]">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"/></svg>
+                            <span>Kembali ke Master</span>
+                        </a>
+                    @endif
 
                 </div>
             </header>

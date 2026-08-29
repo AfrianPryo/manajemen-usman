@@ -5,8 +5,9 @@ namespace App\Livewire\Unit\Documents;
 use App\Livewire\Master\Documents\History as MasterHistory;
 use App\Models\AuditLog;
 use App\Models\OfficialDocument;
-use Illuminate\Support\Facades\Auth;
+use App\Livewire\Unit\Concerns\ScopedToUnit;
 use Illuminate\Support\Facades\Storage;
+use Livewire\Attributes\Layout;
 
 /**
  * Versi Unit dari riwayat dokumen resmi.
@@ -18,11 +19,17 @@ use Illuminate\Support\Facades\Storage;
  * menebak/mengubah ID di request (IDOR). Karena itu setiap query di sini
  * WAJIB ->where('unit_id', ...) sebelum findOrFail().
  */
+#[Layout('components.layouts.unit', [
+    'category' => 'Unit Usaha',
+    'role'     => 'unit',
+])]
 class History extends MasterHistory
 {
+    use ScopedToUnit;
+
     public function render()
     {
-        $unitId = Auth::user()->unit_id;
+        $unitId = $this->currentUnitId();
 
         $documents = OfficialDocument::with(['template', 'unit', 'generatedBy'])
             ->where('unit_id', $unitId)
@@ -42,7 +49,7 @@ class History extends MasterHistory
 
     public function download(int $id)
     {
-        $document = OfficialDocument::where('unit_id', Auth::user()->unit_id)
+        $document = OfficialDocument::where('unit_id', $this->currentUnitId())
             ->findOrFail($id);
 
         AuditLog::record(
@@ -58,7 +65,7 @@ class History extends MasterHistory
 
     public function delete(int $id): void
     {
-        $document = OfficialDocument::where('unit_id', Auth::user()->unit_id)
+        $document = OfficialDocument::where('unit_id', $this->currentUnitId())
             ->findOrFail($id);
 
         $oldValues = $document->toArray();

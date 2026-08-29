@@ -92,7 +92,14 @@
 
             <div>
                 <select wire:model.live="unitFilter" class="w-full px-3.5 py-2 text-xs font-semibold text-neutral-600 dark:text-neutral-300 bg-white dark:bg-slate-900 border border-neutral-200 dark:border-slate-700 rounded-[3px] focus:outline-none focus:ring-2 focus:ring-red-500/10 focus:border-red-400 cursor-pointer">
-                    <option value="">Semua Unit Usaha</option>
+                    {{-- Placeholder "semua unit" hanya relevan kalau ada lebih dari 1 unit
+                         untuk dipilih (konteks Master). Saat $units cuma berisi 1 unit
+                         (konteks Unit Admin, lihat Unit\Transactions\Index::render()),
+                         placeholder ini otomatis hilang -- dropdown cukup menampilkan
+                         nama unit sendiri sebagai satu-satunya opsi. --}}
+                    @if($units->count() > 1)
+                        <option value="">Semua Unit Usaha</option>
+                    @endif
                     @foreach($units as $u)
                         <option value="{{ $u->id }}">{{ $u->name }}</option>
                     @endforeach
@@ -319,7 +326,9 @@
                         <div>
                             <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Unit Usaha <span class="text-red-500">*</span></label>
                             <select wire:model.live="form_unit_id" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-red-500">
-                                <option value="">-- Pilih Unit Usaha --</option>
+                                @if($units->count() > 1)
+                                    <option value="">-- Pilih Unit Usaha --</option>
+                                @endif
                                 @foreach($units as $u)
                                     <option value="{{ $u->id }}">{{ $u->name }}</option>
                                 @endforeach

@@ -11,7 +11,7 @@ use App\Livewire\Master\Documents\Generate as DocumentsGenerate;
 use App\Livewire\Master\Documents\History as DocumentsHistory;
 use App\Livewire\Master\Documents\SignatureSettings as DocumentsSignatureSettings;
 use App\Livewire\Master\Documents\TemplateManager as DocumentsTemplateManager;
-use App\Livewire\Master\Exports\Index as ExportsIndex; // Import Baru
+use App\Livewire\Master\Exports\Index as ExportsIndex;
 use App\Livewire\Master\Inventory\Index as InventoryIndex;
 use App\Livewire\Master\Profile\Index as ProfileIndex;
 use App\Livewire\Master\RecurringTransaction\Index as RecurringTransactionIndex;
@@ -21,7 +21,18 @@ use App\Livewire\Master\Units\Index as UnitsIndex;
 use App\Livewire\Master\Users\Index as UsersIndex;
 use App\Livewire\Master\Vendor\Index as VendorIndex;
 use App\Livewire\Password\ChangePassword;
+use App\Livewire\Unit\Activities\Index as UnitActivitiesIndex;
+use App\Livewire\Unit\Asset\Index as UnitAssetIndex;
 use App\Livewire\Unit\Dashboard as UnitDashboard;
+use App\Livewire\Unit\Documents\Dashboard as UnitDocumentsDashboard;
+use App\Livewire\Unit\Documents\Generate as UnitDocumentsGenerate;
+use App\Livewire\Unit\Documents\History as UnitDocumentsHistory;
+use App\Livewire\Unit\Documents\SignatureSettings as UnitDocumentsSignatureSettings;
+use App\Livewire\Unit\Exports\Index as UnitExportsIndex;
+use App\Livewire\Unit\Inventory\Index as UnitInventoryIndex;
+use App\Livewire\Unit\Profile\Index as UnitProfileIndex;
+use App\Livewire\Unit\RecurringTransaction\Index as UnitRecurringTransactionIndex;
+use App\Livewire\Unit\Transactions\Index as UnitTransactionsIndex;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -103,9 +114,6 @@ Route::middleware(['auth', 'user.active', 'single.session'])->group(function () 
             Route::get('/assets', AssetIndex::class)->name('assets.index');
 
             // Dokumen Resmi (pengganti menu Laporan Konsolidasi)
-            // Sudah berada di dalam grup prefix('master')->name('master.'),
-            // jadi cukup tambah 'dokumen-resmi' & 'documents.' di sini —
-            // hasil akhirnya /master/dokumen-resmi dengan nama route master.documents.*
             Route::prefix('dokumen-resmi')->name('documents.')->group(function () {
                 Route::get('/', DocumentsDashboard::class)->name('index');
                 Route::get('/buat', DocumentsGenerate::class)->name('generate');
@@ -114,7 +122,7 @@ Route::middleware(['auth', 'user.active', 'single.session'])->group(function () 
                 Route::get('/tanda-tangan', DocumentsSignatureSettings::class)->name('signature');
             });
 
-            Route::get('/exports', ExportsIndex::class)->name('exports.index'); // Route Baru
+            Route::get('/exports', ExportsIndex::class)->name('exports.index');
 
             // Analytics
             Route::get('/analytics', AnalyticsIndex::class)->name('analytics.index');
@@ -129,8 +137,52 @@ Route::middleware(['auth', 'user.active', 'single.session'])->group(function () 
         });
 
         // ================= UNIT ADMIN ROUTES =================
-        Route::prefix('unit/{unit:slug}')->middleware('unit.access')->group(function () {
-            Route::get('/dashboard', UnitDashboard::class)->name('unit.dashboard');
+        // Struktur & penamaan route di grup ini SENGAJA dibuat semirip
+        // mungkin dengan grup 'master' di atas (nama child route yang sama:
+        // dashboard, documents.index/generate/history/signature, exports.index,
+        // activities.index, profile.index) supaya blade yang di-reuse bersama
+        // Master (lihat resources/views/livewire/master/documents/*.blade.php)
+        // bisa menghitung nama route lawannya tinggal ganti prefix
+        // 'master.' -> 'unit.'.
+        //
+        // HANYA middleware 'unit.access' (BUKAN 'role:unit-admin'). Middleware
+        // EnsureUnitAccess sudah menangani dua kasus sekaligus: Master Admin
+        // boleh mengakses unit MANA PUN untuk keperluan monitoring, sedangkan
+        // Unit Admin hanya boleh mengakses unit miliknya sendiri. Menambahkan
+        // 'role:unit-admin' di sini akan memblokir Master Admin (403) saat
+        // mencoba melihat dashboard/menu unit dari sisi Master — itu bug,
+        // bukan fitur, jadi jangan ditambahkan lagi.
+        //
+        // TIDAK ADA route untuk: units/users/vendors (data lintas-unit,
+        // memang cuma dikelola dari sisi Master), documents.templates
+        // (template dikelola terpusat oleh Master), settings.index &
+        // audit-logs.index (pengaturan sistem & audit log lintas-unit
+        // bukan wilayah unit-admin — unit-admin punya activities.index
+        // sendiri sebagai log aktivitas unitnya).
+        Route::prefix('unit/{unit:slug}')->middleware('unit.access')->name('unit.')->group(function () {
+            Route::get('/dashboard', UnitDashboard::class)->name('dashboard');
+
+            // Operasional
+            Route::get('/transactions', UnitTransactionsIndex::class)->name('transactions.index');
+            Route::get('/recurring-transactions', UnitRecurringTransactionIndex::class)->name('recurring-transactions.index');
+            Route::get('/inventory', UnitInventoryIndex::class)->name('inventory.index');
+            Route::get('/assets', UnitAssetIndex::class)->name('assets.index');
+
+            // Dokumen Resmi (tanpa 'template', lihat catatan di atas)
+            Route::prefix('dokumen-resmi')->name('documents.')->group(function () {
+                Route::get('/', UnitDocumentsDashboard::class)->name('index');
+                Route::get('/buat', UnitDocumentsGenerate::class)->name('generate');
+                Route::get('/riwayat', UnitDocumentsHistory::class)->name('history');
+                Route::get('/tanda-tangan', UnitDocumentsSignatureSettings::class)->name('signature');
+            });
+
+            Route::get('/exports', UnitExportsIndex::class)->name('exports.index');
+
+            // System (log aktivitas unit sendiri)
+            Route::get('/activities', UnitActivitiesIndex::class)->name('activities.index');
+
+            // Settings
+            Route::get('/profile', UnitProfileIndex::class)->name('profile.index');
         });
 
     });

@@ -1,6 +1,27 @@
 <div class="w-full max-w-5xl mx-auto space-y-5 text-neutral-800 dark:text-neutral-100 px-4 py-4 sm:px-6 font-sans">
 
-    <a href="{{ route('master.documents.index') }}" class="inline-flex items-center gap-1 text-xs font-semibold text-neutral-500 hover:text-blue-900 dark:hover:text-red-400 transition-colors">
+    @php
+        // Blade ini dipakai bersama oleh Master\Documents\Generate DAN
+        // Unit\Documents\Generate. Unit\Documents\Generate tidak mengirim
+        // variabel 'units' (lihat catatan di class-nya), jadi di sini
+        // WAJIB pakai ($units ?? collect()) supaya tidak error "Undefined
+        // variable" saat diakses oleh unit-admin.
+        // PERBAIKAN: sebelumnya dicek dari ROLE user (hasRole('unit-admin')),
+        // yang salah saat Master Admin memantau (membuka) halaman Dokumen
+        // Resmi milik sebuah unit -- Master Admin tidak punya role unit-admin,
+        // jadi kondisi ini akan salah menganggap dia sedang di halaman Master
+        // sendiri. Konteks yang benar adalah ROUTE yang sedang aktif, bukan
+        // role -- karena itu dicek dari request()->routeIs('unit.*').
+        $isUnitAdmin = request()->routeIs('unit.*');
+        $docsPrefix = $isUnitAdmin ? 'unit.documents.' : 'master.documents.';
+        // Slug diambil dari unit yang SEDANG DIBUKA (route-model-binding
+        // {unit:slug}), bukan dari unit milik user login -- supaya tetap
+        // benar saat dibuka Master Admin yang sedang memantau unit lain.
+        $docsParams = $isUnitAdmin ? ['unit' => request()->route('unit')?->slug] : [];
+        $units = $units ?? collect();
+    @endphp
+
+    <a href="{{ route($docsPrefix.'index', $docsParams) }}" class="inline-flex items-center gap-1 text-xs font-semibold text-neutral-500 hover:text-blue-900 dark:hover:text-red-400 transition-colors">
         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"/></svg>
         Kembali ke Menu Laporan
     </a>
@@ -137,12 +158,18 @@
                     @if ($type === 'finance_report')
                         <div>
                             <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Unit Usaha</label>
-                            <select wire:model="unit_id" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-red-500">
-                                <option value="">Seluruh Unit</option>
-                                @foreach ($units as $unit)
-                                    <option value="{{ $unit->id }}">{{ $unit->name }}</option>
-                                @endforeach
-                            </select>
+                            @if ($isUnitAdmin)
+                                <div class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-md bg-neutral-50 dark:bg-slate-800 text-neutral-500">
+                                    {{ request()->route('unit')?->name ?? '-' }} <span class="text-neutral-400">(unit terkait)</span>
+                                </div>
+                            @else
+                                <select wire:model="unit_id" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-red-500">
+                                    <option value="">Seluruh Unit</option>
+                                    @foreach ($units as $unit)
+                                        <option value="{{ $unit->id }}">{{ $unit->name }}</option>
+                                    @endforeach
+                                </select>
+                            @endif
                         </div>
                     @endif
                 </div>
@@ -164,12 +191,18 @@
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Unit Usaha Terkait</label>
-                        <select wire:model="unit_id" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-red-500">
-                            <option value="">-- Pilih unit --</option>
-                            @foreach ($units as $unit)
-                                <option value="{{ $unit->id }}">{{ $unit->name }}</option>
-                            @endforeach
-                        </select>
+                        @if ($isUnitAdmin)
+                            <div class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-md bg-neutral-50 dark:bg-slate-800 text-neutral-500">
+                                {{ request()->route('unit')?->name ?? '-' }} <span class="text-neutral-400">(unit terkait)</span>
+                            </div>
+                        @else
+                            <select wire:model="unit_id" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-red-500">
+                                <option value="">-- Pilih unit --</option>
+                                @foreach ($units as $unit)
+                                    <option value="{{ $unit->id }}">{{ $unit->name }}</option>
+                                @endforeach
+                            </select>
+                        @endif
                     </div>
                     <div class="md:col-span-2">
                         <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Keperluan</label>
