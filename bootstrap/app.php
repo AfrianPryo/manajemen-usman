@@ -15,6 +15,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'role'            => \Spatie\Permission\Middleware\RoleMiddleware::class,
             'unit.access'     => \App\Http\Middleware\EnsureUnitAccess::class,
+            'unit.category' => \App\Http\Middleware\EnsureUnitCategory::class,
             'password.change' => \App\Http\Middleware\ForcePasswordChange::class,
             'user.active'     => \App\Http\Middleware\EnsureUserIsActive::class,
             'single.session'  => \App\Http\Middleware\SingleActiveSession::class,

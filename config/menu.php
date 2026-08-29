@@ -37,6 +37,32 @@ return [
         ],
     ],
 
+    // ================= MANAJEMEN LAYANAN (MASTER) =================
+    // Pasangan lintas-unit dari grup "Manajemen Layanan" milik unit-admin
+    // di bawah (lihat App\Livewire\Master\ServiceOrder\Index -- fitur
+    // "Pesanan Layanan" yang sama, tapi menampilkan data gabungan dari
+    // SEMUA unit berkategori 'jasa' sekaligus, lengkap dengan filter Unit
+    // Usaha di halamannya sendiri).
+    //
+    // BEDA dengan grup unit-admin: grup ini SELALU tampil untuk
+    // master-admin, TIDAK digated oleh key 'unit_category'. Key
+    // 'unit_category' hanya diperiksa oleh sidebar
+    // components/layouts/unit.blade.php (menu untuk SATU unit yang
+    // sedang dibuka); sidebar master di components/layouts/app.blade.php
+    // tidak pernah memfilter berdasarkan unit_category (lihat komentar di
+    // file tersebut), jadi mencantumkan key itu di sini tidak akan
+    // berpengaruh apa-apa dan sengaja tidak ditambahkan supaya tidak
+    // menyesatkan pembaca berikutnya. Pembatasan ke kategori 'jasa'
+    // dilakukan di level query Livewire (Master\ServiceOrder\Index),
+    // bukan di level menu.
+    [
+        'label' => 'Manajemen Layanan',
+        'roles' => ['master-admin'],
+        'children' => [
+            ['label' => 'Pesanan Layanan', 'route' => 'master.service-orders.index', 'roles' => ['master-admin']],
+        ],
+    ],
+
     // ================= SYSTEM (MASTER) =================
     [
         'label' => 'System',
@@ -75,6 +101,15 @@ return [
     // menyisipkan slug unit milik user login saat me-render item dengan
     // prefix 'unit.' -- jadi di sini cukup tulis nama route-nya saja,
     // TIDAK PERLU (dan tidak bisa) menuliskan parameternya di config ini.
+    //
+    // PENTING soal 'unit_category': item/grup yang punya key ini HANYA
+    // ditampilkan kalau kategori unit yang SEDANG DIBUKA (bukan unit milik
+    // user login -- lihat catatan $slugUnitAktif / $categoryUnitAktif di
+    // components/layouts/unit.blade.php, penting untuk kasus Master Admin
+    // memantau unit lain) sama dengan nilai key ini. Item TANPA key ini
+    // selalu tampil untuk semua kategori unit (perilaku lama, tidak
+    // berubah). Dipakai untuk grup "Manajemen Layanan" di bawah, yang
+    // hanya relevan untuk unit berkategori 'jasa'.
     // =========================================================================
 
     [
@@ -91,10 +126,26 @@ return [
         'children' => [
             ['label' => 'Transaksi', 'route' => 'unit.transactions.index', 'roles' => ['unit-admin']],
             ['label' => 'Transaksi Berulang', 'route' => 'unit.recurring-transactions.index', 'roles' => ['unit-admin']],
-            ['label' => 'Inventaris', 'route' => 'unit.inventory.index', 'roles' => ['unit-admin']],
+            ['label' => 'Inventaris', 'route' => 'unit.inventory.index', 'roles' => ['unit-admin'], 'unit_category' => 'ritel'],
             ['label' => 'Aset Unit Usaha', 'route' => 'unit.assets.index', 'roles' => ['unit-admin']],
             ['label' => 'Dokumen Resmi', 'route' => 'unit.documents.index', 'roles' => ['unit-admin']],
             ['label' => 'Export Data', 'route' => 'unit.exports.index', 'roles' => ['unit-admin']],
+        ],
+    ],
+
+    // ================= MANAJEMEN LAYANAN (UNIT-ADMIN, KHUSUS KATEGORI 'JASA') =================
+    // Grup baru, HANYA muncul di sidebar saat unit yang sedang dibuka
+    // berkategori 'jasa' (diatur lewat form Tambah/Edit Unit di Master >
+    // Unit Usaha, lihat App\Livewire\Master\Units\Index::$category).
+    // Untuk unit berkategori 'ritel', grup ini disembunyikan sepenuhnya
+    // dan menu "Inventaris" di atas (yang sebaliknya butuh 'ritel') tetap
+    // muncul seperti sebelumnya.
+    [
+        'label' => 'Manajemen Layanan',
+        'roles' => ['unit-admin'],
+        'unit_category' => 'jasa',
+        'children' => [
+            ['label' => 'Pesanan Layanan', 'route' => 'unit.service-orders.index', 'roles' => ['unit-admin'], 'unit_category' => 'jasa'],
         ],
     ],
 

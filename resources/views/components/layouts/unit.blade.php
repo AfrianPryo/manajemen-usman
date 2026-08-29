@@ -49,6 +49,15 @@
                      dengan middleware-nya. --}}
                 @php
                     $slugUnitAktif = request()->route('unit')?->slug ?? auth()->user()?->unit?->slug;
+
+                    // Kategori unit yang SEDANG DIBUKA (bukan kategori unit
+                    // milik user login) -- dipakai untuk menyaring item menu
+                    // yang punya key 'unit_category' (lihat config/menu.php,
+                    // grup "Manajemen Layanan"). Konsisten dengan pola
+                    // $slugUnitAktif di atas: kalau route-nya sedang membuka
+                    // unit tertentu (Master Admin memantau unit lain), pakai
+                    // kategori unit ITU, bukan kategori unit user login.
+                    $categoryUnitAktif = request()->route('unit')?->category ?? auth()->user()?->unit?->category;
                 @endphp
                 <nav class="flex-1 py-4 px-2.5 space-y-0.5">
                     @foreach(config('menu') as $item)
@@ -62,6 +71,15 @@
 
                         @php
                             $canSee = is_null($item['roles']) || auth()->user()?->hasAnyRole($item['roles']) || auth()->user()?->isMasterAdmin();
+
+                            // Filter tambahan berdasarkan kategori unit. Item/grup
+                            // TANPA key 'unit_category' selalu lolos (perilaku
+                            // lama, tidak berubah). Item DENGAN key ini hanya
+                            // lolos kalau cocok dengan kategori unit yang sedang
+                            // dibuka.
+                            if ($canSee && isset($item['unit_category']) && $item['unit_category'] !== $categoryUnitAktif) {
+                                $canSee = false;
+                            }
                         @endphp
 
                         @if($canSee)
@@ -73,6 +91,9 @@
                                             $cLabel = strtolower($child['label'] ?? '');
                                             $cRoute = strtolower($child['route'] ?? '');
                                             return str_contains($cLabel, 'pengaturan') || str_contains($cLabel, 'setting') || str_contains($cRoute, 'settings');
+                                        })
+                                        ->filter(function($child) use ($categoryUnitAktif) {
+                                            return !isset($child['unit_category']) || $child['unit_category'] === $categoryUnitAktif;
                                         });
                                 @endphp
 

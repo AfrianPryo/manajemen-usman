@@ -15,6 +15,7 @@ use App\Livewire\Master\Exports\Index as ExportsIndex;
 use App\Livewire\Master\Inventory\Index as InventoryIndex;
 use App\Livewire\Master\Profile\Index as ProfileIndex;
 use App\Livewire\Master\RecurringTransaction\Index as RecurringTransactionIndex;
+use App\Livewire\Master\ServiceOrder\Index as MasterServiceOrderIndex;
 use App\Livewire\Master\Settings\Index as SettingsIndex;
 use App\Livewire\Master\Transactions\Index as TransactionsIndex;
 use App\Livewire\Master\Units\Index as UnitsIndex;
@@ -32,6 +33,7 @@ use App\Livewire\Unit\Exports\Index as UnitExportsIndex;
 use App\Livewire\Unit\Inventory\Index as UnitInventoryIndex;
 use App\Livewire\Unit\Profile\Index as UnitProfileIndex;
 use App\Livewire\Unit\RecurringTransaction\Index as UnitRecurringTransactionIndex;
+use App\Livewire\Unit\ServiceOrder\Index as UnitServiceOrderIndex;
 use App\Livewire\Unit\Transactions\Index as UnitTransactionsIndex;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -124,6 +126,23 @@ Route::middleware(['auth', 'user.active', 'single.session'])->group(function () 
 
             Route::get('/exports', ExportsIndex::class)->name('exports.index');
 
+            // ================= MANAJEMEN LAYANAN (LINTAS UNIT, KHUSUS KATEGORI 'JASA') =================
+            // Pasangan lintas-unit dari 'unit.service-orders.index' di bawah.
+            // Ditaruh persis setelah 'exports.index' supaya urutannya sejajar
+            // dengan posisi grup "Manajemen Layanan" di sisi Unit Admin (juga
+            // diletakkan setelah exports.index, lihat komentar di grup
+            // 'unit/{unit:slug}' di bawah).
+            //
+            // TIDAK diberi middleware 'unit.category:jasa' (middleware itu
+            // butuh parameter route {unit:slug} yang memang tidak ada di sini
+            // -- route ini SENGAJA lintas unit). Pembatasan ke unit
+            // berkategori 'jasa' cukup dilakukan di level query pada
+            // App\Livewire\Master\ServiceOrder\Index (mirip cara
+            // Master\Inventory\Index membatasi tampilan tanpa middleware
+            // khusus), karena Master Admin memang berwenang melihat/mengelola
+            // seluruh unit tanpa perlu dijaga middleware 'unit.access'.
+            Route::get('/service-orders', MasterServiceOrderIndex::class)->name('service-orders.index');
+
             // Analytics
             Route::get('/analytics', AnalyticsIndex::class)->name('analytics.index');
 
@@ -159,6 +178,15 @@ Route::middleware(['auth', 'user.active', 'single.session'])->group(function () 
         // audit-logs.index (pengaturan sistem & audit log lintas-unit
         // bukan wilayah unit-admin — unit-admin punya activities.index
         // sendiri sebagai log aktivitas unitnya).
+        //
+        // CATATAN DASHBOARD 2 KATEGORI (ritel vs jasa): route 'unit.dashboard'
+        // di bawah TETAP satu-satunya route dashboard untuk SEMUA kategori
+        // unit -- App\Livewire\Unit\Dashboard sendiri yang menentukan tampilan
+        // mana yang dirender berdasarkan $unit->category (lihat komentar di
+        // class tersebut). Jadi tidak ada perubahan apa pun di sini untuk
+        // dashboard; satu-satunya route BARU adalah 'documents-orders'
+        // -> ganti nama beneran: 'service-orders.index' di bawah, khusus
+        // fitur "Pesanan Layanan" milik unit kategori 'jasa'.
         Route::prefix('unit/{unit:slug}')->middleware('unit.access')->name('unit.')->group(function () {
             Route::get('/dashboard', UnitDashboard::class)->name('dashboard');
 
@@ -177,6 +205,22 @@ Route::middleware(['auth', 'user.active', 'single.session'])->group(function () 
             });
 
             Route::get('/exports', UnitExportsIndex::class)->name('exports.index');
+
+            // ================= MANAJEMEN LAYANAN (KHUSUS KATEGORI 'JASA') =================
+            // Dijaga middleware tambahan 'unit.category:jasa' (di ATAS
+            // 'unit.access' yang sudah dipasang di seluruh grup ini) --
+            // sehingga unit berkategori 'ritel' akan mendapat 403 kalau
+            // mencoba mengakses URL ini secara langsung, dan menu-nya sendiri
+            // memang sudah disembunyikan untuk kategori itu (lihat
+            // config/menu.php & components/layouts/unit.blade.php).
+            //
+            // Middleware 'unit.category' perlu didaftarkan aliasnya di
+            // bootstrap/app.php (Laravel 11+) atau app/Http/Kernel.php
+            // (Laravel <=10), persis seperti alias 'unit.access' yang sudah
+            // ada sekarang. Lihat App\Http\Middleware\EnsureUnitCategory.
+            Route::middleware('unit.category:jasa')->prefix('layanan')->name('service-orders.')->group(function () {
+                Route::get('/', UnitServiceOrderIndex::class)->name('index');
+            });
 
             // System (log aktivitas unit sendiri)
             Route::get('/activities', UnitActivitiesIndex::class)->name('activities.index');
