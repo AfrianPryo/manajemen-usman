@@ -18,14 +18,6 @@
         // benar saat dibuka Master Admin yang sedang memantau unit lain.
         $docsParams = $isUnitAdmin ? ['unit' => request()->route('unit')?->slug] : [];
     @endphp
-
-    <div>
-        <h1 class="text-xl font-bold text-neutral-900 dark:text-white tracking-tight">Dokumen Resmi</h1>
-        <p class="text-xs text-neutral-400 mt-1">
-            Menggabungkan data sistem secara otomatis ke template resmi ber-KOP surat dan bertanda tangan — tanpa risiko salah ketik dari copy-paste manual.
-        </p>
-    </div>
-
     {{-- Quick Action Cards --}}
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <a href="{{ route($docsPrefix.'generate', $docsParams) }}" class="bg-white dark:bg-slate-800 rounded-md border border-neutral-100 dark:border-slate-700 shadow-sm shadow-black/[0.02] p-5 hover:border-red-300 dark:hover:border-red-800/60 transition-all">

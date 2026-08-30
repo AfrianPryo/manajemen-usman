@@ -85,10 +85,26 @@
 
     {{-- Filter Bar Toolbar --}}
     <div class="bg-white dark:bg-slate-800 rounded-md border border-neutral-100 dark:border-slate-700 p-4 space-y-3 shadow-sm shadow-black/[0.02]">
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3">
             <div class="md:col-span-2">
                 <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cari tag aset, nama, s/n, user..."
                     class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-[3px] bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-red-500/10 focus:border-red-400">
+            </div>
+            {{-- Filter Unit Usaha. Placeholder "semua unit" hanya relevan kalau
+                 ada lebih dari 1 unit untuk dipilih (konteks Master). Saat
+                 $units cuma berisi 1 unit (konteks Unit Admin, lihat
+                 Unit\Asset\Index::render()), dropdown ini otomatis langsung
+                 terkunci ke nama unit sendiri sebagai satu-satunya opsi --
+                 pola yang sama dipakai di modul Inventaris & Transaksi. --}}
+            <div>
+                <select wire:model.live="unitFilter" class="w-full px-3.5 py-2 text-xs font-semibold text-neutral-600 dark:text-neutral-300 bg-white dark:bg-slate-900 border border-neutral-200 dark:border-slate-700 rounded-[3px] focus:outline-none focus:ring-2 focus:ring-red-500/10 focus:border-red-400 cursor-pointer">
+                    @if($units->count() > 1)
+                        <option value="">Semua Unit Usaha</option>
+                    @endif
+                    @foreach($units as $u)
+                        <option value="{{ $u->id }}">{{ $u->name }}</option>
+                    @endforeach
+                </select>
             </div>
             <div>
                 <select wire:model.live="statusFilter" class="w-full px-3.5 py-2 text-xs font-semibold text-neutral-600 dark:text-neutral-300 bg-white dark:bg-slate-900 border border-neutral-200 dark:border-slate-700 rounded-[3px] focus:outline-none focus:ring-2 focus:ring-red-500/10 focus:border-red-400 cursor-pointer">
@@ -141,7 +157,7 @@
                             <input type="checkbox" wire:model.live="selectAll" class="rounded border-neutral-300 text-blue-900 focus:ring-red-500/20 cursor-pointer">
                         </th>
                         <th class="px-4 py-3.5">Tag & Nama Aset</th>
-                        <th class="px-4 py-3.5">Kategori</th>
+                        <th class="px-4 py-3.5">Unit Usaha & Kategori</th>
                         <th class="px-4 py-3.5">Pengguna & Lokasi</th>
                         <th class="px-4 py-3.5 text-right">Nilai / Tgl Beli</th>
                         <th class="px-4 py-3.5 text-center">Kondisi</th>
@@ -167,9 +183,10 @@
                                 </div>
                             </td>
 
-                            {{-- Kategori --}}
-                            <td class="px-4 py-3.5 whitespace-nowrap text-xs text-neutral-600 dark:text-neutral-300">
-                                {{ $asset->category }}
+                            {{-- Unit Usaha & Kategori --}}
+                            <td class="px-4 py-3.5 whitespace-nowrap text-xs">
+                                <div class="font-medium text-neutral-800 dark:text-neutral-200">{{ $asset->unit->name ?? 'Pusat / Tanpa Unit' }}</div>
+                                <div class="text-[11px] text-neutral-400">{{ $asset->category }}</div>
                             </td>
 
                             {{-- Pengguna & Lokasi --}}
@@ -305,6 +322,26 @@
                             @error('category') <span class="text-rose-500 text-[11px] mt-0.5 block">{{ $message }}</span> @enderror
                         </div>
 
+                        {{-- Unit Usaha. Nullable secara sengaja -- aset milik
+                             Kantor Pusat / bersama (tidak terikat satu unit
+                             tertentu) tetap valid dengan opsi kosong. Untuk
+                             Unit Admin, $units cuma berisi 1 unit sehingga
+                             opsi "Aset Pusat" ikut disembunyikan & field ini
+                             otomatis terkunci ke unit sendiri (lihat
+                             Unit\Asset\Index::lockUnitScope()). --}}
+                        <div>
+                            <label class="block font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Unit Usaha</label>
+                            <select wire:model="unit_id" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-red-500">
+                                @if($units->count() > 1)
+                                    <option value="">-- Aset Pusat (Tanpa Unit) --</option>
+                                @endif
+                                @foreach($units as $u)
+                                    <option value="{{ $u->id }}">{{ $u->name }}</option>
+                                @endforeach
+                            </select>
+                            @error('unit_id') <span class="text-rose-500 text-[11px] mt-0.5 block">{{ $message }}</span> @enderror
+                        </div>
+
                         <div>
                             <label class="block font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Nomor Seri (S/N)</label>
                             <input type="text" wire:model="serial_number" placeholder="misal: C02XL123456" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-red-500">
@@ -385,6 +422,7 @@
                             <li>Gunakan pilihan dropdown yang tersedia pada kolom Excel (Kategori, Status, Kondisi).</li>
                             <li>Pastikan format tanggal menggunakan <code class="font-bold">YYYY-MM-DD</code>.</li>
                             <li>Kosongkan kolom Tag Aset jika ingin sistem membuatkan kode otomatis.</li>
+                            <li>Import massal belum bisa menentukan Unit Usaha -- aset hasil import akan tersimpan sebagai "Aset Pusat (Tanpa Unit)" dan bisa diatur unitnya lewat Edit setelah import selesai.</li>
                         </ul>
                     </div>
 

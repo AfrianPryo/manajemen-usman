@@ -7,6 +7,15 @@ use Livewire\WithPagination;
 use App\Models\Vendor;
 use App\Models\AuditLog;
 
+/**
+ * Modul "Vendor & Supplier" -- tadinya murni "Vendor", sekarang merangkap
+ * fungsi manajemen Supplier lewat kolom baru 'type' ('vendor' | 'supplier'
+ * | 'both'), lihat migration add_type_to_vendors_table & App\Models\Vendor.
+ * Nama class, namespace, view, dan route SENGAJA TETAP 'vendor(s)' supaya
+ * tidak memutus apa pun yang sudah mereferensikannya -- hanya LABEL yang
+ * user lihat (judul halaman, tombol, menu) yang berubah jadi "Vendor &
+ * Supplier".
+ */
 class Index extends Component
 {
     use WithPagination;
@@ -14,6 +23,7 @@ class Index extends Component
     // Filter & Search
     public $search = '';
     public $filterCategory = '';
+    public $filterType = '';
     public $perPage = 10;
 
     // Bulk Action Selection
@@ -27,6 +37,7 @@ class Index extends Component
     // Form Fields
     public $name = '';
     public $category = 'perusahaan';
+    public $type = 'vendor';
     public $contact_name = '';
     public $email = '';
     public $phone = '';
@@ -41,6 +52,7 @@ class Index extends Component
         return [
             'name' => 'required|string|max:255',
             'category' => 'required|in:perusahaan,pemerintah,individu,lainnya',
+            'type' => 'required|in:vendor,supplier,both',
             'contact_name' => 'nullable|string|max:255',
             'email' => 'nullable|email|max:255',
             'phone' => 'nullable|string|max:50',
@@ -55,6 +67,7 @@ class Index extends Component
     // Reset pagination ketika filter/search/perPage berubah
     public function updatingSearch() { $this->resetPage(); }
     public function updatingFilterCategory() { $this->resetPage(); }
+    public function updatingFilterType() { $this->resetPage(); }
     public function updatingPerPage() { $this->resetPage(); }
 
     // Logic Select All Checkbox
@@ -80,7 +93,7 @@ class Index extends Component
         AuditLog::record(
             'VENDOR_BULK_DELETE',
             null,
-            count($vendors) . ' vendor dihapus: ' . $vendors->pluck('name')->implode(', '),
+            count($vendors) . ' vendor/supplier dihapus: ' . $vendors->pluck('name')->implode(', '),
             null,
             ['ids' => $vendors->pluck('id')->all(), 'names' => $vendors->pluck('name')->all()]
         );
@@ -88,7 +101,7 @@ class Index extends Component
         $this->selectedRows = [];
         $this->selectAll = false;
 
-        session()->flash('message', 'Vendor terpilih berhasil dihapus.');
+        session()->flash('message', 'Vendor/Supplier terpilih berhasil dihapus.');
     }
 
     public function openModal()
@@ -100,6 +113,7 @@ class Index extends Component
             'contract_start_date', 'contract_end_date',
         ]);
         $this->category = 'perusahaan';
+        $this->type = 'vendor';
         $this->isModalOpen = true;
     }
 
@@ -114,6 +128,7 @@ class Index extends Component
         $this->vendorId = $vendor->id;
         $this->name = $vendor->name;
         $this->category = $vendor->category ?? 'perusahaan';
+        $this->type = $vendor->type ?? 'vendor';
         $this->contact_name = $vendor->contact_name;
         $this->email = $vendor->email;
         $this->phone = $vendor->phone;
@@ -143,6 +158,7 @@ class Index extends Component
             [
                 'name' => $this->name,
                 'category' => $this->category,
+                'type' => $this->type,
                 'contact_name' => $this->contact_name,
                 'email' => $this->email,
                 'phone' => $this->phone,
@@ -158,13 +174,13 @@ class Index extends Component
             $isUpdate ? 'VENDOR_UPDATE' : 'VENDOR_CREATE',
             $vendor->name,
             $isUpdate
-                ? "Vendor '{$vendor->name}' diperbarui."
-                : "Vendor baru '{$vendor->name}' ditambahkan.",
+                ? "Vendor/Supplier '{$vendor->name}' diperbarui."
+                : "Vendor/Supplier baru '{$vendor->name}' ditambahkan.",
             $oldValues,
             $vendor->toArray()
         );
 
-        session()->flash('message', $this->vendorId ? 'Vendor berhasil diperbarui.' : 'Vendor berhasil ditambahkan.');
+        session()->flash('message', $this->vendorId ? 'Vendor/Supplier berhasil diperbarui.' : 'Vendor/Supplier berhasil ditambahkan.');
         $this->closeModal();
     }
 
@@ -177,12 +193,12 @@ class Index extends Component
         AuditLog::record(
             'VENDOR_DELETE',
             $vendor->name,
-            "Vendor '{$vendor->name}' dihapus.",
+            "Vendor/Supplier '{$vendor->name}' dihapus.",
             $oldValues,
             null
         );
 
-        session()->flash('message', 'Vendor berhasil dihapus.');
+        session()->flash('message', 'Vendor/Supplier berhasil dihapus.');
     }
 
     private function getVendorsQuery()
@@ -199,6 +215,16 @@ class Index extends Component
             ->when($this->filterCategory, function ($query) {
                 $query->where('category', $this->filterCategory);
             })
+            ->when($this->filterType, function ($query) {
+                if ($this->filterType === 'both') {
+                    $query->where('type', 'both');
+                } else {
+                    // Entri bertipe 'both' ikut muncul di filter Vendor
+                    // maupun Supplier, karena memang berperan sebagai
+                    // keduanya sekaligus.
+                    $query->whereIn('type', [$this->filterType, 'both']);
+                }
+            })
             ->latest();
     }
 
@@ -207,6 +233,7 @@ class Index extends Component
         return view('livewire.master.vendor.index', [
             'vendors' => $this->getVendorsQuery()->paginate($this->perPage),
             'totalVendors' => Vendor::count(),
-        ])->layout('components.layouts.app', ['title' => 'Vendors']);
+            'totalSuppliers' => Vendor::whereIn('type', ['supplier', 'both'])->count(),
+        ])->layout('components.layouts.app', ['title' => 'Vendor & Supplier']);
     }
 }

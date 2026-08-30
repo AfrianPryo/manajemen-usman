@@ -85,7 +85,48 @@ class Index extends Component
 
     public function setTab(string $tab): void
     {
+        // Tab "Fitur & Modul" berisi pengaturan aplikasi yang bersifat
+        // GLOBAL (mode maintenance, kategori default, kredensial WA/OTP,
+        // dst -- lihat App\Models\Setting yang memang bukan per-unit).
+        // Hanya boleh diakses kalau canAccessFeaturesTab() true (default:
+        // ya, untuk Master Admin). Override di App\Livewire\Unit\Profile\Index
+        // mengembalikan false supaya Admin Unit tidak bisa membuka tab ini
+        // sama sekali, termasuk lewat manipulasi wire:click di client.
+        if ($tab === 'features' && ! $this->canAccessFeaturesTab()) {
+            return;
+        }
+
         $this->activeTab = $tab;
+    }
+
+    /**
+     * Apakah tab "Fitur & Modul" (pengaturan aplikasi global) ditampilkan
+     * & boleh dipakai di halaman ini. Master Admin: ya (default). Unit
+     * Admin: TIDAK -- lihat override di App\Livewire\Unit\Profile\Index,
+     * karena tab ini mengubah setting lintas-sistem yang bukan wilayah
+     * Admin Unit, bukan sekadar soal UI (saveFeatures() juga dijaga di
+     * sisi server lewat method ini).
+     */
+    public function canAccessFeaturesTab(): bool
+    {
+        return true;
+    }
+
+    /**
+     * Apakah halaman ini dirender dalam mode "hanya akun" -- cuma
+     * menampilkan card Informasi Akun (nama/username/email/status
+     * kepegawaian/foto), TANPA nav tab, tanpa heading "Pengaturan Sistem",
+     * dan tanpa card "Ubah Nomor WhatsApp" / "Ubah Password". Master
+     * Admin: false (default, tampilan lengkap seperti biasa). Unit Admin:
+     * TRUE -- lihat override di App\Livewire\Unit\Profile\Index, karena
+     * halaman "Profil Saya" milik Unit memang sengaja dibatasi hanya
+     * untuk melihat/mengubah data identitas akun saja; ganti nomor WA dan
+     * ganti password Admin Unit tetap lewat Master Admin (Master > Admin),
+     * bukan mandiri dari halaman ini.
+     */
+    public function isAccountOnlyView(): bool
+    {
+        return false;
     }
 
     public function saveProfile(): void
@@ -142,6 +183,12 @@ class Index extends Component
     */
     public function requestPasswordChangeOtp(): void
     {
+        // Guard sisi server: sinkron dengan card "Ubah Password" yang
+        // disembunyikan di UI saat isAccountOnlyView() true (lihat blade).
+        if ($this->isAccountOnlyView()) {
+            abort(403);
+        }
+
         $user = Auth::user();
 
         $this->validate([
@@ -175,6 +222,10 @@ class Index extends Component
     */
     public function verifyPasswordChangeOtp(): void
     {
+        if ($this->isAccountOnlyView()) {
+            abort(403);
+        }
+
         $this->validate(['passwordOtp' => 'required|digits:6']);
 
         $user   = Auth::user();
@@ -209,6 +260,10 @@ class Index extends Component
 
     public function cancelPasswordOtp(): void
     {
+        if ($this->isAccountOnlyView()) {
+            abort(403);
+        }
+
         app(FonnteOtpService::class)->invalidate(Auth::id(), 'password_change');
         $this->reset(['passwordOtp', 'passwordOtpRequested']);
     }
@@ -223,6 +278,10 @@ class Index extends Component
     */
     public function requestPhoneChangeOtp(): void
     {
+        if ($this->isAccountOnlyView()) {
+            abort(403);
+        }
+
         $user = Auth::user();
 
         $this->validate([
@@ -255,6 +314,10 @@ class Index extends Component
     */
     public function verifyPhoneChangeOtp(): void
     {
+        if ($this->isAccountOnlyView()) {
+            abort(403);
+        }
+
         $this->validate(['phoneOtp' => 'required|digits:6']);
 
         $user   = Auth::user();
@@ -288,6 +351,10 @@ class Index extends Component
 
     public function cancelPhoneOtp(): void
     {
+        if ($this->isAccountOnlyView()) {
+            abort(403);
+        }
+
         app(FonnteOtpService::class)->invalidate(Auth::id(), 'phone_change');
         $this->reset(['phoneOtp', 'phoneOtpRequested']);
     }
@@ -301,6 +368,13 @@ class Index extends Component
     */
     public function saveFeatures(): void
     {
+        // Guard sisi server: jangan sampai aksi ini tetap bisa dipanggil
+        // (mis. lewat request wire:submit yang dimanipulasi) oleh role
+        // yang tabnya sudah disembunyikan di UI. Lihat canAccessFeaturesTab().
+        if (! $this->canAccessFeaturesTab()) {
+            abort(403);
+        }
+
         $this->validate([
             // Parameter Aplikasi
             'appName' => 'required|string|max:50',

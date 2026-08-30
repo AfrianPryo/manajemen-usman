@@ -3,7 +3,9 @@
 namespace App\Livewire\Unit;
 
 use App\Exports\Dashboard\Unit\UnitDashboardExport;
+use App\Models\Asset;
 use App\Models\AuditLog;
+use App\Models\Customer;
 use App\Models\FinanceTransaction;
 use App\Models\Product;
 use App\Models\RecurringTransaction;
@@ -128,6 +130,40 @@ class Dashboard extends Component
         }
     }
 
+    /**
+     * Hitung rentang periode SEBELUMNYA yang panjangnya sama persis dengan
+     * rentang $start-$end yang sedang aktif, ditempel tepat sebelum $start.
+     * Dipakai untuk perbandingan period-over-period (mis. "Omzet Bulan Ini
+     * vs Bulan Lalu") -- berlaku untuk SEMUA pilihan $periodFilter
+     * (termasuk 'custom') karena murni berbasis selisih hari, bukan
+     * hardcode per jenis filter.
+     *
+     * @return array{0: Carbon, 1: Carbon} [$previousStart, $previousEnd]
+     */
+    private function previousPeriodRange(Carbon $start, Carbon $end): array
+    {
+        $lengthInDays = $start->diffInDays($end) + 1;
+
+        $previousEnd   = (clone $start)->subDay()->endOfDay();
+        $previousStart = (clone $previousEnd)->subDays($lengthInDays - 1)->startOfDay();
+
+        return [$previousStart, $previousEnd];
+    }
+
+    /**
+     * Persentase perubahan dari $previous ke $current, dibulatkan 1 desimal.
+     * Kasus $previous == 0 ditangani manual supaya tidak division-by-zero:
+     * dianggap naik 100% kalau ada nilai baru, atau 0% kalau tetap kosong.
+     */
+    private function percentChange(float $current, float $previous): float
+    {
+        if ($previous == 0.0) {
+            return $current > 0 ? 100.0 : 0.0;
+        }
+
+        return round((($current - $previous) / $previous) * 100, 1);
+    }
+
     private function periodLabel(Carbon $start, Carbon $end): string
     {
         return match ($this->periodFilter) {
@@ -232,6 +268,32 @@ class Dashboard extends Component
         $trxCount     = (clone $completedInRange)->count();
         $avgTrxValue  = $trxCount > 0 ? ($totalIncome + $totalExpense) / $trxCount : 0;
 
+        // -------------------------------------------------------------
+        // PERBANDINGAN PERIODE SEBELUMNYA (PERIOD-OVER-PERIOD)
+        // Rentang pembanding otomatis mengikuti panjang periode yang
+        // sedang aktif (mis. filter "Bulan Ini" dibandingkan 30 hari
+        // sebelum tanggal 1, filter "custom" 10 hari dibandingkan 10 hari
+        // sebelumnya) -- lihat previousPeriodRange().
+        // -------------------------------------------------------------
+        [$prevStart, $prevEnd] = $this->previousPeriodRange($start, $end);
+
+        $completedInPrevRange = FinanceTransaction::query()
+            ->where('unit_id', $unitId)
+            ->where('status', 'completed')
+            ->whereBetween('transaction_date', [$prevStart, $prevEnd]);
+
+        $prevTotalIncome  = (float) (clone $completedInPrevRange)->where('type', 'income')->sum('amount');
+        $prevTotalExpense = (float) (clone $completedInPrevRange)->where('type', 'expense')->sum('amount');
+        $prevTrxCount     = (clone $completedInPrevRange)->count();
+
+        $periodComparison = [
+            'incomeChangePct'      => $this->percentChange((float) $totalIncome, $prevTotalIncome),
+            'expenseChangePct'     => $this->percentChange((float) $totalExpense, $prevTotalExpense),
+            'netRevenueChangePct'  => $this->percentChange((float) ($totalIncome - $totalExpense), $prevTotalIncome - $prevTotalExpense),
+            'trxCountChangePct'    => $this->percentChange((float) $trxCount, (float) $prevTrxCount),
+            'previousPeriodLabel'  => $prevStart->translatedFormat('d M Y') . ' - ' . $prevEnd->translatedFormat('d M Y'),
+        ];
+
         // TRANSAKSI TERKINI (bisa dicari)
         $recentTransactions = FinanceTransaction::with(['category', 'user'])
             ->where('unit_id', $unitId)
@@ -281,18 +343,77 @@ class Dashboard extends Component
             ->limit(6)
             ->get();
 
+        // -------------------------------------------------------------
+        // PELANGGAN (SAMA UNTUK KEDUA KATEGORI -- Manajemen Pelanggan
+        // berlaku untuk unit ritel maupun jasa, lihat catatan di
+        // config/menu.php & routes/web.php). Modulnya sudah ada sejak
+        // awal tapi belum pernah ditarik ke dashboard.
+        // -------------------------------------------------------------
+        $totalActiveCustomers = Customer::where('unit_id', $unitId)
+            ->where('is_active', true)
+            ->count();
+
+        $newCustomersInRange = Customer::where('unit_id', $unitId)
+            ->whereBetween('created_at', [$start, $end])
+            ->count();
+
+        // -------------------------------------------------------------
+        // ASET UNIT USAHA (SAMA UNTUK KEDUA KATEGORI). "Perlu Perhatian"
+        // = kondisi 'poor' (rusak) ATAU status 'maintenance' (sedang
+        // diperbaiki) -- lihat enum yang sama dipakai di
+        // App\Livewire\Master\Asset\Index / Unit\Asset\Index.
+        // -------------------------------------------------------------
+        $totalAssets = Asset::where('unit_id', $unitId)->count();
+
+        $assetsNeedAttention = Asset::where('unit_id', $unitId)
+            ->where(function ($q) {
+                $q->where('condition', 'poor')
+                  ->orWhere('status', 'maintenance');
+            })
+            ->count();
+
+        // -------------------------------------------------------------
+        // RINCIAN PENGELUARAN PER KATEGORI (TOP 5, PERIODE AKTIF)
+        // Dipakai untuk melihat "uang keluar habis ke mana", bukan cuma
+        // total pengeluaran mentah. Transaksi tanpa kategori tetap
+        // dihitung di bawah label "Tanpa Kategori" supaya totalnya utuh.
+        // -------------------------------------------------------------
+        $expenseByCategoryRaw = FinanceTransaction::query()
+            ->where('finance_transactions.unit_id', $unitId)
+            ->where('finance_transactions.type', 'expense')
+            ->where('finance_transactions.status', 'completed')
+            ->whereBetween('finance_transactions.transaction_date', [$start, $end])
+            ->leftJoin('finance_categories', 'finance_transactions.finance_category_id', '=', 'finance_categories.id')
+            ->selectRaw("COALESCE(finance_categories.name, 'Tanpa Kategori') as category_name, SUM(finance_transactions.amount) as total")
+            ->groupBy('category_name')
+            ->orderByDesc('total')
+            ->limit(5)
+            ->get();
+
+        $expenseByCategory = $expenseByCategoryRaw->map(fn ($row) => [
+            'label'      => $row->category_name,
+            'total'      => (float) $row->total,
+            'percentage' => $totalExpense > 0 ? round(((float) $row->total / $totalExpense) * 100, 1) : 0,
+        ])->all();
+
         $viewData = [
-            'unit'                => $this->unit,
-            'periodLabel'         => $periodLabel,
-            'totalIncome'         => 'Rp ' . number_format($totalIncome, 0, ',', '.'),
-            'totalExpense'        => 'Rp ' . number_format($totalExpense, 0, ',', '.'),
-            'netRevenue'          => 'Rp ' . number_format($totalIncome - $totalExpense, 0, ',', '.'),
-            'trxCount'            => $trxCount,
-            'avgTrxValue'         => 'Rp ' . number_format($avgTrxValue, 0, ',', '.'),
-            'recentTransactions'  => $recentTransactions,
-            'revenueTrend'        => $revenueTrend,
-            'upcomingRecurring'   => $upcomingRecurring,
-            'recentActivity'      => $recentActivity,
+            'unit'                 => $this->unit,
+            'periodLabel'          => $periodLabel,
+            'totalIncome'          => 'Rp ' . number_format($totalIncome, 0, ',', '.'),
+            'totalExpense'         => 'Rp ' . number_format($totalExpense, 0, ',', '.'),
+            'netRevenue'           => 'Rp ' . number_format($totalIncome - $totalExpense, 0, ',', '.'),
+            'trxCount'             => $trxCount,
+            'avgTrxValue'          => 'Rp ' . number_format($avgTrxValue, 0, ',', '.'),
+            'recentTransactions'   => $recentTransactions,
+            'revenueTrend'         => $revenueTrend,
+            'upcomingRecurring'    => $upcomingRecurring,
+            'recentActivity'       => $recentActivity,
+            'periodComparison'     => $periodComparison,
+            'totalActiveCustomers' => $totalActiveCustomers,
+            'newCustomersInRange'  => $newCustomersInRange,
+            'totalAssets'          => $totalAssets,
+            'assetsNeedAttention'  => $assetsNeedAttention,
+            'expenseByCategory'    => $expenseByCategory,
         ];
 
         // -------------------------------------------------------------

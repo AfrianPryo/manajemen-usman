@@ -24,6 +24,16 @@ class Unit extends Model
     }
 
     /**
+     * Aset Unit Usaha (App\Models\Asset::unit_id). Nullable di sisi Asset,
+     * jadi relasi ini hanya mengembalikan aset yang memang sudah ditautkan
+     * ke unit ini -- aset "Pusat / Tanpa Unit" tidak akan muncul di sini.
+     */
+    public function assets(): HasMany
+    {
+        return $this->hasMany(Asset::class);
+    }
+
+    /**
      * Relasi ke User / Admin Unit
      */
     public function users(): HasMany

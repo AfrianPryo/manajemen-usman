@@ -5,6 +5,7 @@ use App\Livewire\Master\Activities\Index as ActivitiesIndex;
 use App\Livewire\Master\Analytics\Index as AnalyticsIndex;
 use App\Livewire\Master\Asset\Index as AssetIndex;
 use App\Livewire\Master\AuditLog\Index as AuditLogsIndex;
+use App\Livewire\Master\Customers\Index as MasterCustomersIndex;
 use App\Livewire\Master\Dashboard as MasterDashboard;
 use App\Livewire\Master\Documents\Dashboard as DocumentsDashboard;
 use App\Livewire\Master\Documents\Generate as DocumentsGenerate;
@@ -23,7 +24,9 @@ use App\Livewire\Master\Users\Index as UsersIndex;
 use App\Livewire\Master\Vendor\Index as VendorIndex;
 use App\Livewire\Password\ChangePassword;
 use App\Livewire\Unit\Activities\Index as UnitActivitiesIndex;
+use App\Livewire\Unit\Analytics\Index as UnitAnalyticsIndex;
 use App\Livewire\Unit\Asset\Index as UnitAssetIndex;
+use App\Livewire\Unit\Customers\Index as UnitCustomersIndex;
 use App\Livewire\Unit\Dashboard as UnitDashboard;
 use App\Livewire\Unit\Documents\Dashboard as UnitDocumentsDashboard;
 use App\Livewire\Unit\Documents\Generate as UnitDocumentsGenerate;
@@ -107,7 +110,27 @@ Route::middleware(['auth', 'user.active', 'single.session'])->group(function () 
             // Master Management
             Route::get('/units', UnitsIndex::class)->name('units.index');
             Route::get('/users', UsersIndex::class)->name('users.index');
+
+            // Vendor & Supplier (satu modul, dua peran -- lihat kolom 'type'
+            // pada tabel vendors / App\Models\Vendor). Nama route SENGAJA
+            // TETAP 'vendors.index' (bukan 'vendors-suppliers.index') supaya
+            // tidak memutus referensi route() yang sudah ada di tempat lain;
+            // hanya LABEL di sidebar (config/menu.php) yang berubah jadi
+            // "Vendor & Supplier".
             Route::get('/vendors', VendorIndex::class)->name('vendors.index');
+
+            // ================= MANAJEMEN PELANGGAN (LINTAS UNIT) =================
+            // Modul baru "Manajemen Pelanggan" (gaya buku klien seperti
+            // Fresha) -- pasangan lintas-unit dari 'unit.customers.index' di
+            // bawah, ditulis persis sejajar dengan pola pasangan
+            // 'master.service-orders.index' <-> 'unit.service-orders.index'.
+            //
+            // BERBEDA dengan Pesanan Layanan: modul ini TIDAK dibatasi ke
+            // unit berkategori 'jasa' -- berlaku untuk SEMUA kategori Unit
+            // Usaha (ritel maupun jasa), jadi tidak ada middleware
+            // 'unit.category:...' yang relevan di sini maupun di grup
+            // 'unit/{unit:slug}' di bawah untuk route customers.
+            Route::get('/customers', MasterCustomersIndex::class)->name('customers.index');
 
             // Operasional
             Route::get('/transactions', TransactionsIndex::class)->name('transactions.index');
@@ -159,10 +182,10 @@ Route::middleware(['auth', 'user.active', 'single.session'])->group(function () 
         // Struktur & penamaan route di grup ini SENGAJA dibuat semirip
         // mungkin dengan grup 'master' di atas (nama child route yang sama:
         // dashboard, documents.index/generate/history/signature, exports.index,
-        // activities.index, profile.index) supaya blade yang di-reuse bersama
-        // Master (lihat resources/views/livewire/master/documents/*.blade.php)
-        // bisa menghitung nama route lawannya tinggal ganti prefix
-        // 'master.' -> 'unit.'.
+        // analytics.index, activities.index, profile.index) supaya blade yang
+        // di-reuse bersama Master (lihat resources/views/livewire/master/
+        // documents/*.blade.php) bisa menghitung nama route lawannya tinggal
+        // ganti prefix 'master.' -> 'unit.'.
         //
         // HANYA middleware 'unit.access' (BUKAN 'role:unit-admin'). Middleware
         // EnsureUnitAccess sudah menangani dua kasus sekaligus: Master Admin
@@ -187,6 +210,25 @@ Route::middleware(['auth', 'user.active', 'single.session'])->group(function () 
         // dashboard; satu-satunya route BARU adalah 'documents-orders'
         // -> ganti nama beneran: 'service-orders.index' di bawah, khusus
         // fitur "Pesanan Layanan" milik unit kategori 'jasa'.
+        //
+        // CATATAN MANAJEMEN PELANGGAN: route 'customers.index' di grup ini
+        // (lihat di bawah, setelah 'assets.index') SENGAJA diletakkan TANPA
+        // middleware 'unit.category:...' apa pun -- berbeda dengan
+        // 'service-orders.index' yang dijaga 'unit.category:jasa'. Manajemen
+        // Pelanggan memang dirancang berlaku untuk KEDUA kategori Unit Usaha
+        // (ritel maupun jasa), persis seperti 'transactions.index' &
+        // 'assets.index' yang juga tidak dibatasi kategori.
+        //
+        // CATATAN STATISTIK USAHA: route 'analytics.index' di bawah (setelah
+        // 'service-orders') SENGAJA JUGA tanpa middleware 'unit.category:...'
+        // apa pun -- pasangan satu-unit dari 'master.analytics.index', dan
+        // sama seperti 'transactions.index'/'assets.index'/'customers.index',
+        // fitur ini berlaku untuk KEDUA kategori Unit Usaha (ritel maupun
+        // jasa), bukan cuma unit kategori 'jasa' seperti 'service-orders'.
+        // Component-nya (App\Livewire\Unit\Analytics\Index) memakai trait
+        // ScopedToUnit yang sama dengan modul unit lain supaya datanya
+        // otomatis terkunci ke unit yang sedang dibuka -- lihat komentar di
+        // App\Livewire\Unit\Concerns\ScopedToUnit.
         Route::prefix('unit/{unit:slug}')->middleware('unit.access')->name('unit.')->group(function () {
             Route::get('/dashboard', UnitDashboard::class)->name('dashboard');
 
@@ -195,6 +237,10 @@ Route::middleware(['auth', 'user.active', 'single.session'])->group(function () 
             Route::get('/recurring-transactions', UnitRecurringTransactionIndex::class)->name('recurring-transactions.index');
             Route::get('/inventory', UnitInventoryIndex::class)->name('inventory.index');
             Route::get('/assets', UnitAssetIndex::class)->name('assets.index');
+
+            // Manajemen Pelanggan (berlaku untuk semua kategori unit, lihat
+            // catatan di atas grup ini)
+            Route::get('/pelanggan', UnitCustomersIndex::class)->name('customers.index');
 
             // Dokumen Resmi (tanpa 'template', lihat catatan di atas)
             Route::prefix('dokumen-resmi')->name('documents.')->group(function () {
@@ -221,6 +267,14 @@ Route::middleware(['auth', 'user.active', 'single.session'])->group(function () 
             Route::middleware('unit.category:jasa')->prefix('layanan')->name('service-orders.')->group(function () {
                 Route::get('/', UnitServiceOrderIndex::class)->name('index');
             });
+
+            // ================= STATISTIK USAHA (SEMUA KATEGORI) =================
+            // Pasangan satu-unit dari 'master.analytics.index' -- lihat
+            // catatan lengkap di atas grup route ini ("CATATAN STATISTIK
+            // USAHA"). Diletakkan setelah 'service-orders' supaya urutannya
+            // tetap sejajar dengan posisi 'analytics.index' di grup Master
+            // (juga diletakkan setelah 'service-orders.index' di sana).
+            Route::get('/analytics', UnitAnalyticsIndex::class)->name('analytics.index');
 
             // System (log aktivitas unit sendiri)
             Route::get('/activities', UnitActivitiesIndex::class)->name('activities.index');

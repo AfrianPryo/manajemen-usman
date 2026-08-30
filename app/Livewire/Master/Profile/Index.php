@@ -66,6 +66,10 @@ class Index extends Component
 
     public function updatePassword(): void
     {
+        if (! $this->canChangePassword()) {
+            abort(403);
+        }
+
         $this->validate([
             'current_password' => 'required|current_password',
             'new_password'     => ['required', 'confirmed', Password::defaults()],
@@ -77,6 +81,18 @@ class Index extends Component
 
         $this->reset(['current_password', 'new_password', 'new_password_confirmation']);
         session()->flash('success_password', 'Kata sandi berhasil diubah.');
+    }
+
+    /**
+     * Apakah section "Ganti Password" ditampilkan & boleh dipakai di halaman
+     * Profil Saya ini. Master Admin: ya (default). Unit Admin: TIDAK --
+     * lihat override di App\Livewire\Unit\Profile\Index, karena password
+     * Admin Unit hanya boleh diubah lewat Master Admin (Master > Admin),
+     * bukan mandiri dari halaman profil unit.
+     */
+    public function canChangePassword(): bool
+    {
+        return true;
     }
 
     public function render()

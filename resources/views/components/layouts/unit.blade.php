@@ -202,9 +202,10 @@
                         // ke Profil Saya milik unit yang sedang login.
                         //
                         // unit.profile.index adalah profil PRIBADI user yang sedang
-                        // login (auth()->id(), lihat App\Livewire\Master\Profile\Index
-                        // yang diwarisi Unit\Profile\Index) -- BUKAN profil unit yang
-                        // sedang dipantau. Jadi khusus link ini tetap pakai unit milik
+                        // login (auth()->id(), lihat App\Livewire\Master\Settings\Index
+                        // yang diwarisi Unit\Profile\Index -- termasuk seluruh tabnya,
+                        // bukan cuma tab profil) -- BUKAN profil unit yang sedang
+                        // dipantau. Jadi khusus link ini tetap pakai unit milik
                         // user login (auth()->user()->unit), bukan $slugUnitAktif, agar
                         // Master Admin yang sedang memantau unit lain tidak diarahkan
                         // ke halaman yang salah / 403.

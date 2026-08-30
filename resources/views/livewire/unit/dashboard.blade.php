@@ -29,8 +29,25 @@
         </div>
     </div>
 
+    {{--
+        Badge perbandingan periode (period-over-period). $pct positif =
+        naik, negatif = turun. $goodWhenUp menentukan warna: untuk metrik
+        "omzet/transaksi naik itu bagus" set true (naik = hijau), untuk
+        metrik "pengeluaran naik itu kurang bagus" set false (naik = merah).
+    --}}
+    @php
+        $ppBadge = function (float $pct, bool $goodWhenUp = true) {
+            $isUp   = $pct > 0;
+            $isFlat = $pct == 0;
+            $isGood = $isFlat ? null : ($goodWhenUp ? $isUp : ! $isUp);
+            $color  = $isFlat ? 'text-neutral-400 bg-neutral-100 dark:bg-slate-900' : ($isGood ? 'text-emerald-600 bg-emerald-50 dark:bg-emerald-950/50' : 'text-rose-600 bg-rose-50 dark:bg-rose-950/50');
+            $arrow  = $isFlat ? '' : ($isUp ? '&uarr;' : '&darr;');
+            return '<span class="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-[2px] text-[10px] font-bold ' . $color . '">' . $arrow . ' ' . number_format(abs($pct), 1) . '%</span>';
+        };
+    @endphp
+
     {{-- ================= KARTU RINGKASAN OMZET (FILTER PERIODE) ================= --}}
-    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-4">
 
         {{-- Omzet Bersih (kartu utama, dengan filter periode) --}}
         <div class="bg-white dark:bg-slate-800 rounded-lg border border-neutral-100 dark:border-slate-700 p-4 shadow-sm shadow-black/[0.02] flex flex-col justify-between gap-3 xl:col-span-2">
@@ -77,6 +94,11 @@
                     <span class="text-rose-600 dark:text-rose-400 font-semibold">Keluar {{ $totalExpense }}</span>
                 </div>
             </div>
+
+            <div class="flex items-center gap-1.5 pt-1" title="Dibandingkan periode {{ $periodComparison['previousPeriodLabel'] }}">
+                {!! $ppBadge($periodComparison['netRevenueChangePct']) !!}
+                <span class="text-[10px] text-neutral-400">vs periode sebelumnya</span>
+            </div>
         </div>
 
         {{-- Jumlah Transaksi --}}
@@ -90,6 +112,7 @@
             <div class="mt-4">
                 <p class="text-2xl font-bold text-neutral-900 dark:text-white tracking-tight">{{ $trxCount }}</p>
                 <p class="mt-2 text-xs text-neutral-400">Rata-rata {{ $avgTrxValue }} / transaksi</p>
+                <div class="mt-1.5">{!! $ppBadge($periodComparison['trxCountChangePct']) !!}</div>
             </div>
         </div>
 
@@ -104,6 +127,20 @@
             <div class="mt-4">
                 <p class="text-2xl font-bold text-neutral-900 dark:text-white tracking-tight">{{ $lowStockCount }}</p>
                 <p class="mt-2 text-xs text-neutral-400">dari {{ $totalProducts }} produk terdaftar</p>
+            </div>
+        </div>
+
+        {{-- Pelanggan Aktif (modul Customer sudah ada, sebelumnya belum tampil di dashboard) --}}
+        <div class="bg-white dark:bg-slate-800 rounded-lg border border-neutral-100 dark:border-slate-700 p-4 shadow-sm shadow-black/[0.02] flex flex-col justify-between">
+            <div class="flex items-center justify-between">
+                <p class="text-xs font-medium text-neutral-400">Pelanggan Aktif</p>
+                <span class="p-2 rounded-xl bg-teal-50 dark:bg-teal-950/50 text-teal-500 dark:text-teal-400">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z"/></svg>
+                </span>
+            </div>
+            <div class="mt-4">
+                <p class="text-2xl font-bold text-neutral-900 dark:text-white tracking-tight">{{ $totalActiveCustomers }}</p>
+                <p class="mt-2 text-xs text-neutral-400">+{{ $newCustomersInRange }} pelanggan baru periode ini</p>
             </div>
         </div>
     </div>
@@ -190,6 +227,51 @@
                         <p class="text-xs text-neutral-400">Semua stok produk dalam kondisi aman.</p>
                     @endforelse
                 </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- ================= PENGELUARAN PER KATEGORI & ASET ================= --}}
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+
+        {{-- Rincian Pengeluaran per Kategori --}}
+        <div class="lg:col-span-2 bg-white dark:bg-slate-800 rounded-md border border-neutral-100 dark:border-slate-700 p-4 shadow-sm shadow-black/[0.02]">
+            <div class="flex items-center justify-between mb-4">
+                <div>
+                    <h2 class="text-base font-extrabold text-neutral-900 dark:text-white tracking-tight">Rincian Pengeluaran per Kategori</h2>
+                    <p class="text-xs text-neutral-400 mt-0.5">Top 5 &middot; {{ $periodLabel }}</p>
+                </div>
+            </div>
+
+            <div class="space-y-3.5">
+                @forelse ($expenseByCategory as $cat)
+                    <div>
+                        <div class="flex items-center justify-between mb-1">
+                            <span class="text-xs font-semibold text-neutral-700 dark:text-neutral-300 truncate max-w-[60%]">{{ $cat['label'] }}</span>
+                            <span class="text-xs font-bold text-neutral-800 dark:text-neutral-200">Rp {{ number_format($cat['total'], 0, ',', '.') }}</span>
+                        </div>
+                        <div class="w-full h-1.5 bg-neutral-100 dark:bg-slate-900 rounded-full overflow-hidden">
+                            <div class="h-full bg-rose-400 dark:bg-rose-500 rounded-full" style="width: {{ $cat['percentage'] }}%"></div>
+                        </div>
+                        <p class="text-[10px] text-neutral-400 mt-1">{{ $cat['percentage'] }}% dari total pengeluaran periode ini</p>
+                    </div>
+                @empty
+                    <p class="text-xs text-neutral-400 py-6 text-center">Belum ada pengeluaran tercatat pada periode ini.</p>
+                @endforelse
+            </div>
+        </div>
+
+        {{-- Aset Perlu Perhatian --}}
+        <div class="bg-white dark:bg-slate-800 rounded-md border border-neutral-100 dark:border-slate-700 p-4 shadow-sm shadow-black/[0.02] flex flex-col justify-between">
+            <div>
+                <div class="flex items-center justify-between mb-2">
+                    <p class="text-xs font-medium text-neutral-400">Aset Perlu Perhatian</p>
+                    <span class="p-2 rounded-xl {{ $assetsNeedAttention === 0 ? 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-500 dark:text-emerald-400' : 'bg-amber-50 dark:bg-amber-950/50 text-amber-500 dark:text-amber-400' }}">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/></svg>
+                    </span>
+                </div>
+                <p class="text-2xl font-bold text-neutral-900 dark:text-white tracking-tight">{{ $assetsNeedAttention }}</p>
+                <p class="mt-2 text-xs text-neutral-400">dari {{ $totalAssets }} aset terdaftar &middot; kondisi rusak / sedang diperbaiki</p>
             </div>
         </div>
     </div>

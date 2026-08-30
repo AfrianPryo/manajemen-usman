@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('category')->default('perusahaan');
+            $table->enum('type', ['vendor', 'supplier', 'both'])->default('vendor');
             $table->string('contact_name')->nullable();
             $table->string('email')->nullable();
             $table->string('phone')->nullable();

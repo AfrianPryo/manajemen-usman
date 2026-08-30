@@ -12,8 +12,8 @@
     {{-- Header Section --}}
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-            <h1 class="text-xl font-bold text-neutral-900 dark:text-white tracking-tight">Vendors</h1>
-            <p class="text-xs text-neutral-400 mt-0.5">Kelola data vendor, instansi, dan penyedia layanan bisnis Anda.</p>
+            <h1 class="text-xl font-bold text-neutral-900 dark:text-white tracking-tight">Vendor & Supplier</h1>
+            <p class="text-xs text-neutral-400 mt-0.5">Kelola data vendor, supplier, instansi, dan mitra penyedia bisnis Anda.</p>
         </div>
         <div class="flex items-center gap-2.5 shrink-0">
             <button wire:click="openModal" 
@@ -21,8 +21,20 @@
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
                 </svg>
-                <span>Tambah Vendor</span>
+                <span>Tambah Vendor/Supplier</span>
             </button>
+        </div>
+    </div>
+
+    {{-- Ringkasan Cepat --}}
+    <div class="grid grid-cols-2 sm:grid-cols-2 gap-4">
+        <div class="bg-white dark:bg-slate-800 rounded-lg border border-neutral-100 dark:border-slate-700 p-4 shadow-sm shadow-black/[0.02]">
+            <p class="text-xs font-medium text-neutral-400">Total Vendor & Supplier</p>
+            <p class="text-2xl font-bold text-neutral-800 dark:text-neutral-100 tracking-tight mt-2">{{ $totalVendors }}</p>
+        </div>
+        <div class="bg-white dark:bg-slate-800 rounded-lg border border-neutral-100 dark:border-slate-700 p-4 shadow-sm shadow-black/[0.02]">
+            <p class="text-xs font-medium text-neutral-400">Berperan sebagai Supplier</p>
+            <p class="text-2xl font-bold text-purple-600 dark:text-purple-400 tracking-tight mt-2">{{ $totalSuppliers }}</p>
         </div>
     </div>
 
@@ -35,6 +47,15 @@
                     <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cari nama, kontak, atau email..." 
                            class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-[3px] bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-red-500/10 focus:border-red-400">
                 </div>
+
+                {{-- Filter Tipe (Vendor / Supplier) --}}
+                <select wire:model.live="filterType" 
+                        class="w-full sm:w-auto px-3.5 py-2 text-xs font-semibold text-neutral-600 dark:text-neutral-300 bg-white dark:bg-slate-900 border border-neutral-200 dark:border-slate-700 rounded-[3px] focus:outline-none focus:ring-2 focus:ring-red-500/10 focus:border-red-400 cursor-pointer">
+                    <option value="">Semua Tipe</option>
+                    <option value="vendor">Vendor</option>
+                    <option value="supplier">Supplier</option>
+                    <option value="both">Vendor & Supplier</option>
+                </select>
 
                 {{-- Filter Dropdown --}}
                 <select wire:model.live="filterCategory" 
@@ -53,10 +74,10 @@
     @if(count($selectedRows) > 0)
         <div class="flex items-center justify-between bg-neutral-900 text-white p-3.5 rounded-md shadow-md text-xs mb-4">
             <div class="flex items-center gap-2">
-                <span class="font-bold text-red-400">{{ count($selectedRows) }}</span> vendor dipilih
+                <span class="font-bold text-red-400">{{ count($selectedRows) }}</span> vendor/supplier dipilih
             </div>
             <div class="flex items-center gap-2">
-                <button wire:click="bulkDelete" onclick="confirm('Yakin ingin menghapus vendor terpilih?') || event.stopImmediatePropagation()" class="px-3 py-1 bg-rose-600 hover:bg-rose-500 rounded font-semibold transition-colors cursor-pointer">
+                <button wire:click="bulkDelete" onclick="confirm('Yakin ingin menghapus vendor/supplier terpilih?') || event.stopImmediatePropagation()" class="px-3 py-1 bg-rose-600 hover:bg-rose-500 rounded font-semibold transition-colors cursor-pointer">
                     Hapus Terpilih
                 </button>
             </div>
@@ -72,7 +93,8 @@
                         <th class="p-4 w-10 text-center">
                             <input type="checkbox" wire:model.live="selectAll" class="rounded border-neutral-300 text-blue-900 focus:ring-red-500/20 cursor-pointer">
                         </th>
-                        <th class="px-4 py-3">Vendor</th>
+                        <th class="px-4 py-3">Vendor / Supplier</th>
+                        <th class="px-4 py-3 text-center">Tipe</th>
                         <th class="px-4 py-3">Kontak</th>
                         <th class="px-4 py-3">Website</th>
                         <th class="px-4 py-3">Periode Kontrak</th>
@@ -94,6 +116,13 @@
                                 'individu' => 'bg-emerald-500',
                                 default => 'bg-neutral-400',
                             };
+
+                            $typeMap = [
+                                'vendor'   => ['label' => 'Vendor', 'class' => 'bg-blue-100 text-blue-700 border-blue-200'],
+                                'supplier' => ['label' => 'Supplier', 'class' => 'bg-purple-100 text-purple-700 border-purple-200'],
+                                'both'     => ['label' => 'Vendor & Supplier', 'class' => 'bg-gradient-to-r from-blue-100 to-purple-100 text-neutral-700 border-neutral-200'],
+                            ];
+                            $typeInfo = $typeMap[$vendor->type] ?? $typeMap['vendor'];
 
                             $contractStatus = null;
                             if ($vendor->contract_end_date) {
@@ -120,6 +149,13 @@
                                         <span class="font-mono">{{ $vendor->id_number }}</span>
                                     @endif
                                 </div>
+                            </td>
+
+                            {{-- Tipe: Vendor / Supplier / Keduanya --}}
+                            <td class="px-4 py-3.5 text-center">
+                                <span class="px-2.5 py-0.5 text-[10px] font-semibold rounded-full border whitespace-nowrap {{ $typeInfo['class'] }}">
+                                    {{ $typeInfo['label'] }}
+                                </span>
                             </td>
 
                             {{-- Kontak: PIC + Email + Phone --}}
@@ -176,10 +212,10 @@
                                             title="Edit Vendor">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"/></svg>
                                     </button>
-                                    <button onclick="confirm('Yakin ingin menghapus vendor ini?') || event.stopImmediatePropagation()" 
+                                    <button onclick="confirm('Yakin ingin menghapus vendor/supplier ini?') || event.stopImmediatePropagation()" 
                                             wire:click="delete({{ $vendor->id }})" 
                                             class="p-1.5 text-rose-500 hover:text-rose-700 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-md transition-all cursor-pointer" 
-                                            title="Hapus Vendor">
+                                            title="Hapus Vendor/Supplier">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"/></svg>
                                     </button>
                                 </div>
@@ -187,8 +223,8 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="px-6 py-12 text-center text-xs text-neutral-400">
-                                Tidak ada data vendor yang sesuai dengan pencarian.
+                            <td colspan="7" class="px-6 py-12 text-center text-xs text-neutral-400">
+                                Tidak ada data vendor/supplier yang sesuai dengan pencarian.
                             </td>
                         </tr>
                     @endforelse
@@ -214,7 +250,7 @@
                 @if($vendors->total() > 0)
                     <span class="hidden sm:inline-block text-neutral-300 dark:text-slate-700">|</span>
                     <div class="hidden sm:block">
-                        Menampilkan <span class="font-semibold text-neutral-700 dark:text-neutral-200">{{ $vendors->firstItem() }}</span> - <span class="font-semibold text-neutral-700 dark:text-neutral-200">{{ $vendors->lastItem() }}</span> dari <span class="font-semibold text-neutral-700 dark:text-neutral-200">{{ $vendors->total() }}</span> total vendor
+                        Menampilkan <span class="font-semibold text-neutral-700 dark:text-neutral-200">{{ $vendors->firstItem() }}</span> - <span class="font-semibold text-neutral-700 dark:text-neutral-200">{{ $vendors->lastItem() }}</span> dari <span class="font-semibold text-neutral-700 dark:text-neutral-200">{{ $vendors->total() }}</span> total vendor/supplier
                     </div>
                 @endif
             </div>
@@ -234,10 +270,10 @@
                 <div class="p-5 border-b border-neutral-100 dark:border-slate-700 flex items-center justify-between bg-neutral-50/50 dark:bg-slate-900/50">
                     <div>
                         <h3 class="text-base font-bold text-neutral-900 dark:text-white">
-                            {{ $vendorId ? 'Edit Data Vendor' : 'Tambah Vendor Baru' }}
+                            {{ $vendorId ? 'Edit Data Vendor/Supplier' : 'Tambah Vendor/Supplier Baru' }}
                         </h3>
                         <p class="text-xs text-neutral-400">
-                            {{ $vendorId ? 'Perbarui informasi kontak dan profil vendor.' : 'Lengkapi formulir untuk mendaftarkan mitra vendor baru.' }}
+                            {{ $vendorId ? 'Perbarui informasi kontak dan profil mitra.' : 'Lengkapi formulir untuk mendaftarkan mitra vendor/supplier baru.' }}
                         </p>
                     </div>
                     <button wire:click="closeModal" class="text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 text-2xl font-bold leading-none">&times;</button>
@@ -246,16 +282,28 @@
                 {{-- Modal Body / Form --}}
                 <form wire:submit.prevent="save" class="p-6 space-y-4 text-xs">
                     
-                    {{-- Row 1: Nama & Kategori --}}
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                        <div class="sm:col-span-2">
-                            <label class="block font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Nama Perusahaan / Vendor <span class="text-red-500">*</span></label>
-                            <input type="text" wire:model="name" 
-                                   class="w-full px-3.5 py-2 border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-red-500" 
-                                   placeholder="Contoh: PT Sumber Makmur">
-                            @error('name') <span class="text-rose-500 text-[11px] mt-0.5 block">{{ $message }}</span> @enderror
+                    {{-- Row 1: Nama --}}
+                    <div>
+                        <label class="block font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Nama Perusahaan / Vendor / Supplier <span class="text-red-500">*</span></label>
+                        <input type="text" wire:model="name" 
+                               class="w-full px-3.5 py-2 border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-red-500" 
+                               placeholder="Contoh: PT Sumber Makmur">
+                        @error('name') <span class="text-rose-500 text-[11px] mt-0.5 block">{{ $message }}</span> @enderror
+                    </div>
+
+                    {{-- Row 2: Tipe & Kategori --}}
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                            <label class="block font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Tipe Mitra <span class="text-red-500">*</span></label>
+                            <select wire:model="type" 
+                                    class="w-full px-3 py-2 border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-red-500 cursor-pointer">
+                                <option value="vendor">Vendor</option>
+                                <option value="supplier">Supplier</option>
+                                <option value="both">Vendor & Supplier</option>
+                            </select>
+                            @error('type') <span class="text-rose-500 text-[11px] mt-0.5 block">{{ $message }}</span> @enderror
                         </div>
-                        
+
                         <div>
                             <label class="block font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Kategori <span class="text-red-500">*</span></label>
                             <select wire:model="category" 
@@ -342,7 +390,7 @@
                         </button>
                         <button type="submit" wire:loading.attr="disabled" 
                                 class="px-5 py-2 text-xs font-bold text-white bg-blue-900 hover:bg-blue-950 rounded-md transition-all flex items-center gap-2 shadow-sm cursor-pointer">
-                            <span wire:loading.remove>{{ $vendorId ? 'Perbarui Vendor' : 'Simpan Vendor' }}</span>
+                            <span wire:loading.remove>{{ $vendorId ? 'Perbarui Data' : 'Simpan Data' }}</span>
                             <span wire:loading>Memproses...</span>
                         </button>
                     </div>

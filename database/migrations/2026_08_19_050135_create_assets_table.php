@@ -10,6 +10,7 @@ return new class extends Migration
     {
         Schema::create('assets', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('unit_id')->nullable()->constrained('units')->nullOnDelete();
             $table->string('asset_tag')->unique();
             $table->string('name');
             $table->string('category');

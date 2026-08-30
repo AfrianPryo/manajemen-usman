@@ -8,6 +8,7 @@ use Livewire\WithPagination;
 use Illuminate\Support\Str;
 use App\Models\Asset;
 use App\Models\AuditLog;
+use App\Models\Unit;
 use App\Models\User;
 use App\Notifications\SystemNotification;
 use App\Exports\AssetTemplateExport;
@@ -27,6 +28,7 @@ class Index extends Component
     public $search = '';
     public $statusFilter = '';
     public $categoryFilter = '';
+    public ?int $unitFilter = null;
     public $perPage = 10;
 
     // Bulk Action Selection
@@ -38,6 +40,7 @@ class Index extends Component
     public $editingId = null;
 
     // Form Fields
+    public ?int $unit_id = null; // null = "Aset Pusat / Tanpa Unit"
     public $asset_tag = '';
     public $name = '';
     public $category = 'Elektronik';
@@ -59,6 +62,7 @@ class Index extends Component
     protected function rules()
     {
         return [
+            'unit_id' => 'nullable|exists:units,id',
             'asset_tag' => 'required|string|max:50',
             'name' => 'required|string|max:255',
             'category' => 'required|string',
@@ -84,6 +88,7 @@ class Index extends Component
     public function updatingSearch() { $this->resetPage(); }
     public function updatingStatusFilter() { $this->resetPage(); }
     public function updatingCategoryFilter() { $this->resetPage(); }
+    public function updatingUnitFilter() { $this->resetPage(); }
     public function updatingPerPage() { $this->resetPage(); }
 
     // =========================================================================
@@ -248,7 +253,7 @@ class Index extends Component
 
     public function resetForm()
     {
-        $this->reset(['editingId', 'asset_tag', 'name', 'category', 'serial_number', 'purchase_cost', 'status', 'condition', 'assigned_to', 'location', 'notes']);
+        $this->reset(['editingId', 'unit_id', 'asset_tag', 'name', 'category', 'serial_number', 'purchase_cost', 'status', 'condition', 'assigned_to', 'location', 'notes']);
         $this->purchase_date = date('Y-m-d');
         $this->status = 'available';
         $this->condition = 'good';
@@ -260,6 +265,7 @@ class Index extends Component
     {
         $asset = Asset::findOrFail($id);
         $this->editingId = $asset->id;
+        $this->unit_id = $asset->unit_id;
         $this->asset_tag = $asset->asset_tag;
         $this->name = $asset->name;
         $this->category = $asset->category;
@@ -349,6 +355,7 @@ class Index extends Component
             })
             ->when($this->statusFilter, fn($q) => $q->where('status', $this->statusFilter))
             ->when($this->categoryFilter, fn($q) => $q->where('category', $this->categoryFilter))
+            ->when($this->unitFilter, fn($q) => $q->where('unit_id', $this->unitFilter))
             ->latest();
     }
 
@@ -437,6 +444,7 @@ class Index extends Component
             'search'         => $this->search,
             'statusFilter'   => $this->statusFilter,
             'categoryFilter' => $this->categoryFilter,
+            'unitFilter'     => $this->unitFilter,
         ];
 
         $fileName = 'Data_Aset_' . now()->format('Ymd_His') . '.xlsx';
@@ -475,7 +483,8 @@ class Index extends Component
     public function render()
     {
         return view('livewire.master.asset.index', [
-            'assets' => $this->getAssetsQuery()->paginate($this->perPage),
+            'assets' => $this->getAssetsQuery()->with('unit')->paginate($this->perPage),
+            'units' => Unit::orderBy('name')->get(),
             'totalAssets' => Asset::count(),
             'totalValue' => Asset::sum('purchase_cost'),
             'availableCount' => Asset::where('status', 'available')->count(),
