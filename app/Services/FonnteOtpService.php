@@ -156,9 +156,12 @@ class FonnteOtpService
     }
 
     /**
-     * Kirim pesan OTP ke nomor tujuan lewat Fonnte.
+     * Kirim pesan WhatsApp bebas (bukan OTP) lewat Fonnte, mis. untuk
+     * pengumuman manual dari Master\Announcements\Index. Reuse kredensial
+     * (wa_api_key) & normalisasi nomor yang sama dengan alur OTP, TANPA
+     * ikut rate limit/cooldown OTP di atas (itu khusus alur keamanan).
      */
-    protected function sendViaFonnte(string $phone, string $otp, string $purpose): bool
+    public function sendPlainMessage(string $phone, string $message): bool
     {
         $token = Setting::get('wa_api_key');
 
@@ -167,15 +170,9 @@ class FonnteOtpService
             return false;
         }
 
-        $label = match ($purpose) {
-            'password_change' => 'perubahan password',
-            'phone_change'     => 'perubahan nomor WhatsApp',
-            default            => 'verifikasi akun',
-        };
-
-        $message = "Kode OTP Anda untuk {$label}: *{$otp}*\n\n"
-            . "Kode berlaku " . self::OTP_TTL_MINUTES . " menit.\n"
-            . "Jangan berikan kode ini kepada siapapun, termasuk yang mengaku sebagai admin/petugas.";
+        if (empty($phone)) {
+            return false;
+        }
 
         try {
             $response = Http::asForm()
@@ -188,7 +185,7 @@ class FonnteOtpService
                 ]);
 
             if (! $response->successful()) {
-                Log::error('FonnteOtpService: gagal kirim OTP', [
+                Log::error('FonnteOtpService: gagal kirim pesan WA', [
                     'status' => $response->status(),
                     'body'   => $response->body(),
                 ]);
@@ -197,9 +194,27 @@ class FonnteOtpService
 
             return true;
         } catch (\Throwable $e) {
-            Log::error('FonnteOtpService: exception saat kirim OTP - ' . $e->getMessage());
+            Log::error('FonnteOtpService: exception saat kirim pesan WA - ' . $e->getMessage());
             return false;
         }
+    }
+
+    /**
+     * Kirim pesan OTP ke nomor tujuan lewat Fonnte.
+     */
+    protected function sendViaFonnte(string $phone, string $otp, string $purpose): bool
+    {
+        $label = match ($purpose) {
+            'password_change' => 'perubahan password',
+            'phone_change'     => 'perubahan nomor WhatsApp',
+            default            => 'verifikasi akun',
+        };
+
+        $message = "Kode OTP Anda untuk {$label}: *{$otp}*\n\n"
+            . "Kode berlaku " . self::OTP_TTL_MINUTES . " menit.\n"
+            . "Jangan berikan kode ini kepada siapapun, termasuk yang mengaku sebagai admin/petugas.";
+
+        return $this->sendPlainMessage($phone, $message);
     }
 
     /**

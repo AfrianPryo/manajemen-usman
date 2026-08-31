@@ -3,6 +3,7 @@
 use App\Livewire\Auth\Login;
 use App\Livewire\Master\Activities\Index as ActivitiesIndex;
 use App\Livewire\Master\Analytics\Index as AnalyticsIndex;
+use App\Livewire\Master\Announcements\Index as AnnouncementsIndex;
 use App\Livewire\Master\Asset\Index as AssetIndex;
 use App\Livewire\Master\AuditLog\Index as AuditLogsIndex;
 use App\Livewire\Master\Customers\Index as MasterCustomersIndex;
@@ -14,7 +15,9 @@ use App\Livewire\Master\Documents\SignatureSettings as DocumentsSignatureSetting
 use App\Livewire\Master\Documents\TemplateManager as DocumentsTemplateManager;
 use App\Livewire\Master\Exports\Index as ExportsIndex;
 use App\Livewire\Master\Inventory\Index as InventoryIndex;
+use App\Livewire\Master\Notifications\Index as NotificationsIndex;
 use App\Livewire\Master\Profile\Index as ProfileIndex;
+use App\Livewire\Master\Purchasing\Index as MasterPurchasingIndex;
 use App\Livewire\Master\RecurringTransaction\Index as RecurringTransactionIndex;
 use App\Livewire\Master\ServiceOrder\Index as MasterServiceOrderIndex;
 use App\Livewire\Master\Settings\Index as SettingsIndex;
@@ -34,7 +37,9 @@ use App\Livewire\Unit\Documents\History as UnitDocumentsHistory;
 use App\Livewire\Unit\Documents\SignatureSettings as UnitDocumentsSignatureSettings;
 use App\Livewire\Unit\Exports\Index as UnitExportsIndex;
 use App\Livewire\Unit\Inventory\Index as UnitInventoryIndex;
+use App\Livewire\Unit\Notifications\Index as UnitNotificationsIndex;
 use App\Livewire\Unit\Profile\Index as UnitProfileIndex;
+use App\Livewire\Unit\Purchasing\Index as UnitPurchasingIndex;
 use App\Livewire\Unit\RecurringTransaction\Index as UnitRecurringTransactionIndex;
 use App\Livewire\Unit\ServiceOrder\Index as UnitServiceOrderIndex;
 use App\Livewire\Unit\Transactions\Index as UnitTransactionsIndex;
@@ -166,12 +171,45 @@ Route::middleware(['auth', 'user.active', 'single.session'])->group(function () 
             // seluruh unit tanpa perlu dijaga middleware 'unit.access'.
             Route::get('/service-orders', MasterServiceOrderIndex::class)->name('service-orders.index');
 
+            // ================= PEMBELIAN (LINTAS UNIT, READ-ONLY) =================
+            // Pasangan lintas-unit dari 'unit.purchasing.index' di bawah.
+            // BERBEDA dengan 'service-orders.index' di atas (yang punya form
+            // Tambah/Edit sendiri di sisi Master): modul ini SENGAJA
+            // read-only -- pembelian tetap harus dicatat dari sisi Unit yang
+            // benar-benar berbelanja (supaya stok & transaksi keuangannya
+            // otomatis terkunci ke unit yang benar), Master Admin di sini
+            // hanya merekap total belanja lintas-unit per vendor untuk
+            // keperluan negosiasi kontrak vendor terpusat. Tidak ada
+            // middleware 'unit.category:...' (sama seperti customers.index &
+            // analytics.index) karena Pembelian berlaku untuk SEMUA kategori
+            // unit, bukan cuma 'jasa'.
+            Route::get('/pembelian', MasterPurchasingIndex::class)->name('purchasing.index');
+
             // Analytics
             Route::get('/analytics', AnalyticsIndex::class)->name('analytics.index');
 
             // System
             Route::get('/activities', ActivitiesIndex::class)->name('activities.index');
             Route::get('/audit-logs', AuditLogsIndex::class)->name('audit-logs.index');
+
+            // ================= PENGUMUMAN (BROADCAST KE SELURUH UNIT ADMIN) =================
+            // Reuse penuh infrastruktur notifikasi App\Notifications\SystemNotification
+            // yang sudah dipakai untuk alert otomatis (stok/aset), bedanya di
+            // sini pesannya ditulis manual oleh Master Admin dan dikirim ke
+            // SELURUH Unit Admin sekaligus -- lihat komentar lengkap di
+            // App\Livewire\Master\Announcements\Index. Diletakkan di grup
+            // System karena sifatnya siaran/administrasi lintas-unit, sejajar
+            // dengan Aktivitas & Audit Log.
+            Route::get('/pengumuman', AnnouncementsIndex::class)->name('announcements.index');
+
+            // ================= NOTIFIKASI (PUSAT NOTIFIKASI MASTER ADMIN) =================
+            // Menampilkan seluruh notifikasi sistem (App\Notifications\SystemNotification)
+            // yang diterima Master Admin -- baik alert otomatis (stok/aset) maupun histori
+            // Pengumuman yang dikirim sendiri lewat 'announcements.index' di atas. Diletakkan
+            // setelah Pengumuman karena ini adalah "pusat" dari seluruh notifikasi yang
+            // beredar, dan sejajar posisinya dengan 'unit.notifications.index' di grup Unit
+            // Admin di bawah (juga diletakkan di akhir System, sebelum Settings/profile).
+            Route::get('/notifications', NotificationsIndex::class)->name('notifications.index');
 
             // Settings
             Route::get('/settings', SettingsIndex::class)->name('settings.index');
@@ -200,7 +238,10 @@ Route::middleware(['auth', 'user.active', 'single.session'])->group(function () 
         // (template dikelola terpusat oleh Master), settings.index &
         // audit-logs.index (pengaturan sistem & audit log lintas-unit
         // bukan wilayah unit-admin — unit-admin punya activities.index
-        // sendiri sebagai log aktivitas unitnya).
+        // sendiri sebagai log aktivitas unitnya), dan pengumuman.index
+        // (mengirim pengumuman cuma wewenang Master Admin; Unit Admin
+        // menerimanya lewat 'unit.notifications.index' di bawah, lihat
+        // "CATATAN NOTIFIKASI").
         //
         // CATATAN DASHBOARD 2 KATEGORI (ritel vs jasa): route 'unit.dashboard'
         // di bawah TETAP satu-satunya route dashboard untuk SEMUA kategori
@@ -229,6 +270,26 @@ Route::middleware(['auth', 'user.active', 'single.session'])->group(function () 
         // ScopedToUnit yang sama dengan modul unit lain supaya datanya
         // otomatis terkunci ke unit yang sedang dibuka -- lihat komentar di
         // App\Livewire\Unit\Concerns\ScopedToUnit.
+        //
+        // CATATAN PEMBELIAN: route 'purchasing.index' di bawah (setelah
+        // 'inventory.index', sebelum 'assets.index') SENGAJA JUGA tanpa
+        // middleware 'unit.category:...' -- berlaku untuk KEDUA kategori
+        // unit (ritel maupun jasa, sama seperti Pelanggan/Statistik Usaha),
+        // karena pembelian dari vendor tidak cuma untuk unit yang menjual
+        // produk bertsok (mis. unit jasa tetap bisa beli bahan habis pakai/
+        // alat dari vendor). Komponennya (App\Livewire\Unit\Purchasing\Index)
+        // memakai trait ScopedToUnit yang sama seperti modul unit lain, dan
+        // otomatis membuat FinanceTransaction + StockMovement (untuk baris
+        // item yang terhubung ke Produk) sekaligus saat disimpan -- lihat
+        // komentar lengkap di komponennya.
+        //
+        // CATATAN NOTIFIKASI: route 'notifications.index' di bawah (setelah
+        // 'activities.index', sebelum Settings/profile) SENGAJA JUGA tanpa
+        // middleware 'unit.category:...' -- berlaku untuk KEDUA kategori unit,
+        // pasangan satu-unit dari 'master.notifications.index'. Sebelumnya
+        // Unit Admin hanya bisa melihat Pengumuman lewat NotificationSidebar;
+        // route ini menambahkan halaman penuh untuk riwayat notifikasinya
+        // sendiri (alert otomatis stok/aset + Pengumuman dari Master).
         Route::prefix('unit/{unit:slug}')->middleware('unit.access')->name('unit.')->group(function () {
             Route::get('/dashboard', UnitDashboard::class)->name('dashboard');
 
@@ -236,6 +297,10 @@ Route::middleware(['auth', 'user.active', 'single.session'])->group(function () 
             Route::get('/transactions', UnitTransactionsIndex::class)->name('transactions.index');
             Route::get('/recurring-transactions', UnitRecurringTransactionIndex::class)->name('recurring-transactions.index');
             Route::get('/inventory', UnitInventoryIndex::class)->name('inventory.index');
+
+            // Pembelian (lihat "CATATAN PEMBELIAN" di atas grup ini)
+            Route::get('/pembelian', UnitPurchasingIndex::class)->name('purchasing.index');
+
             Route::get('/assets', UnitAssetIndex::class)->name('assets.index');
 
             // Manajemen Pelanggan (berlaku untuk semua kategori unit, lihat
@@ -278,6 +343,15 @@ Route::middleware(['auth', 'user.active', 'single.session'])->group(function () 
 
             // System (log aktivitas unit sendiri)
             Route::get('/activities', UnitActivitiesIndex::class)->name('activities.index');
+
+            // ================= NOTIFIKASI (NOTIFIKASI MILIK UNIT ADMIN) =================
+            // Pasangan satu-unit dari 'master.notifications.index' di atas. Sebelumnya
+            // Unit Admin hanya bisa melihat Pengumuman (lihat catatan 'master.pengumuman')
+            // lewat NotificationSidebar; route ini menambahkan halaman penuh untuk
+            // melihat/mengelola riwayat notifikasinya sendiri. Diletakkan setelah
+            // 'activities.index' dan sebelum Settings, sejajar posisi 'notifications.index'
+            // di grup Master.
+            Route::get('/notifications', UnitNotificationsIndex::class)->name('notifications.index');
 
             // Settings
             Route::get('/profile', UnitProfileIndex::class)->name('profile.index');

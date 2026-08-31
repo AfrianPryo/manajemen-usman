@@ -84,13 +84,44 @@ return [
         ],
     ],
 
+    // ================= PEMBELIAN (MASTER, LINTAS UNIT, READ-ONLY) =================
+    // Grup BARU, pasangan lintas-unit dari grup 'Pembelian' di sisi Unit
+    // Admin (lihat di bawah). Route 'master.purchasing.index' -- lihat
+    // catatan lengkap "PEMBELIAN (LINTAS UNIT, READ-ONLY)" di
+    // routes/web.php untuk kenapa modul ini read-only (bukan CRUD seperti
+    // 'Pesanan Layanan' di atas): pembelian tetap harus dicatat dari sisi
+    // Unit yang benar-benar berbelanja, di sini Master Admin hanya melihat
+    // rekap total belanja per vendor dari SELURUH unit.
+    //
+    // TIDAK diberi key 'unit_category' juga (sama seperti grup
+    // 'Master Management' & 'Pelanggan' di atas) karena Pembelian berlaku
+    // untuk SEMUA kategori Unit Usaha, bukan cuma kategori 'jasa'.
+    //
+    // Diletakkan setelah grup 'Manajemen Layanan' supaya urutannya sejajar
+    // dengan posisi route 'purchasing.index' di web.php (juga diletakkan
+    // persis setelah 'service-orders.index' di sana).
+    [
+        'label' => 'Pembelian',
+        'roles' => ['master-admin'],
+        'children' => [
+            ['label' => 'Pembelian Lintas-Unit', 'route' => 'master.purchasing.index', 'roles' => ['master-admin']],
+        ],
+    ],
+
     // ================= SYSTEM (MASTER) =================
+    // 'Pengumuman' DITAMBAHKAN di sini (setelah Audit Log) -- fitur baru
+    // untuk Master Admin mengirim pengumuman manual ke seluruh Unit Admin,
+    // reuse infrastruktur notifikasi App\Notifications\SystemNotification
+    // yang sudah ada. Diletakkan di grup System (bukan grup baru) karena
+    // sifatnya administrasi/siaran lintas-unit, sejajar dengan Aktivitas &
+    // Audit Log -- lihat App\Livewire\Master\Announcements\Index.
     [
         'label' => 'System',
         'roles' => ['master-admin'],
         'children' => [
             ['label' => 'Aktivitas', 'route' => 'master.activities.index', 'roles' => ['master-admin']],
             ['label' => 'Audit Log', 'route' => 'master.audit-logs.index', 'roles' => ['master-admin']],
+            ['label' => 'Pengumuman', 'route' => 'master.announcements.index', 'roles' => ['master-admin']],
         ],
     ],
 
@@ -119,8 +150,10 @@ return [
     // pengalaman navigasi terasa konsisten antara dua peran ini. Yang TIDAK
     // ada padanannya (dan memang sengaja tidak dibuat) adalah "Master
     // Management" (Unit Usaha/Admin/Vendor -- data lintas-unit, hanya
-    // dikelola dari sisi Master) dan "Audit Log" di grup System (unit-admin
-    // hanya punya "Aktivitas", lihat juga perubahan di
+    // dikelola dari sisi Master) dan "Audit Log" & "Pengumuman" di grup
+    // System (unit-admin hanya punya "Aktivitas" -- mengirim pengumuman
+    // cuma wewenang Master Admin, Unit Admin menerimanya lewat
+    // NotificationSidebar seperti notifikasi lain, lihat juga perubahan di
     // components/layouts/app.blade.php untuk tombol Pengaturan Sistem
     // di pojok bawah sidebar).
     //
@@ -164,6 +197,19 @@ return [
     // perbaikan ini, route-nya sudah ada & bisa diakses lewat URL langsung
     // tapi tidak muncul di sidebar sama sekali.
     //
+    // PENTING soal 'Pembelian' (unit.purchasing.index): item ini
+    // DITAMBAHKAN di grup "Operasional Unit" di bawah, persis setelah
+    // 'Inventaris' -- mengikuti urutan route di routes/web.php (path
+    // '/pembelian' didaftarkan tepat setelah 'inventory.index', sebelum
+    // 'assets.index'). Modul ini mencatat belanja ke Vendor & Supplier
+    // (App\Models\Vendor) dan otomatis membuat FinanceTransaction +
+    // StockMovement sekaligus -- lihat App\Livewire\Unit\Purchasing\Index.
+    // TIDAK diberi key 'unit_category': berlaku untuk KEDUA kategori Unit
+    // Usaha, sama seperti 'Pelanggan' & 'Statistik Usaha' di atas (bukan
+    // cuma kategori 'ritel' seperti 'Inventaris' di bawah, karena unit
+    // kategori 'jasa' juga tetap bisa berbelanja bahan/alat dari vendor
+    // walau tidak mengelola stok produk untuk dijual).
+    //
     // PENTING soal 'unit_category': item/grup yang punya key ini HANYA
     // ditampilkan kalau kategori unit yang SEDANG DIBUKA (bukan unit milik
     // user login -- lihat catatan $slugUnitAktif / $categoryUnitAktif di
@@ -190,6 +236,7 @@ return [
             ['label' => 'Transaksi', 'route' => 'unit.transactions.index', 'roles' => ['unit-admin']],
             ['label' => 'Transaksi Berulang', 'route' => 'unit.recurring-transactions.index', 'roles' => ['unit-admin']],
             ['label' => 'Inventaris', 'route' => 'unit.inventory.index', 'roles' => ['unit-admin'], 'unit_category' => 'ritel'],
+            ['label' => 'Pembelian', 'route' => 'unit.purchasing.index', 'roles' => ['unit-admin']],
             ['label' => 'Aset Unit Usaha', 'route' => 'unit.assets.index', 'roles' => ['unit-admin']],
             ['label' => 'Pelanggan', 'route' => 'unit.customers.index', 'roles' => ['unit-admin']],
             ['label' => 'Dokumen Resmi', 'route' => 'unit.documents.index', 'roles' => ['unit-admin']],

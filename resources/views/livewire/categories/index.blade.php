@@ -15,7 +15,11 @@
                 <td class="px-4 py-3"><x-badge color="gray">{{ $category->products_count }} produk</x-badge></td>
                 <td class="px-4 py-3 space-x-2">
                     <button wire:click="edit({{ $category->id }})" class="text-indigo-600 hover:underline text-sm">Edit</button>
-                    <button wire:click="delete({{ $category->id }})" wire:confirm="Yakin ingin menghapus kategori ini?" class="text-blue-900 hover:underline text-sm">Hapus</button>
+                    <button type="button" x-on:click.prevent="$store.confirmDialog.open({
+                            message: 'Yakin ingin menghapus kategori ini?',
+                            confirmText: 'Ya, Hapus',
+                            onConfirm: () => $wire.delete({{ $category->id }})
+                        })" class="text-blue-900 hover:underline text-sm">Hapus</button>
                 </td>
             </tr>
         @empty

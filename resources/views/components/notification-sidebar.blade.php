@@ -108,4 +108,12 @@
             </a>
         </div>
     </div>
+
+    {{-- Popup kredensial baru (username/password) -- muncul saat Admin
+         Master menekan "Approve" pada notifikasi permintaan reset password
+         (lihat App\Livewire\NotificationSidebar::approvePasswordResetRequest()).
+         Ditaruh di LUAR panel slide-over (bukan di dalam) supaya z-index-nya
+         (z-[60], lihat komponen) tetap di atas backdrop & panel (z-50) apa
+         pun kondisi 'open' Alpine saat itu. --}}
+    <x-credentials-modal :credentials="$createdCredentials" />
 </div>

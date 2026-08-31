@@ -329,9 +329,21 @@
                     </div>
 
                     {{-- PEMANGGILAN KOMPONEN LIVEWIRE --}}
+                    @php
+                        // Sama seperti $viewAllUrl di components.layouts.app: sebelumnya
+                        // tidak pernah di-set page manapun (selalu '#'). Sekarang diarahkan
+                        // ke App\Livewire\Unit\Notifications\Index untuk unit yang SEDANG
+                        // DIBUKA ($slugUnitAktif, dihitung di atas) -- notifikasi sendiri
+                        // tetap milik akun yang login, param unit di sini cuma supaya URL-nya
+                        // konsisten dengan pola route unit.* lainnya di sidebar.
+                        $notifViewAllUrl = $viewAllUrl
+                            ?? ((Route::has('unit.notifications.index') && $slugUnitAktif)
+                                ? route('unit.notifications.index', ['unit' => $slugUnitAktif])
+                                : '#');
+                    @endphp
                     <livewire:notification-sidebar 
                         :role="$role ?? 'unit'"
-                        :view-all-url="$viewAllUrl ?? '#'"
+                        :view-all-url="$notifViewAllUrl"
                     />
 
                     @if(auth()->user()->isMasterAdmin())
@@ -352,6 +364,11 @@
             </main>
         </div>
     </div>
+
+    {{-- Dialog konfirmasi global, pengganti confirm()/wire:confirm bawaan
+         browser di seluruh halaman Unit Admin -- lihat komentar lengkap di
+         components/confirm-dialog.blade.php --}}
+    <x-confirm-dialog />
 
     @livewireScripts
 </body>

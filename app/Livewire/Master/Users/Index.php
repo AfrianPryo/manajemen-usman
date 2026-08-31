@@ -5,6 +5,7 @@ namespace App\Livewire\Master\Users;
 use App\Models\AuditLog;
 use App\Models\Unit;
 use App\Models\User;
+use App\Services\FonnteOtpService;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Layout;
@@ -30,6 +31,7 @@ class Index extends Component
     public string $name = '';
     public string $employee_status = 'nip'; // Default: nip
     public string $nip = '';
+    public string $phone = ''; // Nomor WA aktif -- dipakai FonnteOtpService untuk kirim notifikasi/OTP akun ini
     public string $role = 'unit-admin';
     public ?int $unit_id = null;
 
@@ -39,7 +41,7 @@ class Index extends Component
     #[On('open-create-admin-modal')]
     public function openCreateModal(): void
     {
-        $this->reset(['name', 'nip', 'unit_id', 'isEditing', 'editingUserId']);
+        $this->reset(['name', 'nip', 'phone', 'unit_id', 'isEditing', 'editingUserId']);
         $this->employee_status = 'nip';
         $this->role = 'unit-admin';
         $this->resetValidation();
@@ -49,7 +51,7 @@ class Index extends Component
     public function closeCreateModal(): void
     {
         $this->showCreateModal = false;
-        $this->reset(['name', 'nip', 'unit_id', 'isEditing', 'editingUserId']);
+        $this->reset(['name', 'nip', 'phone', 'unit_id', 'isEditing', 'editingUserId']);
         $this->resetValidation();
     }
 
@@ -63,6 +65,7 @@ class Index extends Component
         $rules = [
             'name' => 'required|string|max:100',
             'employee_status' => 'required|in:nip,non_nip',
+            'phone' => ['required', 'string', 'max:20', 'regex:/^[0-9+]+$/', 'unique:users,phone'],
             'role' => 'required|in:master-admin,unit-admin',
         ];
 
@@ -74,7 +77,11 @@ class Index extends Component
             $rules['unit_id'] = 'required|exists:units,id';
         }
 
-        $this->validate($rules);
+        $this->validate($rules, [
+            'phone.required' => 'Nomor HP/WhatsApp wajib diisi (dipakai untuk notifikasi & OTP Fonnte).',
+            'phone.regex' => 'Format nomor HP tidak valid. Hanya boleh angka (dan awalan +).',
+            'phone.unique' => 'Nomor HP ini sudah terdaftar pada akun lain.',
+        ]);
 
         // Auto-generate Username & Password
         $username = Str::slug($this->name, '.') . '.' . rand(100, 999);
@@ -86,6 +93,7 @@ class Index extends Component
             'password' => Hash::make($plainPassword),
             'employee_status' => $this->employee_status,
             'nip' => $this->employee_status === 'nip' ? $this->nip : null,
+            'phone' => $this->phone,
             'unit_id' => $this->role === 'unit-admin' ? $this->unit_id : null,
             'is_active' => true,
             'must_change_password' => true,
@@ -108,11 +116,28 @@ class Index extends Component
             newValues: array_merge($newValues, ['assigned_role' => $this->role])
         );
 
+        // Kirim kredensial (username & password) langsung ke WhatsApp admin
+        // yang baru dibuat via Fonnte, reuse App\Services\FonnteOtpService::
+        // sendPlainMessage() (method generik non-OTP yang sama dipakai
+        // Master\Announcements\Index untuk broadcast pengumuman). Nomor WA
+        // dipastikan wajib diisi & unik lewat validasi di atas ('phone'),
+        // jadi di sini tinggal kirim -- kegagalan kirim TIDAK membatalkan
+        // pembuatan akun (akun tetap dibuat, admin cukup salin manual dari
+        // modal di bawah kalau pengiriman WA gagal).
+        $waMessage = "🎉 *Akun Admin Baru*\n\n"
+            . "Halo {$user->name}, akun admin Anda telah dibuat oleh Master Admin.\n\n"
+            . "Username: *{$username}*\n"
+            . "Password: *{$plainPassword}*\n\n"
+            . "Segera login dan ganti password Anda. Jangan bagikan kredensial ini kepada siapapun.";
+
+        $waSent = app(FonnteOtpService::class)->sendPlainMessage($user->phone, $waMessage);
+
         $this->createdCredentials = [
             'title' => '🎉 Akun Admin Berhasil Dibuat!',
             'name' => $user->name,
             'username' => $user->username,
             'password' => $plainPassword,
+            'wa_sent' => $waSent,
         ];
 
         $this->closeCreateModal();
@@ -126,6 +151,7 @@ class Index extends Component
         $this->name = $user->name;
         $this->employee_status = $user->employee_status ?? 'nip';
         $this->nip = $user->nip ?? '';
+        $this->phone = $user->phone ?? '';
 
         if (method_exists($user, 'hasRole')) {
             $this->role = $user->hasRole('master-admin') ? 'master-admin' : 'unit-admin';
@@ -148,6 +174,7 @@ class Index extends Component
         $rules = [
             'name' => 'required|string|max:100',
             'employee_status' => 'required|in:nip,non_nip',
+            'phone' => ['required', 'string', 'max:20', 'regex:/^[0-9+]+$/', 'unique:users,phone,' . $this->editingUserId],
             'role' => 'required|in:master-admin,unit-admin',
         ];
 
@@ -159,7 +186,11 @@ class Index extends Component
             $rules['unit_id'] = 'required|exists:units,id';
         }
 
-        $this->validate($rules);
+        $this->validate($rules, [
+            'phone.required' => 'Nomor HP/WhatsApp wajib diisi (dipakai untuk notifikasi & OTP Fonnte).',
+            'phone.regex' => 'Format nomor HP tidak valid. Hanya boleh angka (dan awalan +).',
+            'phone.unique' => 'Nomor HP ini sudah terdaftar pada akun lain.',
+        ]);
 
         $user = User::findOrFail($this->editingUserId);
 
@@ -171,6 +202,7 @@ class Index extends Component
             'name' => $this->name,
             'employee_status' => $this->employee_status,
             'nip' => $this->employee_status === 'nip' ? $this->nip : null,
+            'phone' => $this->phone,
             'unit_id' => $this->role === 'unit-admin' ? $this->unit_id : null,
         ]);
 
@@ -240,11 +272,25 @@ class Index extends Component
             newValues: ['must_change_password' => true]
         );
 
+        // Kirim password baru langsung ke WhatsApp admin yang bersangkutan
+        // via Fonnte -- pola sama persis dengan pengiriman kredensial saat
+        // pembuatan akun baru di save() di atas. Kegagalan kirim TIDAK
+        // membatalkan reset password (password di DB sudah terlanjur
+        // berubah), admin cukup salin manual dari modal kalau WA gagal.
+        $waMessage = "🔑 *Password Direset*\n\n"
+            . "Halo {$user->name}, password akun Anda telah direset oleh Master Admin.\n\n"
+            . "Username: *{$user->username}*\n"
+            . "Password baru: *{$newPassword}*\n\n"
+            . "Segera login dan ganti password Anda. Jangan bagikan kredensial ini kepada siapapun.";
+
+        $waSent = app(FonnteOtpService::class)->sendPlainMessage($user->phone, $waMessage);
+
         $this->createdCredentials = [
             'title' => '🔑 Password Berhasil Direset!',
             'name' => $user->name,
             'username' => $user->username,
             'password' => $newPassword,
+            'wa_sent' => $waSent,
         ];
     }
 
@@ -294,7 +340,8 @@ class Index extends Component
             ->when($this->search, function ($query) {
                 $query->where('name', 'like', '%' . $this->search . '%')
                     ->orWhere('username', 'like', '%' . $this->search . '%')
-                    ->orWhere('nip', 'like', '%' . $this->search . '%');
+                    ->orWhere('nip', 'like', '%' . $this->search . '%')
+                    ->orWhere('phone', 'like', '%' . $this->search . '%');
             })
             ->latest()
             ->paginate(10);

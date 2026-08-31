@@ -108,6 +108,43 @@
                 </div>
             </form>
 
+            {{-- Card "Ajukan Reset Password" -- KHUSUS mode "hanya akun"
+                 (Unit Admin) DAN hanya kalau canRequestPasswordReset() true,
+                 yaitu akun yang login benar-benar ber-role 'unit-admin'.
+                 Master Admin yang sedang membuka dashboard unit (lewat
+                 middleware 'unit.access' untuk monitoring) TIDAK akan
+                 melihat card ini sama sekali -- lihat App\Livewire\Unit\
+                 Profile\Index::canRequestPasswordReset(). --}}
+            @if ($this->isAccountOnlyView() && $this->canRequestPasswordReset())
+                <div class="bg-white dark:bg-slate-800 rounded-md border border-neutral-100 dark:border-slate-700 shadow-sm shadow-black/[0.02] p-6 space-y-4">
+                    <div>
+                        <h2 class="text-sm font-bold text-neutral-900 dark:text-white">Ajukan Reset Password</h2>
+                        <p class="text-xs text-neutral-400 mt-0.5">
+                            Lupa password atau ingin menggantinya? Admin Unit tidak bisa mengubah password sendiri --
+                            ajukan permintaan di sini, dan Admin Master akan menyetujui atau menolaknya lewat notifikasi.
+                            Password baru akan otomatis terkirim ke WhatsApp Anda ({{ $phone ?: 'nomor belum terdaftar' }})
+                            setelah disetujui.
+                        </p>
+                    </div>
+
+                    <div class="flex justify-end pt-4 border-t border-neutral-100 dark:border-slate-700">
+                        <button type="button"
+                                x-on:click.prevent="$store.confirmDialog.open({
+                                    message: 'Kirim permintaan reset password ke Admin Master?',
+                                    confirmText: 'Ya, Kirim',
+                                    variant: 'default',
+                                    onConfirm: () => $wire.requestPasswordReset()
+                                })"
+                                wire:loading.attr="disabled"
+                                wire:target="requestPasswordReset"
+                                class="px-5 py-2 text-xs font-bold text-white bg-amber-600 hover:bg-amber-700 rounded-md transition-all flex items-center gap-2 shadow-sm disabled:opacity-50">
+                            <span wire:loading.remove wire:target="requestPasswordReset">Ajukan Reset Password</span>
+                            <span wire:loading wire:target="requestPasswordReset">Mengirim permintaan...</span>
+                        </button>
+                    </div>
+                </div>
+            @endif
+
             {{-- Card "Ubah Nomor WhatsApp" & "Ubah Password" hanya untuk mode
                  lengkap (Master Admin). Untuk mode "hanya akun" (Unit Admin,
                  lihat isAccountOnlyView()), keduanya disembunyikan -- ganti

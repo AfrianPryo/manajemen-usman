@@ -3,6 +3,7 @@
 namespace App\Livewire\Unit\Profile;
 
 use App\Livewire\Master\Settings\Index as MasterSettingsIndex;
+use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Layout;
 
 /**
@@ -24,11 +25,16 @@ use Livewire\Attributes\Layout;
  * - Nav tab, heading "Pengaturan Sistem", card "Ubah Nomor WhatsApp", dan
  *   card "Ubah Password" -- disembunyikan lewat isAccountOnlyView() =>
  *   true, sehingga halaman "Profil Saya" milik Unit HANYA menyisakan
- *   card "Informasi Akun" (nama/username/email/status kepegawaian/foto).
- *   Ganti nomor WA & password Admin Unit tetap lewat Master Admin
- *   (Master > Admin), bukan mandiri dari halaman ini.
+ *   card "Informasi Akun" (nama/username/email/status kepegawaian/foto)
+ *   dan card baru "Ajukan Reset Password" (lihat canRequestPasswordReset()
+ *   di bawah). Ganti nomor WA Admin Unit tetap lewat Master Admin
+ *   (Master > Admin); untuk password, Admin Unit sekarang bisa MENGAJUKAN
+ *   permintaan reset lewat card baru itu -- bukan mengubah sendiri --
+ *   yang lalu perlu di-Approve oleh Admin Master lewat notifikasi
+ *   (lihat App\Livewire\NotificationSidebar & App\Livewire\Master\
+ *   Notifications\Index).
  *
- * Kedua flag di atas dijaga juga di sisi server (bukan cuma UI) lewat
+ * Ketiga flag di atas dijaga juga di sisi server (bukan cuma UI) lewat
  * guard di masing-masing method aksi pada class induk.
  *
  * Class ini sendiri hanya membungkus ulang supaya folder & nama route-nya
@@ -49,6 +55,22 @@ class Index extends MasterSettingsIndex
     public function isAccountOnlyView(): bool
     {
         return true;
+    }
+
+    /**
+     * Tombol "Ajukan Reset Password" HANYA untuk akun yang benar-benar
+     * ber-role 'unit-admin'. Sengaja TIDAK cukup hanya mengandalkan
+     * isAccountOnlyView() (yang selalu true di class ini) -- middleware
+     * 'unit.access' pada route 'unit.profile.index' (lihat routes/web.php)
+     * mengizinkan Master Admin membuka halaman ini juga untuk keperluan
+     * monitoring unit mana pun, dan Master Admin sama sekali tidak boleh
+     * memicu permintaan reset password untuk akunnya sendiri lewat jalur
+     * ini. Dicek juga di server lewat guard di
+     * Master\Settings\Index::requestPasswordReset(), bukan cuma UI.
+     */
+    public function canRequestPasswordReset(): bool
+    {
+        return Auth::user()?->isUnitAdmin() ?? false;
     }
 
     public function render()

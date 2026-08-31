@@ -24,7 +24,11 @@
                 </td>
                 <td class="px-4 py-3 space-x-2">
                     <button wire:click="edit({{ $product->id }})" class="text-indigo-600 hover:underline text-sm">Edit</button>
-                    <button wire:click="delete({{ $product->id }})" wire:confirm="Yakin ingin menghapus produk ini?" class="text-blue-900 hover:underline text-sm">Hapus</button>
+                    <button type="button" x-on:click.prevent="$store.confirmDialog.open({
+                            message: 'Yakin ingin menghapus produk ini?',
+                            confirmText: 'Ya, Hapus',
+                            onConfirm: () => $wire.delete({{ $product->id }})
+                        })" class="text-blue-900 hover:underline text-sm">Hapus</button>
                 </td>
             </tr>
         @empty

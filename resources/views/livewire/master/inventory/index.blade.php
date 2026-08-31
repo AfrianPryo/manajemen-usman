@@ -121,8 +121,11 @@
 
                 {{-- Tombol Hapus Masal --}}
                 <button type="button" 
-                        wire:click="deleteSelected" 
-                        wire:confirm="Apakah Anda yakin ingin menghapus {{ count($selectedRows) }} produk yang dipilih?"
+                        x-on:click.prevent="$store.confirmDialog.open({
+                            message: 'Apakah Anda yakin ingin menghapus {{ count($selectedRows) }} produk yang dipilih?',
+                            confirmText: 'Ya, Hapus',
+                            onConfirm: () => $wire.deleteSelected()
+                        })"
                         class="px-3 py-1.5 bg-rose-600 hover:bg-rose-500 text-white rounded font-semibold transition-colors flex items-center gap-1.5 cursor-pointer">
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
@@ -217,7 +220,11 @@
                                     </button>
 
                                     {{-- Tombol Hapus --}}
-                                    <button wire:click="$set('selectedRows', ['{{ $p->id }}']); deleteSelected()" wire:confirm="Yakin ingin menghapus produk ini?" class="p-1.5 text-rose-600 hover:text-rose-800 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-md transition-all" title="Hapus Produk">
+                                    <button type="button" x-on:click.prevent="$store.confirmDialog.open({
+                                            message: 'Yakin ingin menghapus produk ini?',
+                                            confirmText: 'Ya, Hapus',
+                                            onConfirm: () => { $wire.set('selectedRows', ['{{ $p->id }}']); $wire.deleteSelected(); }
+                                        })" class="p-1.5 text-rose-600 hover:text-rose-800 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-md transition-all" title="Hapus Produk">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                                     </button>
                                 </div>
@@ -608,7 +615,11 @@
                                                     <button type="button" wire:click="editCategory({{ $cat->id }})" class="p-1 text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950/40 rounded transition-colors" title="Edit">
                                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                                                     </button>
-                                                    <button type="button" wire:click="deleteCategory({{ $cat->id }})" wire:confirm="Apakah Anda yakin ingin menghapus kategori '{{ $cat->name }}'?" class="p-1 text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded transition-colors" title="Hapus">
+                                                    <button type="button" x-on:click.prevent="$store.confirmDialog.open({
+                                                            message: 'Apakah Anda yakin ingin menghapus kategori \'{{ $cat->name }}\'?',
+                                                            confirmText: 'Ya, Hapus',
+                                                            onConfirm: () => $wire.deleteCategory({{ $cat->id }})
+                                                        })" class="p-1 text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded transition-colors" title="Hapus">
                                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                                                     </button>
                                                 </div>

@@ -158,7 +158,11 @@
                 <button wire:click="bulkUpdateStatus('cancelled')" class="px-3 py-1 bg-amber-600 hover:bg-amber-500 rounded font-semibold transition-colors">
                     Batalkan
                 </button>
-                <button wire:click="bulkDelete" onclick="confirm('Yakin ingin menghapus data terpilih?') || event.stopImmediatePropagation()" class="px-3 py-1 bg-rose-600 hover:bg-rose-500 rounded font-semibold transition-colors">
+                <button type="button" x-on:click.prevent="$store.confirmDialog.open({
+                        message: 'Yakin ingin menghapus data terpilih?',
+                        confirmText: 'Ya, Hapus',
+                        onConfirm: () => $wire.bulkDelete()
+                    })" class="px-3 py-1 bg-rose-600 hover:bg-rose-500 rounded font-semibold transition-colors">
                     Hapus
                 </button>
             </div>
@@ -520,7 +524,11 @@
                                 @endif
 
                                 <div class="flex justify-end">
-                                    <button wire:click="deleteProof" wire:confirm="Apakah Anda yakin ingin menghapus bukti transaksi ini?" class="text-[11px] text-rose-600 hover:text-rose-700 dark:text-rose-400 font-medium">
+                                    <button type="button" x-on:click.prevent="$store.confirmDialog.open({
+                                            message: 'Apakah Anda yakin ingin menghapus bukti transaksi ini?',
+                                            confirmText: 'Ya, Hapus',
+                                            onConfirm: () => $wire.deleteProof()
+                                        })" class="text-[11px] text-rose-600 hover:text-rose-700 dark:text-rose-400 font-medium">
                                         Hapus Bukti Ini
                                     </button>
                                 </div>

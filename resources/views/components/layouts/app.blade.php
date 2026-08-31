@@ -287,9 +287,19 @@
                     </div>
 
                     {{-- PEMANGGILAN KOMPONEN LIVEWIRE --}}
+                    @php
+                        // $viewAllUrl sebelumnya tidak pernah di-set oleh page manapun
+                        // (selalu jatuh ke fallback '#' di bawah), jadi link "Lihat Semua
+                        // Notifikasi" di footer sidebar dead-end. Sekarang diarahkan ke
+                        // halaman App\Livewire\Master\Notifications\Index kalau route-nya
+                        // sudah terdaftar (lihat guard Route::has(), pola sama dengan link
+                        // Pengaturan Sistem di atas).
+                        $notifViewAllUrl = $viewAllUrl
+                            ?? (Route::has('master.notifications.index') ? route('master.notifications.index') : '#');
+                    @endphp
                     <livewire:notification-sidebar 
                         :role="$role ?? 'master'"
-                        :view-all-url="$viewAllUrl ?? '#'"
+                        :view-all-url="$notifViewAllUrl"
                     />
 
                 </div>
@@ -302,6 +312,11 @@
             </main>
         </div>
     </div>
+
+    {{-- Dialog konfirmasi global, pengganti confirm()/wire:confirm bawaan
+         browser di seluruh halaman Master Admin -- lihat komentar lengkap
+         di components/confirm-dialog.blade.php --}}
+    <x-confirm-dialog />
 
     @livewireScripts
 </body>

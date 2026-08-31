@@ -211,8 +211,12 @@
                     @else
                         {{-- Active state --}}
                         <button 
-                            wire:click="deleteUnit({{ $unit->id }})"
-                            wire:confirm="Apakah Anda yakin ingin menghapus unit '{{ $unit->name }}' secara permanen?"
+                            type="button"
+                            x-on:click.prevent="$store.confirmDialog.open({
+                                message: 'Apakah Anda yakin ingin menghapus unit \'{{ $unit->name }}\' secara permanen?',
+                                confirmText: 'Ya, Hapus Permanen',
+                                onConfirm: () => $wire.deleteUnit({{ $unit->id }})
+                            })"
                             title="Hapus Unit Usaha"
                             class="p-2 text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/60 rounded-md border border-rose-200 dark:border-rose-900/50 transition cursor-pointer shrink-0"
                         >

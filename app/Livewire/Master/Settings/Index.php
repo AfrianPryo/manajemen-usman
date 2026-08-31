@@ -4,8 +4,11 @@ namespace App\Livewire\Master\Settings;
 
 use App\Models\AuditLog;
 use App\Models\Setting;
+use App\Models\User;
+use App\Notifications\SystemNotification;
 use App\Services\FonnteOtpService;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
@@ -127,6 +130,92 @@ class Index extends Component
     public function isAccountOnlyView(): bool
     {
         return false;
+    }
+
+    /**
+     * Apakah tombol/aksi "Ajukan Reset Password" ditampilkan & boleh dipakai
+     * di halaman ini. Master Admin: FALSE (default) -- Master Admin
+     * mengubah password sendiri lewat card "Ubah Password" + OTP di atas,
+     * tidak perlu mengajukan permintaan ke siapa pun.
+     *
+     * Override di App\Livewire\Unit\Profile\Index mengembalikan TRUE, tapi
+     * HANYA kalau user yang login benar-benar ber-role 'unit-admin' --
+     * BUKAN sekadar "halaman ini dibuka lewat prefix /unit/{unit:slug}".
+     * Ini penting karena middleware 'unit.access' (lihat routes/web.php)
+     * sengaja mengizinkan Master Admin membuka dashboard/menu unit MANA PUN
+     * untuk keperluan monitoring -- kalau guard-nya cuma isAccountOnlyView(),
+     * Master Admin yang sedang "mengintip" dashboard unit akan ikut melihat
+     * & bisa memicu tombol "Ajukan Reset Password" untuk akunnya sendiri,
+     * padahal fitur ini memang KHUSUS Admin Unit. Dicek juga di sisi server
+     * lewat guard di requestPasswordReset() di bawah, bukan cuma UI.
+     */
+    public function canRequestPasswordReset(): bool
+    {
+        return false;
+    }
+
+    /**
+     * Admin Unit mengajukan permintaan reset password ke Admin Master.
+     * BEDA dengan alur "Ubah Password" (requestPasswordChangeOtp) di atas:
+     * di sini Admin Unit TIDAK langsung mengubah password sendiri (memang
+     * sengaja tidak diberi akses -- lihat App\Livewire\Unit\Profile\Index),
+     * melainkan cuma mengirim NOTIFIKASI permintaan ke seluruh Admin Master
+     * aktif, lengkap dengan tombol Approve/Reject (lihat
+     * App\Notifications\SystemNotification 'actionable' & App\Livewire\
+     * NotificationSidebar::approve()/reject() serta App\Livewire\Master\
+     * Notifications\Index yang jadi versi "halaman penuh"-nya -- keduanya
+     * yang benar-benar mengeksekusi reset password + kirim kredensial baru
+     * lewat Fonnte kalau Admin Master menekan Approve).
+     */
+    public function requestPasswordReset(): void
+    {
+        if (! $this->canRequestPasswordReset()) {
+            abort(403);
+        }
+
+        $user = Auth::user();
+
+        // Cooldown sederhana: cegah spam notifikasi ke seluruh Admin Master
+        // kalau tombolnya diklik berkali-kali dalam waktu singkat.
+        $cooldownKey = "password-reset-request-cooldown:{$user->id}";
+        if (Cache::has($cooldownKey)) {
+            session()->flash('error', 'Permintaan reset password sudah dikirim. Mohon tunggu beberapa saat sebelum mengajukan lagi.');
+            return;
+        }
+
+        $masterAdmins = User::role('master-admin')->active()->get();
+
+        if ($masterAdmins->isEmpty()) {
+            session()->flash('error', 'Tidak ada Admin Master aktif yang bisa dihubungi. Hubungi pengelola sistem.');
+            return;
+        }
+
+        $unitLabel = $user->unit?->name ? " ({$user->unit->name})" : '';
+
+        foreach ($masterAdmins as $masterAdmin) {
+            $masterAdmin->notify(new SystemNotification(
+                title: '🔑 Permintaan Reset Password',
+                message: "{$user->name} (username: {$user->username}){$unitLabel} mengajukan permintaan reset password.",
+                badge: 'Reset Password',
+                actionable: true,
+                url: route('master.users.index'),
+                extraData: [
+                    'type'             => 'password_reset_request',
+                    'target_user_id'   => $user->id,
+                    'target_user_name' => $user->name,
+                ],
+            ));
+        }
+
+        Cache::put($cooldownKey, true, now()->addMinutes(5));
+
+        AuditLog::record(
+            event: 'PASSWORD_RESET_REQUESTED',
+            identifier: $user->username,
+            description: "Admin unit '{$user->username}' mengajukan permintaan reset password ke Admin Master.",
+        );
+
+        session()->flash('success', 'Permintaan reset password telah dikirim ke Admin Master. Anda akan dihubungi setelah permintaan disetujui.');
     }
 
     public function saveProfile(): void

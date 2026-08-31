@@ -13,7 +13,7 @@
                 <input 
                     wire:model.live.debounce.300ms="search" 
                     type="text" 
-                    placeholder="Cari nama, username, NIP..."
+                    placeholder="Cari nama, username, NIP, no. HP..."
                     class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-[3px] bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-red-500/10 focus:border-red-400 shadow-sm"
                 >
             </div>
@@ -58,6 +58,10 @@
                                 <div class="min-w-0">
                                     <p class="font-semibold text-neutral-900 dark:text-white truncate text-xs">{{ $user->name }}</p>
                                     <p class="text-[11px] text-neutral-400 font-mono">@ {{ $user->username }}</p>
+                                    <p class="text-[11px] text-neutral-400 font-mono flex items-center gap-1 mt-0.5">
+                                        <svg class="w-3 h-3 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
+                                        {{ $user->phone ?: '-' }}
+                                    </p>
                                 </div>
                             </div>
                         </td>
@@ -130,8 +134,13 @@
 
                                     {{-- Tombol Reset PW --}}
                                     <button 
-                                        wire:click="resetPassword({{ $user->id }})"
-                                        wire:confirm="Apakah Anda yakin ingin mereset password akun {{ $user->name }}?"
+                                        type="button"
+                                        x-on:click.prevent="$store.confirmDialog.open({
+                                            message: 'Apakah Anda yakin ingin mereset password akun {{ $user->name }}?',
+                                            confirmText: 'Ya, Reset',
+                                            variant: 'default',
+                                            onConfirm: () => $wire.resetPassword({{ $user->id }})
+                                        })"
                                         title="Reset Password"
                                         class="p-1.5 text-amber-600 hover:text-amber-800 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/40 rounded-md transition-all cursor-pointer"
                                     >
@@ -150,8 +159,13 @@
                                         </button>
                                     @else
                                         <button 
-                                            wire:click="deleteUser({{ $user->id }})"
-                                            wire:confirm="Apakah Anda yakin ingin menghapus akun {{ $user->name }} secara PERMANEN?"
+                                            type="button"
+                                            x-on:click.prevent="$store.confirmDialog.open({
+                                                message: 'Apakah Anda yakin ingin menghapus akun {{ $user->name }} secara PERMANEN?',
+                                                confirmText: 'Ya, Hapus Permanen',
+                                                variant: 'danger',
+                                                onConfirm: () => $wire.deleteUser({{ $user->id }})
+                                            })"
                                             title="Hapus Akun"
                                             class="p-1.5 text-rose-600 hover:text-rose-800 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-md transition-all cursor-pointer"
                                         >
@@ -228,6 +242,14 @@
                         </div>
                     @endif
 
+                    {{-- Nomor HP / WhatsApp --}}
+                    <div>
+                        <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Nomor HP / WhatsApp <span class="text-red-500">*</span></label>
+                        <input type="text" wire:model="phone" inputmode="numeric" class="w-full px-3.5 py-2 text-xs font-mono font-medium border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-red-500" placeholder="08xxxxxxxxxx">
+                        <p class="text-[11px] text-neutral-400 mt-0.5">Dipakai sistem untuk mengirim notifikasi &amp; kode OTP (Fonnte) ke akun ini.</p>
+                        @error('phone') <span class="text-[11px] text-rose-500 mt-0.5 block">{{ $message }}</span> @enderror
+                    </div>
+
                     {{-- Role Admin --}}
                     <div>
                         <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Role / Peran <span class="text-red-500">*</span></label>
@@ -278,65 +300,10 @@
         </div>
     @endif
 
-    {{-- Modal Pop-up Kredensial --}}
-    @if ($createdCredentials)
-        <div 
-            x-data="{ copied: false }" 
-            class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-neutral-900/60 backdrop-blur-sm"
-        >
-            <div class="bg-white dark:bg-slate-800 rounded-lg max-w-sm w-full border border-neutral-200 dark:border-slate-700 shadow-2xl p-6 space-y-4 animate-in fade-in zoom-in duration-150">
-                
-                <div class="text-center space-y-1">
-                    <div class="h-10 w-10 bg-amber-50 dark:bg-amber-950/60 text-amber-600 rounded-full flex items-center justify-center mx-auto text-lg">
-                        🔑
-                    </div>
-                    <h3 class="text-sm font-bold text-neutral-900 dark:text-white">
-                        {{ $createdCredentials['title'] ?? 'Informasi Akun' }}
-                    </h3>
-                    <p class="text-[11px] text-neutral-400">
-                        Harap salin kredensial berikut sebelum menutup.
-                    </p>
-                </div>
-
-                <div class="p-3.5 bg-neutral-50 dark:bg-slate-900 rounded-md border border-neutral-200 dark:border-slate-700 text-xs space-y-2 font-mono">
-                    <div class="flex justify-between items-center">
-                        <span class="text-neutral-400 font-sans">Nama:</span>
-                        <span class="font-semibold text-neutral-800 dark:text-white font-sans">{{ $createdCredentials['name'] }}</span>
-                    </div>
-                    <div class="flex justify-between items-center">
-                        <span class="text-neutral-400 font-sans">Username:</span>
-                        <span class="text-neutral-900 dark:text-slate-100 font-bold px-1.5 py-0.5 rounded bg-neutral-200/60 dark:bg-slate-800">
-                            {{ $createdCredentials['username'] }}
-                        </span>
-                    </div>
-                    <div class="flex justify-between items-center">
-                        <span class="text-neutral-400 font-sans">Password:</span>
-                        <span class="text-amber-600 dark:text-amber-400 font-bold px-1.5 py-0.5 rounded bg-amber-50 dark:bg-amber-950">
-                            {{ $createdCredentials['password'] }}
-                        </span>
-                    </div>
-                </div>
-
-                <button 
-                    type="button"
-                    @click="
-                        navigator.clipboard.writeText('Nama: {{ $createdCredentials['name'] }}\nUsername: {{ $createdCredentials['username'] }}\nPassword: {{ $createdCredentials['password'] }}');
-                        copied = true;
-                        setTimeout(() => { $wire.set('createdCredentials', null) }, 1000);
-                    "
-                    :class="copied ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-blue-900 hover:bg-blue-950'"
-                    class="w-full py-2.5 text-white font-bold text-xs rounded-md transition shadow-sm flex items-center justify-center gap-2 cursor-pointer"
-                >
-                    <template x-if="!copied">
-                        <span>Salin Kredensial & Tutup</span>
-                    </template>
-                    <template x-if="copied">
-                        <span>Berhasil Disalin!</span>
-                    </template>
-                </button>
-
-            </div>
-        </div>
-    @endif
+    {{-- Modal Pop-up Kredensial (username/password baru) -- komponen bersama,
+         dipakai juga di notification-sidebar & halaman notifikasi penuh saat
+         Admin Master menyetujui permintaan reset password. Lihat
+         resources/views/components/credentials-modal.blade.php --}}
+    <x-credentials-modal :credentials="$createdCredentials" />
 
 </div>
