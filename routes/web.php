@@ -91,8 +91,16 @@ Route::middleware(['auth', 'user.active', 'single.session'])->group(function () 
 
         // Smart Redirect Dashboard
         Route::get('/dashboard', function () {
+            // Pakai facade Auth::user() (bukan helper auth()->user()) --
+            // facade Auth punya docblock @method resmi yang mendeklarasikan
+            // user(), sedangkan auth() tanpa argumen di-typehint ke
+            // Illuminate\Contracts\Auth\Factory yang TIDAK mendeklarasikan
+            // method user() (itu milik interface Guard), jadi intelephense
+            // menandainya "undefined method". @var di bawah tetap dipakai
+            // supaya method custom (isMasterAdmin/isUnitAdmin/unit) di App\
+            // Models\User juga ter-resolve.
             /** @var \App\Models\User $user */
-            $user = auth()->user();
+            $user = Auth::user();
 
             if ($user->isMasterAdmin()) {
                 return redirect()->route('master.dashboard');

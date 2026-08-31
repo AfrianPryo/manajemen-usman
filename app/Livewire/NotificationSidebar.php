@@ -31,7 +31,10 @@ class NotificationSidebar extends Component
 
     public function approve($notificationId)
     {
-        $notification = Auth::user()?->notifications()->find($notificationId);
+        /** @var User|null $user */
+        $user = Auth::user();
+
+        $notification = $user?->notifications()->find($notificationId);
         if (!$notification) return;
 
         // ================= PERMINTAAN RESET PASSWORD (ADMIN UNIT) =================
@@ -147,7 +150,10 @@ class NotificationSidebar extends Component
 
     public function reject($notificationId)
     {
-        $notification = Auth::user()?->notifications()->find($notificationId);
+        /** @var User|null $user */
+        $user = Auth::user();
+
+        $notification = $user?->notifications()->find($notificationId);
         if (!$notification) return;
 
         if (($notification->data['type'] ?? null) === 'password_reset_request') {
@@ -179,7 +185,10 @@ class NotificationSidebar extends Component
 
     public function markAsRead($notificationId, $url = null)
     {
-        $notification = Auth::user()?->notifications()->find($notificationId);
+        /** @var User|null $user */
+        $user = Auth::user();
+
+        $notification = $user?->notifications()->find($notificationId);
         if ($notification) {
             $notification->markAsRead();
         }
@@ -191,7 +200,10 @@ class NotificationSidebar extends Component
 
     public function markAllAsRead()
     {
-        Auth::user()?->unreadNotifications->markAsRead();
+        /** @var User|null $user */
+        $user = Auth::user();
+
+        $user?->unreadNotifications->markAsRead();
     }
 
     private function calculateNextRunDate($currentDate, $frequency)
@@ -212,8 +224,11 @@ class NotificationSidebar extends Component
 
     public function render()
     {
-        $notifications = Auth::check() 
-            ? Auth::user()->unreadNotifications()->latest()->take(10)->get() 
+        /** @var User|null $user */
+        $user = Auth::user();
+
+        $notifications = $user
+            ? $user->unreadNotifications()->latest()->take(10)->get()
             : collect();
 
         // Ubah 'livewire.notification-sidebar' menjadi 'components.notification-sidebar'
