@@ -10,6 +10,7 @@ use App\Models\FinanceTransaction;
 use App\Models\Unit;
 use App\Models\User;
 use App\Notifications\SystemNotification;
+use App\Support\Concerns\SyncsAlertNotifications;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
@@ -25,7 +26,7 @@ use App\Exports\TransactionExport;
 #[Title('Monitoring Transaksi')]
 class Index extends Component
 {
-    use WithPagination, WithFileUploads;
+    use WithPagination, WithFileUploads, SyncsAlertNotifications;
 
     // Filter Properties
     public string $search = '';
@@ -91,13 +92,35 @@ class Index extends Component
     // =========================================================================
 
     /**
-     * Jalankan pengecekan notifikasi untuk SEMUA transaksi.
+     * Jalankan pengecekan notifikasi untuk transaksi yang RELEVAN saja.
      * Dipanggil saat halaman dimuat & setelah proses import,
      * karena keduanya bisa memengaruhi banyak data sekaligus.
+     *
+     * Sebelumnya method ini menarik SELURUH tabel transaksi
+     * (FinanceTransaction::all()) setiap kali halaman dibuka. Sekarang
+     * hanya transaksi berstatus 'pending', ATAU transaksi yang masih
+     * memiliki notifikasi alert aktif (perlu dicek untuk dibersihkan),
+     * yang diperiksa ulang.
      */
     private function syncAllTransactionNotifications(): void
     {
-        FinanceTransaction::all()->each(function (FinanceTransaction $transaction) {
+        $pendingIds = FinanceTransaction::query()
+            ->where('status', 'pending')
+            ->pluck('id');
+
+        $pendingAlertIds = $this->idsWithPendingAlerts(
+            idField: 'transaction_id',
+            typeField: 'transaction_alert_type',
+            typeValues: ['pending_transaction'],
+        );
+
+        $relevantIds = $pendingIds->merge($pendingAlertIds)->unique();
+
+        if ($relevantIds->isEmpty()) {
+            return;
+        }
+
+        FinanceTransaction::query()->whereIn('id', $relevantIds)->get()->each(function (FinanceTransaction $transaction) {
             $this->syncTransactionNotification($transaction);
         });
     }
@@ -127,36 +150,29 @@ class Index extends Component
 
     private function fireTransactionAlert(FinanceTransaction $transaction, string $type, string $title, string $message): void
     {
-        foreach (User::all() as $user) {
-            $hasPending = $user->unreadNotifications()
-                ->where('data->transaction_id', $transaction->id)
-                ->where('data->transaction_alert_type', $type)
-                ->exists();
-
-            if (!$hasPending) {
-                $user->notify(new SystemNotification(
-                    title: $title,
-                    message: $message,
-                    badge: 'Pending',
-                    actionable: false,
-                    url: url()->current(),
-                    extraData: [
-                        'transaction_id'           => $transaction->id,
-                        'transaction_alert_type'   => $type,
-                    ]
-                ));
-            }
-        }
+        $this->batchFireAlert(
+            idField: 'transaction_id',
+            idValue: $transaction->id,
+            typeField: 'transaction_alert_type',
+            typeValue: $type,
+            title: $title,
+            message: $message,
+            badge: 'Pending',
+            extraData: [
+                'transaction_id'         => $transaction->id,
+                'transaction_alert_type' => $type,
+            ],
+        );
     }
 
     private function clearTransactionAlert(FinanceTransaction $transaction, string $type): void
     {
-        foreach (User::all() as $user) {
-            $user->unreadNotifications()
-                ->where('data->transaction_id', $transaction->id)
-                ->where('data->transaction_alert_type', $type)
-                ->update(['read_at' => now()]);
-        }
+        $this->batchClearAlert(
+            idField: 'transaction_id',
+            idValue: $transaction->id,
+            typeField: 'transaction_alert_type',
+            typeValue: $type,
+        );
     }
 
     public function updatedSelectAll($value): void

@@ -7,7 +7,7 @@
 
 <div x-data="{ open: false }"
      @keydown.window.escape="open = false"
-     wire:poll.visible.10s="$refresh"
+     wire:poll.visible.30s="$refresh"
      class="relative">
     {{-- Trigger Bell Button --}}
     <button @click="open = true" 

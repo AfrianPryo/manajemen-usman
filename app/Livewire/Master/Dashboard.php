@@ -409,7 +409,7 @@ class Dashboard extends Component
             'totalUnits'         => $allUnitsCount,
             'activeUnits'        => $activeUnitsCount,
             'inactiveUnits'      => $allUnitsCount - $activeUnitsCount,
-            'totalAdmins'        => User::all()->filter(fn ($u) => method_exists($u, 'isUnitAdmin') ? $u->isUnitAdmin() : true)->count(),
+            'totalAdmins'        => User::role('unit-admin')->count(),
             'totalTransactions'  => (int) $unitContributions->sum('trx_count'),
             'avgTransactionValue'=> $unitContributions->sum('trx_count') > 0
                 ? $grandTotalContribution / $unitContributions->sum('trx_count')
@@ -537,7 +537,7 @@ class Dashboard extends Component
             'totalUnits'          => $allUnitsCount,
             'activeUnits'         => $activeUnitsCount,
             'inactiveUnits'       => $allUnitsCount - $activeUnitsCount,
-            'totalAdmins'         => User::all()->filter(fn ($u) => method_exists($u, 'isUnitAdmin') ? $u->isUnitAdmin() : true)->count(),
+            'totalAdmins'         => User::role('unit-admin')->count(),
         ]);
     }
 

@@ -18,6 +18,13 @@ return new class extends Migration
             $table->text('data');
             $table->timestamp('read_at')->nullable();
             $table->timestamps();
+
+            // Menopang query batch di SyncsAlertNotifications
+            // (idsWithPendingAlerts, batchFireAlert, batchClearAlert) yang
+            // selalu memfilter notifiable_type + type + read_at SEBELUM
+            // membaca kolom JSON `data`. Index morphs() bawaan hanya mencakup
+            // (notifiable_type, notifiable_id), belum termasuk type/read_at.
+            $table->index(['notifiable_type', 'type', 'read_at']);
         });
     }
 

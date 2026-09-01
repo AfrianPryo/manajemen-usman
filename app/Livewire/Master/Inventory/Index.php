@@ -10,6 +10,7 @@ use App\Models\Unit;
 use App\Models\User;
 use App\Models\AuditLog;
 use App\Notifications\SystemNotification;
+use App\Support\Concerns\SyncsAlertNotifications;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
@@ -25,7 +26,7 @@ use App\Exports\ProductExport;
 #[Title('Inventaris Produk')]
 class Index extends Component
 {
-    use WithPagination, WithFileUploads;
+    use WithPagination, WithFileUploads, SyncsAlertNotifications;
 
     // Filter & State Variables
     public string $search = '';
@@ -104,13 +105,38 @@ class Index extends Component
     // =========================================================================
 
     /**
-     * Jalankan pengecekan notifikasi stok untuk SEMUA produk.
+     * Jalankan pengecekan notifikasi stok untuk produk yang RELEVAN saja.
      * Dipanggil saat halaman dimuat & setelah proses import,
      * karena kedua proses ini bisa mengubah banyak stok sekaligus.
+     *
+     * Sebelumnya method ini menarik SELURUH tabel produk (Product::all())
+     * setiap kali halaman dibuka. Sekarang hanya produk yang stoknya
+     * sedang menipis/habis, ATAU produk yang masih memiliki notifikasi
+     * alert aktif (perlu dicek untuk dibersihkan), yang diperiksa ulang.
+     * Produk dengan stok normal & tanpa alert aktif dilewati sepenuhnya.
      */
     private function syncAllStockNotifications(): void
     {
-        Product::all()->each(function (Product $product) {
+        $lowOrOutOfStockIds = Product::query()
+            ->where(function ($q) {
+                $q->where('stock', '<=', 0)
+                    ->orWhereColumn('stock', '<=', 'min_stock');
+            })
+            ->pluck('id');
+
+        $pendingAlertIds = $this->idsWithPendingAlerts(
+            idField: 'product_id',
+            typeField: 'inventory_alert_type',
+            typeValues: ['low_stock', 'out_of_stock'],
+        );
+
+        $relevantIds = $lowOrOutOfStockIds->merge($pendingAlertIds)->unique();
+
+        if ($relevantIds->isEmpty()) {
+            return;
+        }
+
+        Product::query()->whereIn('id', $relevantIds)->get()->each(function (Product $product) {
             $this->syncStockNotification($product);
         });
     }
@@ -148,36 +174,29 @@ class Index extends Component
 
     private function fireStockAlert(Product $product, string $type, string $title, string $message): void
     {
-        foreach (User::all() as $user) {
-            $hasPending = $user->unreadNotifications()
-                ->where('data->product_id', $product->id)
-                ->where('data->inventory_alert_type', $type)
-                ->exists();
-
-            if (!$hasPending) {
-                $user->notify(new SystemNotification(
-                    title: $title,
-                    message: $message,
-                    badge: $type === 'out_of_stock' ? 'Stok Habis' : 'Stok Menipis',
-                    actionable: false,
-                    url: url()->current(),
-                    extraData: [
-                        'product_id'            => $product->id,
-                        'inventory_alert_type'  => $type,
-                    ]
-                ));
-            }
-        }
+        $this->batchFireAlert(
+            idField: 'product_id',
+            idValue: $product->id,
+            typeField: 'inventory_alert_type',
+            typeValue: $type,
+            title: $title,
+            message: $message,
+            badge: $type === 'out_of_stock' ? 'Stok Habis' : 'Stok Menipis',
+            extraData: [
+                'product_id'            => $product->id,
+                'inventory_alert_type'  => $type,
+            ],
+        );
     }
 
     private function clearStockAlert(Product $product, string $type): void
     {
-        foreach (User::all() as $user) {
-            $user->unreadNotifications()
-                ->where('data->product_id', $product->id)
-                ->where('data->inventory_alert_type', $type)
-                ->update(['read_at' => now()]);
-        }
+        $this->batchClearAlert(
+            idField: 'product_id',
+            idValue: $product->id,
+            typeField: 'inventory_alert_type',
+            typeValue: $type,
+        );
     }
 
     // =========================================================================

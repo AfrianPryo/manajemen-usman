@@ -22,6 +22,11 @@ return new class extends Migration
             $table->date('transaction_date');
             $table->string('proof_file')->nullable();
             $table->timestamps();
+
+            // Index untuk laporan/dashboard yang memfilter per unit + status
+            // dalam rentang tanggal, dan rekap berdasarkan tipe + status.
+            $table->index(['unit_id', 'status', 'transaction_date']);
+            $table->index(['type', 'status']);
         });
     }
 

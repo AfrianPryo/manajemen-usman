@@ -23,6 +23,11 @@ return new class extends Migration
             $table->string('location')->nullable();
             $table->text('notes')->nullable();
             $table->timestamps();
+
+            // Dipakai syncAllAssetNotifications() untuk mencari aset yang
+            // statusnya/kondisinya alert-worthy (maintenance, damaged, dst).
+            $table->index('status');
+            $table->index('condition');
         });
     }
 

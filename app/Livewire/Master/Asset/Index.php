@@ -11,6 +11,7 @@ use App\Models\AuditLog;
 use App\Models\Unit;
 use App\Models\User;
 use App\Notifications\SystemNotification;
+use App\Support\Concerns\SyncsAlertNotifications;
 use App\Exports\AssetTemplateExport;
 use App\Exports\AssetExport;
 use App\Imports\AssetsImport;
@@ -22,7 +23,7 @@ use Livewire\Attributes\Title;
 #[Title('Manajemen Aset Usaha')]
 class Index extends Component
 {
-    use WithPagination, WithFileUploads;
+    use WithPagination, WithFileUploads, SyncsAlertNotifications;
 
     // Filter & Search
     public $search = '';
@@ -96,13 +97,35 @@ class Index extends Component
     // =========================================================================
 
     /**
-     * Jalankan pengecekan notifikasi untuk SEMUA aset.
+     * Jalankan pengecekan notifikasi untuk aset yang RELEVAN saja.
      * Dipanggil saat halaman dimuat & setelah proses import,
      * karena kedua proses ini bisa memengaruhi banyak data sekaligus.
+     *
+     * Sebelumnya method ini menarik SELURUH tabel aset (Asset::all()) setiap
+     * kali halaman dibuka. Sekarang hanya aset yang kondisinya rusak/dalam
+     * maintenance, ATAU aset yang masih memiliki notifikasi alert aktif
+     * (perlu dicek untuk dibersihkan), yang diperiksa ulang.
      */
     private function syncAllAssetNotifications(): void
     {
-        Asset::all()->each(function (Asset $asset) {
+        $alertWorthyIds = Asset::query()
+            ->where('condition', 'damaged')
+            ->orWhere('status', 'maintenance')
+            ->pluck('id');
+
+        $pendingAlertIds = $this->idsWithPendingAlerts(
+            idField: 'asset_id',
+            typeField: 'asset_alert_type',
+            typeValues: ['asset_damaged', 'asset_maintenance'],
+        );
+
+        $relevantIds = $alertWorthyIds->merge($pendingAlertIds)->unique();
+
+        if ($relevantIds->isEmpty()) {
+            return;
+        }
+
+        Asset::query()->whereIn('id', $relevantIds)->get()->each(function (Asset $asset) {
             $this->syncAssetNotification($asset);
         });
     }
@@ -143,36 +166,29 @@ class Index extends Component
 
     private function fireAssetAlert(Asset $asset, string $type, string $title, string $message): void
     {
-        foreach (User::all() as $user) {
-            $hasPending = $user->unreadNotifications()
-                ->where('data->asset_id', $asset->id)
-                ->where('data->asset_alert_type', $type)
-                ->exists();
-
-            if (!$hasPending) {
-                $user->notify(new SystemNotification(
-                    title: $title,
-                    message: $message,
-                    badge: $type === 'asset_damaged' ? 'Rusak' : 'Maintenance',
-                    actionable: false,
-                    url: url()->current(),
-                    extraData: [
-                        'asset_id'         => $asset->id,
-                        'asset_alert_type' => $type,
-                    ]
-                ));
-            }
-        }
+        $this->batchFireAlert(
+            idField: 'asset_id',
+            idValue: $asset->id,
+            typeField: 'asset_alert_type',
+            typeValue: $type,
+            title: $title,
+            message: $message,
+            badge: $type === 'asset_damaged' ? 'Rusak' : 'Maintenance',
+            extraData: [
+                'asset_id'         => $asset->id,
+                'asset_alert_type' => $type,
+            ],
+        );
     }
 
     private function clearAssetAlert(Asset $asset, string $type): void
     {
-        foreach (User::all() as $user) {
-            $user->unreadNotifications()
-                ->where('data->asset_id', $asset->id)
-                ->where('data->asset_alert_type', $type)
-                ->update(['read_at' => now()]);
-        }
+        $this->batchClearAlert(
+            idField: 'asset_id',
+            idValue: $asset->id,
+            typeField: 'asset_alert_type',
+            typeValue: $type,
+        );
     }
 
     public function updatedSelectAll($value)

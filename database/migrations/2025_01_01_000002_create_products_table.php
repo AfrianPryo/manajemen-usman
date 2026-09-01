@@ -25,6 +25,10 @@ return new class extends Migration
 
             // Kode barang unik khusus per unit usaha
             $table->unique(['unit_id', 'code']);
+
+            // Dipakai syncAllStockNotifications() untuk mencari produk yang
+            // stoknya di bawah/​sama dengan ambang batas.
+            $table->index('stock');
         });
     }
 
