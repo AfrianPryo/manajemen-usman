@@ -3,16 +3,16 @@
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div class="flex items-center gap-2.5 shrink-0">
             <button wire:click="openCreateModal" class="px-4 py-2 text-xs font-bold text-white bg-blue-900 hover:bg-blue-950 rounded-[3px] transition-all flex items-center gap-2 shadow-sm shadow-blue-900/20 cursor-pointer">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+                <x-heroicon-o-plus stroke-width="2.5" class="w-4 h-4" />
                 <span>Tambah Produk</span>
             </button>
             <button wire:click="exportProducts" class="px-3.5 py-2 text-xs font-semibold text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800 rounded-[3px] hover:bg-sky-100 dark:hover:bg-sky-900/40 transition-all flex items-center gap-1.5 cursor-pointer">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
+                <x-heroicon-o-arrow-down-tray class="w-4 h-4" />
                 <span>Export Excel</span>
             </button>
 
             <button wire:click="openImportModal" class="px-3.5 py-2 text-xs font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-[3px] hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition-all flex items-center gap-1.5 cursor-pointer">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/></svg>
+                <x-heroicon-o-arrow-up-tray class="w-4 h-4" />
                 <span>Import Excel</span>
             </button>
         </div>
@@ -20,10 +20,7 @@
         <button type="button" 
                 wire:click="openCategoryModal" 
                 class="px-3.5 py-2 text-xs font-semibold text-neutral-700 dark:text-neutral-200 bg-white dark:bg-slate-800 border border-neutral-200 dark:border-slate-700 rounded-[3px] hover:bg-neutral-50 dark:hover:bg-slate-700 transition-all flex items-center gap-1.5 cursor-pointer shadow-sm">
-            <svg class="w-4 h-4 text-neutral-500 dark:text-neutral-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 005.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 009.568 3z"/>
-                <path stroke-linecap="round" stroke-linejoin="round" d="M6 6h.008v.008H6V6z"/>
-            </svg>
+            <x-heroicon-o-tag class="w-4 h-4 text-neutral-500 dark:text-neutral-400" />
             <span>Kelola Kategori</span>
         </button>
     </div>
@@ -113,9 +110,7 @@
                 <button type="button" 
                         wire:click="exportSelected" 
                         class="px-3 py-1.5 bg-neutral-800 hover:bg-neutral-700 text-white border border-neutral-700 rounded font-semibold transition-colors flex items-center gap-1.5 cursor-pointer">
-                    <svg class="w-3.5 h-3.5 text-neutral-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
-                    </svg>
+                    <x-heroicon-o-arrow-down-tray class="w-3.5 h-3.5 text-neutral-400" />
                     <span>Export Terpilih</span>
                 </button>
 
@@ -127,9 +122,7 @@
                             onConfirm: () => $wire.deleteSelected()
                         })"
                         class="px-3 py-1.5 bg-rose-600 hover:bg-rose-500 text-white rounded font-semibold transition-colors flex items-center gap-1.5 cursor-pointer">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                    </svg>
+                    <x-heroicon-o-trash class="w-3.5 h-3.5" />
                     <span>Hapus Terpilih</span>
                 </button>
 
@@ -211,12 +204,10 @@
                                 <div class="flex items-center justify-center gap-1">
                                     {{-- Tombol Restock --}}
                                     <button wire:click="openStockModal({{ $p->id }})" class="p-1.5 text-emerald-600 hover:text-emerald-800 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 rounded-md transition-all" title="Restock / Adjust Stok">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m6-6H6"/></svg>
-                                    </button>
-
+                                        <x-heroicon-o-plus class="w-4 h-4" />                                    </button>
                                     {{-- Tombol Edit --}}
                                     <button wire:click="editProduct({{ $p->id }})" class="p-1.5 text-amber-600 hover:text-amber-800 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/40 rounded-md transition-all" title="Edit Produk">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                                        <x-heroicon-o-pencil-square class="w-4 h-4" />
                                     </button>
 
                                     {{-- Tombol Hapus --}}
@@ -225,7 +216,7 @@
                                             confirmText: 'Ya, Hapus',
                                             onConfirm: () => { $wire.set('selectedRows', ['{{ $p->id }}']); $wire.deleteSelected(); }
                                         })" class="p-1.5 text-rose-600 hover:text-rose-800 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-md transition-all" title="Hapus Produk">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                        <x-heroicon-o-trash class="w-4 h-4" />
                                     </button>
                                 </div>
                             </td>
@@ -341,7 +332,7 @@
                                     Kategori Produk <span class="text-red-500">*</span>
                                 </label>
                                 <button type="button" wire:click="openCategoryModal" class="text-[11px] font-bold text-blue-900 hover:text-blue-950 dark:text-red-400 flex items-center gap-1 cursor-pointer">
-                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+                                    <x-heroicon-o-plus class="w-3 h-3" stroke-width="2.5" />
                                     <span>Tambah Kategori</span>
                                 </button>
                             </div>
@@ -476,7 +467,7 @@
                         <p class="text-[11px] text-neutral-500 dark:text-neutral-400">Tambah, ubah, atau hapus kategori barang dagangan</p>
                     </div>
                     <button type="button" wire:click="closeCategoryModal" class="p-1 text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 rounded-lg transition-colors">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                        <x-heroicon-o-x-mark class="w-5 h-5" stroke-width="2" />
                     </button>
                 </div>
 
@@ -506,7 +497,7 @@
 
                             @if($isEditingCategory)
                                 <button type="button" wire:click="resetCategoryForm" class="inline-flex items-center gap-1 text-[11px] font-medium text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200 px-2 py-0.5 rounded-md hover:bg-neutral-200/60 dark:hover:bg-slate-800 transition-colors">
-                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                                <x-heroicon-o-x-mark class="w-3 h-3" stroke-width="2" />
                                     Batal Edit
                                 </button>
                             @endif
@@ -613,14 +604,14 @@
                                             <td class="px-4 py-2.5 text-center">
                                                 <div class="flex items-center justify-center gap-1">
                                                     <button type="button" wire:click="editCategory({{ $cat->id }})" class="p-1 text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950/40 rounded transition-colors" title="Edit">
-                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                                                        <x-heroicon-o-pencil-square class="w-4 h-4" stroke-width="2" />
                                                     </button>
                                                     <button type="button" x-on:click.prevent="$store.confirmDialog.open({
                                                             message: 'Apakah Anda yakin ingin menghapus kategori \'{{ $cat->name }}\'?',
                                                             confirmText: 'Ya, Hapus',
                                                             onConfirm: () => $wire.deleteCategory({{ $cat->id }})
                                                         })" class="p-1 text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded transition-colors" title="Hapus">
-                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                                        <x-heroicon-o-trash class="w-4 h-4" stroke-width="2" />
                                                     </button>
                                                 </div>
                                             </td>
@@ -661,7 +652,7 @@
                         </p>
                     </div>
                     <button type="button" wire:click="closeStockModal" class="p-1 text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 rounded-lg transition-colors">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                        <x-heroicon-o-x-mark class="w-5 h-5" stroke-width="2" />
                     </button>
                 </div>
 
@@ -738,7 +729,7 @@
                         <p class="text-[11px] text-neutral-500 dark:text-neutral-400 mt-0.5">Tambah atau perbarui stok & master produk sekaligus.</p>
                     </div>
                     <button type="button" wire:click="closeImportModal" class="p-1.5 text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 rounded-lg hover:bg-neutral-100 dark:hover:bg-slate-700 transition-colors">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                        <x-heroicon-o-x-mark class="w-4 h-4" stroke-width="2" />
                     </button>
                 </div>
 
@@ -757,7 +748,7 @@
                     {{-- Unduh Template --}}
                     <div>
                         <button type="button" wire:click="downloadTemplate" class="w-full py-2.5 px-3 text-xs font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 rounded-xl hover:bg-emerald-100 dark:hover:bg-emerald-900/50 transition-all flex items-center justify-center gap-2 cursor-pointer">
-                            <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
+                            <x-heroicon-o-arrow-down-tray class="w-4 h-4 shrink-0" stroke-width="2" />
                             <span>Unduh Template Produk (.CSV)</span>
                         </button>
                     </div>
@@ -800,9 +791,7 @@
             <div class="flex items-start justify-between border-b border-neutral-100 dark:border-slate-700/80 pb-4 mb-4">
                 <div class="flex items-center gap-3">
                     <div class="p-2.5 rounded-xl bg-rose-50 text-rose-600 dark:bg-rose-950/50 dark:text-rose-400 shrink-0">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/>
-                        </svg>
+                        <x-heroicon-o-exclamation-circle class="w-6 h-6" stroke-width="2" />
                     </div>
                     <div>
                         <h3 class="text-base font-bold text-neutral-900 dark:text-white">Import File Dibatalkan</h3>
@@ -810,7 +799,7 @@
                     </div>
                 </div>
                 <button type="button" wire:click="$set('showErrorModal', false)" class="text-neutral-400 hover:text-neutral-600 dark:hover:text-white">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                    <x-heroicon-o-x-mark class="w-5 h-5" stroke-width="2" />
                 </button>
             </div>
 

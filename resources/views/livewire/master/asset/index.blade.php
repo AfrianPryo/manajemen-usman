@@ -14,7 +14,7 @@
             <div class="flex items-center justify-between">
                 <p class="text-xs font-medium text-neutral-400">Total Aset & Nilai</p>
                 <span class="p-2 rounded-xl bg-blue-50 dark:bg-blue-950/50 text-blue-500">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 7.5l-9-5.25L3 7.5m18 0l-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-9v9"/></svg>
+                    <x-heroicon-o-cube class="w-4 h-4" />
                 </span>
             </div>
             <div class="mt-4 flex items-baseline justify-between">
@@ -28,7 +28,7 @@
             <div class="flex items-center justify-between">
                 <p class="text-xs font-medium text-neutral-400">Tersedia</p>
                 <span class="p-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-500">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    <x-heroicon-o-check-circle class="w-4 h-4" />
                 </span>
             </div>
             <p class="mt-4 text-2xl font-bold text-emerald-600 dark:text-emerald-400 tracking-tight">{{ $availableCount }}</p>
@@ -39,7 +39,7 @@
             <div class="flex items-center justify-between">
                 <p class="text-xs font-medium text-neutral-400">Sedang Digunakan</p>
                 <span class="p-2 rounded-xl bg-sky-50 dark:bg-sky-950/50 text-sky-500">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/></svg>
+                    <x-heroicon-o-user class="w-4 h-4" />
                 </span>
             </div>
             <p class="mt-4 text-2xl font-bold text-sky-600 dark:text-sky-400 tracking-tight">{{ $assignedCount }}</p>
@@ -50,7 +50,7 @@
             <div class="flex items-center justify-between">
                 <p class="text-xs font-medium text-neutral-400">Dalam Perbaikan</p>
                 <span class="p-2 rounded-xl bg-amber-50 dark:bg-amber-950/50 text-amber-500">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11.42 15.17L17.25 21A2.652 2.652 0 0021 17.25l-5.877-5.877M11.42 15.17l2.496-3.03c.317-.384.74-.626 1.208-.766M11.42 15.17L4.268 8.018a3.1 3.1 0 010-4.385l.178-.178a3.1 3.1 0 014.385 0l7.152 7.152M13.916 12.14l-3.03 2.496"/></svg>
+                    <x-heroicon-o-wrench class="w-4 h-4" />
                 </span>
             </div>
             <p class="mt-4 text-2xl font-bold text-amber-600 dark:text-amber-400 tracking-tight">{{ $maintenanceCount }}</p>
@@ -63,13 +63,13 @@
         <div class="flex items-center gap-2.5 shrink-0">
             {{-- Tombol Export --}}
             <button wire:click="exportData" class="px-3.5 py-2 text-xs font-semibold text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800 rounded-[3px] hover:bg-sky-100 dark:hover:bg-sky-900/40 transition-all flex items-center gap-1.5 cursor-pointer">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
+                <x-heroicon-o-arrow-down-tray class="w-4 h-4" />
                 <span>Export Excel</span>
             </button>
 
             {{-- Tombol Import --}}
             <button wire:click="openImportModal" class="px-3.5 py-2 text-xs font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-[3px] hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition-all flex items-center gap-1.5 cursor-pointer">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/></svg>
+                <x-heroicon-o-arrow-up-tray class="w-4 h-4" />
                 <span>Import Excel</span>
             </button>
         </div>
@@ -77,7 +77,7 @@
         <div class="flex items-center gap-2.5 shrink-0">
             {{-- Tombol Tambah Aset --}}
             <button wire:click="openModal" class="px-4 py-2 text-xs font-bold text-white bg-blue-900 hover:bg-blue-950 rounded-[3px] transition-all flex items-center gap-2 shadow-sm shadow-blue-900/20 cursor-pointer">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+                <x-heroicon-o-plus stroke-width="2.5" class="w-4 h-4" />
                 <span>Tambah Aset</span>
             </button>
         </div>
@@ -241,14 +241,14 @@
                             <td class="px-4 py-3.5 text-center whitespace-nowrap">
                                 <div class="flex items-center justify-center gap-1">
                                     <button wire:click="edit({{ $asset->id }})" class="p-1.5 text-amber-600 hover:text-amber-800 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/40 rounded-md transition-all cursor-pointer" title="Edit Aset">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"/></svg>
+                                        <x-heroicon-o-pencil-square class="w-4 h-4" />
                                     </button>
                                     <button type="button" x-on:click.prevent="$store.confirmDialog.open({
                                             message: 'Yakin hapus aset ini?',
                                             confirmText: 'Ya, Hapus',
                                             onConfirm: () => $wire.delete({{ $asset->id }})
                                         })" class="p-1.5 text-rose-500 hover:text-rose-700 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-md transition-all cursor-pointer" title="Hapus Aset">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"/></svg>
+                                        <x-heroicon-o-trash class="w-4 h-4" />
                                     </button>
                                 </div>
                             </td>
@@ -436,7 +436,7 @@
 
                     <div>
                         <button type="button" wire:click="downloadTemplate" class="w-full py-2 px-3 text-xs font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-md hover:bg-emerald-100 transition flex items-center justify-center gap-2">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
+                            <x-heroicon-o-arrow-down-tray class="w-4 h-4" />
                             Unduh Template (.XLSX)
                         </button>
                     </div>
@@ -468,9 +468,7 @@
             <div class="flex items-start justify-between border-b border-neutral-100 dark:border-slate-700/80 pb-4 mb-4">
                 <div class="flex items-center gap-3">
                     <div class="p-2.5 rounded-xl bg-rose-50 text-rose-600 dark:bg-rose-950/50 dark:text-rose-400 shrink-0">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/>
-                        </svg>
+                        <x-heroicon-o-exclamation-circle class="w-6 h-6" />
                     </div>
                     <div>
                         <h3 class="text-base font-bold text-neutral-900 dark:text-white">Import File Dibatalkan</h3>
@@ -478,7 +476,7 @@
                     </div>
                 </div>
                 <button type="button" wire:click="closeErrorModal" class="text-neutral-400 hover:text-neutral-600 dark:hover:text-white">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                    <x-heroicon-o-x-mark class="w-5 h-5" />
                 </button>
             </div>
 

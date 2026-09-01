@@ -21,11 +21,11 @@
                     wire:click="export"
                     wire:loading.attr="disabled"
                     class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800 rounded-[3px] hover:bg-sky-100 dark:hover:bg-sky-900/40 transition-all shadow-sm shadow-black/[0.02] cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed">
-                <svg wire:loading.remove wire:target="export" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
-                <svg wire:loading wire:target="export" class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
-                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
+                    <x-heroicon-o-arrow-down-tray stroke-width="2.5" wire:loading.remove wire:target="export" class="w-4 h-4" />
+                    <svg wire:loading wire:target="export" class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
                 <span wire:loading.remove wire:target="export">Export</span>
                 <span wire:loading wire:target="export">Mengunduh...</span>
             </button>
@@ -34,7 +34,7 @@
             <button type="button"
                     wire:click="openCreateAdminModal"
                     class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-[3px] hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition-all shadow-sm shadow-black/[0.02] cursor-pointer">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M18 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zM3 19.235v-.11a6.375 6.375 0 0112.75 0v.109A12.318 12.318 0 019.374 21c-2.331 0-4.512-.645-6.374-1.766z"/></svg>
+                <x-heroicon-o-user-plus class="w-4 h-4" />
                 <span>Admin Baru</span>
             </button>
 
@@ -42,7 +42,7 @@
             <button type="button"
                     wire:click="openCreateUnitModal"
                     class="inline-flex items-center gap-2 px-4 py-2 text-xs font-bold text-white bg-blue-900 hover:bg-blue-950 rounded-[3px] transition-all shadow-sm shadow-blue-900/20 cursor-pointer">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+                <x-heroicon-o-plus class="w-4 h-4" />
                 <span>Unit Usaha</span>
             </button>
         </div>
@@ -82,6 +82,13 @@
                                 @error('nip') <span class="text-xs text-red-500">{{ $message }}</span> @enderror
                             </div>
                         @endif
+
+                        {{-- Nomor HP / WhatsApp --}}
+                        <div>
+                            <label class="block text-xs font-medium text-neutral-600 dark:text-neutral-300 mb-1">Nomor HP / WhatsApp</label>
+                            <input type="text" wire:model="admin_phone" inputmode="numeric" class="w-full px-3 py-2.5 border rounded-xl text-sm bg-white dark:bg-slate-900 border-neutral-200 dark:border-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-500/10 focus:border-red-400" placeholder="08xxxxxxxxxx">
+                            @error('admin_phone') <span class="text-xs text-red-500">{{ $message }}</span> @enderror
+                        </div>
 
                         {{-- Role Admin --}}
                         <div>
@@ -127,46 +134,9 @@
         @endif
 
         {{-- Modal Informasi Hasil Kredensial (Username & Password Baru) --}}
-        @if($createdCredentials)
-            <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-neutral-900/50 backdrop-blur-sm">
-                <div class="bg-white dark:bg-slate-800 rounded-lg max-w-md w-full border border-emerald-100 dark:border-emerald-800 shadow-2xl p-6 text-center space-y-4">
-                    <div class="w-12 h-12 bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 rounded-full flex items-center justify-center mx-auto text-2xl">
-                        ✓
-                    </div>
-                    <h3 class="text-lg font-bold text-neutral-900 dark:text-white">{{ $createdCredentials['title'] }}</h3>
-                    <p class="text-xs text-neutral-400">Harap catat atau berikan informasi kredensial login berikut kepada admin yang bersangkutan.</p>
-
-                    <div class="bg-neutral-50 dark:bg-slate-900 p-4 rounded-xl text-left text-xs space-y-2 border border-neutral-100 dark:border-slate-700">
-                        <div class="flex items-center justify-between"><span class="text-neutral-400">Nama</span><strong class="text-neutral-800 dark:text-neutral-200">{{ $createdCredentials['name'] }}</strong></div>
-                        <div class="flex items-center justify-between"><span class="text-neutral-400">Username</span><strong class="font-mono text-red-500 dark:text-red-400">{{ $createdCredentials['username'] }}</strong></div>
-                        <div class="flex items-center justify-between"><span class="text-neutral-400">Password</span><strong class="font-mono text-emerald-600 dark:text-emerald-400">{{ $createdCredentials['password'] }}</strong></div>
-                    </div>
-
-                    {{-- Action Buttons dengan Alpine.js Copy to Clipboard --}}
-                    <div x-data="{ copied: false }" class="space-y-2 pt-2">
-                        <button type="button"
-                                @click="
-                                    navigator.clipboard.writeText('Nama: {{ $createdCredentials['name'] }}\nUsername: {{ $createdCredentials['username'] }}\nPassword: {{ $createdCredentials['password'] }}');
-                                    copied = true;
-                                    setTimeout(() => { $wire.set('createdCredentials', null); }, 800);
-                                "
-                                class="w-full py-3 bg-blue-900 hover:bg-blue-950 text-white rounded-full text-xs font-semibold transition flex items-center justify-center gap-2 cursor-pointer shadow-sm shadow-blue-900/20">
-                            <template x-if="!copied">
-                                <span class="flex items-center gap-1.5">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 01-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 011.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 00-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 01-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 00-3.375-3.375h-1.5"/></svg>
-                                    Salin Kredensial &amp; Tutup
-                                </span>
-                            </template>
-                            <template x-if="copied">
-                                <span class="flex items-center gap-1.5 text-emerald-100 font-bold">
-                                    ✓ Kredensial Tersalin!
-                                </span>
-                            </template>
-                        </button>
-                    </div>
-                </div>
-            </div>
-        @endif
+        {{-- Pakai komponen bersama yang sama dengan Master\Users\Index, supaya
+             badge status pengiriman WhatsApp (wa_sent) ikut tampil konsisten. --}}
+        <x-credentials-modal :credentials="$createdCredentials" />
 
         {{-- Modal Create / Edit Unit --}}
         @if($showModal)
@@ -256,8 +226,7 @@
         <div class="flex items-center justify-between p-4 bg-amber-50/70 dark:bg-amber-950/30 border border-amber-100 dark:border-amber-800/50 rounded-md text-amber-900 dark:text-amber-300 shadow-sm shadow-black/[0.02]">
             <div class="flex items-center gap-3">
                 <span class="p-2.5 bg-amber-100 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 rounded-2xl shrink-0">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/></svg>
-                </span>
+                <x-heroicon-o-exclamation-triangle class="w-5 h-5" />                   </span>
                 <div>
                     <p class="text-sm font-bold text-amber-900 dark:text-amber-200">Terdapat {{ $inactiveUnits }} Unit Usaha Nonaktif / Perlu Perhatian</p>
                     <p class="text-xs text-amber-700/80 dark:text-amber-400/80 mt-0.5">Beberapa unit usaha belum beroperasi penuh atau belum memiliki admin penanggung jawab.</p>
@@ -278,9 +247,7 @@
                 <div class="flex items-center justify-between gap-2">
                     <div class="flex items-center gap-2 min-w-0">
                         <span class="p-1.5 rounded-lg bg-red-50 dark:bg-red-950/50 text-red-500 dark:text-red-400 shrink-0">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                            </svg>
+                        <x-heroicon-o-currency-dollar class="w-4 h-4" />
                         </span>
                         <div class="truncate">
                             <p class="text-xs font-semibold text-neutral-500 dark:text-neutral-400 truncate">Total Omzet</p>
@@ -322,14 +289,6 @@
                 <p class="text-2xl font-bold text-neutral-900 dark:text-white tracking-tight">
                     {{ $totalRevenue ?? 'Rp —' }}
                 </p>
-
-                {{-- Indikator Pertumbuhan --}}
-                <div class="flex items-center gap-1 text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold shrink-0">
-                    <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 10.5L12 3m0 0l7.5 7.5M12 3v18"/>
-                    </svg>
-                    <span>1.2%</span>
-                </div>
             </div>
         </div>
 
@@ -338,8 +297,7 @@
             <div class="flex items-center justify-between">
                 <p class="text-xs font-medium text-neutral-400">Total Unit Usaha</p>
                 <span class="p-2 rounded-xl bg-blue-50 dark:bg-blue-950/50 text-blue-500 dark:text-blue-400">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 21v-7.5a.75.75 0 01.75-.75h3a.75.75 0 01.75.75V21m-4.5 0H21m-9 0H3m2.25-1.5a.75.75 0 01.75-.75h3a.75.75 0 01.75.75V21m-4.5 0H9m-6 0V3.75A2.25 2.25 0 015.25 1.5h13.5A2.25 2.25 0 0121 3.75V21"/></svg>
-                </span>
+                <x-heroicon-o-building-office class="w-4 h-4" />                </span>
             </div>
             <div class="mt-4">
                 <p class="text-2xl font-bold text-neutral-900 dark:text-white tracking-tight">{{ $totalUnits }}</p>
@@ -352,8 +310,7 @@
             <div class="flex items-center justify-between">
                 <p class="text-xs font-medium text-neutral-400">Total Admin</p>
                 <span class="p-2 rounded-xl bg-violet-50 dark:bg-violet-950/50 text-violet-500 dark:text-violet-400">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z"/></svg>
-                </span>
+                <x-heroicon-o-users class="w-4 h-4" />                </span>
             </div>
             <div class="mt-4">
                 <p class="text-2xl font-bold text-neutral-900 dark:text-white tracking-tight">{{ $totalAdmins }}</p>
@@ -366,8 +323,7 @@
             <div class="flex items-center justify-between">
                 <p class="text-xs font-medium text-neutral-400">Status Sistem</p>
                 <span class="p-2 rounded-xl {{ $inactiveUnits === 0 ? 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-500 dark:text-emerald-400' : 'bg-amber-50 dark:bg-amber-950/50 text-amber-500 dark:text-amber-400' }}">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z"/></svg>
-                </span>
+                <x-heroicon-o-bolt class="w-4 h-4" />                </span>
             </div>
             <div class="mt-4">
                 <div class="flex items-center gap-2.5">
@@ -547,8 +503,7 @@
                         wire:model.live.debounce.300ms="searchUnit"
                         placeholder="Cari unit..."
                         class="w-48 sm:w-60 pl-9 pr-3 py-2.5 text-xs bg-white dark:bg-slate-900 border border-neutral-200 dark:border-slate-700 text-neutral-800 dark:text-neutral-100 placeholder-neutral-400 rounded-[3px] focus:outline-none focus:ring-2 focus:ring-red-500/10 focus:border-red-400 transition-all shadow-sm shadow-black/[0.02]">
-                    <svg class="w-4 h-4 text-neutral-400 absolute left-3 top-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/></svg>
-                </div>
+                    <x-heroicon-o-magnifying-glass class="w-4 h-4 text-neutral-400 absolute left-3 top-3" />                </div>
             </div>
         </div>
 
@@ -573,8 +528,7 @@
                         <p class="text-[11px] text-neutral-400 mt-0.5 truncate">Jurusan: {{ $unit->department ?? '-' }}</p>
 
                         <div class="mt-4 pt-3 border-t border-neutral-100 dark:border-slate-700 flex items-center gap-2">
-                            <svg class="w-3.5 h-3.5 text-neutral-300 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/></svg>
-                            <p class="text-[11px] font-medium text-neutral-500 dark:text-neutral-400 truncate">
+                            <x-heroicon-o-user class="w-3.5 h-3.5 text-neutral-300 shrink-0" />                            <p class="text-[11px] font-medium text-neutral-500 dark:text-neutral-400 truncate">
                                 {{ $admin ? $admin->name : 'Belum Ada Admin' }}
                             </p>
                         </div>
@@ -583,8 +537,7 @@
                     <a href="{{ Route::has('unit.dashboard') ? route('unit.dashboard', $unit->slug ?? $unit->id) : '#' }}"
                         class="mt-4 w-full inline-flex items-center justify-center gap-1.5 py-2.5 px-3 text-xs font-semibold text-neutral-600 dark:text-neutral-300 bg-neutral-50 dark:bg-slate-900 hover:bg-neutral-100 dark:hover:bg-slate-700 rounded-[2px] transition-all">
                         <span>Buka Dashboard</span>
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>
-                    </a>
+                        <x-heroicon-o-arrow-right class="w-3.5 h-3.5" />                    </a>
                 </div>
             @empty
                 <div class="w-full bg-white dark:bg-slate-800 rounded-md p-6 text-center border border-neutral-100 dark:border-slate-700 text-xs text-neutral-400">
@@ -615,9 +568,9 @@
                         <div class="flex items-center gap-3 min-w-0">
                             <span class="h-9 w-9 rounded-2xl flex items-center justify-center shrink-0 {{ $tr->type === 'income' ? 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-500 dark:text-emerald-400' : 'bg-rose-50 dark:bg-rose-950/50 text-rose-500 dark:text-rose-400' }}">
                                 @if($tr->type === 'income')
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m0 0l6-6m-6 6l-6-6"/></svg>
+                                    <x-heroicon-o-arrow-down stroke-width="2.5" class="w-4 h-4" />
                                 @else
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 19.5v-15m0 0l-6 6m6-6l6 6"/></svg>
+                                    <x-heroicon-o-arrow-up stroke-width="2.5" class="w-4 h-4" />
                                 @endif
                             </span>
                             <div class="min-w-0">
@@ -663,7 +616,7 @@
                     <div class="p-3 rounded-md hover:bg-neutral-50 dark:hover:bg-slate-900/50 border border-transparent hover:border-neutral-100 dark:hover:border-slate-700 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                         <div class="flex items-center gap-3 min-w-0">
                             <span class="h-9 w-9 rounded-2xl bg-neutral-50 dark:bg-slate-900 text-neutral-500 dark:text-neutral-400 flex items-center justify-center shrink-0">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                <x-heroicon-o-clock class="w-4 h-4" />
                             </span>
                             <div class="min-w-0">
                                 <div class="flex items-center gap-2">
@@ -705,7 +658,7 @@
                         wire:model.live.debounce.300ms="searchAdmin"
                         placeholder="Cari nama/email..."
                         class="w-full sm:w-64 pl-9 pr-3 py-2.5 text-xs bg-white dark:bg-slate-900 border border-neutral-200 dark:border-slate-700 text-neutral-800 dark:text-neutral-100 placeholder-neutral-400 rounded-[3px] focus:outline-none focus:ring-2 focus:ring-red-500/10 focus:border-red-400 transition-all shadow-sm shadow-black/[0.02]">
-                    <svg class="w-4 h-4 text-neutral-400 absolute left-3 top-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/></svg>
+                    <x-heroicon-o-magnifying-glass class="w-4 h-4 text-neutral-400 absolute left-3 top-3" />
                 </div>
             </div>
 
@@ -783,7 +736,7 @@
                 <div class="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-slate-700">
                     <h3 class="text-sm font-bold text-neutral-900 dark:text-white">+ Tambah Admin Baru</h3>
                     <button @click="showAdminModal = false" class="text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                        <x-heroicon-o-x-mark class="w-5 h-5" />
                     </button>
                 </div>
                 <form class="mt-4 space-y-3" @submit.prevent="showAdminModal = false">
@@ -822,7 +775,7 @@
                 <div class="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-slate-700">
                     <h3 class="text-sm font-bold text-neutral-900 dark:text-white">+ Tambah Unit Usaha</h3>
                     <button @click="showUnitModal = false" class="text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                        <x-heroicon-o-x-mark class="w-5 h-5" />
                     </button>
                 </div>
                 <form class="mt-4 space-y-3" @submit.prevent="showUnitModal = false">

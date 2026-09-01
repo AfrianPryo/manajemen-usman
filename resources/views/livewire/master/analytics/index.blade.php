@@ -53,9 +53,7 @@
             <div class="flex items-center justify-between">
                 <p class="text-xs font-medium text-neutral-400">Total Pendapatan</p>
                 <span class="p-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-500">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                    </svg>
+                    <x-heroicon-o-currency-dollar class="w-4 h-4" />
                 </span>
             </div>
             <p class="mt-4 text-2xl font-bold text-neutral-900 dark:text-white tracking-tight">Rp {{ number_format($totalRevenue, 0, ',', '.') }}</p>
@@ -67,9 +65,7 @@
             <div class="flex items-center justify-between">
                 <p class="text-xs font-medium text-neutral-400">Total Pengeluaran</p>
                 <span class="p-2 rounded-xl bg-rose-50 dark:bg-rose-950/50 text-rose-500">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5h16.5a1.5 1.5 0 011.5 1.5v9.75a1.5 1.5 0 01-1.5 1.5H3.75a1.5 1.5 0 01-1.5-1.5V6a1.5 1.5 0 011.5-1.5zm10.5 6a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"/>
-                    </svg>
+                    <x-heroicon-o-banknotes class="w-4 h-4" />
                 </span>
             </div>
             <p class="mt-4 text-2xl font-bold text-neutral-900 dark:text-white tracking-tight">Rp {{ number_format($totalExpense, 0, ',', '.') }}</p>
@@ -81,9 +77,7 @@
             <div class="flex items-center justify-between">
                 <p class="text-xs font-medium text-neutral-400">Laba Bersih</p>
                 <span class="p-2 rounded-xl bg-blue-50 dark:bg-blue-950/50 text-blue-500">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18L9 11.25l4.306 4.307a.5.5 0 00.71 0L21.75 6M21.75 6v5.25m0-5.25h-5.25"/>
-                    </svg>
+                    <x-heroicon-o-arrow-trending-up class="w-4 h-4" />
                 </span>
             </div>
             <p class="mt-4 text-2xl font-bold tracking-tight {{ ($totalRevenue - $totalExpense) >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400' }}">
@@ -97,9 +91,7 @@
             <div class="flex items-center justify-between">
                 <p class="text-xs font-medium text-neutral-400">Total Transaksi</p>
                 <span class="p-2 rounded-xl bg-violet-50 dark:bg-violet-950/50 text-violet-500">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"/>
-                    </svg>
+                    <x-heroicon-o-shopping-bag class="w-4 h-4" />
                 </span>
             </div>
             <p class="mt-4 text-2xl font-bold text-neutral-900 dark:text-white tracking-tight">{{ number_format($totalTransactions, 0, ',', '.') }}</p>
@@ -297,9 +289,7 @@
                             <option value="custom">Kustom Tanggal</option>
                         </select>
                         <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2.5 text-slate-400">
-                            <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 20 20">
-                                <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/>
-                            </svg>
+                            <x-heroicon-m-chevron-down class="w-3.5 h-3.5" />   
                         </div>
                     </div>
 
@@ -462,9 +452,7 @@
                         <option value="custom">Kustom Tanggal</option>
                     </select>
                     <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2.5 text-slate-400">
-                        <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 20 20">
-                            <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/>
-                        </svg>
+                        <x-heroicon-m-chevron-down class="w-3.5 h-3.5" />
                     </div>
                 </div>
 

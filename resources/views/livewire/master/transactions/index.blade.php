@@ -14,7 +14,7 @@
             <div class="flex items-center justify-between">
                 <p class="text-xs font-medium text-neutral-400">Total Pemasukan</p>
                 <span class="p-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-500">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m0 0l6-6m-6 6l-6-6"/></svg>
+                    <x-heroicon-o-arrow-down class="w-4 h-4" stroke-width="2" />
                 </span>
             </div>
             <p class="mt-4 text-2xl font-bold text-neutral-900 dark:text-white tracking-tight">Rp {{ number_format($totalIncome, 0, ',', '.') }}</p>
@@ -25,7 +25,7 @@
             <div class="flex items-center justify-between">
                 <p class="text-xs font-medium text-neutral-400">Total Pengeluaran</p>
                 <span class="p-2 rounded-xl bg-rose-50 dark:bg-rose-950/50 text-rose-500">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 19.5v-15m0 0l-6 6m6-6l6 6"/></svg>
+                    <x-heroicon-o-arrow-up class="w-4 h-4" stroke-width="2" />
                 </span>
             </div>
             <p class="mt-4 text-2xl font-bold text-neutral-900 dark:text-white tracking-tight">Rp {{ number_format($totalExpense, 0, ',', '.') }}</p>
@@ -36,7 +36,7 @@
             <div class="flex items-center justify-between">
                 <p class="text-xs font-medium text-neutral-400">Arus Kas Bersih</p>
                 <span class="p-2 rounded-xl bg-blue-50 dark:bg-blue-950/50 text-blue-500">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18L9 11.25l4.306 4.307a.5.5 0 00.71 0L21.75 6M21.75 6v5.25m0-5.25h-5.25"/></svg>
+                    <x-heroicon-o-arrow-trending-up class="w-4 h-4" stroke-width="2" />
                 </span>
             </div>
             <p class="mt-4 text-2xl font-bold tracking-tight {{ $netBalance >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400' }}">
@@ -49,7 +49,7 @@
             <div class="flex items-center justify-between">
                 <p class="text-xs font-medium text-neutral-400">Pending / Menunggu</p>
                 <span class="p-2 rounded-xl bg-amber-50 dark:bg-amber-950/50 text-amber-500">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    <x-heroicon-o-clock class="w-4 h-4" stroke-width="2" />
                 </span>
             </div>
             <p class="mt-4 text-2xl font-bold text-neutral-900 dark:text-white tracking-tight">{{ number_format($pendingCount) }}</p>
@@ -62,7 +62,7 @@
         <div>
             {{-- Tombol Export --}}
             <button wire:click="exportData" class="px-3.5 py-2 text-xs font-semibold text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800 rounded-[3px] hover:bg-sky-100 dark:hover:bg-sky-900/40 transition-all flex items-center gap-1.5 cursor-pointer">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
+                <x-heroicon-o-arrow-down-tray class="w-4 h-4" stroke-width="2" />
                 <span>Export Excel</span>
             </button>
         </div>
@@ -70,13 +70,13 @@
         <div class="flex items-center gap-2.5 shrink-0">
             {{-- Tombol Import Excel --}}
             <button wire:click="openImportModal" class="px-3.5 py-2 text-xs font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-[3px] hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition-all flex items-center gap-1.5 cursor-pointer">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/></svg>
+                <x-heroicon-o-arrow-up-tray class="w-4 h-4" stroke-width="2" />
                 <span>Import Excel</span>
             </button>
 
             {{-- Tombol Tambah Transaksi --}}
             <button wire:click="openCreateModal" class="px-4 py-2 text-xs font-bold text-white bg-blue-900 hover:bg-blue-950 rounded-[3px] transition-all flex items-center gap-2 shadow-sm shadow-blue-900/20 cursor-pointer">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+                <x-heroicon-o-plus class="w-4 h-4" stroke-width="2.5" />
                 <span>Tambah Transaksi</span>
             </button>
         </div>
@@ -211,7 +211,7 @@
                                     </span>
                                     @if(!empty($tr->proof_file))
                                         <span class="inline-flex items-center gap-0.5 text-[9px] font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/50 px-1.5 py-0.5 rounded border border-emerald-200/60 dark:border-emerald-800 shrink-0" title="Ada Bukti Struk">
-                                            <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg>
+                                            <x-heroicon-o-paper-clip class="w-2.5 h-2.5" stroke-width="2" />
                                             Struk
                                         </span>
                                     @endif
@@ -238,10 +238,10 @@
                             <td class="px-4 py-3.5 whitespace-nowrap text-center">
                                 <div class="flex items-center justify-center gap-1">
                                     <button wire:click="openDetail({{ $tr->id }})" class="p-1.5 text-neutral-500 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-slate-700 rounded-md transition-all" title="Lihat Detail">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.573 16.49 16.638 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                                        <x-heroicon-o-eye class="w-4 h-4" stroke-width="2" />
                                     </button>
                                     <button wire:click="editTransaction({{ $tr->id }})" class="p-1.5 text-amber-600 hover:text-amber-800 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/40 rounded-md transition-all" title="Edit Transaksi">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                                        <x-heroicon-o-pencil-square class="w-4 h-4" stroke-width="2" />
                                     </button>
                                 </div>
                             </td>
@@ -314,12 +314,12 @@
                         <div class="grid grid-cols-2 gap-3 p-1 bg-neutral-100 dark:bg-slate-900 rounded-lg">
                             <button type="button" wire:click="$set('form_type', 'income')"
                                     class="py-2.5 text-xs font-bold rounded-md transition-all flex items-center justify-center gap-2 {{ $form_type === 'income' ? 'bg-emerald-600 text-white shadow-sm' : 'text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200' }}">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m0 0l6-6m-6 6l-6-6"/></svg>
+                                <x-heroicon-o-arrow-down class="w-4 h-4" stroke-width="2.5" />
                                 Pemasukan (Income)
                             </button>
                             <button type="button" wire:click="$set('form_type', 'expense')"
                                     class="py-2.5 text-xs font-bold rounded-md transition-all flex items-center justify-center gap-2 {{ $form_type === 'expense' ? 'bg-rose-600 text-white shadow-sm' : 'text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200' }}">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 19.5v-15m0 0l-6 6m6-6l6 6"/></svg>
+                                <x-heroicon-o-arrow-up class="w-4 h-4" stroke-width="2.5" />
                                 Pengeluaran (Expense)
                             </button>
                         </div>
@@ -512,13 +512,13 @@
                                     <a href="{{ $fileUrl }}" target="_blank" class="block group relative overflow-hidden rounded-md border border-neutral-200 dark:border-slate-700 bg-neutral-100 dark:bg-slate-900">
                                         <img src="{{ $fileUrl }}" alt="Bukti Transaksi" class="w-full object-contain max-h-44 rounded group-hover:scale-105 transition-transform duration-200">
                                         <div class="absolute inset-0 bg-neutral-900/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white font-medium text-xs gap-1.5">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                                            <x-heroicon-o-eye class="w-4 h-4" stroke-width="2" />
                                             Buka Ukuran Penuh
                                         </div>
                                     </a>
                                 @else
                                     <a href="{{ $fileUrl }}" target="_blank" class="inline-flex items-center gap-2 px-3 py-2 text-xs text-blue-900 dark:text-red-400 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/50 rounded-md font-semibold hover:bg-red-100 transition">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg>
+                                        <x-heroicon-o-paper-clip class="w-4 h-4" stroke-width="2" />
                                         Unduh Dokumen Lampiran ({{ strtoupper($ext) }})
                                     </a>
                                 @endif
@@ -538,7 +538,7 @@
                             <div class="p-3 border-2 border-dashed border-neutral-200 dark:border-slate-700 rounded-md bg-neutral-50/50 dark:bg-slate-900/50 text-center">
                                 <input type="file" wire:model="proofFile" id="proofInput" class="hidden">
                                 <label for="proofInput" class="cursor-pointer block">
-                                    <svg class="w-6 h-6 mx-auto text-neutral-400 mb-1" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+                                    <x-heroicon-o-arrow-up-tray class="w-6 h-6 mx-auto text-neutral-400 mb-1" stroke-width="2" />
                                     <span class="text-neutral-600 dark:text-neutral-300 font-medium">Klik untuk memilih file struk</span>
                                     <span class="block text-[10px] text-neutral-400 mt-0.5">JPG, PNG, WEBP, PDF (Maks. 3MB)</span>
                                 </label>
@@ -613,7 +613,7 @@
 
                     <div>
                         <button type="button" wire:click="downloadTemplate" class="w-full py-2 px-3 text-xs font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-md hover:bg-emerald-100 transition flex items-center justify-center gap-2">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
+                            <x-heroicon-o-arrow-down-tray class="w-4 h-4" stroke-width="2" />
                             Unduh Template (.XLSX)
                         </button>
                     </div>
@@ -647,9 +647,7 @@
             <div class="flex items-start justify-between border-b border-neutral-100 dark:border-slate-700/80 pb-4 mb-4">
                 <div class="flex items-center gap-3">
                     <div class="p-2.5 rounded-xl bg-rose-50 text-rose-600 dark:bg-rose-950/50 dark:text-rose-400 shrink-0">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/>
-                        </svg>
+                        <x-heroicon-o-exclamation-circle class="w-6 h-6" stroke-width="2" />
                     </div>
                     <div>
                         <h3 class="text-base font-bold text-neutral-900 dark:text-white">Import File Dibatalkan</h3>
@@ -657,7 +655,7 @@
                     </div>
                 </div>
                 <button type="button" wire:click="$set('showErrorModal', false)" class="text-neutral-400 hover:text-neutral-600 dark:hover:text-white">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                    <x-heroicon-o-x-mark class="w-5 h-5" stroke-width="2" />
                 </button>
             </div>
 

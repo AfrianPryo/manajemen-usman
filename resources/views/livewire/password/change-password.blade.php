@@ -1,156 +1,211 @@
-<div>
-    <div class="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-slate-900 py-12 px-4 sm:px-6 lg:px-8">
-        <div class="max-w-md w-full space-y-8 bg-white dark:bg-slate-800 p-8 rounded-xl shadow-md border border-gray-100 dark:border-gray-700">
-            
-            {{-- Navigasi Kembali (Hanya muncul jika ganti password mandiri) --}}
-            @if (!auth()->user()?->must_change_password)
-                <div>
-                    <a href="{{ route('dashboard') }}" class="inline-flex items-center text-sm font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400">
-                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
-                        </svg>
-                        Kembali ke Dashboard
-                    </a>
-                </div>
-            @endif
+<div class="min-h-screen w-full bg-slate-900 text-zinc-100 flex p-4 sm:p-6 lg:p-4 font-sans selection:bg-white selection:text-black overflow-hidden relative">
 
-            <div>
-                <h2 class="text-center text-3xl font-extrabold text-gray-900 dark:text-white">
-                    Ganti Password
-                </h2>
-                <p class="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
-                    @if (auth()->user()?->must_change_password)
-                        Anda diwajibkan untuk mengganti password sebelum melanjutkan.
-                    @else
-                        Perbarui password Anda secara berkala untuk menjaga keamanan akun.
-                    @endif
-                </p>
+    {{-- Main Grid: sama seperti halaman login --}}
+    <div class="w-full flex-1 grid grid-cols-1 md:grid-cols-12 gap-6 lg:gap-8 items-stretch">
+
+        {{-- Sisi Kiri: Branding (tanpa objek 3D ASCII) --}}
+        <div class="hidden md:flex md:col-span-6 lg:col-span-7 relative flex-col justify-between py-4 pr-4 select-none overflow-hidden rounded-[5px]">
+
+            {{-- Footer Text Kiri Atas --}}
+            <div class="relative z-10">
+                <p class="text-md text-white font-bold tracking-tighter leading-none">Logo</p>
             </div>
 
-            <form wire:submit="update" class="mt-8 space-y-6">
-                
-                {{-- Flash Message Success / Error --}}
-                @if (session()->has('message'))
-                    <div class="p-4 text-sm text-green-800 rounded-lg bg-green-50 dark:bg-green-900/30 dark:text-green-400 border border-green-200 dark:border-green-800">
-                        {{ session('message') }}
-                    </div>
-                @endif
+            {{-- Footer Text Kiri Bawah --}}
+            <div class="relative z-10">
+                <p class="text-md text-white/80 font-medium tracking-tighter leading-none">
+                    Perbarui password Anda secara berkala <br>
+                    untuk menjaga keamanan akun dan <br>
+                    seluruh data operasional Anda.
+                </p>
+            </div>
+        </div>
 
-                @if (session()->has('error'))
-                    <div class="p-4 text-sm text-red-800 rounded-lg bg-red-50 dark:bg-red-900/30 dark:text-red-400 border border-red-200 dark:border-red-800">
-                        {{ session('error') }}
-                    </div>
-                @endif
+        {{-- Sisi Kanan: KONTAINER FORM GANTI PASSWORD --}}
+        <div class="md:col-span-6 lg:col-span-5 w-full flex flex-col justify-center">
+            <div class="bg-blue-950 rounded-[5px] p-8 sm:p-10 lg:px-7 shadow-2xl relative flex flex-col justify-between w-full h-full min-h-[520px]">
 
-                <div class="space-y-4">
-                    {{-- Password Saat Ini --}}
-                    <div x-data="{ show: false }">
-                        <label for="current_password" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                            Password Saat Ini
-                        </label>
-                        <div class="relative mt-1">
-                            <input 
-                                wire:model="current_password" 
-                                id="current_password" 
-                                :type="show ? 'text' : 'password'" 
-                                class="block w-full px-3 py-2 pr-10 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-slate-800 text-gray-900 dark:text-white text-sm focus:ring-blue-500 focus:border-blue-500"
-                                placeholder="Masukkan password saat ini"
-                            >
-                            <button 
-                                type="button" 
-                                @click="show = !show" 
-                                class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 focus:outline-none"
-                            >
-                                <svg x-show="!show" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                </svg>
-                                <svg x-show="show" x-cloak class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858-5.908a10.048 10.048 0 012.122-.063c4.478 0 8.268 2.943 9.542 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21M3 3l18 18" />
-                                </svg>
-                            </button>
+                <div>
+                    {{-- Header Atas Kontainer Form --}}
+                    <div class="flex justify-between items-center mb-18">
+                        @if (!auth()->user()?->must_change_password)
+                            <a href="{{ route('dashboard') }}" class="text-white/80 hover:text-white transition duration-150 p-1.5 rounded-lg hover:bg-zinc-800/50" title="Kembali ke Dashboard" aria-label="Kembali ke Dashboard">
+                                <x-heroicon-o-arrow-left class="h-5 w-5" stroke-width="1.8" />
+                            </a>
+                        @else
+                            <span></span>
+                        @endif
+                    </div>
+
+                    {{-- Judul --}}
+                    <div class="mb-8">
+                        <h1 class="text-3xl sm:text-4xl font-medium text-white tracking-tighter">Ganti Password</h1>
+                        <p class="mt-3 text-xs text-white/50 tracking-tight">
+                            @if (auth()->user()?->must_change_password)
+                                Anda diwajibkan untuk mengganti password sebelum melanjutkan.
+                            @else
+                                Perbarui password Anda secara berkala untuk menjaga keamanan akun.
+                            @endif
+                        </p>
+                    </div>
+
+                    {{-- Alert Success --}}
+                    @if (session()->has('message'))
+                        <div class="mb-6 p-3 text-xs text-emerald-400 border-b border-emerald-500/50 bg-emerald-950/20" role="alert">
+                            <span class="font-medium">{{ session('message') }}</span>
                         </div>
-                        @error('current_password') <p class="mt-1 text-sm text-blue-900 dark:text-red-400">{{ $message }}</p> @enderror
-                    </div>
+                    @endif
 
-                    {{-- Password Baru --}}
-                    <div x-data="{ show: false }">
-                        <label for="new_password" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                            Password Baru
-                        </label>
-                        <div class="relative mt-1">
-                            <input 
-                                wire:model="new_password" 
-                                id="new_password" 
-                                :type="show ? 'text' : 'password'" 
-                                class="block w-full px-3 py-2 pr-10 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-slate-800 text-gray-900 dark:text-white text-sm focus:ring-blue-500 focus:border-blue-500"
-                                placeholder="Minimal 8 karakter (huruf besar, kecil, angka)"
-                            >
-                            <button 
-                                type="button" 
-                                @click="show = !show" 
-                                class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 focus:outline-none"
-                            >
-                                <svg x-show="!show" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                </svg>
-                                <svg x-show="show" x-cloak class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858-5.908a10.048 10.048 0 012.122-.063c4.478 0 8.268 2.943 9.542 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21M3 3l18 18" />
-                                </svg>
-                            </button>
+                    {{-- Alert Error --}}
+                    @if (session()->has('error'))
+                        <div class="mb-6 p-3 text-xs text-red-400 border-b border-red-500/50 bg-red-950/20" role="alert">
+                            <span class="font-medium">{{ session('error') }}</span>
                         </div>
-                        @error('new_password') <p class="mt-1 text-sm text-blue-900 dark:text-red-400">{{ $message }}</p> @enderror
-                    </div>
+                    @endif
 
-                    {{-- Konfirmasi Password Baru --}}
-                    <div x-data="{ show: false }">
-                        <label for="new_password_confirmation" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                            Konfirmasi Password Baru
-                        </label>
-                        <div class="relative mt-1">
-                            <input 
-                                wire:model="new_password_confirmation" 
-                                id="new_password_confirmation" 
-                                :type="show ? 'text' : 'password'" 
-                                class="block w-full px-3 py-2 pr-10 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-slate-800 text-gray-900 dark:text-white text-sm focus:ring-blue-500 focus:border-blue-500"
-                                placeholder="Ulangi password baru"
-                            >
-                            <button 
-                                type="button" 
-                                @click="show = !show" 
-                                class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 focus:outline-none"
-                            >
-                                <svg x-show="!show" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                </svg>
-                                <svg x-show="show" x-cloak class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858-5.908a10.048 10.048 0 012.122-.063c4.478 0 8.268 2.943 9.542 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21M3 3l18 18" />
-                                </svg>
-                            </button>
+                    {{-- Form Utama --}}
+                    <form wire:submit="update" id="changePasswordForm" class="space-y-8">
+                        <div class="grid grid-cols-1 gap-6">
+
+                            {{-- Password Saat Ini --}}
+                            <div x-data="{ show: false }" class="relative">
+                                <label for="current_password" class="block text-[11px] font-medium text-white/60 uppercase tracking-tight mb-2">
+                                    Password Saat Ini
+                                </label>
+                                <div class="relative">
+                                    <input
+                                        wire:model="current_password"
+                                        id="current_password"
+                                        :type="show ? 'text' : 'password'"
+                                        autocomplete="current-password"
+                                        class="w-full bg-transparent border-b border-white/70 py-2 pr-7 text-sm text-white placeholder-white/30 focus:outline-none focus:border-white transition-colors rounded-none"
+                                        placeholder="Masukkan password saat ini"
+                                    >
+                                    <button
+                                        type="button"
+                                        @click="show = !show"
+                                        class="absolute right-0 bottom-2 text-zinc-500 hover:text-zinc-300 focus:outline-none"
+                                        tabindex="-1"
+                                    >
+                                        <x-heroicon-o-eye x-show="!show" class="h-4 w-4" stroke-width="1.8" />
+                                        <x-heroicon-o-eye-slash x-show="show" x-cloak class="h-4 w-4" stroke-width="1.8" />
+                                    </button>
+                                </div>
+                                @error('current_password') <p class="mt-1 text-[11px] text-red-400 absolute left-0 -bottom-5">{{ $message }}</p> @enderror
+                            </div>
+
+                            {{-- Password Baru --}}
+                            <div x-data="{ show: false }" class="relative">
+                                <label for="new_password" class="block text-[11px] font-medium text-white/60 uppercase tracking-tight mb-2">
+                                    Password Baru
+                                </label>
+                                <div class="relative">
+                                    <input
+                                        wire:model="new_password"
+                                        id="new_password"
+                                        :type="show ? 'text' : 'password'"
+                                        autocomplete="new-password"
+                                        class="w-full bg-transparent border-b border-white/70 py-2 pr-7 text-sm text-white placeholder-white/30 focus:outline-none focus:border-white transition-colors rounded-none"
+                                        placeholder="Minimal 8 karakter (huruf besar, kecil, angka)"
+                                    >
+                                    <button
+                                        type="button"
+                                        @click="show = !show"
+                                        class="absolute right-0 bottom-2 text-zinc-500 hover:text-zinc-300 focus:outline-none"
+                                        tabindex="-1"
+                                    >
+                                        <x-heroicon-o-eye x-show="!show" class="h-4 w-4" stroke-width="1.8" />      
+                                        <x-heroicon-o-eye-slash x-show="show" x-cloak class="h-4 w-4" stroke-width="1.8" />
+                                    </button>
+                                </div>
+                                @error('new_password') <p class="mt-1 text-[11px] text-red-400 absolute left-0 -bottom-5">{{ $message }}</p> @enderror
+                            </div>
+
+                            {{-- Konfirmasi Password Baru --}}
+                            <div x-data="{ show: false }" class="relative">
+                                <label for="new_password_confirmation" class="block text-[11px] font-medium text-white/60 uppercase tracking-tight mb-2">
+                                    Konfirmasi Password Baru
+                                </label>
+                                <div class="relative">
+                                    <input
+                                        wire:model="new_password_confirmation"
+                                        id="new_password_confirmation"
+                                        :type="show ? 'text' : 'password'"
+                                        autocomplete="new-password"
+                                        class="w-full bg-transparent border-b border-white/70 py-2 pr-7 text-sm text-white placeholder-white/30 focus:outline-none focus:border-white transition-colors rounded-none"
+                                        placeholder="Ulangi password baru"
+                                    >
+                                    <button
+                                        type="button"
+                                        @click="show = !show"
+                                        class="absolute right-0 bottom-2 text-zinc-500 hover:text-zinc-300 focus:outline-none"
+                                        tabindex="-1"
+                                    >
+                                        <x-heroicon-o-eye x-show="!show" class="h-4 w-4" stroke-width="1.8" />
+                                        <x-heroicon-o-eye-slash x-show="show" x-cloak class="h-4 w-4" stroke-width="1.8" />
+                                    </button>
+                                </div>
+                                @error('new_password_confirmation') <p class="mt-1 text-[11px] text-red-400 absolute left-0 -bottom-5">{{ $message }}</p> @enderror
+                            </div>
+
                         </div>
-                    </div>
+                    </form>
                 </div>
 
-                {{-- Submit Button --}}
-                <div>
-                    <button 
-                        type="submit" 
+                {{-- Bottom Section dalam Kontainer Form --}}
+                <div class="mt-12 pt-4 flex justify-end items-end">
+                    <button
+                        form="changePasswordForm"
+                        type="submit"
                         wire:loading.attr="disabled"
-                        class="w-full flex justify-center py-2.5 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 transition-colors duration-200"
+                        class="group inline-flex items-center gap-2 rounded-[2px] bg-white pt-[4px] pb-[4px] pl-3 pr-1 text-[11px] font-medium text-blue-900 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none"
                     >
-                        <span wire:loading.remove wire:target="update">Simpan Password</span>
-                        <span wire:loading wire:target="update" class="flex items-center gap-2">
-                            <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <span
+                            class="login-text relative inline-flex items-center overflow-hidden text-[12px] font-[450] tracking-tight"
+                            data-text="Simpan Password"
+                        >
+                            <span wire:loading.remove wire:target="update">Simpan Password</span>
+                            <span wire:loading wire:target="update">Memproses...</span>
+                        </span>
+
+                        <span class="flex h-8 w-8 items-center justify-center rounded-[3px] bg-blue-900/90 shrink-0">
+                            <x-heroicon-o-arrow-up-right 
+                                wire:loading.remove 
+                                wire:target="update" 
+                                class="h-4 w-4 stroke-white transition-transform duration-300 group-hover:rotate-45" 
+                                stroke-width="2.5" 
+                            />
+
+                            <svg
+                                wire:loading
+                                wire:target="update"
+                                class="animate-spin h-3 w-3 text-white"
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                            >
                                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                             </svg>
-                            Memproses...
                         </span>
                     </button>
                 </div>
-            </form>
+
+            </div>
         </div>
+
     </div>
 </div>
+
+<style>
+    /* Menghilangkan background autofill browser */
+    input:-webkit-autofill,
+    input:-webkit-autofill:hover,
+    input:-webkit-autofill:focus,
+    input:-webkit-autofill:active {
+        -webkit-transition: "color 9999s ease-out, background-color 9999s ease-out";
+        -webkit-transition-delay: 9999s;
+        -webkit-text-fill-color: #ffffff !important;
+        caret-color: #ffffff;
+    }
+</style>

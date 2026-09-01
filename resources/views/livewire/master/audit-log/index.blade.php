@@ -9,7 +9,7 @@
         <div class="flex items-center gap-2.5 shrink-0">
             {{-- Tombol Export Audit Log --}}
             <button wire:click="exportLog" wire:loading.attr="disabled" class="px-3.5 py-2 text-xs font-semibold text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800 rounded-[3px] hover:bg-sky-100 dark:hover:bg-sky-900/40 transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-60">
-                <svg wire:loading.remove wire:target="exportLog" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
+                <x-heroicon-o-arrow-down-tray wire:loading.remove wire:target="exportLog" class="w-4 h-4" />
                 <span wire:loading.remove wire:target="exportLog">Export Log</span>
                 <span wire:loading wire:target="exportLog">Memproses...</span>
             </button>
@@ -24,9 +24,7 @@
                 <label for="search_log" class="sr-only">Cari Log</label>
                 <div class="relative">
                     <div class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-neutral-400">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                        </svg>
+                        <x-heroicon-o-magnifying-glass class="w-4 h-4" />
                     </div>
                     <input 
                         id="search_log"
@@ -89,9 +87,7 @@
                         title="Reset Filter"
                         class="w-full py-2 px-3 text-xs font-semibold text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/50 rounded-[3px] hover:bg-rose-100 dark:hover:bg-rose-900/50 transition-all flex items-center justify-center gap-1 cursor-pointer"
                     >
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                        </svg>
+                        <x-heroicon-o-x-mark class="w-3.5 h-3.5" />
                         <span class="md:hidden">Reset</span>
                     </button>
                 @endif

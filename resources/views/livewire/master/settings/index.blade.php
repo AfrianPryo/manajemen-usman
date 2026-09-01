@@ -21,14 +21,14 @@
         <div class="inline-flex flex-wrap p-1 bg-neutral-100 dark:bg-slate-900 rounded-lg gap-1">
             <button wire:click="setTab('profile')"
                 class="px-4 py-2 text-xs font-bold rounded-md transition-all flex items-center gap-2 {{ $activeTab === 'profile' ? 'bg-blue-900 text-white shadow-sm' : 'text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200' }}">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/></svg>
+                <x-heroicon-o-user class="w-4 h-4" stroke-width="2" />
                 Profil Admin
             </button>
 
             @if ($this->canAccessFeaturesTab())
                 <button wire:click="setTab('features')"
                     class="px-4 py-2 text-xs font-bold rounded-md transition-all flex items-center gap-2 {{ $activeTab === 'features' ? 'bg-blue-900 text-white shadow-sm' : 'text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200' }}">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/></svg>
+                    <x-heroicon-o-adjustments-vertical class="w-4 h-4" stroke-width="2" />
                     Fitur & Modul
                 </button>
             @endif

@@ -18,9 +18,7 @@
         <div class="flex items-center gap-2.5 shrink-0">
             <button wire:click="openCreateModal"
                     class="px-4 py-2 text-xs font-bold text-white bg-blue-900 hover:bg-blue-950 rounded-[3px] transition-all flex items-center gap-2 shadow-sm shadow-blue-900/20 cursor-pointer">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
-                </svg>
+                <x-heroicon-o-plus stroke-width="2.5" class="w-4 h-4" />
                 <span>Buat Pengumuman</span>
             </button>
         </div>

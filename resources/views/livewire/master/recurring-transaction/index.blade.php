@@ -17,7 +17,7 @@
 
         <div class="flex items-center gap-2.5 shrink-0">
             <button wire:click="openModal" class="px-4 py-2 text-xs font-bold text-white bg-blue-900 hover:bg-blue-950 rounded-[3px] transition-all flex items-center gap-2 shadow-sm shadow-blue-900/20 cursor-pointer">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+                <x-heroicon-o-plus class="w-4 h-4" stroke-width="2.5" />
                 <span>Buat Transaksi Berulang</span>
             </button>
         </div>
@@ -165,14 +165,14 @@
                             <td class="px-4 py-3.5 whitespace-nowrap text-center">
                                 <div class="flex items-center justify-center gap-1">
                                     <button wire:click="edit({{ $item->id }})" class="p-1.5 text-amber-600 hover:text-amber-800 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/40 rounded-md transition-all" title="Edit Transaksi">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                                        <x-heroicon-o-pencil-square class="w-4 h-4" stroke-width="2" />
                                     </button>
                                     <button type="button" x-on:click.prevent="$store.confirmDialog.open({
                                             message: 'Apakah Anda yakin ingin menghapus transaksi berulang ini?',
                                             confirmText: 'Ya, Hapus',
                                             onConfirm: () => $wire.delete({{ $item->id }})
                                         })" class="p-1.5 text-rose-600 hover:text-rose-800 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-md transition-all" title="Hapus Transaksi">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                        <x-heroicon-o-trash class="w-4 h-4" stroke-width="2" />
                                     </button>
                                 </div>
                             </td>

@@ -24,7 +24,7 @@
                 <div class="flex items-center gap-2">
                     <button wire:click="bulkExport" wire:loading.attr="disabled" wire:target="bulkExport"
                         class="px-3.5 py-1.5 bg-sky-600 hover:bg-sky-500 rounded font-semibold transition-colors flex items-center gap-1.5 disabled:opacity-60">
-                        <svg wire:loading.remove wire:target="bulkExport" class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
+                        <x-heroicon-o-arrow-down-tray wire:loading.remove wire:target="bulkExport" class="w-3.5 h-3.5" />
                         <span wire:loading.remove wire:target="bulkExport">Export Terpilih (.zip)</span>
                         <span wire:loading wire:target="bulkExport">Memproses...</span>
                     </button>
@@ -77,7 +77,7 @@
                             <td class="px-4 py-3.5 align-top text-center whitespace-nowrap">
                                 <button wire:click="exportTransactions" wire:loading.attr="disabled"
                                     class="px-3.5 py-1.5 text-xs font-semibold text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800 rounded-full hover:bg-sky-100 dark:hover:bg-sky-900/40 transition-all inline-flex items-center gap-1.5 cursor-pointer">
-                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
+                                    <x-heroicon-o-arrow-down-tray class="w-3.5 h-3.5" />
                                     <span>.xlsx</span>
                                 </button>
                             </td>
@@ -148,7 +148,7 @@
                             <td class="px-4 py-3.5 align-top text-center whitespace-nowrap">
                                 <button wire:click="exportProducts" wire:loading.attr="disabled"
                                     class="px-3.5 py-1.5 text-xs font-semibold text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800 rounded-full hover:bg-sky-100 dark:hover:bg-sky-900/40 transition-all inline-flex items-center gap-1.5 cursor-pointer">
-                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
+                                    <x-heroicon-o-arrow-down-tray class="w-3.5 h-3.5" />
                                     <span>.xlsx</span>
                                 </button>
                             </td>
@@ -210,7 +210,7 @@
                             <td class="px-4 py-3.5 align-top text-center whitespace-nowrap">
                                 <button wire:click="exportAssets" wire:loading.attr="disabled"
                                     class="px-3.5 py-1.5 text-xs font-semibold text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800 rounded-full hover:bg-sky-100 dark:hover:bg-sky-900/40 transition-all inline-flex items-center gap-1.5 cursor-pointer">
-                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
+                                    <x-heroicon-o-arrow-down-tray class="w-3.5 h-3.5" />
                                     <span>.xlsx</span>
                                 </button>
                             </td>
@@ -266,7 +266,7 @@
                             <td class="px-4 py-3.5 align-top text-center whitespace-nowrap">
                                 <button wire:click="exportStockReport" wire:loading.attr="disabled"
                                     class="px-3.5 py-1.5 text-xs font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-full hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition-all inline-flex items-center gap-1.5 cursor-pointer">
-                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
+                                    <x-heroicon-o-arrow-down-tray class="w-3.5 h-3.5" />
                                     <span>Stok</span>
                                 </button>
                             </td>
@@ -324,7 +324,7 @@
                             <td class="px-4 py-3.5 align-top text-center whitespace-nowrap">
                                 <button wire:click="exportFinanceReport" wire:loading.attr="disabled"
                                     class="px-3.5 py-1.5 text-xs font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-full hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition-all inline-flex items-center gap-1.5 cursor-pointer">
-                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
+                                    <x-heroicon-o-arrow-down-tray class="w-3.5 h-3.5" />
                                     <span>Keuangan</span>
                                 </button>
                             </td>
@@ -374,7 +374,7 @@
                             <td class="px-4 py-3.5 align-top text-center whitespace-nowrap">
                                 <button wire:click="exportAuthLogs" wire:loading.attr="disabled"
                                     class="px-3.5 py-1.5 text-xs font-semibold text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800 rounded-full hover:bg-sky-100 dark:hover:bg-sky-900/40 transition-all inline-flex items-center gap-1.5 cursor-pointer">
-                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
+                                    <x-heroicon-o-arrow-down-tray class="w-3.5 h-3.5" />
                                     <span>.xlsx</span>
                                 </button>
                             </td>
@@ -422,7 +422,7 @@
                             <td class="px-4 py-3.5 align-top text-center whitespace-nowrap">
                                 <button wire:click="exportAuditLogs" wire:loading.attr="disabled"
                                     class="px-3.5 py-1.5 text-xs font-semibold text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800 rounded-full hover:bg-sky-100 dark:hover:bg-sky-900/40 transition-all inline-flex items-center gap-1.5 cursor-pointer">
-                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
+                                    <x-heroicon-o-arrow-down-tray class="w-3.5 h-3.5" />
                                     <span>.xlsx</span>
                                 </button>
                             </td>
@@ -478,7 +478,7 @@
                             <td class="px-4 py-3.5 align-top text-center whitespace-nowrap">
                                 <button wire:click="exportDashboardReport" wire:loading.attr="disabled"
                                     class="px-3.5 py-1.5 text-xs font-semibold text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800 rounded-full hover:bg-sky-100 dark:hover:bg-sky-900/40 transition-all inline-flex items-center gap-1.5 cursor-pointer">
-                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
+                                    <x-heroicon-o-arrow-down-tray class="w-3.5 h-3.5" />
                                     <span>.xlsx</span>
                                 </button>
                             </td>
@@ -545,7 +545,7 @@
                             </td>
                             <td class="px-4 py-3.5 text-center whitespace-nowrap">
                                 <button wire:click="downloadTransactionTemplate" class="px-3.5 py-1.5 text-xs font-semibold text-neutral-600 dark:text-neutral-300 bg-neutral-100 dark:bg-slate-700 hover:bg-neutral-200 dark:hover:bg-slate-600 rounded-full transition-all inline-flex items-center gap-1.5 cursor-pointer">
-                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
+                                    <x-heroicon-o-arrow-down-tray class="w-3.5 h-3.5" />
                                     <span>Unduh (.xlsx)</span>
                                 </button>
                             </td>
@@ -559,7 +559,7 @@
                             </td>
                             <td class="px-4 py-3.5 text-center whitespace-nowrap">
                                 <button wire:click="downloadProductTemplate" class="px-3.5 py-1.5 text-xs font-semibold text-neutral-600 dark:text-neutral-300 bg-neutral-100 dark:bg-slate-700 hover:bg-neutral-200 dark:hover:bg-slate-600 rounded-full transition-all inline-flex items-center gap-1.5 cursor-pointer">
-                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
+                                    <x-heroicon-o-arrow-down-tray class="w-3.5 h-3.5" />
                                     <span>Unduh (.xlsx)</span>
                                 </button>
                             </td>
@@ -573,7 +573,7 @@
                             </td>
                             <td class="px-4 py-3.5 text-center whitespace-nowrap">
                                 <button wire:click="downloadAssetTemplate" class="px-3.5 py-1.5 text-xs font-semibold text-neutral-600 dark:text-neutral-300 bg-neutral-100 dark:bg-slate-700 hover:bg-neutral-200 dark:hover:bg-slate-600 rounded-full transition-all inline-flex items-center gap-1.5 cursor-pointer">
-                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
+                                    <x-heroicon-o-arrow-down-tray class="w-3.5 h-3.5" />
                                     <span>Unduh (.xlsx)</span>
                                 </button>
                             </td>

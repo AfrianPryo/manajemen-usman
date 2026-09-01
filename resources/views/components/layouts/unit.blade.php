@@ -10,43 +10,112 @@
             visibility: hidden !important;
             pointer-events: none !important;
         }
+
+        /* Sembunyikan scrollbar tapi area tetap bisa discroll (mouse/trackpad/keyboard) */
+        .no-scrollbar {
+            scrollbar-width: none;       /* Firefox */
+            -ms-overflow-style: none;    /* IE / Edge lama */
+        }
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;               /* Chrome, Safari, Edge (WebKit) */
+        }
     </style>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @livewireStyles
 </head>
 <body class="bg-gray-100 font-sans antialiased">
-    <div class="flex h-screen overflow-hidden font-sans">
+    <div class="flex h-screen overflow-hidden font-sans"
+         x-data="{
+            sidebarCollapsed: localStorage.getItem('sidebarCollapsed') === 'true',
+            mobileSidebarOpen: false
+         }"
+         x-init="$watch('sidebarCollapsed', value => localStorage.setItem('sidebarCollapsed', value))"
+         @keydown.escape.window="mobileSidebarOpen = false">
+
+        {{-- Backdrop (mobile only) --}}
+        <div x-show="mobileSidebarOpen"
+             x-cloak
+             x-transition:enter="transition-opacity ease-out duration-200"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             x-transition:leave="transition-opacity ease-in duration-150"
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0"
+             @click="mobileSidebarOpen = false"
+             class="fixed inset-0 z-40 bg-slate-900/50 md:hidden"
+             aria-hidden="true"></div>
+
         {{-- Sidebar --}}
-        <aside class="w-64 bg-white border-r border-slate-200/70 text-slate-700 flex-shrink-0 hidden md:flex md:flex-col justify-between select-none">
-            <div class="flex flex-col flex-1 overflow-y-auto">
-                
-                {{-- Logo Header --}}
-                @php
-                    $appName = \App\Models\Setting::get('app_name', 'USMAN - Usaha Mandiri Sekolah');
-                @endphp
-                <div class="h-12 flex items-center px-4 font-bold text-sm text-slate-900 border-b border-slate-100 shrink-0 tracking-tight">
-                    <span class="flex items-center gap-2">
-                        <span class="h-6 w-6 rounded-full bg-slate-900 text-white flex items-center justify-center font-extrabold text-[11px] shadow-xs">{{ strtoupper(substr($appName, 0, 1)) }}</span>
-                        <span class="truncate max-w-[160px]">{{ $appName }}</span>
-                    </span>
-                </div>
+        {{-- Sidebar ini KHUSUS dashboard Unit Usaha, terpisah dari sidebar
+             Admin Master (lihat components/layouts/app.blade.php). Sumber
+             datanya tetap config('menu') yang sama (satu sumber kebenaran
+             untuk seluruh rute aplikasi), tapi di sini secara eksplisit
+             HANYA menu dengan rute berawalan "unit." yang dirender — menu
+             khusus Master tidak akan pernah muncul di sidebar ini.
 
-                {{-- Navigation Menu Utama --}}
-                {{-- Sidebar ini KHUSUS dashboard Unit Usaha, terpisah dari sidebar
-                     Admin Master (lihat components/layouts/app.blade.php). Sumber
-                     datanya tetap config('menu') yang sama (satu sumber kebenaran
-                     untuk seluruh rute aplikasi), tapi di sini secara eksplisit
-                     HANYA menu dengan rute berawalan "unit." yang dirender — menu
-                     khusus Master tidak akan pernah muncul di sidebar ini.
+             Perilaku collapse/expand (desktop) & hamburger responsive
+             (mobile) sengaja dibuat SAMA PERSIS dengan sidebar Master
+             (lihat components/layouts/app.blade.php) supaya pengalaman
+             navigasi konsisten antara dua peran ini. --}}
+        <aside
+            :class="[
+                sidebarCollapsed ? 'md:w-16' : 'md:w-64',
+                mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
+            ]"
+            style="transition: width 280ms cubic-bezier(0.4, 0, 0.2, 1), transform 280ms cubic-bezier(0.4, 0, 0.2, 1); will-change: width, transform;"
+            class="fixed inset-y-0 left-0 z-50 w-64 md:relative md:z-auto bg-white border-r border-slate-200/70 text-slate-700 flex-shrink-0 flex flex-col justify-between select-none overflow-hidden">
 
-                     Catatan role: item unit di config('menu') di-guard
-                     roles => ['unit-admin']. Tapi middleware 'unit.access'
-                     (routes/web.php) SENGAJA mengizinkan Master Admin memantau
-                     dashboard unit MANA PUN, bukan cuma milik unit-admin. Kalau
-                     visibility di sini hanya mengecek hasAnyRole(), sidebar akan
-                     kosong total saat halaman ini dibuka oleh Master Admin. Jadi
-                     ditambahkan fallback isMasterAdmin() supaya tetap konsisten
-                     dengan middleware-nya. --}}
+            {{-- Logo Header (fixed, TIDAK ikut ter-scroll) --}}
+            @php
+                $appName = \App\Models\Setting::get('app_name', 'USMAN - Usaha Mandiri Sekolah');
+            @endphp
+            <div class="h-12 flex items-center justify-between px-4 font-bold text-sm text-slate-900 border-b border-slate-100 shrink-0 tracking-tight">
+                <span class="flex items-center gap-2 overflow-hidden">
+                    <span class="h-6 w-6 rounded-full bg-slate-900 text-white flex items-center justify-center font-extrabold text-[11px] shadow-xs shrink-0">{{ strtoupper(substr($appName, 0, 1)) }}</span>
+                    <span x-show="!sidebarCollapsed || mobileSidebarOpen"
+                          x-transition:enter="transition-opacity duration-150 delay-140"
+                          x-transition:enter-start="opacity-0"
+                          x-transition:enter-end="opacity-100"
+                          x-transition:leave="transition-opacity duration-75"
+                          x-transition:leave-start="opacity-100"
+                          x-transition:leave-end="opacity-0"
+                          x-cloak class="truncate max-w-[140px]">{{ $appName }}</span>
+                </span>
+
+                {{-- Tombol Toggle Collapse/Expand (desktop) --}}
+                <button
+                    @click="sidebarCollapsed = !sidebarCollapsed"
+                    x-show="!sidebarCollapsed"
+                    x-cloak
+                    type="button"
+                    title="Ciutkan sidebar"
+                    class="hidden md:inline-flex shrink-0 p-1 rounded-md text-slate-400 hover:text-slate-900 hover:bg-slate-100 transition-colors focus:outline-none">
+                    <x-heroicon-o-chevron-double-left class="w-3.5 h-3.5" />
+                </button>
+
+                {{-- Tombol Tutup Sidebar (mobile) --}}
+                <button
+                    @click="mobileSidebarOpen = false"
+                    type="button"
+                    title="Tutup menu"
+                    class="md:hidden shrink-0 p-1 rounded-md text-slate-400 hover:text-slate-900 hover:bg-slate-100 transition-colors focus:outline-none">
+                    <x-heroicon-o-x-mark class="w-4 h-4" />
+                </button>
+            </div>
+
+            {{-- Tombol Expand saat collapsed (fixed, tampil di bawah logo, terpusat, desktop only) --}}
+            <div x-show="sidebarCollapsed" x-cloak class="hidden md:flex justify-center py-1.5 border-b border-slate-100 shrink-0">
+                <button
+                    @click="sidebarCollapsed = !sidebarCollapsed"
+                    type="button"
+                    title="Perluas sidebar"
+                    class="p-1 rounded-md text-slate-400 hover:text-slate-900 hover:bg-slate-100 transition-colors focus:outline-none">
+                    <x-heroicon-o-chevron-double-right class="w-3.5 h-3.5" />
+                </button>
+            </div>
+
+            {{-- Area menu yang bisa discroll (logo & footer tetap diam) --}}
+            <div class="no-scrollbar flex-1 overflow-y-auto overflow-x-hidden">
                 @php
                     $slugUnitAktif = request()->route('unit')?->slug ?? auth()->user()?->unit?->slug;
 
@@ -59,7 +128,7 @@
                     // kategori unit ITU, bukan kategori unit user login.
                     $categoryUnitAktif = request()->route('unit')?->category ?? auth()->user()?->unit?->category;
                 @endphp
-                <nav class="flex-1 py-4 px-2.5 space-y-0.5">
+                <nav class="py-4 px-2.5 space-y-0.5" @click="mobileSidebarOpen = false">
                     @foreach(config('menu') as $item)
                         @php
                             $label = strtolower($item['label'] ?? '');
@@ -99,8 +168,15 @@
 
                                 @if($filteredChildren->count() > 0)
                                     <div class="pt-1.5 pb-0.5 first:pt-0">
-                                        {{-- Header Kategori --}}
-                                        <div class="px-2.5 pb-1 text-[9px] font-bold text-slate-400 tracking-wider uppercase">
+                                        {{-- Header Kategori (disembunyikan saat collapsed) --}}
+                                        <div x-show="!sidebarCollapsed || mobileSidebarOpen"
+                                             x-transition:enter="transition-all duration-150 delay-140 ease-out"
+                                             x-transition:enter-start="opacity-0 -translate-x-1"
+                                             x-transition:enter-end="opacity-100 translate-x-0"
+                                             x-transition:leave="transition-opacity duration-75 ease-in"
+                                             x-transition:leave-start="opacity-100"
+                                             x-transition:leave-end="opacity-0"
+                                             x-cloak class="px-2.5 pb-1 text-[9px] font-bold text-slate-400 tracking-wider uppercase">
                                             {{ $item['label'] }}
                                         </div>
 
@@ -115,18 +191,26 @@
                                                     // yang SEDANG DIBUKA (route-model-binding {unit:slug}),
                                                     // bukan dari unit milik user login — supaya link tetap
                                                     // benar saat halaman ini dibuka Master Admin yang sedang
-                                                    // memantau unit lain (lihat catatan di atas @foreach).
+                                                    // memantau unit lain.
                                                     $childRouteParams = ['unit' => $slugUnitAktif];
                                                 @endphp
                                                 <a href="{{ route($child['route'], $childRouteParams) }}"
-                                                class="flex items-center justify-between px-2.5 py-1.5 rounded-md text-xs font-medium transition-all duration-150 {{ $childActive ? 'bg-slate-100 text-slate-900 font-semibold shadow-2xs' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900' }}">
+                                                   title="{{ $child['label'] }}"
+                                                   class="flex items-center justify-between px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors duration-150 {{ $childActive ? 'bg-slate-100 text-slate-900 font-semibold shadow-2xs' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900' }}">
                                                     <div class="flex items-center gap-2 overflow-hidden">
                                                         @if(isset($child['icon']))
-                                                            <span class="{{ $childActive ? 'text-slate-900' : 'text-slate-400' }}">
-                                                                {!! $child['icon'] !!}
+                                                            <span class="w-5 h-5 flex items-center justify-center shrink-0 {{ $childActive ? 'text-slate-900' : 'text-slate-400' }}">
+                                                                <x-dynamic-component :component="'heroicon-o-'.$child['icon']" class="w-4 h-4" />
                                                             </span>
                                                         @endif
-                                                        <span class="truncate">{{ $child['label'] }}</span>
+                                                        <span x-show="!sidebarCollapsed || mobileSidebarOpen"
+                                                              x-transition:enter="transition-all duration-150 delay-140 ease-out"
+                                                              x-transition:enter-start="opacity-0 -translate-x-1"
+                                                              x-transition:enter-end="opacity-100 translate-x-0"
+                                                              x-transition:leave="transition-opacity duration-75 ease-in"
+                                                              x-transition:leave-start="opacity-100"
+                                                              x-transition:leave-end="opacity-0"
+                                                              x-cloak class="truncate">{{ $child['label'] }}</span>
                                                     </div>
                                                 </a>
                                             @endforeach
@@ -141,16 +225,31 @@
                                     $itemRouteParams = ['unit' => $slugUnitAktif];
                                 @endphp
                                 <a href="{{ route($item['route'], $itemRouteParams) }}"
-                                class="flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all duration-150 {{ $itemActive ? 'bg-slate-100 text-slate-900 font-semibold shadow-2xs' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900' }}">
+                                   title="{{ $item['label'] }}"
+                                   class="flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors duration-150 {{ $itemActive ? 'bg-slate-100 text-slate-900 font-semibold shadow-2xs' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900' }}">
                                     <div class="flex items-center gap-2 overflow-hidden">
                                         @if(isset($item['icon']))
-                                            <span class="{{ $itemActive ? 'text-slate-900' : 'text-slate-400' }}">
-                                                {!! $item['icon'] !!}
+                                            <span class="w-5 h-5 flex items-center justify-center shrink-0 {{ $itemActive ? 'text-slate-900' : 'text-slate-400' }}">
+                                                <x-dynamic-component :component="'heroicon-o-'.$item['icon']" class="w-4 h-4" />
                                             </span>
                                         @endif
-                                        <span class="truncate">{{ $item['label'] }}</span>
+                                        <span x-show="!sidebarCollapsed || mobileSidebarOpen"
+                                              x-transition:enter="transition-all duration-150 delay-140 ease-out"
+                                              x-transition:enter-start="opacity-0 -translate-x-1"
+                                              x-transition:enter-end="opacity-100 translate-x-0"
+                                              x-transition:leave="transition-opacity duration-75 ease-in"
+                                              x-transition:leave-start="opacity-100"
+                                              x-transition:leave-end="opacity-0"
+                                              x-cloak class="truncate">{{ $item['label'] }}</span>
                                     </div>
-                                    <svg class="w-3 h-3 text-slate-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg x-show="!sidebarCollapsed || mobileSidebarOpen"
+                                         x-transition:enter="transition-opacity duration-150 delay-140 ease-out"
+                                         x-transition:enter-start="opacity-0"
+                                         x-transition:enter-end="opacity-100"
+                                         x-transition:leave="transition-opacity duration-75 ease-in"
+                                         x-transition:leave-start="opacity-100"
+                                         x-transition:leave-end="opacity-0"
+                                         x-cloak class="w-3 h-3 text-slate-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                                     </svg>
                                 </a>
@@ -160,7 +259,7 @@
                 </nav>
             </div>
 
-            {{-- Bottom User Profile & Pop-up Menu Pengaturan --}}
+            {{-- Bottom User Profile & Pop-up Menu Profil Saya --}}
             @php
                 // Foto profil admin master (diatur di Pengaturan Sistem > Profil Admin)
                 $sidebarPhotoPath = auth()->user()->profile_photo_path ?? null;
@@ -169,7 +268,7 @@
             @endphp
             <div class="p-2 border-t border-slate-100 relative" x-data="{ userMenuOpen: false }">
                 {{-- Pop-up Menu Floating Upward --}}
-                <div x-show="userMenuOpen" 
+                <div x-show="userMenuOpen"
                     @click.outside="userMenuOpen = false"
                     x-transition:enter="transition ease-out duration-150"
                     x-transition:enter-start="opacity-0 translate-y-2 scale-95"
@@ -177,71 +276,124 @@
                     x-transition:leave="transition ease-in duration-100"
                     x-transition:leave-start="opacity-100 translate-y-0 scale-100"
                     x-transition:leave-end="opacity-0 translate-y-2 scale-95"
-                    class="absolute bottom-full left-2 right-2 mb-1.5 bg-white border border-slate-200/90 rounded-xl shadow-xl p-1.5 z-50 text-slate-800">
-                    
-                    {{-- Detail User --}}
-                    <div class="flex items-center gap-2.5 p-2 border-b border-slate-100 mb-1">
-                        <div class="w-7 h-7 rounded-lg bg-slate-100 text-slate-700 border border-slate-200/80 flex items-center justify-center font-bold text-xs shrink-0 overflow-hidden">
-                            @if ($sidebarPhotoUrl)
-                                <img src="{{ $sidebarPhotoUrl }}" alt="Foto profil" class="w-full h-full object-cover">
-                            @else
-                                {{ $sidebarInitial }}
-                            @endif
+                    :class="(sidebarCollapsed && !mobileSidebarOpen) ? 'left-2 w-12' : 'left-2 right-2 w-56'"
+                    class="absolute bottom-full mb-1.5 bg-white border border-slate-200/90 rounded-xl shadow-xl p-1.5 z-50 text-slate-800">
+
+                    {{-- ====== MODE COLLAPSED: hanya ikon ====== --}}
+                    <template x-if="sidebarCollapsed && !mobileSidebarOpen">
+                        <div class="flex flex-col items-center gap-1">
+                            <div class="w-8 h-8 rounded-lg bg-slate-100 text-slate-700 border border-slate-200/80 flex items-center justify-center font-bold text-[11px] shrink-0 overflow-hidden mb-0.5"
+                                 title="{{ auth()->user()->name }}">
+                                @if ($sidebarPhotoUrl)
+                                    <img src="{{ $sidebarPhotoUrl }}" alt="Foto profil" class="w-full h-full object-cover">
+                                @else
+                                    {{ $sidebarInitial }}
+                                @endif
+                            </div>
+
+                            <div class="w-6 h-px bg-slate-100"></div>
+
+                            {{-- Link Profil Saya (ikon saja) --}}
+                            @php
+                                // Sidebar Unit tidak pernah menautkan ke Pengaturan Sistem
+                                // milik Master (route itu di-guard middleware role:master-admin
+                                // dan memang di luar cakupan dashboard unit). Selalu arahkan
+                                // ke Profil Saya milik unit yang sedang login.
+                                //
+                                // unit.profile.index adalah profil PRIBADI user yang sedang
+                                // login (auth()->id()) -- BUKAN profil unit yang sedang
+                                // dipantau. Jadi khusus link ini tetap pakai unit milik
+                                // user login (auth()->user()->unit), bukan $slugUnitAktif, agar
+                                // Master Admin yang sedang memantau unit lain tidak diarahkan
+                                // ke halaman yang salah / 403.
+                                $settingsLabel = 'Profil Saya';
+                                $hasSettingsRoute = Route::has('unit.profile.index');
+                                $slugUnitProfil = auth()->user()?->unit?->slug ?? $slugUnitAktif;
+                                $settingsUrl = ($hasSettingsRoute && $slugUnitProfil)
+                                    ? route('unit.profile.index', ['unit' => $slugUnitProfil])
+                                    : '#';
+                                $isActive = request()->routeIs('unit.profile.*');
+                            @endphp
+                            <a href="{{ $settingsUrl }}"
+                               @click="userMenuOpen = false; mobileSidebarOpen = false"
+                               title="{{ $settingsLabel }}"
+                               class="flex items-center justify-center w-8 h-8 rounded-lg transition-all {{ $isActive ? 'bg-slate-900 text-white shadow-xs' : 'text-slate-500 hover:bg-slate-100 hover:text-slate-900' }}">
+                                <x-heroicon-o-user-circle class="w-4 h-4" />
+                            </a>
+
+                            {{-- Tombol Logout (ikon saja) --}}
+                            <form method="POST" action="{{ route('logout') }}">
+                                @csrf
+                                <button type="submit" title="Log out"
+                                        class="flex items-center justify-center w-8 h-8 rounded-lg text-slate-500 hover:bg-rose-50 hover:text-rose-700 transition-all">
+                                    <x-heroicon-o-arrow-right-on-rectangle class="w-4 h-4" />
+                                </button>
+                            </form>
                         </div>
-                        <div class="overflow-hidden">
-                            <p class="text-xs font-bold text-slate-900 truncate leading-tight">{{ auth()->user()->name }}</p>
-                            <p class="text-[10px] text-slate-500 truncate leading-tight">{{ auth()->user()->email ?? auth()->user()->getRoleNames()->first() }}</p>
+                    </template>
+
+                    {{-- ====== MODE EXPANDED: kartu lengkap (perilaku lama) ====== --}}
+                    <template x-if="!(sidebarCollapsed && !mobileSidebarOpen)">
+                        <div>
+                            {{-- Detail User --}}
+                            <div class="flex items-center gap-2.5 p-2 border-b border-slate-100 mb-1">
+                                <div class="w-7 h-7 rounded-lg bg-slate-100 text-slate-700 border border-slate-200/80 flex items-center justify-center font-bold text-xs shrink-0 overflow-hidden">
+                                    @if ($sidebarPhotoUrl)
+                                        <img src="{{ $sidebarPhotoUrl }}" alt="Foto profil" class="w-full h-full object-cover">
+                                    @else
+                                        {{ $sidebarInitial }}
+                                    @endif
+                                </div>
+                                <div class="overflow-hidden">
+                                    <p class="text-xs font-bold text-slate-900 truncate leading-tight">{{ auth()->user()->name }}</p>
+                                    <p class="text-[10px] text-slate-500 truncate leading-tight">{{ auth()->user()->email ?? auth()->user()->getRoleNames()->first() }}</p>
+                                </div>
+                            </div>
+
+                            {{-- Link Profil Saya --}}
+                            @php
+                                // Sidebar Unit tidak pernah menautkan ke Pengaturan Sistem
+                                // milik Master (route itu di-guard middleware role:master-admin
+                                // dan memang di luar cakupan dashboard unit). Selalu arahkan
+                                // ke Profil Saya milik unit yang sedang login.
+                                //
+                                // unit.profile.index adalah profil PRIBADI user yang sedang
+                                // login (auth()->id()) -- BUKAN profil unit yang sedang
+                                // dipantau. Jadi khusus link ini tetap pakai unit milik
+                                // user login (auth()->user()->unit), bukan $slugUnitAktif, agar
+                                // Master Admin yang sedang memantau unit lain tidak diarahkan
+                                // ke halaman yang salah / 403.
+                                $settingsLabel = 'Profil Saya';
+                                $hasSettingsRoute = Route::has('unit.profile.index');
+                                $slugUnitProfil = auth()->user()?->unit?->slug ?? $slugUnitAktif;
+                                $settingsUrl = ($hasSettingsRoute && $slugUnitProfil)
+                                    ? route('unit.profile.index', ['unit' => $slugUnitProfil])
+                                    : '#';
+                                $isActive = request()->routeIs('unit.profile.*');
+                            @endphp
+
+                            <a href="{{ $settingsUrl }}"
+                            @click="userMenuOpen = false; mobileSidebarOpen = false"
+                            class="flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs transition-all {{ $isActive ? 'bg-slate-900 text-white font-semibold shadow-xs' : 'text-slate-600 hover:bg-slate-100/80 hover:text-slate-900 font-medium' }}">
+                                <x-heroicon-o-user-circle class="w-3.5 h-3.5 {{ $isActive ? 'text-white' : 'text-slate-400' }}" />
+                                <span>{{ $settingsLabel }}</span>
+                            </a>
+
+                            {{-- Tombol Logout --}}
+                            <form method="POST" action="{{ route('logout') }}">
+                                @csrf
+                                <button type="submit" class="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs text-slate-600 hover:bg-rose-50 hover:text-rose-700 transition-all text-left font-medium group">
+                                    <x-heroicon-o-arrow-right-on-rectangle class="w-3.5 h-3.5 text-slate-400 group-hover:text-rose-600" />
+                                    <span>Log out</span>
+                                </button>
+                            </form>
                         </div>
-                    </div>
-
-                    {{-- Link Profil Saya --}}
-                    @php
-                        // Sidebar Unit tidak pernah menautkan ke Pengaturan Sistem
-                        // milik Master (route itu di-guard middleware role:master-admin
-                        // dan memang di luar cakupan dashboard unit). Selalu arahkan
-                        // ke Profil Saya milik unit yang sedang login.
-                        //
-                        // unit.profile.index adalah profil PRIBADI user yang sedang
-                        // login (auth()->id(), lihat App\Livewire\Master\Settings\Index
-                        // yang diwarisi Unit\Profile\Index -- termasuk seluruh tabnya,
-                        // bukan cuma tab profil) -- BUKAN profil unit yang sedang
-                        // dipantau. Jadi khusus link ini tetap pakai unit milik
-                        // user login (auth()->user()->unit), bukan $slugUnitAktif, agar
-                        // Master Admin yang sedang memantau unit lain tidak diarahkan
-                        // ke halaman yang salah / 403.
-                        $settingsLabel = 'Profil Saya';
-                        $hasSettingsRoute = Route::has('unit.profile.index');
-                        $slugUnitProfil = auth()->user()?->unit?->slug ?? $slugUnitAktif;
-                        $settingsUrl = ($hasSettingsRoute && $slugUnitProfil)
-                            ? route('unit.profile.index', ['unit' => $slugUnitProfil])
-                            : '#';
-                        $isActive = request()->routeIs('unit.profile.*');
-                    @endphp
-
-                    <a href="{{ $settingsUrl }}" 
-                    @click="userMenuOpen = false"
-                    class="flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs transition-all {{ $isActive ? 'bg-slate-900 text-white font-semibold shadow-xs' : 'text-slate-600 hover:bg-slate-100/80 hover:text-slate-900 font-medium' }}">
-                        <svg class="w-3.5 h-3.5 {{ $isActive ? 'text-white' : 'text-slate-400' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                        </svg>
-                        <span>{{ $settingsLabel }}</span>
-                    </a>
-
-                    {{-- Tombol Logout --}}
-                    <form method="POST" action="{{ route('logout') }}">
-                        @csrf
-                        <button type="submit" class="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs text-slate-600 hover:bg-rose-50 hover:text-rose-700 transition-all text-left font-medium">
-                            <svg class="w-3.5 h-3.5 text-slate-400 group-hover:text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
-                            </svg>
-                            <span>Log out</span>
-                        </button>
-                    </form>
+                    </template>
                 </div>
 
                 {{-- Trigger Button --}}
-                <button @click="userMenuOpen = !userMenuOpen" 
+                <button @click="userMenuOpen = !userMenuOpen"
+                        title="{{ auth()->user()->name }}"
                         class="w-full flex items-center justify-between p-1.5 rounded-lg hover:bg-slate-50 transition-colors text-left focus:outline-none border border-transparent hover:border-slate-200/60">
                     <div class="flex items-center gap-2 overflow-hidden">
                         <div class="w-6.5 h-6.5 rounded-md bg-slate-900 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-xs overflow-hidden">
@@ -251,49 +403,71 @@
                                 {{ $sidebarInitial }}
                             @endif
                         </div>
-                        <span class="text-xs font-semibold text-slate-800 truncate">{{ auth()->user()->name }}</span>
+                        <span x-show="!sidebarCollapsed || mobileSidebarOpen"
+                              x-transition:enter="transition-all duration-150 delay-140 ease-out"
+                              x-transition:enter-start="opacity-0 -translate-x-1"
+                              x-transition:enter-end="opacity-100 translate-x-0"
+                              x-transition:leave="transition-opacity duration-75 ease-in"
+                              x-transition:leave-start="opacity-100"
+                              x-transition:leave-end="opacity-0"
+                              x-cloak class="text-xs font-semibold text-slate-800 truncate">{{ auth()->user()->name }}</span>
                     </div>
-                    <svg class="w-3.5 h-3.5 text-slate-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l4-4 4 4m0 6l-4 4-4-4"/>
-                    </svg>
+                    <x-heroicon-o-chevron-up-down
+                        x-show="!sidebarCollapsed || mobileSidebarOpen"
+                        x-transition:enter="transition-opacity duration-150 delay-140 ease-out"
+                        x-transition:enter-start="opacity-0"
+                        x-transition:enter-end="opacity-100"
+                        x-transition:leave="transition-opacity duration-75 ease-in"
+                        x-transition:leave-start="opacity-100"
+                        x-transition:leave-end="opacity-0"
+                        x-cloak
+                        class="w-3.5 h-3.5 text-slate-400 shrink-0" />
                 </button>
             </div>
         </aside>
 
         {{-- Main Content Area --}}
-        <div class="flex-1 flex flex-col overflow-hidden bg-[#f8f9fa]">
+        <div class="flex-1 flex flex-col overflow-hidden bg-[#f8f9fa] min-w-0">
 
             {{-- HEADER STYLE REFERENSI (BREADCRUMB HEADER) --}}
-            <header class="h-12 bg-white border-b border-slate-200/70 flex items-center justify-between px-6 shrink-0">
-                
-                {{-- Left: Path Breadcrumb --}}
-                <div class="flex items-center gap-2 text-xs font-medium text-slate-500">
-                    
-                    {{-- Parent / Kategori --}}
-                    <div class="flex items-center gap-1.5 px-2 py-1 text-slate-700 font-semibold">
-                        <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
-                        </svg>
-                        <span>{{ $category ?? 'Unit Usaha' }}</span>
-                    </div>
+            <header class="h-12 bg-white border-b border-slate-200/70 flex items-center justify-between px-3 md:px-6 shrink-0 gap-2">
 
-                    {{-- Separator Slash --}}
-                    <span class="text-slate-300 font-normal">/</span>
+                {{-- Left: Hamburger (mobile) + Path Breadcrumb --}}
+                <div class="flex items-center gap-2 min-w-0">
 
-                    {{-- Current Page Title --}}
-                    <div class="flex items-center gap-1.5 text-slate-900 font-bold">
-                        <svg class="w-3.5 h-3.5 text-slate-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>
-                        </svg>
-                        <span>{{ $title ?? 'Dashboard Unit' }}</span>
+                    {{-- Tombol Buka Sidebar (mobile only) --}}
+                    <button
+                        @click="mobileSidebarOpen = true"
+                        type="button"
+                        title="Buka menu"
+                        class="md:hidden shrink-0 p-1.5 -ml-1 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors focus:outline-none">
+                        <x-heroicon-o-bars-3 class="w-5 h-5" />
+                    </button>
+
+                    <div class="flex items-center gap-2 text-xs font-medium text-slate-500 min-w-0">
+
+                        {{-- Parent / Kategori --}}
+                        <div class="hidden sm:flex items-center gap-1.5 px-2 py-1 text-slate-700 font-semibold shrink-0">
+                            <x-heroicon-o-building-storefront class="w-3.5 h-3.5 text-slate-500" />
+                            <span>{{ $category ?? 'Unit Usaha' }}</span>
+                        </div>
+
+                        {{-- Separator Slash --}}
+                        <span class="hidden sm:inline text-slate-300 font-normal">/</span>
+
+                        {{-- Current Page Title --}}
+                        <div class="flex items-center gap-1.5 text-slate-900 font-bold min-w-0">
+                            <x-heroicon-o-squares-2x2 class="w-3.5 h-3.5 text-slate-700 shrink-0" />
+                            <span class="truncate">{{ $title ?? 'Dashboard Unit' }}</span>
+                        </div>
                     </div>
                 </div>
 
                 {{-- Right: Light/Dark Mode, Notification Component & User Role Badge --}}
-                <div class="flex items-center gap-3">
+                <div class="flex items-center gap-3 shrink-0">
 
                     {{-- Toggle Light / Dark Mode --}}
-                    <div x-data="{ 
+                    <div x-data="{
                         darkMode: localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches),
                         toggle() {
                             this.darkMode = !this.darkMode;
@@ -312,19 +486,15 @@
                             document.documentElement.classList.remove('dark');
                         }
                     ">
-                        <button @click="toggle()" 
+                        <button @click="toggle()"
                                 class="p-1.5 text-slate-500 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors focus:outline-none"
                                 :title="darkMode ? 'Beralih ke Mode Terang' : 'Beralih ke Mode Gelap'">
-                            
+
                             {{-- Icon Moon --}}
-                            <svg x-show="!darkMode" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
-                            </svg>
+                            <x-heroicon-o-moon x-show="!darkMode" class="w-4 h-4" />
 
                             {{-- Icon Sun --}}
-                            <svg x-show="darkMode" x-cloak class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
-                            </svg>
+                            <x-heroicon-s-sun x-show="darkMode" x-cloak class="w-4 h-4 text-amber-400" />
                         </button>
                     </div>
 
@@ -341,7 +511,7 @@
                                 ? route('unit.notifications.index', ['unit' => $slugUnitAktif])
                                 : '#');
                     @endphp
-                    <livewire:notification-sidebar 
+                    <livewire:notification-sidebar
                         :role="$role ?? 'unit'"
                         :view-all-url="$notifViewAllUrl"
                     />
@@ -350,7 +520,7 @@
                         <a href="{{ route('master.dashboard') }}"
                            class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-neutral-600 dark:text-neutral-300 bg-neutral-50 dark:bg-slate-900/40 border border-neutral-200 dark:border-slate-700 rounded-[3px] hover:bg-neutral-100 dark:hover:bg-slate-900 transition-all shadow-sm shadow-black/[0.02]">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"/></svg>
-                            <span>Kembali ke Master</span>
+                            <span class="hidden sm:inline">Kembali ke Master</span>
                         </a>
                     @endif
 
@@ -358,7 +528,7 @@
             </header>
 
             {{-- Main Scroll Content Area --}}
-            <main class="flex-1 overflow-y-auto p-2 bg-slate-50/60">
+            <main class="no-scrollbar flex-1 overflow-y-auto p-2 bg-slate-50/60">
                 <x-alert />
                 {{ $slot }}
             </main>

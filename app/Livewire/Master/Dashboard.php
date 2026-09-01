@@ -7,6 +7,7 @@ use App\Models\AuthLog;
 use App\Models\FinanceTransaction;
 use App\Models\Unit;
 use App\Models\User;
+use App\Services\FonnteOtpService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -58,6 +59,7 @@ class Dashboard extends Component
     public string $admin_name = '';
     public string $employee_status = 'nip'; // Default: nip
     public string $nip = '';
+    public string $admin_phone = ''; // Nomor WA aktif -- dipakai FonnteOtpService untuk kirim kredensial, sama seperti Master\Users\Index
     public string $role = 'unit-admin';
     public ?int $admin_unit_id = null;
 
@@ -135,7 +137,7 @@ class Dashboard extends Component
      */
     public function openCreateAdminModal(): void
     {
-        $this->reset(['admin_name', 'nip', 'admin_unit_id']);
+        $this->reset(['admin_name', 'nip', 'admin_phone', 'admin_unit_id']);
         $this->resetValidation();
         $this->employee_status = 'nip';
         $this->role = 'unit-admin';
@@ -148,6 +150,8 @@ class Dashboard extends Component
     public function closeCreateAdminModal(): void
     {
         $this->showCreateAdminModal = false;
+        $this->reset(['admin_name', 'nip', 'admin_phone', 'admin_unit_id']);
+        $this->resetValidation();
     }
 
     /**
@@ -158,6 +162,7 @@ class Dashboard extends Component
         $rules = [
             'admin_name'      => 'required|string|max:100',
             'employee_status' => 'required|in:nip,non_nip',
+            'admin_phone'     => ['required', 'string', 'max:20', 'regex:/^[0-9+]+$/', 'unique:users,phone'],
             'role'            => 'required|in:master-admin,unit-admin',
         ];
 
@@ -173,6 +178,9 @@ class Dashboard extends Component
             'nip.required'           => 'NIP wajib diisi untuk Pegawai NIP.',
             'nip.digits'             => 'NIP harus berjumlah 18 digit angka.',
             'admin_unit_id.required' => 'Unit Usaha wajib dipilih untuk Unit Admin.',
+            'admin_phone.required'   => 'Nomor HP/WhatsApp wajib diisi (dipakai untuk notifikasi & OTP Fonnte).',
+            'admin_phone.regex'      => 'Format nomor HP tidak valid. Hanya boleh angka (dan awalan +).',
+            'admin_phone.unique'     => 'Nomor HP ini sudah terdaftar pada akun lain.',
         ]);
 
         // Auto-generate Username & Password
@@ -185,6 +193,7 @@ class Dashboard extends Component
             'password'             => Hash::make($plainPassword),
             'employee_status'      => $this->employee_status,
             'nip'                  => $this->employee_status === 'nip' ? $this->nip : null,
+            'phone'                => $this->admin_phone,
             'unit_id'              => $this->role === 'unit-admin' ? $this->admin_unit_id : null,
             'is_active'            => true,
             'must_change_password' => true,
@@ -193,6 +202,18 @@ class Dashboard extends Component
         if (method_exists($user, 'assignRole')) {
             $user->assignRole($this->role);
         }
+
+        // Kirim kredensial (username & password) langsung ke WhatsApp admin
+        // yang baru dibuat via Fonnte -- pola sama persis dengan
+        // App\Livewire\Master\Users\Index::save() (modul aslinya), supaya
+        // shortcut di dashboard ini konsisten dengan menu Manajemen Admin.
+        $waMessage = "🎉 *Akun Admin Baru*\n\n"
+            . "Halo {$user->name}, akun admin Anda telah dibuat oleh Master Admin.\n\n"
+            . "Username: *{$username}*\n"
+            . "Password: *{$plainPassword}*\n\n"
+            . "Segera login dan ganti password Anda. Jangan bagikan kredensial ini kepada siapapun.";
+
+        $waSent = app(FonnteOtpService::class)->sendPlainMessage($user->phone, $waMessage);
 
         // Catat ke Audit Log: pembuatan akun admin baru beserta role & unit terkait.
         // Password plain sengaja TIDAK disimpan ke log demi keamanan.
@@ -210,6 +231,7 @@ class Dashboard extends Component
                 'role'            => $this->role,
                 'employee_status' => $this->employee_status,
                 'nip'             => $this->employee_status === 'nip' ? $this->nip : null,
+                'phone'           => $this->admin_phone,
                 'unit_id'         => $this->role === 'unit-admin' ? $this->admin_unit_id : null,
             ]
         );
@@ -220,6 +242,7 @@ class Dashboard extends Component
             'name'     => $user->name,
             'username' => $user->username,
             'password' => $plainPassword,
+            'wa_sent'  => $waSent,
         ];
 
         $this->closeCreateAdminModal();
@@ -231,7 +254,9 @@ class Dashboard extends Component
     public function openCreateUnitModal(): void
     {
         $this->resetValidation();
-        $this->reset(['unitId', 'name', 'department', 'category', 'pic_name', 'phone', 'description']);
+        $this->reset(['unitId', 'name', 'pic_name', 'phone', 'description']);
+        $this->department = 'PPLG';
+        $this->category = 'ritel';
         $this->is_active = true;
         $this->isEditing = false;
         $this->showModal = true;
@@ -272,18 +297,25 @@ class Dashboard extends Component
     public function save(): void
     {
         $validated = $this->validate([
-            'name'        => 'required|string|max:255',
-            'department'  => 'required|string',
-            'category'    => 'required|string',
-            'pic_name'    => 'nullable|string|max:255',
+            'name'        => 'required|string|max:100|unique:units,name,' . $this->unitId,
+            'department'  => 'required|string|max:50',
+            'category'    => 'required|in:ritel,jasa',
+            'pic_name'    => 'nullable|string|max:100',
             'phone'       => 'nullable|string|max:20',
-            'description' => 'nullable|string',
+            'description' => 'nullable|string|max:500',
             'is_active'   => 'boolean',
         ]);
 
-        $data = array_merge($validated, [
-            'slug' => Str::slug($this->name),
-        ]);
+        $data = [
+            'name'        => $validated['name'],
+            'slug'        => Str::slug($this->name),
+            'department'  => $validated['department'],
+            'category'    => $validated['category'],
+            'pic_name'    => $validated['pic_name'] ?: null,
+            'phone'       => $validated['phone'] ?: null,
+            'description' => $validated['description'] ?: null,
+            'is_active'   => $validated['is_active'],
+        ];
 
         // Ambil nilai lama SEBELUM ditimpa, khusus untuk mode edit — dipakai sebagai jejak audit.
         $oldValues = null;

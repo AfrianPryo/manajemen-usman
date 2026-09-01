@@ -7,8 +7,8 @@ return [
         'label' => 'Analytics',
         'roles' => ['master-admin'],
         'children' => [
-            ['label' => 'Dashboard', 'route' => 'master.dashboard', 'roles' => ['master-admin']],
-            ['label' => 'Statistik Usaha', 'route' => 'master.analytics.index', 'roles' => ['master-admin']],
+            ['label' => 'Dashboard', 'route' => 'master.dashboard', 'icon' => 'home', 'roles' => ['master-admin']],
+            ['label' => 'Statistik Usaha', 'route' => 'master.analytics.index', 'icon' => 'chart-bar', 'roles' => ['master-admin']],
         ],
     ],
 
@@ -25,10 +25,10 @@ return [
         'label' => 'Master Management',
         'roles' => ['master-admin'],
         'children' => [
-            ['label' => 'Unit Usaha', 'route' => 'master.units.index', 'roles' => ['master-admin']],
-            ['label' => 'Admin', 'route' => 'master.users.index', 'roles' => ['master-admin']],
-            ['label' => 'Vendor', 'route' => 'master.vendors.index', 'roles' => ['master-admin']],
-            ['label' => 'Pelanggan', 'route' => 'master.customers.index', 'roles' => ['master-admin']],
+            ['label' => 'Unit Usaha', 'route' => 'master.units.index', 'icon' => 'building-storefront', 'roles' => ['master-admin']],
+            ['label' => 'Admin', 'route' => 'master.users.index', 'icon' => 'user-group', 'roles' => ['master-admin']],
+            ['label' => 'Vendor', 'route' => 'master.vendors.index', 'icon' => 'truck', 'roles' => ['master-admin']],
+            ['label' => 'Pelanggan', 'route' => 'master.customers.index', 'icon' => 'users', 'roles' => ['master-admin']],
         ],
     ],
 
@@ -45,12 +45,12 @@ return [
         'label' => 'Operasional',
         'roles' => ['master-admin'],
         'children' => [
-            ['label' => 'Transaksi', 'route' => 'master.transactions.index', 'roles' => ['master-admin']],
-            ['label' => 'Transaksi Berulang', 'route' => 'master.recurring-transactions.index', 'roles' => ['master-admin']],
-            ['label' => 'Inventaris', 'route' => 'master.inventory.index', 'roles' => ['master-admin']],
-            ['label' => 'Aset Unit Usaha', 'route' => 'master.assets.index', 'roles' => ['master-admin']],
-            ['label' => 'Dokumen Resmi', 'route' => 'master.documents.index', 'roles' => ['master-admin']],
-            ['label' => 'Export Data', 'route' => 'master.exports.index', 'roles' => ['master-admin']],
+            ['label' => 'Transaksi', 'route' => 'master.transactions.index', 'icon' => 'banknotes', 'roles' => ['master-admin']],
+            ['label' => 'Transaksi Berulang', 'route' => 'master.recurring-transactions.index', 'icon' => 'arrow-path', 'roles' => ['master-admin']],
+            ['label' => 'Inventaris', 'route' => 'master.inventory.index', 'icon' => 'archive-box', 'roles' => ['master-admin']],
+            ['label' => 'Aset Unit Usaha', 'route' => 'master.assets.index', 'icon' => 'cube', 'roles' => ['master-admin']],
+            ['label' => 'Dokumen Resmi', 'route' => 'master.documents.index', 'icon' => 'document-text', 'roles' => ['master-admin']],
+            ['label' => 'Export Data', 'route' => 'master.exports.index', 'icon' => 'arrow-down-tray', 'roles' => ['master-admin']],
         ],
     ],
 
@@ -80,7 +80,7 @@ return [
         'label' => 'Manajemen Layanan',
         'roles' => ['master-admin'],
         'children' => [
-            ['label' => 'Pesanan Layanan', 'route' => 'master.service-orders.index', 'roles' => ['master-admin']],
+            ['label' => 'Pesanan Layanan', 'route' => 'master.service-orders.index', 'icon' => 'clipboard-document-list', 'roles' => ['master-admin']],
         ],
     ],
 
@@ -104,7 +104,7 @@ return [
         'label' => 'Pembelian',
         'roles' => ['master-admin'],
         'children' => [
-            ['label' => 'Pembelian Lintas-Unit', 'route' => 'master.purchasing.index', 'roles' => ['master-admin']],
+            ['label' => 'Pembelian Lintas-Unit', 'route' => 'master.purchasing.index', 'icon' => 'shopping-cart', 'roles' => ['master-admin']],
         ],
     ],
 
@@ -119,9 +119,9 @@ return [
         'label' => 'System',
         'roles' => ['master-admin'],
         'children' => [
-            ['label' => 'Aktivitas', 'route' => 'master.activities.index', 'roles' => ['master-admin']],
-            ['label' => 'Audit Log', 'route' => 'master.audit-logs.index', 'roles' => ['master-admin']],
-            ['label' => 'Pengumuman', 'route' => 'master.announcements.index', 'roles' => ['master-admin']],
+            ['label' => 'Aktivitas', 'route' => 'master.activities.index', 'icon' => 'clock', 'roles' => ['master-admin']],
+            ['label' => 'Audit Log', 'route' => 'master.audit-logs.index', 'icon' => 'shield-check', 'roles' => ['master-admin']],
+            ['label' => 'Pengumuman', 'route' => 'master.announcements.index', 'icon' => 'megaphone', 'roles' => ['master-admin']],
         ],
     ],
 
@@ -138,7 +138,7 @@ return [
         'label' => 'Settings',
         'roles' => ['master-admin'],
         'children' => [
-            ['label' => 'Pengaturan Sistem', 'route' => 'master.settings.index', 'roles' => ['master-admin']],
+            ['label' => 'Pengaturan Sistem', 'route' => 'master.settings.index', 'icon' => 'cog-6-tooth', 'roles' => ['master-admin']],
         ],
     ],
 
@@ -224,8 +224,8 @@ return [
         'label' => 'Unit Usaha Saya',
         'roles' => ['unit-admin'],
         'children' => [
-            ['label' => 'Dashboard', 'route' => 'unit.dashboard', 'roles' => ['unit-admin']],
-            ['label' => 'Statistik Usaha', 'route' => 'unit.analytics.index', 'roles' => ['unit-admin']],
+            ['label' => 'Dashboard', 'route' => 'unit.dashboard', 'icon' => 'home', 'roles' => ['unit-admin']],
+            ['label' => 'Statistik Usaha', 'route' => 'unit.analytics.index', 'icon' => 'chart-bar', 'roles' => ['unit-admin']],
         ],
     ],
 
@@ -233,14 +233,14 @@ return [
         'label' => 'Operasional Unit',
         'roles' => ['unit-admin'],
         'children' => [
-            ['label' => 'Transaksi', 'route' => 'unit.transactions.index', 'roles' => ['unit-admin']],
-            ['label' => 'Transaksi Berulang', 'route' => 'unit.recurring-transactions.index', 'roles' => ['unit-admin']],
-            ['label' => 'Inventaris', 'route' => 'unit.inventory.index', 'roles' => ['unit-admin'], 'unit_category' => 'ritel'],
-            ['label' => 'Pembelian', 'route' => 'unit.purchasing.index', 'roles' => ['unit-admin']],
-            ['label' => 'Aset Unit Usaha', 'route' => 'unit.assets.index', 'roles' => ['unit-admin']],
-            ['label' => 'Pelanggan', 'route' => 'unit.customers.index', 'roles' => ['unit-admin']],
-            ['label' => 'Dokumen Resmi', 'route' => 'unit.documents.index', 'roles' => ['unit-admin']],
-            ['label' => 'Export Data', 'route' => 'unit.exports.index', 'roles' => ['unit-admin']],
+            ['label' => 'Transaksi', 'route' => 'unit.transactions.index', 'icon' => 'banknotes', 'roles' => ['unit-admin']],
+            ['label' => 'Transaksi Berulang', 'route' => 'unit.recurring-transactions.index', 'icon' => 'arrow-path', 'roles' => ['unit-admin']],
+            ['label' => 'Inventaris', 'route' => 'unit.inventory.index', 'icon' => 'archive-box', 'roles' => ['unit-admin'], 'unit_category' => 'ritel'],
+            ['label' => 'Pembelian', 'route' => 'unit.purchasing.index', 'icon' => 'shopping-cart', 'roles' => ['unit-admin']],
+            ['label' => 'Aset Unit Usaha', 'route' => 'unit.assets.index', 'icon' => 'cube', 'roles' => ['unit-admin']],
+            ['label' => 'Pelanggan', 'route' => 'unit.customers.index', 'icon' => 'users', 'roles' => ['unit-admin']],
+            ['label' => 'Dokumen Resmi', 'route' => 'unit.documents.index', 'icon' => 'document-text', 'roles' => ['unit-admin']],
+            ['label' => 'Export Data', 'route' => 'unit.exports.index', 'icon' => 'arrow-down-tray', 'roles' => ['unit-admin']],
         ],
     ],
 
@@ -256,7 +256,7 @@ return [
         'roles' => ['unit-admin'],
         'unit_category' => 'jasa',
         'children' => [
-            ['label' => 'Pesanan Layanan', 'route' => 'unit.service-orders.index', 'roles' => ['unit-admin'], 'unit_category' => 'jasa'],
+            ['label' => 'Pesanan Layanan', 'route' => 'unit.service-orders.index', 'icon' => 'clipboard-document-list', 'roles' => ['unit-admin'], 'unit_category' => 'jasa'],
         ],
     ],
 
@@ -264,7 +264,7 @@ return [
         'label' => 'System',
         'roles' => ['unit-admin'],
         'children' => [
-            ['label' => 'Aktivitas', 'route' => 'unit.activities.index', 'roles' => ['unit-admin']],
+            ['label' => 'Aktivitas', 'route' => 'unit.activities.index', 'icon' => 'clock', 'roles' => ['unit-admin']],
         ],
     ],
 
@@ -272,7 +272,7 @@ return [
         'label' => 'Settings',
         'roles' => ['unit-admin'],
         'children' => [
-            ['label' => 'Profil Saya', 'route' => 'unit.profile.index', 'roles' => ['unit-admin']],
+            ['label' => 'Profil Saya', 'route' => 'unit.profile.index', 'icon' => 'user-circle', 'roles' => ['unit-admin']],
         ],
     ],
 ];

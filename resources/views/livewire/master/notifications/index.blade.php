@@ -31,9 +31,7 @@
                 @if($unreadCount === 0) disabled @endif
                 class="px-4 py-2 text-xs font-bold text-neutral-700 dark:text-neutral-200 bg-white dark:bg-slate-800 border border-neutral-200 dark:border-slate-700 hover:bg-neutral-50 dark:hover:bg-slate-700 rounded-[3px] transition-all flex items-center gap-2 shadow-sm disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
             >
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
-                </svg>
+                <x-heroicon-o-check class="w-4 h-4" stroke-width="2" />
                 <span>Tandai Semua Dibaca</span>
             </button>
         </div>
@@ -122,12 +120,12 @@
                         @if($isUnread)
                             <button type="button" wire:click="markAsRead('{{ $notification->id }}')" title="Tandai sudah dibaca"
                                     class="p-1.5 text-neutral-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 rounded-md transition-all cursor-pointer">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                                <x-heroicon-o-check class="w-4 h-4" stroke-width="2" />
                             </button>
                         @else
                             <button type="button" wire:click="markAsUnread('{{ $notification->id }}')" title="Tandai belum dibaca"
                                     class="p-1.5 text-neutral-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950/30 rounded-md transition-all cursor-pointer">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="7"/></svg>
+                                <x-heroicon-o-circle class="w-4 h-4" stroke-width="2" />
                             </button>
                         @endif
                         <button type="button"
@@ -138,7 +136,7 @@
                                 })"
                                 title="Hapus"
                                 class="p-1.5 text-neutral-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 rounded-md transition-all cursor-pointer">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                            <x-heroicon-o-trash class="w-4 h-4" stroke-width="2" />
                         </button>
                     </div>
                 </div>

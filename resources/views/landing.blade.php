@@ -136,16 +136,6 @@
                 <!-- PERBAIKAN: h1 sekarang menjadi 'relative' dan ditambahkan 'w-full' -->
                 <h1 class="relative w-full max-w-[680px] font-display text-4xl lg:text-[4rem] tracking-tighter font-medium text-slate-900 dark:text-white flex flex-col items-center text-center">                 
                     
-                    <!-- ================= TEKS KECIL TEPI LAYAR ================= -->
-                    <!-- Teks Tepi Kiri -->
-                    <span class="absolute left-[5vw] lg:-left-[17rem] text-center top-1/2 -translate-y-1/2 text-xs font-normal tracking-tight leading-none text-slate-400 select-none whitespace-nowrap">
-                        Lorem <br>ipsum
-                    </span>
-
-                    <!-- Teks Tepi Kanan -->
-                    <span class="absolute right-[5vw] lg:-right-[17rem] text-center top-1/2 -translate-y-1/2 text-xs font-normal tracking-tight leading-none text-slate-400 select-none whitespace-nowrap">
-                        Lorem <br>ipsum
-                    </span>
                     <!-- ========================================================= -->
 
                     <span class="block">Kelola Unit</span>
@@ -160,7 +150,6 @@
                     <span class="block">Portal.</span>             
                 </h1>
                 
-                <p class="tracking-tight text-sm mt-4 text-slate-900 dark:text-white">Platform manajemen usaha mandiri sekolah.</p>           
             </div>
 
         </div>
@@ -747,7 +736,7 @@
                             type="submit"
                             class="rounded-[1px] bg-blue-900 hover:bg-blue-800 px-6 py-2 text-xs font-medium tracking-tighter text-white transition-colors"
                         >
-                            Berlangganan
+                            Hubungi
                         </button>
                     </form>
                 </div>
@@ -793,16 +782,6 @@
                             <ul class="space-y-1 text-[12px] font-medium tracking-tighter">
                                 <li><a href="#" class="text-white/90 hover:text-white transition-colors">Panduan Penggunaan</a></li>
                                 <li><a href="#" class="text-white/90 hover:text-white transition-colors">Hubungi Admin</a></li>
-                            </ul>
-                        </div>
-
-                        <div>
-                            <p class="text-xs font-semibold uppercase tracking-tighter text-white/50 mb-4">
-                                Kontak
-                            </p>
-                            <ul class="space-y-1 text-[12px] font-medium tracking-tighter">
-                                <li><a href="#" class="text-white/90 hover:text-white transition-colors">Email Admin Pusat</a></li>
-                                <li><a href="#" class="text-white/90 hover:text-white transition-colors">WhatsApp Support</a></li>
                             </ul>
                         </div>
                     </div>
