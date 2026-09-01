@@ -350,9 +350,25 @@
                                         @error('waSenderNumber') <p class="text-[11px] text-rose-500 mt-0.5">{{ $message }}</p> @enderror
                                     </div>
 
-                                    <div class="md:col-span-2">
+                                    <div class="md:col-span-2" x-data="{ showApiKey: false }">
                                         <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1">API Key / Token Fonnte</label>
-                                        <input type="password" wire:model="waApiKey" placeholder="Masukkan API Key / Token" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-red-500">
+                                        <div class="relative">
+                                            <input
+                                                :type="showApiKey ? 'text' : 'password'"
+                                                wire:model="waApiKey"
+                                                placeholder="Masukkan API Key / Token"
+                                                class="w-full px-3.5 py-2 pr-9 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-red-500"
+                                            >
+                                            <button
+                                                type="button"
+                                                @click="showApiKey = !showApiKey"
+                                                class="absolute right-2.5 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600 dark:text-neutral-500 dark:hover:text-neutral-300 focus:outline-none"
+                                                tabindex="-1"
+                                            >
+                                                <x-heroicon-o-eye x-show="!showApiKey" class="h-4 w-4" stroke-width="1.8" />
+                                                <x-heroicon-o-eye-slash x-show="showApiKey" x-cloak class="h-4 w-4" stroke-width="1.8" />
+                                            </button>
+                                        </div>
                                         @error('waApiKey') <p class="text-[11px] text-rose-500 mt-0.5">{{ $message }}</p> @enderror
                                     </div>
                                 </div>
