@@ -4,6 +4,7 @@ namespace App\Livewire\Master\Analytics;
 
 use Livewire\Component;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\Url;
 use App\Models\Unit;
 use App\Models\FinanceTransaction;
 use App\Models\Expense;
@@ -17,9 +18,21 @@ use Livewire\Attributes\Title;
 #[Title('Statistik Usaha')]
 class Index extends Component
 {
+    // Kunci penyimpanan filter di session, supaya tetap "diingat" walau
+    // pindah ke menu lain (link sidebar tidak membawa query string) —
+    // bukan cuma bertahan saat refresh URL yang sama.
+    private const SESSION_KEY = 'analytics_filter';
+
+    #[Url(as: 'unit', history: true)]
     public $selectedUnit = '';
+
+    #[Url(as: 'period', history: true)]
     public $periodFilter = 'this_month';
+
+    #[Url(as: 'start', history: true)]
     public $startDate;
+
+    #[Url(as: 'end', history: true)]
     public $endDate;
 
     // Properti grafik
@@ -27,10 +40,10 @@ class Index extends Component
     public array $revenueChartData = [];
     public array $expenseChartData = [];
 
-    // Filter Khusus Grafik Arus Kas
-    public string $cashflowPeriod = 'this_month';
-    public ?string $cfStartDate = null;
-    public ?string $cfEndDate = null;
+    // Data untuk grafik donut Kontribusi Omzet per Unit Usaha
+    // (dibaca reaktif oleh Alpine lewat $wire, lihat blade)
+    public array $revenueLabels = [];
+    public array $revenueSeries = [];
 
     // Filter Khusus Tabel Unit Usaha
     public string $unitPeriod = 'this_month';
@@ -39,15 +52,30 @@ class Index extends Component
 
     public function mount(): void
     {
+        // Kalau properti ini TIDAK datang dari query string (mis. user
+        // klik menu lain lalu balik lagi ke Statistik lewat link biasa),
+        // pulihkan dari session supaya filter yang sudah dipilih user
+        // tidak diam-diam balik ke default.
+        if (! request()->has('unit')) {
+            $this->selectedUnit = session(self::SESSION_KEY . '.unit', $this->selectedUnit);
+        }
+        if (! request()->has('period')) {
+            $this->periodFilter = session(self::SESSION_KEY . '.period', $this->periodFilter);
+        }
+        if (! request()->has('start')) {
+            $this->startDate = session(self::SESSION_KEY . '.start', $this->startDate);
+        }
+        if (! request()->has('end')) {
+            $this->endDate = session(self::SESSION_KEY . '.end', $this->endDate);
+        }
+
         $this->applyPeriodFilter();
+        $this->persistFilterToSession();
     }
 
-    public function updatedCashflowPeriod(): void
+    public function updatedSelectedUnit(): void
     {
-        if ($this->cashflowPeriod !== 'custom') {
-            $this->cfStartDate = null;
-            $this->cfEndDate = null;
-        }
+        $this->persistFilterToSession();
     }
 
     public function updatedUnitPeriod(): void
@@ -61,6 +89,7 @@ class Index extends Component
     public function updatedPeriodFilter(): void
     {
         $this->applyPeriodFilter();
+        $this->persistFilterToSession();
     }
 
     public function updatedStartDate(): void
@@ -68,6 +97,7 @@ class Index extends Component
         if ($this->periodFilter !== 'custom') {
             $this->periodFilter = 'custom';
         }
+        $this->persistFilterToSession();
     }
 
     public function updatedEndDate(): void
@@ -75,6 +105,22 @@ class Index extends Component
         if ($this->periodFilter !== 'custom') {
             $this->periodFilter = 'custom';
         }
+        $this->persistFilterToSession();
+    }
+
+    /**
+     * Simpan filter aktif ke session (bukan cuma query string), supaya saat
+     * user pindah ke menu lain lalu balik ke Statistik lewat link biasa
+     * (tanpa query string), filter yang terakhir dipakai tetap dipulihkan.
+     */
+    private function persistFilterToSession(): void
+    {
+        session([
+            self::SESSION_KEY . '.unit'   => $this->selectedUnit,
+            self::SESSION_KEY . '.period' => $this->periodFilter,
+            self::SESSION_KEY . '.start'  => $this->startDate,
+            self::SESSION_KEY . '.end'    => $this->endDate,
+        ]);
     }
 
     private function applyPeriodFilter(): void
@@ -127,8 +173,25 @@ class Index extends Component
             $incomeQuery->where('unit_id', $this->selectedUnit);
         }
 
-        $totalRevenue      = (clone $incomeQuery)->sum('amount') ?? 0;
-        $totalTransactions = (clone $incomeQuery)->count();
+        $totalRevenue = (clone $incomeQuery)->sum('amount') ?? 0;
+        $incomeCount  = (clone $incomeQuery)->count();
+
+        // --- Transaksi Pengeluaran (finance_transactions, terpisah dari tabel expenses lama) ---
+        $expenseTxQuery = FinanceTransaction::query()
+            ->where('type', 'expense')
+            ->where('status', 'completed')
+            ->whereBetween('transaction_date', [$start, $end]);
+
+        if ($this->selectedUnit) {
+            $expenseTxQuery->where('unit_id', $this->selectedUnit);
+        }
+
+        $expenseCount = $expenseTxQuery->count();
+
+        // KPI ringkas: total gabungan jumlah transaksi & rincian per tipe,
+        // supaya kartu bisa menampilkan "104 transaksi (86 income, 18 expense)"
+        // alih-alih hanya satu angka yang menutupi salah satu tipe.
+        $totalTransactions = $incomeCount + $expenseCount;
 
         // --- Pengeluaran ---
         $expenseQuery = class_exists(Expense::class) && Schema::hasTable('expenses')
@@ -157,26 +220,12 @@ class Index extends Component
         // --- Metrik Finansial ---
         $netProfit = $totalRevenue - $totalExpense;
 
-        // 2. Rentang Tanggal Khusus Grafik Arus Kas
-        $cfStart = match ($this->cashflowPeriod) {
-            'this_week'    => Carbon::now()->startOfWeek(),
-            'last_30_days' => Carbon::now()->subDays(30)->startOfDay(),
-            'this_month'   => Carbon::now()->startOfMonth(),
-            'this_year'    => Carbon::now()->startOfYear(),
-            'custom'       => $this->cfStartDate ? Carbon::parse($this->cfStartDate)->startOfDay() : Carbon::now()->startOfMonth(),
-            default        => Carbon::now()->startOfMonth(),
-        };
-
-        $cfEnd = match ($this->cashflowPeriod) {
-            'custom' => $this->cfEndDate ? Carbon::parse($this->cfEndDate)->endOfDay() : Carbon::now()->endOfDay(),
-            default  => Carbon::now()->endOfDay(),
-        };
-
-        // --- Data Grafik Arus Kas (Harian) ---
+        // 2. Grafik Arus Kas mengikuti filter global (selectedUnit + startDate/endDate)
+        // -- tidak lagi punya rentang tanggal sendiri (cashflowPeriod dihapus).
         $dailyRevenues = FinanceTransaction::query()
             ->where('type', 'income')
             ->where('status', 'completed')
-            ->whereBetween('transaction_date', [$cfStart, $cfEnd])
+            ->whereBetween('transaction_date', [$start, $end])
             ->when($this->selectedUnit, fn($q) => $q->where('unit_id', $this->selectedUnit))
             ->selectRaw('DATE(transaction_date) as date, SUM(amount) as total')
             ->groupBy('date')
@@ -185,7 +234,7 @@ class Index extends Component
         $dailyExpenses = FinanceTransaction::query()
             ->where('type', 'expense')
             ->where('status', 'completed')
-            ->whereBetween('transaction_date', [$cfStart, $cfEnd])
+            ->whereBetween('transaction_date', [$start, $end])
             ->when($this->selectedUnit, fn($q) => $q->where('unit_id', $this->selectedUnit))
             ->selectRaw('DATE(transaction_date) as date, SUM(amount) as total')
             ->groupBy('date')
@@ -195,7 +244,7 @@ class Index extends Component
         $this->revenueChartData = [];
         $this->expenseChartData = [];
 
-        $period = CarbonPeriod::create($cfStart, $cfEnd);
+        $period = CarbonPeriod::create($start, $end);
         foreach ($period as $date) {
             $formattedDate            = $date->format('Y-m-d');
             $this->chartLabels[]       = $date->format('d M');
@@ -231,6 +280,9 @@ class Index extends Component
                 ? round(($val / $grandTotalContribution) * 100, 1) 
                 : 0;
         }
+
+        $this->revenueLabels = $revenueContribution['labels'];
+        $this->revenueSeries = $revenueContribution['series'];
 
         // 3. Rentang Tanggal Khusus Tabel Performa Unit Usaha
         $uStart = match ($this->unitPeriod) {
@@ -320,6 +372,8 @@ class Index extends Component
             'totalRevenue',
             'totalExpense',
             'totalTransactions',
+            'incomeCount',      // <- baru
+            'expenseCount',     // <- baru
             'netProfit',
             'revenueContribution',
             'topUnits',

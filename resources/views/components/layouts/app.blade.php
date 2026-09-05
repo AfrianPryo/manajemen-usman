@@ -240,7 +240,7 @@
                     x-transition:leave-start="opacity-100 translate-y-0 scale-100"
                     x-transition:leave-end="opacity-0 translate-y-2 scale-95"
                     :class="(sidebarCollapsed && !mobileSidebarOpen) ? 'left-2 w-12' : 'left-2 right-2 w-56'"
-                    class="absolute bottom-full mb-1.5 bg-white border border-slate-200/90 rounded-xl shadow-xl p-1.5 z-50 text-slate-800">
+                    class="absolute bottom-full mb-1.5 bg-white border border-slate-200/90 rounded-sm shadow-sm/10 p-1.5 z-50 text-slate-800">
 
                     {{-- ====== MODE COLLAPSED: hanya ikon ====== --}}
                     <template x-if="sidebarCollapsed && !mobileSidebarOpen">

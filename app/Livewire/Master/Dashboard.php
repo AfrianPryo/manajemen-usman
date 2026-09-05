@@ -34,7 +34,10 @@ class Dashboard extends Component
     #[Url(as: 'period', history: true)]
     public string $periodFilter = 'this_month';
 
+    #[Url(as: 'start', history: true)]
     public $startDate;
+
+    #[Url(as: 'end', history: true)]
     public $endDate;
 
     // ------------------------------------------
@@ -69,14 +72,42 @@ class Dashboard extends Component
     // ------------------------------------------
     // LIFECYCLE HOOKS FILTER PERIODE
     // ------------------------------------------
+
+    // Kunci penyimpanan filter di session, supaya tetap "diingat" walau
+    // pindah ke menu lain (link sidebar tidak membawa query string) —
+    // bukan cuma bertahan saat refresh URL yang sama.
+    private const SESSION_KEY = 'dashboard_filter';
+
     public function mount(): void
     {
+        if (! request()->has('period')) {
+            $this->periodFilter = session(self::SESSION_KEY . '.period', $this->periodFilter);
+        }
+        if (! request()->has('start')) {
+            $this->startDate = session(self::SESSION_KEY . '.start', $this->startDate);
+        }
+        if (! request()->has('end')) {
+            $this->endDate = session(self::SESSION_KEY . '.end', $this->endDate);
+        }
+
         $this->applyPeriodFilter();
+        $this->persistFilterToSession();
+    }
+
+    private function persistFilterToSession(): void
+    {
+        session([
+            self::SESSION_KEY . '.period' => $this->periodFilter,
+            self::SESSION_KEY . '.start'  => $this->startDate,
+            self::SESSION_KEY . '.end'    => $this->endDate,
+        ]);
     }
 
     public function updatedPeriodFilter(): void
     {
         $this->applyPeriodFilter();
+        $this->persistFilterToSession();
+        $this->refreshRevenueChart();
     }
 
     public function updatedStartDate(): void
@@ -84,6 +115,8 @@ class Dashboard extends Component
         if ($this->periodFilter !== 'custom') {
             $this->periodFilter = 'custom';
         }
+        $this->persistFilterToSession();
+        $this->refreshRevenueChart();
     }
 
     public function updatedEndDate(): void
@@ -91,6 +124,63 @@ class Dashboard extends Component
         if ($this->periodFilter !== 'custom') {
             $this->periodFilter = 'custom';
         }
+        $this->persistFilterToSession();
+        $this->refreshRevenueChart();
+    }
+
+    /**
+     * Hitung ulang data kontribusi omzet per unit berdasarkan rentang tanggal aktif.
+     * Dipakai baik oleh render() maupun oleh refreshRevenueChart().
+     */
+    private function computeRevenueContribution(): array
+    {
+        $start = Carbon::parse($this->startDate)->startOfDay();
+        $end   = Carbon::parse($this->endDate)->endOfDay();
+
+        $unitContributions = FinanceTransaction::query()
+            ->join('units', 'finance_transactions.unit_id', '=', 'units.id')
+            ->where('finance_transactions.type', 'income')
+            ->where('finance_transactions.status', 'completed')
+            ->whereBetween('finance_transactions.transaction_date', [$start, $end])
+            ->selectRaw('units.name, SUM(finance_transactions.amount) as total_income')
+            ->groupBy('units.id', 'units.name')
+            ->orderByDesc('total_income')
+            ->get();
+
+        $grandTotalContribution = $unitContributions->sum('total_income');
+
+        $revenueContribution = [
+            'labels'      => [],
+            'series'      => [],
+            'percentages' => [],
+        ];
+
+        foreach ($unitContributions as $contrib) {
+            $val = (float) $contrib->total_income;
+
+            $revenueContribution['labels'][]      = $contrib->name;
+            $revenueContribution['series'][]      = $val;
+            $revenueContribution['percentages'][] = $grandTotalContribution > 0
+                ? round(($val / $grandTotalContribution) * 100, 1)
+                : 0;
+        }
+
+        return [$revenueContribution, $grandTotalContribution];
+    }
+
+    /**
+     * Kirim ulang data terbaru ke widget ApexChart di browser (yang di-wire:ignore),
+     * karena Livewire tidak lagi ikut memorph elemen chart tersebut secara otomatis.
+     */
+    private function refreshRevenueChart(): void
+    {
+        [$revenueContribution] = $this->computeRevenueContribution();
+
+        $this->dispatch(
+            'revenue-chart-updated',
+            labels: $revenueContribution['labels'],
+            series: $revenueContribution['series'],
+        );
     }
 
     private function applyPeriodFilter(): void
@@ -498,33 +588,7 @@ class Dashboard extends Component
         // -------------------------------------------------------------
         // DATA KONTRIBUSI OMZET PER UNIT USAHA (DINAMIS & TERFILTER)
         // -------------------------------------------------------------
-        $unitContributions = FinanceTransaction::query()
-            ->join('units', 'finance_transactions.unit_id', '=', 'units.id')
-            ->where('finance_transactions.type', 'income')
-            ->where('finance_transactions.status', 'completed')
-            ->whereBetween('finance_transactions.transaction_date', [$start, $end])
-            ->selectRaw('units.name, SUM(finance_transactions.amount) as total_income')
-            ->groupBy('units.id', 'units.name')
-            ->orderByDesc('total_income')
-            ->get();
-
-        $grandTotalContribution = $unitContributions->sum('total_income');
-
-        $revenueContribution = [
-            'labels'      => [],
-            'series'      => [],
-            'percentages' => []
-        ];
-
-        foreach ($unitContributions as $contrib) {
-            $val = (float) $contrib->total_income;
-
-            $revenueContribution['labels'][]      = $contrib->name;
-            $revenueContribution['series'][]      = $val;
-            $revenueContribution['percentages'][] = $grandTotalContribution > 0 
-                ? round(($val / $grandTotalContribution) * 100, 1) 
-                : 0;
-        }
+        [$revenueContribution, $grandTotalContribution] = $this->computeRevenueContribution();
 
         return view('livewire.master.dashboard', [
             'units'               => $units,

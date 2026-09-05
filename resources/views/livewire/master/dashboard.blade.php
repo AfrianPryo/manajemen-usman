@@ -355,7 +355,11 @@
             </div>
 
             {{-- Container ApexChart --}}
-            <div x-data="{
+            {{-- wire:ignore: elemen ini digambar ApexCharts di sisi browser, jadi Livewire
+                 TIDAK BOLEH ikut memorph isinya saat filter berubah (itu penyebab grafik hilang).
+                 Update data dilakukan manual lewat event 'revenue-chart-updated' di bawah. --}}
+            <div wire:ignore x-data="{
+                    chart: null,
                     labels: @js($revenueContribution['labels']),
                     series: @js($revenueContribution['series']),
                     init() {
@@ -425,8 +429,18 @@
                                 }
                             }
                         };
-                        let chart = new ApexCharts(this.$refs.chart, options);
-                        chart.render();
+                        this.chart = new ApexCharts(this.$refs.chart, options);
+                        this.chart.render();
+
+                        // Dipanggil dari server (Dashboard::refreshRevenueChart) setiap
+                        // periodFilter / startDate / endDate berubah, karena elemen ini
+                        // di-wire:ignore sehingga tidak lagi otomatis ikut re-render.
+                        $wire.on('revenue-chart-updated', (payload) => {
+                            this.labels = payload.labels;
+                            this.series = payload.series;
+                            this.chart.updateOptions({ labels: this.labels });
+                            this.chart.updateSeries(this.series);
+                        });
                     }
                 }"
                 class="w-full flex justify-center items-center py-2">

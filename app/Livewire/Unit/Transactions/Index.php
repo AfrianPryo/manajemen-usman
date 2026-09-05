@@ -5,6 +5,7 @@ namespace App\Livewire\Unit\Transactions;
 use App\Livewire\Master\Transactions\Index as MasterTransactionsIndex;
 use App\Livewire\Unit\Concerns\ScopedToUnit;
 use App\Models\AuditLog;
+use App\Models\FinanceCategory;
 use App\Models\FinanceTransaction;
 use App\Models\Unit;
 use Livewire\Attributes\Layout;
@@ -140,6 +141,74 @@ class Index extends MasterTransactionsIndex
             ->all();
 
         parent::bulkUpdateStatus($status);
+    }
+
+    // =========================================================================
+    // GUARD KATEGORI TRANSAKSI
+    // =========================================================================
+    // Admin Unit HANYA boleh membuat kategori khusus (scope 'specific')
+    // untuk unit-nya sendiri -- TIDAK bisa memilih "Semua Unit" (scope
+    // 'all') atau unit lain manapun, itu wewenang Master Admin saja
+    // (lihat blade: pilihan cakupan & checklist unit disembunyikan untuk
+    // role unit-admin lewat cek $units->count() === 1).
+    //
+    // Admin Unit juga hanya boleh mengedit/menghapus kategori yang
+    // BENAR-BENAR miliknya sendiri (scope 'specific' & satu-satunya unit
+    // yang terhubung adalah unit ini) -- bukan kategori "Semua Unit" atau
+    // kategori 'specific' yang dibagi Master Admin ke beberapa unit
+    // sekaligus (termasuk unit ini). Dua kasus terakhir itu tetap bisa
+    // DIPAKAI (muncul di dropdown form transaksi via forUnit()), hanya
+    // tidak bisa diubah/dihapus dari sisi Unit Admin.
+
+    public function openCategoryModal(): void
+    {
+        parent::openCategoryModal();
+        $this->lockCategoryScope();
+    }
+
+    private function lockCategoryScope(): void
+    {
+        $this->category_scope = 'specific';
+        $this->category_unit_ids = [$this->currentUnitId()];
+    }
+
+    /**
+     * Kategori dianggap "milik" unit ini kalau scope-nya 'specific' DAN
+     * unit yang terhubung ke kategori itu HANYA unit ini (tidak dibagi ke
+     * unit lain oleh Master Admin).
+     */
+    private function guardOwnCategory(int $id): void
+    {
+        $unitId = $this->currentUnitId();
+
+        FinanceCategory::where('id', $id)
+            ->where('scope', 'specific')
+            ->whereHas('units', fn ($q) => $q->where('units.id', $unitId))
+            ->whereDoesntHave('units', fn ($q) => $q->where('units.id', '!=', $unitId))
+            ->findOrFail($id);
+    }
+
+    public function saveCategory(): void
+    {
+        $this->lockCategoryScope();
+
+        if ($this->isEditingCategory && $this->editingCategoryId) {
+            $this->guardOwnCategory($this->editingCategoryId);
+        }
+
+        parent::saveCategory();
+    }
+
+    public function editCategory(int $id): void
+    {
+        $this->guardOwnCategory($id);
+        parent::editCategory($id);
+    }
+
+    public function deleteCategory(int $id): void
+    {
+        $this->guardOwnCategory($id);
+        parent::deleteCategory($id);
     }
 
     /**

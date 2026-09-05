@@ -23,19 +23,64 @@ class TransactionsImport implements ToModel, WithHeadingRow, WithValidation, Ski
     private array $categories;
     private array $validCatNames;
 
+    // Konteks baris yang sedang divalidasi, diisi di prepareForValidation()
+    private ?int $currentUnitId = null;
+    private string $currentType = '';
+
     public function __construct()
     {
         // 1. Cache Unit Usaha: [Nama Unit => ID Unit]
         $this->units = Unit::pluck('id', 'name')->toArray();
 
         // 2. Cache Kategori Akurat: ["{unit_id}_{tipe}_{nama_kategori}" => ID Kategori]
-        // Mencegah bentrok kategori dengan nama sama antar unit & tipe (income/expense)
-        $this->categories = FinanceCategory::all()->pluck('id', function ($item) {
-            return $item->unit_id . '_' . strtolower(trim($item->type)) . '_' . strtolower(trim($item->name));
-        })->toArray();
+        //
+        // PENTING: sejak migration create_finance_categories_table, kolom
+        // `unit_id` di tabel finance_categories SUDAH DIHAPUS. Kategori
+        // sekarang punya `scope`:
+        //   - 'all'      => berlaku untuk SEMUA unit (termasuk unit yang
+        //                   dibuat belakangan), tidak lewat pivot sama sekali.
+        //   - 'specific' => hanya berlaku untuk unit-unit yang tercatat di
+        //                   tabel pivot finance_category_unit.
+        //
+        // Cache di bawah ini di-"expand" manual per unit supaya key-nya
+        // ("{unit_id}_{type}_{name}") tetap sama persis dengan yang dipakai
+        // saat validasi baris Excel (lihat rules() & model() di bawah).
+        $this->categories = [];
 
-        // 3. Simpan daftar nama kategori unik untuk aturan validasi
+        FinanceCategory::with('units')->get()->each(function (FinanceCategory $cat) {
+            $typeNorm = strtolower(trim($cat->type));
+            $nameNorm = strtolower(trim($cat->name));
+
+            if ($cat->scope === 'all') {
+                // Berlaku untuk semua unit yang ada saat ini
+                foreach ($this->units as $unitId) {
+                    $key = $unitId . '_' . $typeNorm . '_' . $nameNorm;
+                    $this->categories[$key] = $cat->id;
+                }
+            } else {
+                // scope 'specific' -> hanya unit-unit yang terhubung lewat pivot
+                foreach ($cat->units as $unit) {
+                    $key = $unit->id . '_' . $typeNorm . '_' . $nameNorm;
+                    $this->categories[$key] = $cat->id;
+                }
+            }
+        });
+
+        // 3. Simpan daftar nama kategori unik untuk aturan validasi (fallback pesan umum)
         $this->validCatNames = FinanceCategory::pluck('name')->map(fn($n) => strtolower(trim($n)))->unique()->toArray();
+    }
+
+    /**
+     * Menyamakan alias tipe transaksi ("pemasukan"/"pengeluaran") ke nilai baku
+     * yang dipakai di kolom `type` & di composite key kategori ("income"/"expense").
+     */
+    private function normalizeType(string $type): string
+    {
+        return match ($type) {
+            'pemasukan'   => 'income',
+            'pengeluaran' => 'expense',
+            default       => $type,
+        };
     }
 
     /**
@@ -59,6 +104,13 @@ class TransactionsImport implements ToModel, WithHeadingRow, WithValidation, Ski
         } else {
             $data['kategori_transaksi_norm'] = '';
         }
+
+        // Simpan konteks unit & tipe baris ini supaya rules() bisa memvalidasi
+        // kategori terhadap kombinasi unit_id + type yang SAMA persis dengan
+        // yang dipakai model() saat insert (bukan hanya cek nama kategori global).
+        $unitName = trim((string) ($data['unit_usaha'] ?? ''));
+        $this->currentUnitId = $this->units[$unitName] ?? null;
+        $this->currentType   = $this->normalizeType($data['tipe_incomeexpense'] ?? '');
 
         return $data;
     }
@@ -85,7 +137,7 @@ class TransactionsImport implements ToModel, WithHeadingRow, WithValidation, Ski
 
         $unitName = trim((string) ($row['unit_usaha'] ?? ''));
         $catName  = strtolower(trim((string) ($row['kategori_transaksi'] ?? '')));
-        $type     = strtolower(trim((string) ($row['tipe_incomeexpense'] ?? 'income')));
+        $type     = $this->normalizeType(strtolower(trim((string) ($row['tipe_incomeexpense'] ?? 'income'))));
 
         $unitId = $this->units[$unitName] ?? null;
 
@@ -132,7 +184,25 @@ class TransactionsImport implements ToModel, WithHeadingRow, WithValidation, Ski
             'tanggal_yyyy_mm_dd'      => ['nullable', "required_with:{$fields}"],
             'unit_usaha'              => ['nullable', "required_with:{$fields}", Rule::in($validUnitNames)],
             'tipe_incomeexpense'      => ['nullable', "required_with:{$fields}", Rule::in($validTypes)],
-            'kategori_transaksi_norm' => ['nullable', "required_with:{$fields}", Rule::in($this->validCatNames)],
+            'kategori_transaksi_norm' => [
+                'nullable',
+                "required_with:{$fields}",
+                Rule::in($this->validCatNames), // cek dasar: nama kategori dikenal sistem
+                function ($attribute, $value, $fail) {
+                    // Cek lanjutan: kategori ini harus benar-benar terdaftar untuk
+                    // kombinasi Unit Usaha + Tipe Transaksi pada baris ini — inilah
+                    // kombinasi yang dipakai model() untuk mengisi finance_category_id.
+                    if (blank($value)) {
+                        return;
+                    }
+
+                    $key = $this->currentUnitId . '_' . $this->currentType . '_' . $value;
+
+                    if (! isset($this->categories[$key])) {
+                        $fail('Kategori Transaksi tidak terdaftar untuk Unit Usaha dan Tipe Transaksi (income/expense) yang dipilih pada baris ini.');
+                    }
+                },
+            ],
             'nominal'                 => ['nullable', "required_with:{$fields}", 'numeric', 'gt:0'],
         ];
     }

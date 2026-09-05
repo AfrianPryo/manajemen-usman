@@ -29,10 +29,10 @@
     <div class="w-full md:w-1/2 lg:w-[42%] bg-blue-950 flex flex-col p-6 sm:p-10 lg:p-12">
 
         {{-- Nav Atas --}}
-        <div class="flex justify-start items-center">
-            <a href="{{ route('landing') }}" class="inline-flex items-center gap-1.5 text-sm text-white/70 hover:text-white transition duration-150" aria-label="Kembali ke Beranda">
-                <x-heroicon-o-chevron-left class="h-4 w-4" stroke-width="2" />
-                Home
+        <div class="flex justify-start items-center mb-30">
+            <a href="{{ route('landing') }}" class="inline-flex items-center gap-1.5 text-sm tracking-tighter text-white/70 hover:text-white transition duration-150" aria-label="Kembali ke Beranda">
+                <x-heroicon-o-arrow-left class="h-4 w-4" stroke-width="2" />
+                Beranda
             </a>
         </div>
 
@@ -82,7 +82,7 @@
                                 id="identity"
                                 type="text"
                                 autocomplete="username"
-                                class="w-full bg-white/5 border border-white/10 rounded-lg py-2.5 pl-9 pr-3 text-sm text-white placeholder-white/30 focus:outline-none focus:border-white/40 focus:bg-white/10 transition-colors"
+                                class="w-full bg-white/5 border border-white/10 rounded-[3px] py-2.5 pl-9 pr-3 text-sm text-white placeholder-white/30 focus:outline-none focus:border-white/40 focus:bg-white/10 transition-colors"
                                 placeholder="Masukkan ID"
                             >
                         </div>
@@ -101,7 +101,7 @@
                                 id="password"
                                 :type="showPassword ? 'text' : 'password'"
                                 autocomplete="current-password"
-                                class="w-full bg-white/5 border border-white/10 rounded-lg py-2.5 pl-9 pr-9 text-sm text-white placeholder-white/30 focus:outline-none focus:border-white/40 focus:bg-white/10 transition-colors"
+                                class="w-full bg-white/5 border border-white/10 rounded-[3px] py-2.5 pl-9 pr-9 text-sm text-white placeholder-white/30 focus:outline-none focus:border-white/40 focus:bg-white/10 transition-colors"
                                 placeholder="••••••••"
                             >
                             <button
@@ -121,7 +121,7 @@
             </form>
 
             {{-- Tombol Submit --}}
-            <div class="mt-10 pt-4 flex justify-end items-end">
+            <div class="mt-40 pt-4 flex justify-end items-end">
                 <button
                     form="loginForm"
                     type="submit"

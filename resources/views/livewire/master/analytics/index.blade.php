@@ -95,7 +95,16 @@
                 </span>
             </div>
             <p class="mt-4 text-2xl font-bold text-neutral-900 dark:text-white tracking-tight">{{ number_format($totalTransactions, 0, ',', '.') }}</p>
-            <p class="mt-2 text-[11px] text-neutral-400">Jumlah transaksi berhasil</p>
+            <div class="mt-2 flex items-center gap-3 text-[9px] font-medium">
+                <span class="flex items-center gap-1 text-emerald-600 dark:text-emerald-400">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                    {{ number_format($incomeCount, 0, ',', '.') }} Pemasukan
+                </span>
+                <span class="flex items-center gap-1 text-rose-600 dark:text-rose-400">
+                    <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
+                    {{ number_format($expenseCount, 0, ',', '.') }} Pengeluaran
+                </span>
+            </div>
         </div>
     </div>
 
@@ -112,15 +121,27 @@
             </div>
 
             {{-- Container ApexChart --}}
-            <div x-data="{
-                    labels: @js($revenueContribution['labels']),
-                    series: @js($revenueContribution['series']),
+            {{-- wire:ignore WAJIB di sini: elemen ini digambar ApexCharts di sisi
+                 browser, jadi Livewire tidak boleh ikut memorph isinya saat filter
+                 berubah (itu penyebab grafik sempat muncul lalu hilang). Data
+                 diperbarui secara reaktif lewat $wire.revenueLabels/revenueSeries,
+                 mengikuti pola yang sama dengan grafik arus kas di bawah. --}}
+            <div
+                wire:ignore
+                x-data="{
                     chart: null,
                     renderChart() {
-                        if (this.chart) this.chart.destroy();
+                        const labels = Array.from($wire.revenueLabels || []);
+                        const series = Array.from($wire.revenueSeries || []);
+
+                        if (this.chart) {
+                            this.chart.destroy();
+                            this.chart = null;
+                        }
+
                         let options = {
-                            series: this.series,
-                            labels: this.labels,
+                            series: series,
+                            labels: labels,
                             chart: {
                                 type: 'donut',
                                 height: 310,
@@ -186,12 +207,9 @@
                         };
                         this.chart = new ApexCharts(this.$refs.chart, options);
                         this.chart.render();
-                    },
-                    init() {
-                        this.renderChart();
                     }
                 }"
-                x-effect="labels = @js($revenueContribution['labels']); series = @js($revenueContribution['series']); renderChart();"
+                x-effect="renderChart()"
                 class="w-full flex justify-center items-center py-2">
                 <div x-ref="chart" class="w-full"></div>
             </div>
@@ -258,51 +276,25 @@
     {{-- ================= SECTION GRAFIK TREN ARUS KAS ================= --}}
     <div class="bg-white dark:bg-slate-800 rounded-md border border-slate-100 dark:border-slate-700/60 p-6 shadow-sm transition-all">
         
-        {{-- Header & Filter Grafik Arus Kas --}}
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-            <div>
-                <h2 class="text-lg font-extrabold text-slate-900 dark:text-white tracking-tight">Statistics</h2>
-                <p class="text-xs text-slate-400 mt-0.5">Grafik Tren Arus Kas Masuk & Keluar</p>
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+        <div>
+            <h2 class="text-lg font-extrabold text-slate-900 dark:text-white tracking-tight">Statistics</h2>
+            <p class="text-xs text-slate-400 mt-0.5">Grafik Tren Arus Kas Masuk & Keluar</p>
+        </div>
+
+        {{-- Legend saja -- grafik ini sekarang mengikuti filter Unit Usaha &
+            Periode global di bagian atas halaman, tidak punya filter sendiri lagi. --}}
+        <div class="flex items-center gap-4 text-xs font-bold text-slate-600 dark:text-slate-300">
+            <div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-blue-600"></span>
+                <span>Pendapatan</span>
             </div>
-
-            <div class="flex flex-wrap items-center gap-4 sm:gap-6">
-                {{-- Legend Minimalis --}}
-                <div class="flex items-center gap-4 text-xs font-bold text-slate-600 dark:text-slate-300">
-                    <div class="flex items-center gap-2">
-                        <span class="w-2.5 h-2.5 rounded-full bg-blue-600"></span>
-                        <span>Pendapatan</span>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <span class="w-2.5 h-2.5 rounded-full bg-sky-300"></span>
-                        <span>Pengeluaran</span>
-                    </div>
-                </div>
-
-                {{-- Select Filter Waktu & Custom Date --}}
-                <div class="flex items-center gap-2">
-                    <div class="relative">
-                        <select wire:model.live="cashflowPeriod" class="appearance-none bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold py-2 pl-3.5 pr-8 rounded-[2px] focus:outline-none focus:ring-2 focus:ring-blue-500/20 cursor-pointer">
-                            <option value="this_week">Minggu ini</option>
-                            <option value="this_month">Bulan ini</option>
-                            <option value="last_30_days">30 Hari Terakhir</option>
-                            <option value="this_year">Tahun ini</option>
-                            <option value="custom">Kustom Tanggal</option>
-                        </select>
-                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2.5 text-slate-400">
-                            <x-heroicon-m-chevron-down class="w-3.5 h-3.5" />   
-                        </div>
-                    </div>
-
-                    @if($cashflowPeriod === 'custom')
-                        <div class="flex items-center gap-1.5">
-                            <input type="date" wire:model.live="cfStartDate" class="px-2.5 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none">
-                            <span class="text-slate-400 text-xs font-bold">-</span>
-                            <input type="date" wire:model.live="cfEndDate" class="px-2.5 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none">
-                        </div>
-                    @endif
-                </div>
+            <div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-sky-300"></span>
+                <span>Pengeluaran</span>
             </div>
         </div>
+    </div>
 
         {{-- Container Chart --}}
         <div 

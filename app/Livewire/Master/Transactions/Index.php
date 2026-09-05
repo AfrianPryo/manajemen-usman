@@ -13,7 +13,6 @@ use App\Notifications\SystemNotification;
 use App\Support\Concerns\SyncsAlertNotifications;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-use Illuminate\Validation\Rule;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
@@ -68,6 +67,22 @@ class Index extends Component
     public $excel_file = null;
 
     public int $perPage = 15;
+
+    // =========================================================================
+    // STATE MODAL KELOLA KATEGORI TRANSAKSI
+    // =========================================================================
+    // Pola & penamaan sengaja dibuat mirip Master\Inventory\Index (modal
+    // "Kelola Kategori" produk), bedanya kategori transaksi bisa custom
+    // untuk BEBERAPA unit saja (scope 'specific' + category_unit_ids) atau
+    // untuk SEMUA unit sekaligus (scope 'all') -- bukan cuma satu unit_id
+    // seperti kategori produk. Lihat App\Models\FinanceCategory.
+    public bool $showCategoryModal = false;
+    public bool $isEditingCategory = false;
+    public ?int $editingCategoryId = null;
+    public string $category_name = '';
+    public string $category_type = 'income'; // 'income' atau 'expense'
+    public string $category_scope = 'specific'; // 'all' atau 'specific'
+    public array $category_unit_ids = [];
 
     public function mount(): void
     {
@@ -244,10 +259,25 @@ class Index extends Component
             'form_unit_id' => 'required|exists:units,id',
             'form_finance_category_id' => [
                 'required',
-                Rule::exists('finance_categories', 'id')->where(function ($query) {
-                    $query->where('unit_id', $this->form_unit_id)
-                        ->where('type', $this->form_type);
-                }),
+                // PERUBAHAN: kategori tidak lagi terikat ke SATU unit_id
+                // saja (lihat migrasi finance_categories & FinanceCategory
+                // model), jadi validasi Rule::exists()->where('unit_id', ...)
+                // yang lama sudah tidak berlaku. Kategori dianggap valid
+                // untuk baris ini kalau tipe-nya cocok DAN kategori tsb.
+                // berlaku untuk form_unit_id yang dipilih -- baik karena
+                // scope-nya 'all' (semua unit) maupun 'specific' yang
+                // mencakup unit ini (lihat FinanceCategory::appliesToUnit()).
+                function ($attribute, $value, $fail) {
+                    $category = FinanceCategory::find($value);
+
+                    if (
+                        ! $category
+                        || strtolower($category->type) !== strtolower((string) $this->form_type)
+                        || ! $category->appliesToUnit((int) $this->form_unit_id)
+                    ) {
+                        $fail('Kategori Transaksi yang dipilih tidak berlaku untuk Unit Usaha dan Tipe Transaksi ini.');
+                    }
+                },
             ],
             'form_transaction_date' => 'required|date',
             'form_reference_no' => 'nullable|string|max:50',
@@ -322,6 +352,152 @@ class Index extends Component
         $this->syncTransactionNotification($transaction);
 
         $this->closeCreateModal();
+    }
+
+    // =========================================================================
+    // MANAJEMEN KATEGORI TRANSAKSI (LOGIC MODAL)
+    // =========================================================================
+    // Modul "Kelola Kategori" transaksi, sengaja ditaruh menyatu di dalam
+    // menu Transaksi (bukan menu tersendiri) -- persis seperti pola
+    // "Kelola Kategori" pada Master\Inventory\Index untuk produk.
+
+    public function openCategoryModal(): void
+    {
+        $this->resetCategoryForm();
+
+        // Prefill dari form transaksi yang sedang aktif (kalau ada) supaya
+        // admin tidak perlu isi ulang unit/tipe yang sudah dipilih.
+        if ($this->form_unit_id) {
+            $this->category_unit_ids = [(int) $this->form_unit_id];
+        }
+        if ($this->form_type) {
+            $this->category_type = $this->form_type;
+        }
+
+        $this->showCategoryModal = true;
+    }
+
+    public function closeCategoryModal(): void
+    {
+        $this->showCategoryModal = false;
+        $this->resetCategoryForm();
+    }
+
+    public function resetCategoryForm(): void
+    {
+        $this->reset(['category_name', 'category_unit_ids', 'editingCategoryId', 'isEditingCategory']);
+        $this->category_type = 'income';
+        $this->category_scope = 'specific';
+        $this->resetErrorBag(['category_name', 'category_type', 'category_scope', 'category_unit_ids']);
+    }
+
+    public function saveCategory(): void
+    {
+        $this->validate([
+            'category_name'        => 'required|string|max:255',
+            'category_type'        => 'required|in:income,expense',
+            'category_scope'       => 'required|in:all,specific',
+            'category_unit_ids'    => 'required_if:category_scope,specific|array|min:1',
+            'category_unit_ids.*'  => 'exists:units,id',
+        ], [
+            'category_name.required'     => 'Nama kategori wajib diisi.',
+            'category_type.required'     => 'Tipe kategori wajib dipilih.',
+            'category_scope.required'    => 'Cakupan Unit Usaha wajib dipilih.',
+            'category_unit_ids.required_if' => 'Pilih minimal satu Unit Usaha untuk kategori khusus.',
+            'category_unit_ids.min'      => 'Pilih minimal satu Unit Usaha untuk kategori khusus.',
+        ]);
+
+        $isEdit = $this->isEditingCategory;
+
+        // 1. Ambil oldValues SEBELUM data di-update (termasuk unit-unit
+        // lama, dicatat manual karena bukan kolom langsung pada tabel).
+        $oldCategory = $isEdit ? FinanceCategory::with('units')->find($this->editingCategoryId) : null;
+        $oldValues = $oldCategory ? array_merge(
+            $oldCategory->getAttributes(),
+            ['unit_ids' => $oldCategory->units->pluck('id')->all()]
+        ) : null;
+
+        // 2. Simpan data utama kategori
+        $category = FinanceCategory::updateOrCreate(
+            ['id' => $this->editingCategoryId],
+            [
+                'name'  => $this->category_name,
+                'type'  => $this->category_type,
+                'scope' => $this->category_scope,
+            ]
+        );
+
+        // 3. Sinkronkan pivot unit. Kategori berscope 'all' tidak perlu
+        // baris pivot sama sekali (otomatis berlaku ke semua unit), jadi
+        // pivot lama (kalau sebelumnya 'specific') dikosongkan.
+        $category->units()->sync(
+            $this->category_scope === 'all' ? [] : $this->category_unit_ids
+        );
+
+        // Kalau modal ini dibuka dari tengah form "Tambah/Edit Transaksi"
+        // dan kategori yang baru disimpan cocok dengan Unit & Tipe yang
+        // sedang dipilih di form itu, langsung pilihkan otomatis.
+        if (
+            $this->showCreateModal
+            && $this->form_type === $category->type
+            && $category->fresh('units')->appliesToUnit((int) $this->form_unit_id)
+        ) {
+            $this->form_finance_category_id = $category->id;
+        }
+
+        // 4. Catat Audit Log
+        AuditLog::record(
+            event: $isEdit ? 'FINANCE_CATEGORY_UPDATED' : 'FINANCE_CATEGORY_CREATED',
+            identifier: (string) $category->id,
+            description: $isEdit
+                ? "Admin memperbarui kategori transaksi: {$category->name}"
+                : "Admin menambahkan kategori transaksi baru: {$category->name}",
+            oldValues: $oldValues,
+            newValues: array_merge(
+                $category->getAttributes(),
+                ['unit_ids' => $this->category_scope === 'all' ? [] : $this->category_unit_ids]
+            )
+        );
+
+        $this->resetCategoryForm();
+        session()->flash('category_success', $isEdit ? 'Kategori berhasil diperbarui.' : 'Kategori berhasil ditambahkan.');
+    }
+
+    public function editCategory(int $id): void
+    {
+        $category = FinanceCategory::with('units')->findOrFail($id);
+
+        $this->editingCategoryId = $category->id;
+        $this->category_name = $category->name;
+        $this->category_type = $category->type;
+        $this->category_scope = $category->scope;
+        $this->category_unit_ids = $category->units->pluck('id')->map(fn ($id) => (int) $id)->all();
+        $this->isEditingCategory = true;
+    }
+
+    public function deleteCategory(int $id): void
+    {
+        $category = FinanceCategory::findOrFail($id);
+
+        if ($category->transactions()->count() > 0) {
+            session()->flash('category_error', 'Kategori tidak dapat dihapus karena masih digunakan oleh transaksi.');
+            return;
+        }
+
+        AuditLog::record(
+            event: 'FINANCE_CATEGORY_DELETED',
+            identifier: (string) $category->id,
+            description: "Admin menghapus kategori transaksi: {$category->name}",
+            oldValues: $category->getAttributes(),
+            newValues: null
+        );
+
+        // Bersihkan pivot unit sebelum kategori dihapus (foreign key sudah
+        // cascadeOnDelete di migrasi, baris ini murni jaga-jaga eksplisit).
+        $category->units()->detach();
+        $category->delete();
+
+        session()->flash('category_success', 'Kategori berhasil dihapus.');
     }
 
     // Detail Modal Methods
@@ -616,7 +792,7 @@ class Index extends Component
 
         $categories = $this->form_unit_id
             ? FinanceCategory::query()
-                ->where('unit_id', $this->form_unit_id)
+                ->forUnit((int) $this->form_unit_id)
                 ->when($this->form_type, function ($q) {
                     $q->whereRaw('LOWER(type) = ?', [strtolower($this->form_type)]);
                 })

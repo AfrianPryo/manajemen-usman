@@ -68,6 +68,12 @@
         </div>
 
         <div class="flex items-center gap-2.5 shrink-0">
+            {{-- Tombol Kelola Kategori (modul kategori transaksi, menyatu di menu Transaksi) --}}
+            <button type="button" wire:click="openCategoryModal" class="px-3.5 py-2 text-xs font-semibold text-neutral-700 dark:text-neutral-200 bg-white dark:bg-slate-800 border border-neutral-200 dark:border-slate-700 rounded-[3px] hover:bg-neutral-50 dark:hover:bg-slate-700 transition-all flex items-center gap-1.5 cursor-pointer shadow-sm">
+                <x-heroicon-o-tag class="w-4 h-4 text-neutral-500 dark:text-neutral-400" />
+                <span>Kelola Kategori</span>
+            </button>
+
             {{-- Tombol Import Excel --}}
             <button wire:click="openImportModal" class="px-3.5 py-2 text-xs font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-[3px] hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition-all flex items-center gap-1.5 cursor-pointer">
                 <x-heroicon-o-arrow-up-tray class="w-4 h-4" stroke-width="2" />
@@ -340,13 +346,19 @@
                             @error('form_unit_id') <span class="text-[11px] text-rose-500 mt-0.5 block">{{ $message }}</span> @enderror
                         </div>
                         <div>
-                            <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Kategori Transaksi <span class="text-red-500">*</span></label>
+                            <div class="flex items-center justify-between mb-1">
+                                <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-300">Kategori Transaksi <span class="text-red-500">*</span></label>
+                                <button type="button" wire:click="openCategoryModal" class="text-[11px] font-semibold text-blue-800 dark:text-blue-400 hover:underline flex items-center gap-0.5 cursor-pointer">
+                                    <x-heroicon-o-plus class="w-3 h-3" stroke-width="2.5" />
+                                    Tambah Kategori
+                                </button>
+                            </div>
                             <select wire:key="select-category-{{ $form_unit_id }}-{{ $form_type }}"
                                     wire:model="form_finance_category_id" 
                                     class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-red-500">
                                 <option value="">-- Pilih Kategori --</option>
                                 @foreach($categories as $cat)
-                                    <option value="{{ $cat->id }}">{{ $cat->name }}</option>
+                                    <option value="{{ $cat->id }}">{{ $cat->name }}{{ $cat->scope === 'all' ? ' (Semua Unit)' : '' }}</option>
                                 @endforeach
                             </select>
                             @error('form_finance_category_id') <span class="text-[11px] text-rose-500 mt-0.5 block">{{ $message }}</span> @enderror
@@ -449,6 +461,264 @@
                     </div>
 
                 </form>
+            </div>
+        </div>
+    @endif
+
+    {{-- ================= MODAL KELOLA KATEGORI TRANSAKSI ================= --}}
+    @if($showCategoryModal)
+        <div class="fixed inset-0 z-[60] overflow-y-auto bg-neutral-950/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-150">
+            <div class="bg-white dark:bg-slate-800 w-full max-w-2xl rounded-xl shadow-2xl border border-neutral-200 dark:border-slate-700 overflow-hidden">
+
+                {{-- Modal Header --}}
+                <div class="px-5 py-4 border-b border-neutral-100 dark:border-slate-700/80 flex items-center justify-between bg-neutral-50/50 dark:bg-slate-900/40">
+                    <div>
+                        <h3 class="text-sm font-bold text-neutral-900 dark:text-white">Kelola Kategori Transaksi</h3>
+                        <p class="text-[11px] text-neutral-500 dark:text-neutral-400">Tambah, ubah, atau hapus kategori pemasukan & pengeluaran</p>
+                    </div>
+                    <button type="button" wire:click="closeCategoryModal" class="p-1 text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 rounded-lg transition-colors">
+                        <x-heroicon-o-x-mark class="w-5 h-5" stroke-width="2" />
+                    </button>
+                </div>
+
+                <div class="p-5 space-y-5">
+                    {{-- Flash Notifications --}}
+                    @if (session()->has('category_success'))
+                        <div class="p-3 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 rounded-md text-xs">
+                            {{ session('category_success') }}
+                        </div>
+                    @endif
+                    @if (session()->has('category_error'))
+                        <div class="p-3 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-300 rounded-md text-xs">
+                            {{ session('category_error') }}
+                        </div>
+                    @endif
+
+                    {{-- Form Input / Edit Inline --}}
+                    <form wire:submit="saveCategory" class="p-4 bg-neutral-50/80 dark:bg-slate-900/60 border border-neutral-200/80 dark:border-slate-700/80 rounded-xl space-y-4">
+                        {{-- Header Form & Status Mode --}}
+                        <div class="flex items-center justify-between pb-2 border-b border-neutral-200/60 dark:border-slate-800">
+                            <div class="flex items-center gap-2">
+                                <span class="w-2 h-2 rounded-[3px] {{ $isEditingCategory ? 'bg-amber-500' : 'bg-red-500' }}"></span>
+                                <span class="text-xs font-bold text-neutral-800 dark:text-neutral-200">
+                                    {{ $isEditingCategory ? 'Edit Kategori' : 'Tambah Kategori Baru' }}
+                                </span>
+                            </div>
+
+                            @if($isEditingCategory)
+                                <button type="button" wire:click="resetCategoryForm" class="inline-flex items-center gap-1 text-[11px] font-medium text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200 px-2 py-0.5 rounded-md hover:bg-neutral-200/60 dark:hover:bg-slate-800 transition-colors">
+                                    <x-heroicon-o-x-mark class="w-3 h-3" stroke-width="2" />
+                                    Batal Edit
+                                </button>
+                            @endif
+                        </div>
+
+                        {{-- Baris 1: Nama & Tipe --}}
+                        <div class="grid grid-cols-1 sm:grid-cols-12 gap-3 items-start">
+                            {{-- Nama Kategori --}}
+                            <div class="sm:col-span-7 space-y-1">
+                                <label class="block text-[11px] font-semibold text-neutral-600 dark:text-neutral-300">
+                                    Nama Kategori <span class="text-rose-500">*</span>
+                                </label>
+                                <input type="text" wire:model="category_name" placeholder="Misal: Penjualan Produk, Biaya Listrik..." class="w-full h-9 text-xs rounded-lg border-neutral-300 dark:border-slate-700 dark:bg-slate-800 px-2 text-neutral-800 dark:text-white focus:ring-2 focus:ring-red-500/20 focus:border-red-500 placeholder:text-neutral-400 dark:placeholder:text-neutral-500 transition-all">
+                                @error('category_name') <span class="text-[10px] text-rose-500 block font-medium">{{ $message }}</span> @enderror
+                            </div>
+
+                            {{-- Tipe: Income / Expense --}}
+                            <div class="sm:col-span-5 space-y-1">
+                                <label class="block text-[11px] font-semibold text-neutral-600 dark:text-neutral-300">
+                                    Tipe <span class="text-rose-500">*</span>
+                                </label>
+                                <div class="grid grid-cols-2 gap-1.5 p-1 bg-neutral-100 dark:bg-slate-900 rounded-lg">
+                                    <button type="button" wire:click="$set('category_type', 'income')"
+                                            class="h-7 text-[11px] font-bold rounded-md transition-all {{ $category_type === 'income' ? 'bg-emerald-600 text-white shadow-sm' : 'text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200' }}">
+                                        Pemasukan
+                                    </button>
+                                    <button type="button" wire:click="$set('category_type', 'expense')"
+                                            class="h-7 text-[11px] font-bold rounded-md transition-all {{ $category_type === 'expense' ? 'bg-rose-600 text-white shadow-sm' : 'text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200' }}">
+                                        Pengeluaran
+                                    </button>
+                                </div>
+                                @error('category_type') <span class="text-[10px] text-rose-500 block font-medium">{{ $message }}</span> @enderror
+                            </div>
+                        </div>
+
+                        {{--
+                            Baris 2: Cakupan Unit Usaha.
+
+                            Untuk Master Admin ($units berisi LEBIH dari 1 unit): tampilkan
+                            pilihan penuh "Semua Unit" vs "Unit Tertentu" + daftar checklist
+                            unit. Untuk Admin Unit ($units cuma berisi unit-nya sendiri,
+                            lihat Unit\Transactions\Index::render()): sembunyikan pilihan ini
+                            sama sekali -- cakupannya SUDAH otomatis dikunci ke unit sendiri
+                            lewat Unit\Transactions\Index::lockCategoryScope(), cukup
+                            ditampilkan sebagai catatan info saja.
+                        --}}
+                        @if($units->count() > 1)
+                            <div class="space-y-2 pt-1 border-t border-neutral-200/60 dark:border-slate-800">
+                                <label class="block text-[11px] font-semibold text-neutral-600 dark:text-neutral-300">
+                                    Cakupan Unit Usaha <span class="text-rose-500">*</span>
+                                </label>
+                                <div class="grid grid-cols-2 gap-1.5 p-1 bg-neutral-100 dark:bg-slate-900 rounded-lg">
+                                    <button type="button" wire:click="$set('category_scope', 'all')"
+                                            class="h-8 text-[11px] font-bold rounded-md transition-all {{ $category_scope === 'all' ? 'bg-blue-900 text-white shadow-sm' : 'text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200' }}">
+                                        Semua Unit Usaha
+                                    </button>
+                                    <button type="button" wire:click="$set('category_scope', 'specific')"
+                                            class="h-8 text-[11px] font-bold rounded-md transition-all {{ $category_scope === 'specific' ? 'bg-blue-900 text-white shadow-sm' : 'text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200' }}">
+                                        Unit Tertentu (Custom)
+                                    </button>
+                                </div>
+                                @error('category_scope') <span class="text-[10px] text-rose-500 block font-medium">{{ $message }}</span> @enderror
+
+                                @if($category_scope === 'specific')
+                                    <div class="max-h-32 overflow-y-auto grid grid-cols-2 sm:grid-cols-3 gap-x-3 gap-y-1.5 p-2.5 bg-white dark:bg-slate-800 border border-neutral-200 dark:border-slate-700 rounded-lg">
+                                        @foreach($units as $u)
+                                            <label class="flex items-center gap-1.5 text-[11px] text-neutral-700 dark:text-neutral-300 cursor-pointer">
+                                                <input type="checkbox" wire:model="category_unit_ids" value="{{ $u->id }}" class="rounded border-neutral-300 dark:border-slate-600 text-blue-800 focus:ring-blue-500/30">
+                                                {{ $u->name }}
+                                            </label>
+                                        @endforeach
+                                    </div>
+                                    @error('category_unit_ids') <span class="text-[10px] text-rose-500 block font-medium">{{ $message }}</span> @enderror
+                                @endif
+                            </div>
+                        @else
+                            <div class="pt-1 border-t border-neutral-200/60 dark:border-slate-800">
+                                <p class="text-[11px] text-neutral-500 dark:text-neutral-400 bg-neutral-100 dark:bg-slate-900 rounded-lg px-2.5 py-2">
+                                    Kategori ini akan berlaku khusus untuk unit Anda:
+                                    <span class="font-semibold text-neutral-700 dark:text-neutral-200">{{ $units->first()->name ?? '-' }}</span>
+                                </p>
+                            </div>
+                        @endif
+
+                        {{-- Tombol Submit --}}
+                        <div class="flex justify-end pt-1">
+                            <button type="submit" wire:loading.attr="disabled" class="px-5 h-9 inline-flex items-center justify-center gap-1.5 bg-blue-900 hover:bg-blue-950 active:bg-red-800 text-white text-xs font-semibold rounded-lg transition-all shadow-sm cursor-pointer disabled:opacity-50">
+                                <span wire:loading.remove wire:target="saveCategory">
+                                    {{ $isEditingCategory ? 'Update' : 'Simpan' }}
+                                </span>
+                                <span wire:loading wire:target="saveCategory" class="inline-flex items-center gap-1.5">
+                                    <svg class="animate-spin h-3.5 w-3.5 text-white" fill="none" viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                </span>
+                            </button>
+                        </div>
+                    </form>
+
+                    {{-- Tabel List Kategori --}}
+                    <div class="border border-neutral-200 dark:border-slate-700 rounded-lg overflow-hidden">
+                        <div class="max-h-64 overflow-y-auto">
+                            <table class="w-full text-left text-xs">
+                                <thead class="bg-neutral-100 dark:bg-slate-900/80 text-neutral-500 dark:text-neutral-400 uppercase tracking-wider font-semibold sticky top-0">
+                                    <tr>
+                                        <th class="px-4 py-2.5">Kategori</th>
+                                        <th class="px-4 py-2.5">Tipe</th>
+                                        <th class="px-4 py-2.5">Cakupan Unit</th>
+                                        <th class="px-4 py-2.5 text-center">Transaksi</th>
+                                        <th class="px-4 py-2.5 text-center">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-neutral-100 dark:divide-slate-700">
+                                    {{--
+                                        Sumber data: kategori yang BERLAKU untuk konteks halaman
+                                        ini -- pakai variabel $units yang sudah konsisten di-scope
+                                        di seluruh halaman ini (SEMUA unit untuk Master Admin, 1
+                                        unit untuk Admin Unit yang sedang membuka halamannya
+                                        sendiri), sama seperti pola di Master\Inventory\Index.
+                                        Kategori berscope 'all' selalu ikut tampil (berlaku ke
+                                        semua unit termasuk unit dalam $units).
+                                    --}}
+                                    @php
+                                        $categoriesTableData = \App\Models\FinanceCategory::with('units')
+                                            ->withCount('transactions')
+                                            ->where(function ($q) use ($units) {
+                                                $q->where('scope', 'all')
+                                                  ->orWhereHas('units', fn ($u) => $u->whereIn('units.id', $units->pluck('id')));
+                                            })
+                                            ->latest()
+                                            ->get();
+
+                                        // Kategori hanya bisa diedit/dihapus dari sini kalau:
+                                        // - Master Admin ($units berisi lebih dari 1 unit -> boleh kelola semuanya), ATAU
+                                        // - Admin Unit ($units cuma 1 unit) DAN kategori itu scope 'specific'
+                                        //   yang SATU-SATUNYA unit terhubung adalah unit ini sendiri (bukan
+                                        //   kategori "Semua Unit" atau kategori 'specific' yang dibagi Master
+                                        //   Admin ke beberapa unit termasuk unit ini).
+                                        $isMasterContext = $units->count() > 1;
+                                    @endphp
+                                    @forelse($categoriesTableData as $cat)
+                                        @php
+                                            $catUnitIds = $cat->units->pluck('id')->sort()->values();
+                                            $canManage = $isMasterContext || (
+                                                $cat->scope === 'specific'
+                                                && $catUnitIds->count() === 1
+                                                && $catUnitIds->first() === (int) ($units->first()->id ?? null)
+                                            );
+                                        @endphp
+                                        <tr class="hover:bg-neutral-50/60 dark:hover:bg-slate-700/30 transition-colors">
+                                            <td class="px-4 py-2.5 font-semibold text-neutral-800 dark:text-neutral-200">
+                                                {{ $cat->name }}
+                                            </td>
+                                            <td class="px-4 py-2.5">
+                                                @if($cat->type === 'income')
+                                                    <span class="px-2 py-0.5 text-[10px] font-semibold rounded-[3px] bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300">Pemasukan</span>
+                                                @else
+                                                    <span class="px-2 py-0.5 text-[10px] font-semibold rounded-[3px] bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300">Pengeluaran</span>
+                                                @endif
+                                            </td>
+                                            <td class="px-4 py-2.5 text-neutral-500 dark:text-neutral-400">
+                                                @if($cat->scope === 'all')
+                                                    <span class="px-2 py-0.5 text-[10px] font-semibold rounded-[3px] bg-blue-50 dark:bg-blue-950/40 text-blue-800 dark:text-blue-300">Semua Unit</span>
+                                                @else
+                                                    <span title="{{ $cat->units->pluck('name')->join(', ') }}">
+                                                        {{ $cat->units->pluck('name')->join(', ') ?: '-' }}
+                                                    </span>
+                                                @endif
+                                            </td>
+                                            <td class="px-4 py-2.5 text-center">
+                                                <span class="px-2 py-0.5 text-[10px] font-mono rounded-[3px] bg-neutral-100 dark:bg-slate-700 text-neutral-600 dark:text-neutral-300">
+                                                    {{ $cat->transactions_count }} transaksi
+                                                </span>
+                                            </td>
+                                            <td class="px-4 py-2.5 text-center">
+                                                @if($canManage)
+                                                    <div class="flex items-center justify-center gap-1">
+                                                        <button type="button" wire:click="editCategory({{ $cat->id }})" class="p-1 text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950/40 rounded transition-colors" title="Edit">
+                                                            <x-heroicon-o-pencil-square class="w-4 h-4" stroke-width="2" />
+                                                        </button>
+                                                        <button type="button" x-on:click.prevent="$store.confirmDialog.open({
+                                                                message: 'Apakah Anda yakin ingin menghapus kategori \'{{ $cat->name }}\'?',
+                                                                confirmText: 'Ya, Hapus',
+                                                                onConfirm: () => $wire.deleteCategory({{ $cat->id }})
+                                                            })" class="p-1 text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded transition-colors" title="Hapus">
+                                                            <x-heroicon-o-trash class="w-4 h-4" stroke-width="2" />
+                                                        </button>
+                                                    </div>
+                                                @else
+                                                    <span class="text-[10px] text-neutral-400 italic">Milik Master</span>
+                                                @endif
+                                            </td>
+                                        </tr>
+                                    @empty
+                                        <tr>
+                                            <td colspan="5" class="px-4 py-6 text-center text-neutral-400 text-xs">Belum ada kategori terdaftar.</td>
+                                        </tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Footer --}}
+                <div class="px-5 py-3 bg-neutral-50/50 dark:bg-slate-900/40 border-t border-neutral-100 dark:border-slate-700 flex justify-end">
+                    <button type="button" wire:click="closeCategoryModal" class="px-4 py-1.5 text-xs font-semibold text-neutral-700 dark:text-neutral-300 bg-white dark:bg-slate-800 border border-neutral-200 dark:border-slate-700 rounded-md hover:bg-neutral-50 dark:hover:bg-slate-700 transition-colors">
+                        Tutup
+                    </button>
+                </div>
             </div>
         </div>
     @endif

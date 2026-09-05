@@ -125,7 +125,6 @@
                         @else
                             <button type="button" wire:click="markAsUnread('{{ $notification->id }}')" title="Tandai belum dibaca"
                                     class="p-1.5 text-neutral-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950/30 rounded-md transition-all cursor-pointer">
-                                <x-heroicon-o-circle class="w-4 h-4" stroke-width="2" />
                             </button>
                         @endif
                         <button type="button"

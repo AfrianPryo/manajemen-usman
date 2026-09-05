@@ -311,21 +311,13 @@
                 </div>
 
                 <div class="space-y-3">
-                    <label class="flex items-center gap-3 cursor-pointer">
-                        <input type="checkbox" wire:model="allowMultiUnitAdmin" class="w-4 h-4 text-blue-900 rounded border-neutral-300 focus:ring-red-500/20 cursor-pointer">
-                        <div>
-                            <span class="text-xs font-semibold text-neutral-800 dark:text-neutral-200">Izinkan Admin Mengelola Banyak Unit</span>
-                            <p class="text-[11px] text-neutral-400">Satu akun admin unit dapat ditugaskan ke lebih dari 1 unit usaha.</p>
-                        </div>
-                    </label>
-
                     <!-- Notifikasi WhatsApp -->
                     <div>
                         <label class="flex items-center gap-3 cursor-pointer">
                             <input type="checkbox" wire:model.live="enableWaNotifications" class="w-4 h-4 text-blue-900 rounded border-neutral-300 focus:ring-red-500/20 cursor-pointer">
                             <div>
                                 <span class="text-xs font-semibold text-neutral-800 dark:text-neutral-200">Notifikasi WhatsApp</span>
-                                <p class="text-[11px] text-neutral-400">Kirim laporan harian/transaksi, pemberitahuan penting, dan kode OTP keamanan langsung ke WhatsApp.</p>
+                                <p class="text-[11px] text-neutral-400">Kirim pemberitahuan penting, dan kode OTP keamanan langsung ke WhatsApp.</p>
                             </div>
                         </label>
 
