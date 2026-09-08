@@ -9,6 +9,7 @@ use App\Models\Unit;
 use App\Models\User;
 use App\Services\FonnteOtpService;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Layout;
@@ -22,6 +23,13 @@ use Maatwebsite\Excel\Facades\Excel;
 #[Title('Dashboard Master Admin')]
 class Dashboard extends Component
 {
+    // Dashboard ini dirender ulang di setiap interaksi Livewire (pencarian
+    // admin/unit, ganti filter periode, dsb) dan sebelumnya menghitung ulang
+    // SEMUA agregat (kontribusi omzet per unit, jumlah unit, jumlah admin)
+    // dari nol setiap kali -- padahal angka-angka ini tidak perlu real-time
+    // detik-per-detik. TTL pendek dipakai supaya tetap "cukup baru".
+    private const CACHE_TTL_SECONDS = 120;
+
     #[Url(as: 'q_admin', history: true)]
     public string $searchAdmin = '';
 
@@ -137,35 +145,44 @@ class Dashboard extends Component
         $start = Carbon::parse($this->startDate)->startOfDay();
         $end   = Carbon::parse($this->endDate)->endOfDay();
 
-        $unitContributions = FinanceTransaction::query()
-            ->join('units', 'finance_transactions.unit_id', '=', 'units.id')
-            ->where('finance_transactions.type', 'income')
-            ->where('finance_transactions.status', 'completed')
-            ->whereBetween('finance_transactions.transaction_date', [$start, $end])
-            ->selectRaw('units.name, SUM(finance_transactions.amount) as total_income')
-            ->groupBy('units.id', 'units.name')
-            ->orderByDesc('total_income')
-            ->get();
+        // Query JOIN + GROUP BY ini dihitung ulang setiap kali dashboard
+        // dirender (termasuk saat interaksi yang tidak mengubah rentang
+        // tanggal sama sekali, mis. pencarian admin/unit). Cache per
+        // kombinasi tanggal supaya tidak dihitung ulang untuk rentang yang
+        // sama dalam TTL singkat di atas.
+        $cacheKey = 'dashboard-master:revenue-contribution:' . $start->toDateString() . ':' . $end->toDateString();
 
-        $grandTotalContribution = $unitContributions->sum('total_income');
+        return Cache::remember($cacheKey, self::CACHE_TTL_SECONDS, function () use ($start, $end) {
+            $unitContributions = FinanceTransaction::query()
+                ->join('units', 'finance_transactions.unit_id', '=', 'units.id')
+                ->where('finance_transactions.type', 'income')
+                ->where('finance_transactions.status', 'completed')
+                ->whereBetween('finance_transactions.transaction_date', [$start, $end])
+                ->selectRaw('units.name, SUM(finance_transactions.amount) as total_income')
+                ->groupBy('units.id', 'units.name')
+                ->orderByDesc('total_income')
+                ->get();
 
-        $revenueContribution = [
-            'labels'      => [],
-            'series'      => [],
-            'percentages' => [],
-        ];
+            $grandTotalContribution = $unitContributions->sum('total_income');
 
-        foreach ($unitContributions as $contrib) {
-            $val = (float) $contrib->total_income;
+            $revenueContribution = [
+                'labels'      => [],
+                'series'      => [],
+                'percentages' => [],
+            ];
 
-            $revenueContribution['labels'][]      = $contrib->name;
-            $revenueContribution['series'][]      = $val;
-            $revenueContribution['percentages'][] = $grandTotalContribution > 0
-                ? round(($val / $grandTotalContribution) * 100, 1)
-                : 0;
-        }
+            foreach ($unitContributions as $contrib) {
+                $val = (float) $contrib->total_income;
 
-        return [$revenueContribution, $grandTotalContribution];
+                $revenueContribution['labels'][]      = $contrib->name;
+                $revenueContribution['series'][]      = $val;
+                $revenueContribution['percentages'][] = $grandTotalContribution > 0
+                    ? round(($val / $grandTotalContribution) * 100, 1)
+                    : 0;
+            }
+
+            return [$revenueContribution, $grandTotalContribution];
+        });
     }
 
     /**
@@ -303,7 +320,7 @@ class Dashboard extends Component
             . "Password: *{$plainPassword}*\n\n"
             . "Segera login dan ganti password Anda. Jangan bagikan kredensial ini kepada siapapun.";
 
-        $waSent = app(FonnteOtpService::class)->sendPlainMessage($user->phone, $waMessage);
+        $waSent = app(FonnteOtpService::class)->sendPlainMessageAsync($user->phone, $waMessage);
 
         // Catat ke Audit Log: pembuatan akun admin baru beserta role & unit terkait.
         // Password plain sengaja TIDAK disimpan ke log demi keamanan.
@@ -582,8 +599,23 @@ class Dashboard extends Component
             ->limit(6)
             ->get();
 
-        $allUnitsCount    = Unit::count();
-        $activeUnitsCount = Unit::where('is_active', true)->count();
+        // Statistik ringkas (jumlah unit aktif/nonaktif & jumlah admin unit)
+        // tidak bergantung pada filter apa pun di halaman ini, tapi
+        // sebelumnya tetap dihitung ulang (3 query COUNT) di setiap render.
+        // Di-cache singkat sebagai satu paket karena selalu dipakai bersama.
+        $summaryCounts = Cache::remember('dashboard-master:summary-counts', self::CACHE_TTL_SECONDS, function () {
+            $allUnitsCount    = Unit::count();
+            $activeUnitsCount = Unit::where('is_active', true)->count();
+
+            return [
+                'allUnitsCount'    => $allUnitsCount,
+                'activeUnitsCount' => $activeUnitsCount,
+                'totalAdmins'      => User::role('unit-admin')->count(),
+            ];
+        });
+
+        $allUnitsCount    = $summaryCounts['allUnitsCount'];
+        $activeUnitsCount = $summaryCounts['activeUnitsCount'];
 
         // -------------------------------------------------------------
         // DATA KONTRIBUSI OMZET PER UNIT USAHA (DINAMIS & TERFILTER)
@@ -601,7 +633,7 @@ class Dashboard extends Component
             'totalUnits'          => $allUnitsCount,
             'activeUnits'         => $activeUnitsCount,
             'inactiveUnits'       => $allUnitsCount - $activeUnitsCount,
-            'totalAdmins'         => User::role('unit-admin')->count(),
+            'totalAdmins'         => $summaryCounts['totalAdmins'],
         ]);
     }
 

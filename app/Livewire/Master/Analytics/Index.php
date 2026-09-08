@@ -9,6 +9,7 @@ use App\Models\Unit;
 use App\Models\FinanceTransaction;
 use App\Models\Expense;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Carbon\CarbonPeriod;
@@ -22,6 +23,26 @@ class Index extends Component
     // pindah ke menu lain (link sidebar tidak membawa query string) —
     // bukan cuma bertahan saat refresh URL yang sama.
     private const SESSION_KEY = 'analytics_filter';
+
+    // Halaman ini dipanggil ulang (render()) setiap kali ada interaksi
+    // Livewire (ganti filter dropdown, dsb), dan sebelumnya SELALU
+    // menghitung ulang semua agregat dari nol -- termasuk N+1 per unit
+    // (lihat computeTopUnits()). Sekarang seluruh hasil komputasi berat
+    // di-cache per kombinasi filter selama CACHE_TTL_SECONDS, supaya
+    // render berulang dengan filter yang SAMA (mis. user cuma buka lagi
+    // halaman ini, atau ada admin lain yang melihat filter yang sama)
+    // tidak menghantam DB lagi. TTL sengaja pendek (bukan cache permanen)
+    // karena data keuangan tetap harus terlihat "cukup baru" -- ini bukan
+    // real-time detik-per-detik, tapi juga tidak boleh basi berjam-jam.
+    private const CACHE_TTL_SECONDS = 120;
+
+    // Naikkan angka ini SETIAP KALI bentuk (shape) data yang di-return oleh
+    // computeAnalyticsData() berubah (mis. key baru, tipe topUnits berubah,
+    // dsb). Dengan begini, entry cache lama dari sebelum perubahan otomatis
+    // "usang" (key jadi beda) dan tidak akan pernah dibaca oleh kode baru --
+    // mencegah error seperti "Attempt to read property ... on string" yang
+    // muncul kalau kode berubah tapi cache lama (TTL 120 detik) masih hidup.
+    private const CACHE_VERSION = 2;
 
     #[Url(as: 'unit', history: true)]
     public $selectedUnit = '';
@@ -159,6 +180,88 @@ class Index extends Component
     {
         $unitsList = Unit::select('id', 'name')->orderBy('name', 'asc')->get();
 
+        // Seluruh komputasi berat (query SUM/GROUP BY/JOIN, termasuk yang
+        // sebelumnya N+1 di computeTopUnits()) dibungkus Cache::remember
+        // per kombinasi filter yang sedang aktif. Kombinasi filter yang
+        // berbeda tetap dapat hasil yang benar (key cache berbeda); yang
+        // di-hindari hanya perhitungan ULANG untuk filter yang SAMA dalam
+        // rentang TTL singkat di atas.
+        $data = Cache::remember($this->analyticsCacheKey(), self::CACHE_TTL_SECONDS, function () {
+            return $this->computeAnalyticsData();
+        });
+
+        [
+            'totalRevenue'       => $totalRevenue,
+            'totalExpense'       => $totalExpense,
+            'totalTransactions'  => $totalTransactions,
+            'incomeCount'        => $incomeCount,
+            'expenseCount'       => $expenseCount,
+            'netProfit'          => $netProfit,
+            'chartLabels'        => $this->chartLabels,
+            'revenueChartData'   => $this->revenueChartData,
+            'expenseChartData'   => $this->expenseChartData,
+            'revenueContribution' => $revenueContribution,
+            'revenueLabels'      => $this->revenueLabels,
+            'revenueSeries'      => $this->revenueSeries,
+            'topUnits'           => $topUnits,
+            'topProducts'        => $topProducts,
+        ] = $data;
+
+        // Kirim event pembaruan data grafik ke AlpineJS (tetap dijalankan
+        // setiap render, baik datanya baru dihitung maupun dari cache).
+        $this->dispatch('update-cashflow-chart',
+            labels: $this->chartLabels,
+            revenue: $this->revenueChartData,
+            expense: $this->expenseChartData
+        );
+
+        return view('livewire.master.analytics.index', compact(
+            'unitsList',
+            'totalRevenue',
+            'totalExpense',
+            'totalTransactions',
+            'incomeCount',      // <- baru
+            'expenseCount',     // <- baru
+            'netProfit',
+            'revenueContribution',
+            'topUnits',
+            'topProducts'
+        ));
+    }
+
+    /**
+     * Key cache unik untuk kombinasi filter yang sedang aktif. Setiap filter
+     * yang mempengaruhi hasil query HARUS ikut serta di sini, supaya dua
+     * kombinasi filter berbeda tidak pernah saling menimpa hasil cache.
+     */
+    private function analyticsCacheKey(): string
+    {
+        return implode(':', [
+            'analytics-master',
+            'v' . self::CACHE_VERSION,
+            $this->selectedUnit ?: 'all',
+            $this->startDate,
+            $this->endDate,
+            $this->unitPeriod,
+            $this->unitStartDate ?: '-',
+            $this->unitEndDate ?: '-',
+        ]);
+    }
+
+    /**
+     * Jalankan semua query agregat untuk halaman Statistik. Diekstrak dari
+     * render() supaya bisa dibungkus Cache::remember() di atas.
+     *
+     * @return array{
+     *   totalRevenue: float, totalExpense: float, totalTransactions: int,
+     *   incomeCount: int, expenseCount: int, netProfit: float,
+     *   chartLabels: array, revenueChartData: array, expenseChartData: array,
+     *   revenueContribution: array, revenueLabels: array, revenueSeries: array,
+     *   topUnits: \Illuminate\Support\Collection, topProducts: \Illuminate\Support\Collection
+     * }
+     */
+    private function computeAnalyticsData(): array
+    {
         // 1. Rentang Tanggal Filter Umum (Ringkasan Metrik)
         $start = Carbon::parse($this->startDate)->startOfDay();
         $end   = Carbon::parse($this->endDate)->endOfDay();
@@ -240,16 +343,16 @@ class Index extends Component
             ->groupBy('date')
             ->pluck('total', 'date');
 
-        $this->chartLabels       = [];
-        $this->revenueChartData = [];
-        $this->expenseChartData = [];
+        $chartLabels       = [];
+        $revenueChartData = [];
+        $expenseChartData = [];
 
         $period = CarbonPeriod::create($start, $end);
         foreach ($period as $date) {
-            $formattedDate            = $date->format('Y-m-d');
-            $this->chartLabels[]       = $date->format('d M');
-            $this->revenueChartData[] = (float) ($dailyRevenues[$formattedDate] ?? 0);
-            $this->expenseChartData[] = (float) ($dailyExpenses[$formattedDate] ?? 0);
+            $formattedDate       = $date->format('Y-m-d');
+            $chartLabels[]       = $date->format('d M');
+            $revenueChartData[] = (float) ($dailyRevenues[$formattedDate] ?? 0);
+            $expenseChartData[] = (float) ($dailyExpenses[$formattedDate] ?? 0);
         }
 
         // --- Data Kontribusi Omzet per Unit Usaha ---
@@ -276,13 +379,13 @@ class Index extends Component
             $val = (float) $contrib->total_income;
             $revenueContribution['labels'][]      = $contrib->name;
             $revenueContribution['series'][]      = $val;
-            $revenueContribution['percentages'][] = $grandTotalContribution > 0 
-                ? round(($val / $grandTotalContribution) * 100, 1) 
+            $revenueContribution['percentages'][] = $grandTotalContribution > 0
+                ? round(($val / $grandTotalContribution) * 100, 1)
                 : 0;
         }
 
-        $this->revenueLabels = $revenueContribution['labels'];
-        $this->revenueSeries = $revenueContribution['series'];
+        $revenueLabels = $revenueContribution['labels'];
+        $revenueSeries = $revenueContribution['series'];
 
         // 3. Rentang Tanggal Khusus Tabel Performa Unit Usaha
         $uStart = match ($this->unitPeriod) {
@@ -299,50 +402,7 @@ class Index extends Component
             default  => Carbon::now()->endOfDay(),
         };
 
-        // --- Performa Seluruh Unit Usaha (Termasuk Untung/Rugi & Pengeluaran) ---
-        $hasExpenseTable = class_exists(Expense::class) && Schema::hasTable('expenses');
-
-        $topUnits = Unit::query()
-            ->when($this->selectedUnit, fn($q) => $q->where('id', $this->selectedUnit))
-            ->orderBy('name', 'asc')
-            ->get()
-            ->map(function ($unit) use ($uStart, $uEnd, $hasExpenseTable) {
-                // Total Transaksi & Pendapatan berdasarkan $uStart & $uEnd
-                $incomeQuery = FinanceTransaction::query()
-                    ->where('unit_id', $unit->id)
-                    ->where('type', 'income')
-                    ->where('status', 'completed')
-                    ->whereBetween('transaction_date', [$uStart, $uEnd]);
-
-                $totalIncome = (float) ($incomeQuery->sum('amount') ?? 0);
-                $totalTx     = $incomeQuery->count();
-
-                // Total Pengeluaran (Tabel Expense)
-                $expFromModel = $hasExpenseTable
-                    ? (float) Expense::where('unit_id', $unit->id)
-                        ->whereBetween('created_at', [$uStart, $uEnd])
-                        ->sum('amount')
-                    : 0;
-
-                // Total Pengeluaran (Tabel FinanceTransaction)
-                $expFromFinance = (float) FinanceTransaction::query()
-                    ->where('unit_id', $unit->id)
-                    ->where('type', 'expense')
-                    ->where('status', 'completed')
-                    ->whereBetween('transaction_date', [$uStart, $uEnd])
-                    ->sum('amount');
-
-                $totalExpense = $expFromModel > 0 ? $expFromModel : $expFromFinance;
-
-                $unit->total_tx      = $totalTx;
-                $unit->total_income  = $totalIncome;
-                $unit->total_expense = $totalExpense;
-                $unit->total_profit  = $totalIncome - $totalExpense;
-
-                return $unit;
-            })
-            ->sortByDesc('total_income')
-            ->values();
+        $topUnits = $this->computeTopUnits($uStart, $uEnd);
 
         // --- Top Products ---
         $detailTable = Schema::hasTable('transaction_details') ? 'transaction_details' : (Schema::hasTable('transaction_items') ? 'transaction_items' : null);
@@ -360,24 +420,97 @@ class Index extends Component
                 ->get()
             : collect();
 
-        // Kirim event pembaruan data grafik ke AlpineJS
-        $this->dispatch('update-cashflow-chart', 
-            labels: $this->chartLabels,
-            revenue: $this->revenueChartData,
-            expense: $this->expenseChartData
-        );
+        return [
+            'totalRevenue'        => $totalRevenue,
+            'totalExpense'        => $totalExpense,
+            'totalTransactions'   => $totalTransactions,
+            'incomeCount'         => $incomeCount,
+            'expenseCount'        => $expenseCount,
+            'netProfit'           => $netProfit,
+            'chartLabels'         => $chartLabels,
+            'revenueChartData'    => $revenueChartData,
+            'expenseChartData'    => $expenseChartData,
+            'revenueContribution' => $revenueContribution,
+            'revenueLabels'       => $revenueLabels,
+            'revenueSeries'       => $revenueSeries,
+            'topUnits'            => $topUnits,
+            'topProducts'         => $topProducts,
+        ];
+    }
 
-        return view('livewire.master.analytics.index', compact(
-            'unitsList',
-            'totalRevenue',
-            'totalExpense',
-            'totalTransactions',
-            'incomeCount',      // <- baru
-            'expenseCount',     // <- baru
-            'netProfit',
-            'revenueContribution',
-            'topUnits',
-            'topProducts'
-        ));
+    /**
+     * Performa Seluruh Unit Usaha (Termasuk Untung/Rugi & Pengeluaran).
+     *
+     * SEBELUMNYA: Unit::all()->map() menjalankan 3 query TERPISAH untuk
+     * SETIAP unit (income, expense-model, expense-finance) -- dengan 30
+     * unit itu 90+ query setiap kali halaman ini dirender. Sekarang hanya
+     * 3 query GROUP BY total (masing-masing 1x, terlepas dari jumlah unit),
+     * hasilnya di-index per unit_id lalu ditempel ke masing-masing Unit di
+     * memori. Angka yang dihasilkan identik dengan versi sebelumnya.
+     */
+    private function computeTopUnits(Carbon $uStart, Carbon $uEnd)
+    {
+        $hasExpenseTable = class_exists(Expense::class) && Schema::hasTable('expenses');
+
+        $unitFilter = fn ($q) => $this->selectedUnit ? $q->where('unit_id', $this->selectedUnit) : $q;
+
+        // Total pendapatan & jumlah transaksi per unit, 1 query GROUP BY.
+        $incomeByUnit = $unitFilter(FinanceTransaction::query()
+            ->where('type', 'income')
+            ->where('status', 'completed')
+            ->whereBetween('transaction_date', [$uStart, $uEnd]))
+            ->selectRaw('unit_id, SUM(amount) as total_income, COUNT(*) as total_tx')
+            ->groupBy('unit_id')
+            ->get()
+            ->keyBy('unit_id');
+
+        // Total pengeluaran dari tabel Expense (lama), per unit, 1 query.
+        $expenseModelByUnit = $hasExpenseTable
+            ? $unitFilter(Expense::query()->whereBetween('created_at', [$uStart, $uEnd]))
+                ->selectRaw('unit_id, SUM(amount) as total')
+                ->groupBy('unit_id')
+                ->get()
+                ->keyBy('unit_id')
+            : collect();
+
+        // Total pengeluaran dari finance_transactions, per unit, 1 query.
+        $expenseFinanceByUnit = $unitFilter(FinanceTransaction::query()
+            ->where('type', 'expense')
+            ->where('status', 'completed')
+            ->whereBetween('transaction_date', [$uStart, $uEnd]))
+            ->selectRaw('unit_id, SUM(amount) as total')
+            ->groupBy('unit_id')
+            ->get()
+            ->keyBy('unit_id');
+
+        return Unit::query()
+            ->when($this->selectedUnit, fn($q) => $q->where('id', $this->selectedUnit))
+            ->orderBy('name', 'asc')
+            ->get()
+            ->map(function ($unit) use ($incomeByUnit, $expenseModelByUnit, $expenseFinanceByUnit) {
+                $totalIncome = (float) ($incomeByUnit[$unit->id]->total_income ?? 0);
+                $totalTx     = (int) ($incomeByUnit[$unit->id]->total_tx ?? 0);
+
+                $expFromModel   = (float) ($expenseModelByUnit[$unit->id]->total ?? 0);
+                $expFromFinance = (float) ($expenseFinanceByUnit[$unit->id]->total ?? 0);
+                $totalExpense   = $expFromModel > 0 ? $expFromModel : $expFromFinance;
+
+                // Di-return sebagai stdClass polos (bukan model Unit yang
+                // ditempeli properti dinamis) supaya bentuk data yang masuk
+                // ke Cache::remember() di render() stabil dan tidak terikat
+                // ke class Eloquent Unit -- lebih aman untuk di-serialize
+                // dan lebih gampang dikenali kalau suatu saat harus di-debug
+                // langsung dari isi tabel `cache`.
+                return (object) [
+                    'id'            => $unit->id,
+                    'name'          => $unit->name,
+                    'total_tx'      => $totalTx,
+                    'total_income'  => $totalIncome,
+                    'total_expense' => $totalExpense,
+                    'total_profit'  => $totalIncome - $totalExpense,
+                ];
+            })
+            ->sortByDesc('total_income')
+            ->values();
     }
 }

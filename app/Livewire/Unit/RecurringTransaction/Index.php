@@ -7,6 +7,7 @@ use App\Models\FinanceCategory;
 use App\Models\RecurringTransaction;
 use App\Models\Unit;
 use App\Livewire\Unit\Concerns\ScopedToUnit;
+use App\Services\RecurringTransactionService;
 use Livewire\Attributes\Layout;
 
 /**
@@ -31,9 +32,9 @@ class Index extends MasterRecurringTransactionIndex
 {
     use ScopedToUnit;
 
-    public function mount()
+    public function mount(RecurringTransactionService $recurringTransactionService)
     {
-        parent::mount();
+        parent::mount($recurringTransactionService);
         $this->unit_id = $this->currentUnitId();
     }
 

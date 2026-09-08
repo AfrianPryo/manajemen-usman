@@ -12,6 +12,7 @@ use App\Models\RecurringTransaction;
 use App\Models\ServiceOrder;
 use App\Models\Unit;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Cache;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\Url;
@@ -48,6 +49,15 @@ use Maatwebsite\Excel\Facades\Excel;
 #[Title('Dashboard Unit')]
 class Dashboard extends Component
 {
+    // Sama seperti Master\Dashboard & Analytics: seluruh metrik agregat di
+    // halaman ini (omzet, tren, perbandingan periode, aset, dsb) sebelumnya
+    // dihitung ulang dari nol di SETIAP render(), termasuk saat interaksi
+    // yang tidak mengubah rentang tanggal sama sekali (mis. mengetik di
+    // kolom pencarian transaksi). Di-cache per unit+periode, TTL pendek.
+    // "Transaksi Terkini" (yang ikut kolom pencarian $searchTransaction)
+    // SENGAJA TIDAK ikut di-cache supaya pencarian tetap terasa instan.
+    private const CACHE_TTL_SECONDS = 120;
+
     // 🔴 Type-hint Model Unit agar Livewire otomatis resolve dari route-model-binding {unit}
     public Unit $unit;
 
@@ -254,6 +264,48 @@ class Dashboard extends Component
 
         $unitId = $this->unit->id;
 
+        // Seluruh metrik agregat (omzet, tren, perbandingan periode, aset,
+        // pelanggan, dan widget spesifik kategori) di-cache bersama di sini
+        // supaya interaksi yang tidak mengubah unit/rentang tanggal (mis.
+        // mengetik di kolom pencarian transaksi) tidak menghantam ulang
+        // belasan query aggregate ini.
+        $cacheKey = "dashboard-unit:{$unitId}:{$this->startDate}:{$this->endDate}";
+
+        $aggregates = Cache::remember($cacheKey, self::CACHE_TTL_SECONDS, function () use ($unitId, $start, $end, $periodLabel) {
+            return $this->computeDashboardAggregates($unitId, $start, $end, $periodLabel);
+        });
+
+        // TRANSAKSI TERKINI (bisa dicari) -- SENGAJA di luar cache di atas
+        // karena bergantung pada input pencarian langsung ($searchTransaction)
+        // dan harus selalu mencerminkan apa yang baru saja diketik user.
+        $recentTransactions = FinanceTransaction::with(['category', 'user'])
+            ->where('unit_id', $unitId)
+            ->when($this->searchTransaction, function ($q) {
+                $q->where(function ($sub) {
+                    $sub->where('description', 'like', '%' . $this->searchTransaction . '%')
+                        ->orWhere('reference_no', 'like', '%' . $this->searchTransaction . '%');
+                });
+            })
+            ->latest('transaction_date')
+            ->latest('id')
+            ->limit(6)
+            ->get();
+
+        $viewData = $aggregates['viewData'] + [
+            'unit'               => $this->unit,
+            'recentTransactions' => $recentTransactions,
+        ];
+
+        return view($aggregates['view'], $viewData + $aggregates['extraData']);
+    }
+
+    /**
+     * Hitung semua metrik agregat dashboard (kecuali "Transaksi Terkini"
+     * yang bergantung pada input pencarian live). Diekstrak dari render()
+     * supaya bisa dibungkus Cache::remember().
+     */
+    private function computeDashboardAggregates(int $unitId, Carbon $start, Carbon $end, string $periodLabel): array
+    {
         // -------------------------------------------------------------
         // RINGKASAN OMZET & TRANSAKSI (SCOPED KE UNIT INI SAJA)
         // SAMA UNTUK KEDUA KATEGORI: FinanceTransaction generik.
@@ -293,20 +345,6 @@ class Dashboard extends Component
             'trxCountChangePct'    => $this->percentChange((float) $trxCount, (float) $prevTrxCount),
             'previousPeriodLabel'  => $prevStart->translatedFormat('d M Y') . ' - ' . $prevEnd->translatedFormat('d M Y'),
         ];
-
-        // TRANSAKSI TERKINI (bisa dicari)
-        $recentTransactions = FinanceTransaction::with(['category', 'user'])
-            ->where('unit_id', $unitId)
-            ->when($this->searchTransaction, function ($q) {
-                $q->where(function ($sub) {
-                    $sub->where('description', 'like', '%' . $this->searchTransaction . '%')
-                        ->orWhere('reference_no', 'like', '%' . $this->searchTransaction . '%');
-                });
-            })
-            ->latest('transaction_date')
-            ->latest('id')
-            ->limit(6)
-            ->get();
 
         // TREN OMZET HARIAN DALAM RENTANG PERIODE (untuk grafik)
         $dailyTrend = FinanceTransaction::query()
@@ -397,14 +435,12 @@ class Dashboard extends Component
         ])->all();
 
         $viewData = [
-            'unit'                 => $this->unit,
             'periodLabel'          => $periodLabel,
             'totalIncome'          => 'Rp ' . number_format($totalIncome, 0, ',', '.'),
             'totalExpense'         => 'Rp ' . number_format($totalExpense, 0, ',', '.'),
             'netRevenue'           => 'Rp ' . number_format($totalIncome - $totalExpense, 0, ',', '.'),
             'trxCount'             => $trxCount,
             'avgTrxValue'          => 'Rp ' . number_format($avgTrxValue, 0, ',', '.'),
-            'recentTransactions'   => $recentTransactions,
             'revenueTrend'         => $revenueTrend,
             'upcomingRecurring'    => $upcomingRecurring,
             'recentActivity'       => $recentActivity,
@@ -417,69 +453,58 @@ class Dashboard extends Component
         ];
 
         // -------------------------------------------------------------
-        // CABANG KATEGORI: 'jasa' (Services) vs 'ritel' (default)
+        // CABANG KATEGORI: 'jasa' (Services) vs 'ritel' (default) -- hanya
+        // salah satu blok berikut yang dieksekusi (bukan keduanya), persis
+        // seperti perilaku render() sebelumnya, supaya tidak menambah query
+        // yang tidak dipakai untuk kategori yang tidak relevan.
         // -------------------------------------------------------------
         if ($this->isServiceCategory()) {
-            // ---------------------------------------------------------
             // WIDGET KHUSUS UNIT JASA: RINGKASAN PESANAN LAYANAN
-            // ---------------------------------------------------------
-            $totalServiceOrders = ServiceOrder::where('unit_id', $unitId)->count();
+            $serviceData = [
+                'totalServiceOrders'            => ServiceOrder::where('unit_id', $unitId)->count(),
+                'pendingServiceOrders'          => ServiceOrder::where('unit_id', $unitId)->where('status', 'pending')->count(),
+                'inProgressServiceOrders'       => ServiceOrder::where('unit_id', $unitId)->where('status', 'in_progress')->count(),
+                'completedServiceOrdersInRange' => ServiceOrder::where('unit_id', $unitId)
+                    ->where('status', 'completed')
+                    ->whereBetween('updated_at', [$start, $end])
+                    ->count(),
+                'upcomingServiceOrders' => ServiceOrder::where('unit_id', $unitId)
+                    ->whereIn('status', ['pending', 'in_progress'])
+                    ->whereNotNull('scheduled_at')
+                    ->orderBy('scheduled_at')
+                    ->limit(6)
+                    ->get(),
+                'recentServiceOrders' => ServiceOrder::where('unit_id', $unitId)
+                    ->latest('id')
+                    ->limit(6)
+                    ->get(),
+            ];
 
-            $pendingServiceOrders = ServiceOrder::where('unit_id', $unitId)
-                ->where('status', 'pending')
-                ->count();
-
-            $inProgressServiceOrders = ServiceOrder::where('unit_id', $unitId)
-                ->where('status', 'in_progress')
-                ->count();
-
-            $completedServiceOrdersInRange = ServiceOrder::where('unit_id', $unitId)
-                ->where('status', 'completed')
-                ->whereBetween('updated_at', [$start, $end])
-                ->count();
-
-            $upcomingServiceOrders = ServiceOrder::where('unit_id', $unitId)
-                ->whereIn('status', ['pending', 'in_progress'])
-                ->whereNotNull('scheduled_at')
-                ->orderBy('scheduled_at')
-                ->limit(6)
-                ->get();
-
-            $recentServiceOrders = ServiceOrder::where('unit_id', $unitId)
-                ->latest('id')
-                ->limit(6)
-                ->get();
-
-            return view('livewire.unit.dashboard-services', $viewData + [
-                'totalServiceOrders'            => $totalServiceOrders,
-                'pendingServiceOrders'          => $pendingServiceOrders,
-                'inProgressServiceOrders'       => $inProgressServiceOrders,
-                'completedServiceOrdersInRange' => $completedServiceOrdersInRange,
-                'upcomingServiceOrders'         => $upcomingServiceOrders,
-                'recentServiceOrders'           => $recentServiceOrders,
-            ]);
+            return [
+                'viewData'    => $viewData,
+                'view'        => 'livewire.unit.dashboard-services',
+                'extraData'   => $serviceData,
+            ];
         }
 
-        // ---------------------------------------------------------
         // WIDGET DEFAULT UNIT RITEL: STOK & PRODUK (TIDAK BERUBAH)
-        // ---------------------------------------------------------
-        $totalProducts = Product::where('unit_id', $unitId)->count();
+        $retailData = [
+            'totalProducts' => Product::where('unit_id', $unitId)->count(),
+            'lowStockProducts' => Product::where('unit_id', $unitId)
+                ->whereColumn('stock', '<=', 'min_stock')
+                ->orderBy('stock')
+                ->limit(6)
+                ->get(),
+            'lowStockCount' => Product::where('unit_id', $unitId)
+                ->whereColumn('stock', '<=', 'min_stock')
+                ->count(),
+        ];
 
-        $lowStockProducts = Product::where('unit_id', $unitId)
-            ->whereColumn('stock', '<=', 'min_stock')
-            ->orderBy('stock')
-            ->limit(6)
-            ->get();
-
-        $lowStockCount = Product::where('unit_id', $unitId)
-            ->whereColumn('stock', '<=', 'min_stock')
-            ->count();
-
-        return view('livewire.unit.dashboard', $viewData + [
-            'totalProducts'    => $totalProducts,
-            'lowStockProducts' => $lowStockProducts,
-            'lowStockCount'    => $lowStockCount,
-        ]);
+        return [
+            'viewData'  => $viewData,
+            'view'      => 'livewire.unit.dashboard',
+            'extraData' => $retailData,
+        ];
     }
 
     public function eventInfo(string $event): array

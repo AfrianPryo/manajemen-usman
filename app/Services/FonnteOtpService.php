@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Jobs\SendFonnteMessageJob;
 use App\Models\Setting;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
@@ -197,6 +198,31 @@ class FonnteOtpService
             Log::error('FonnteOtpService: exception saat kirim pesan WA - ' . $e->getMessage());
             return false;
         }
+    }
+
+    /**
+     * Versi ASYNC dari sendPlainMessage(): mendorong pengiriman pesan ke
+     * queue (App\Jobs\SendFonnteMessageJob) alih-alih memanggil Http::post()
+     * langsung di dalam siklus request web. Dipakai untuk kasus NON-KRITIS
+     * yang tidak butuh konfirmasi sukses/gagal secara real-time (notifikasi
+     * kredensial akun baru, reset password, broadcast pengumuman) --
+     * generateAndSend()/verify() di atas (alur OTP asli) SENGAJA TIDAK
+     * diubah dan tetap sinkron, supaya feedback sukses/gagal OTP ke user
+     * tetap akurat saat itu juga.
+     *
+     * @return bool true jika pesan berhasil DI-DISPATCH ke queue (BUKAN
+     *              indikasi pesan sudah benar-benar terkirim ke WhatsApp --
+     *              itu baru terjadi di background lewat SendFonnteMessageJob).
+     */
+    public function sendPlainMessageAsync(string $phone, string $message): bool
+    {
+        if (empty($phone)) {
+            return false;
+        }
+
+        SendFonnteMessageJob::dispatch($phone, $message);
+
+        return true;
     }
 
     /**

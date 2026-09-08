@@ -472,6 +472,7 @@
                 </thead>
                 <tbody class="divide-y divide-neutral-100 dark:divide-slate-700">
                     @forelse($topUnits as $item)
+                        @continue(! is_object($item))
                         @php
                             $expense = $item->total_expense ?? 0;
                             $profit = $item->total_profit ?? ($item->total_income - $expense);

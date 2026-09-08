@@ -152,10 +152,16 @@ class Index extends Component
                     continue;
                 }
 
-                if ($fonnte->sendPlainMessage($user->phone, $waText)) {
+                // sendPlainMessageAsync(): pesan didorong ke queue (job
+                // SendFonnteMessageJob), tidak lagi memanggil API Fonnte
+                // secara sinkron di sini. $waSentCount karenanya berarti
+                // "berhasil dijadwalkan untuk dikirim", bukan lagi "sudah
+                // terkirim" -- kegagalan pengiriman asli (kalau ada) hanya
+                // tercatat di log job, bukan lagi terlihat real-time di sini.
+                if ($fonnte->sendPlainMessageAsync($user->phone, $waText)) {
                     $waSentCount++;
                 } else {
-                    $waSkipped[] = "{$user->name} (gagal terkirim)";
+                    $waSkipped[] = "{$user->name} (gagal dijadwalkan)";
                 }
             }
         }
@@ -189,7 +195,7 @@ class Index extends Component
 
         $flashMessage = "Pengumuman berhasil dikirim ke {$recipients->count()} admin unit.";
         if ($this->sendViaWhatsapp) {
-            $flashMessage .= " WhatsApp (Fonnte) terkirim ke {$waSentCount} nomor.";
+            $flashMessage .= " WhatsApp (Fonnte) dijadwalkan untuk dikirim ke {$waSentCount} nomor.";
             if (! empty($waSkipped)) {
                 $flashMessage .= ' Tidak terkirim ke: ' . implode(', ', $waSkipped) . '.';
             }

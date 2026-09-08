@@ -130,7 +130,7 @@ class NotificationSidebar extends Component
             . "Password baru: *{$newPassword}*\n\n"
             . "Segera login dan ganti password Anda. Jangan bagikan kredensial ini kepada siapapun.";
 
-        $waSent = app(FonnteOtpService::class)->sendPlainMessage($user->phone, $waMessage);
+        $waSent = app(FonnteOtpService::class)->sendPlainMessageAsync($user->phone, $waMessage);
 
         // Munculkan popup kredensial yang bisa disalin -- PERSIS seperti
         // popup yang muncul saat Admin Master mereset password lewat menu

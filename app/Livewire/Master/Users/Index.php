@@ -130,7 +130,7 @@ class Index extends Component
             . "Password: *{$plainPassword}*\n\n"
             . "Segera login dan ganti password Anda. Jangan bagikan kredensial ini kepada siapapun.";
 
-        $waSent = app(FonnteOtpService::class)->sendPlainMessage($user->phone, $waMessage);
+        $waSent = app(FonnteOtpService::class)->sendPlainMessageAsync($user->phone, $waMessage);
 
         $this->createdCredentials = [
             'title' => '🎉 Akun Admin Berhasil Dibuat!',
@@ -283,7 +283,7 @@ class Index extends Component
             . "Password baru: *{$newPassword}*\n\n"
             . "Segera login dan ganti password Anda. Jangan bagikan kredensial ini kepada siapapun.";
 
-        $waSent = app(FonnteOtpService::class)->sendPlainMessage($user->phone, $waMessage);
+        $waSent = app(FonnteOtpService::class)->sendPlainMessageAsync($user->phone, $waMessage);
 
         $this->createdCredentials = [
             'title' => '🔑 Password Berhasil Direset!',

@@ -7,6 +7,7 @@ use App\Models\FinanceCategory;
 use App\Models\FinanceTransaction;
 use Carbon\CarbonPeriod;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Cache;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
@@ -53,6 +54,13 @@ use Livewire\Component;
 class Index extends Component
 {
     use ScopedToUnit;
+
+    // Sama seperti versi Master (lihat komentar di
+    // App\Livewire\Master\Analytics\Index): halaman ini dirender ulang di
+    // setiap interaksi Livewire dan sebelumnya menghitung ulang semua
+    // agregat dari nol setiap kali, termasuk N+1 per kategori transaksi.
+    // Hasil komputasi di-cache per kombinasi filter + unit selama TTL ini.
+    private const CACHE_TTL_SECONDS = 120;
 
     // Filter Rentang Waktu Ringkasan Metrik Utama
     public string $periodFilter = 'this_month';
@@ -146,6 +154,70 @@ class Index extends Component
         $unitId = $this->currentUnitId();
         $unit   = $this->currentUnit();
 
+        $data = Cache::remember($this->analyticsCacheKey($unitId), self::CACHE_TTL_SECONDS, function () use ($unitId) {
+            return $this->computeAnalyticsData($unitId);
+        });
+
+        [
+            'totalRevenue'        => $totalRevenue,
+            'totalExpense'        => $totalExpense,
+            'totalTransactions'   => $totalTransactions,
+            'netProfit'           => $netProfit,
+            'chartLabels'         => $this->chartLabels,
+            'revenueChartData'    => $this->revenueChartData,
+            'expenseChartData'    => $this->expenseChartData,
+            'revenueContribution' => $revenueContribution,
+            'topCategories'       => $topCategories,
+        ] = $data;
+
+        // Kirim event pembaruan data grafik ke AlpineJS
+        $this->dispatch(
+            'update-cashflow-chart',
+            labels: $this->chartLabels,
+            revenue: $this->revenueChartData,
+            expense: $this->expenseChartData
+        );
+
+        return view('livewire.unit.analytics.index', compact(
+            'unit',
+            'totalRevenue',
+            'totalExpense',
+            'totalTransactions',
+            'netProfit',
+            'revenueContribution',
+            'topCategories'
+        ));
+    }
+
+    /**
+     * Key cache unik untuk kombinasi unit + filter yang sedang aktif.
+     */
+    private function analyticsCacheKey(int $unitId): string
+    {
+        return implode(':', [
+            'analytics-unit',
+            $unitId,
+            $this->startDate,
+            $this->endDate,
+            $this->cashflowPeriod,
+            $this->cfStartDate ?: '-',
+            $this->cfEndDate ?: '-',
+            $this->categoryPeriod,
+            $this->categoryStartDate ?: '-',
+            $this->categoryEndDate ?: '-',
+        ]);
+    }
+
+    /**
+     * @return array{
+     *   totalRevenue: float, totalExpense: float, totalTransactions: int,
+     *   netProfit: float, chartLabels: array, revenueChartData: array,
+     *   expenseChartData: array, revenueContribution: array,
+     *   topCategories: \Illuminate\Support\Collection
+     * }
+     */
+    private function computeAnalyticsData(int $unitId): array
+    {
         // 1. Rentang Tanggal Filter Umum (Ringkasan Metrik)
         $start = Carbon::parse($this->startDate)->startOfDay();
         $end   = Carbon::parse($this->endDate)->endOfDay();
@@ -205,16 +277,16 @@ class Index extends Component
             ->groupBy('date')
             ->pluck('total', 'date');
 
-        $this->chartLabels      = [];
-        $this->revenueChartData = [];
-        $this->expenseChartData = [];
+        $chartLabels      = [];
+        $revenueChartData = [];
+        $expenseChartData = [];
 
         $period = CarbonPeriod::create($cfStart, $cfEnd);
         foreach ($period as $date) {
-            $formattedDate            = $date->format('Y-m-d');
-            $this->chartLabels[]      = $date->format('d M');
-            $this->revenueChartData[] = (float) ($dailyRevenues[$formattedDate] ?? 0);
-            $this->expenseChartData[] = (float) ($dailyExpenses[$formattedDate] ?? 0);
+            $formattedDate       = $date->format('Y-m-d');
+            $chartLabels[]       = $date->format('d M');
+            $revenueChartData[] = (float) ($dailyRevenues[$formattedDate] ?? 0);
+            $expenseChartData[] = (float) ($dailyExpenses[$formattedDate] ?? 0);
         }
 
         // --- Data Kontribusi Pendapatan per Kategori Transaksi ---
@@ -264,35 +336,66 @@ class Index extends Component
             default  => Carbon::now()->endOfDay(),
         };
 
-        // --- Performa Seluruh Kategori Transaksi Milik Unit Ini ---
-        // Pengganti "Performa Seluruh Unit Usaha" milik versi Master.
-        $topCategories = FinanceCategory::query()
+        $topCategories = $this->computeTopCategories($unitId, $cStart, $cEnd);
+
+        return [
+            'totalRevenue'        => $totalRevenue,
+            'totalExpense'        => $totalExpense,
+            'totalTransactions'   => $totalTransactions,
+            'netProfit'           => $netProfit,
+            'chartLabels'         => $chartLabels,
+            'revenueChartData'    => $revenueChartData,
+            'expenseChartData'    => $expenseChartData,
+            'revenueContribution' => $revenueContribution,
+            'topCategories'       => $topCategories,
+        ];
+    }
+
+    /**
+     * Performa Seluruh Kategori Transaksi Milik Unit Ini.
+     *
+     * SEBELUMNYA: FinanceCategory::all()->map() menjalankan beberapa query
+     * TERPISAH per kategori (income + expense, masing-masing sum & count).
+     * Sekarang cukup 2 query GROUP BY total (terlepas dari jumlah kategori),
+     * hasilnya di-index per finance_category_id lalu ditempel ke masing-
+     * masing kategori di memori -- angka yang dihasilkan identik.
+     */
+    private function computeTopCategories(int $unitId, Carbon $cStart, Carbon $cEnd)
+    {
+        $incomeByCategory = FinanceTransaction::query()
+            ->where('unit_id', $unitId)
+            ->where('type', 'income')
+            ->where('status', 'completed')
+            ->whereBetween('transaction_date', [$cStart, $cEnd])
+            ->selectRaw('finance_category_id, SUM(amount) as total_income, COUNT(*) as total_tx')
+            ->groupBy('finance_category_id')
+            ->get()
+            ->keyBy('finance_category_id');
+
+        $expenseByCategory = FinanceTransaction::query()
+            ->where('unit_id', $unitId)
+            ->where('type', 'expense')
+            ->where('status', 'completed')
+            ->whereBetween('transaction_date', [$cStart, $cEnd])
+            ->selectRaw('finance_category_id, SUM(amount) as total_expense, COUNT(*) as total_tx')
+            ->groupBy('finance_category_id')
+            ->get()
+            ->keyBy('finance_category_id');
+
+        return FinanceCategory::query()
             ->where('unit_id', $unitId)
             ->orderBy('name', 'asc')
             ->get()
-            ->map(function ($category) use ($cStart, $cEnd) {
-                $incomeQuery = FinanceTransaction::query()
-                    ->where('finance_category_id', $category->id)
-                    ->where('type', 'income')
-                    ->where('status', 'completed')
-                    ->whereBetween('transaction_date', [$cStart, $cEnd]);
-
-                $totalIncome = (float) ((clone $incomeQuery)->sum('amount') ?? 0);
-                $totalTx     = (clone $incomeQuery)->count();
-
-                $expenseQuery = FinanceTransaction::query()
-                    ->where('finance_category_id', $category->id)
-                    ->where('type', 'expense')
-                    ->where('status', 'completed')
-                    ->whereBetween('transaction_date', [$cStart, $cEnd]);
-
-                $totalExpense = (float) ((clone $expenseQuery)->sum('amount') ?? 0);
+            ->map(function ($category) use ($incomeByCategory, $expenseByCategory) {
+                $totalIncome = (float) ($incomeByCategory[$category->id]->total_income ?? 0);
+                $totalExpense = (float) ($expenseByCategory[$category->id]->total_expense ?? 0);
 
                 // Kategori bertipe 'expense' tidak akan punya transaksi
                 // 'income' (begitu pula sebaliknya) -- tapi tetap dihitung
                 // dari kedua sisi supaya baris tabel tetap akurat kalau
                 // suatu saat data tercampur.
-                $totalTx += (clone $expenseQuery)->count();
+                $totalTx = (int) ($incomeByCategory[$category->id]->total_tx ?? 0)
+                    + (int) ($expenseByCategory[$category->id]->total_tx ?? 0);
 
                 $category->total_tx      = $totalTx;
                 $category->total_income  = $totalIncome;
@@ -303,23 +406,5 @@ class Index extends Component
             })
             ->sortByDesc('total_income')
             ->values();
-
-        // Kirim event pembaruan data grafik ke AlpineJS
-        $this->dispatch(
-            'update-cashflow-chart',
-            labels: $this->chartLabels,
-            revenue: $this->revenueChartData,
-            expense: $this->expenseChartData
-        );
-
-        return view('livewire.unit.analytics.index', compact(
-            'unit',
-            'totalRevenue',
-            'totalExpense',
-            'totalTransactions',
-            'netProfit',
-            'revenueContribution',
-            'topCategories'
-        ));
     }
 }

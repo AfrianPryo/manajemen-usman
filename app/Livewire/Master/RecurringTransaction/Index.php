@@ -7,14 +7,10 @@ use Livewire\WithPagination;
 use Livewire\Attributes\Layout;
 use App\Models\Unit;
 use App\Models\RecurringTransaction;
-use App\Models\FinanceTransaction;
 use App\Models\FinanceCategory;
-use App\Models\User;
 use App\Models\AuditLog;
-use App\Notifications\SystemNotification;
+use App\Services\RecurringTransactionService;
 use Illuminate\Validation\Rule;
-use Illuminate\Support\Facades\Auth;
-use Carbon\Carbon;
 use Livewire\Attributes\Title;
 
 #[Layout('layouts.app')]
@@ -65,117 +61,19 @@ class Index extends Component
         ];
     }
 
-    public function mount()
+    public function mount(RecurringTransactionService $recurringTransactionService)
     {
         $this->start_date = date('Y-m-d');
         $this->next_run_date = date('Y-m-d');
 
-        // Jalankan pengecekan transaksi yang jatuh tempo saat halaman diakses
-        $this->checkDueTransactions();
-    }
-
-    // Pengecekan transaksi berulang yang memasuki jatuh tempo
-    private function checkDueTransactions()
-    {
-        $today = now()->toDateString();
-
-        $dueTransactions = RecurringTransaction::where('status', 'active')
-            ->whereDate('next_run_date', '<=', $today)
-            ->where(function ($query) use ($today) {
-                $query->whereNull('end_date')
-                      ->orWhereDate('end_date', '>=', $today);
-            })
-            ->get();
-
-        foreach ($dueTransactions as $item) {
-            if ($item->auto_approve) {
-                // Cari ID kategori fallback jika data lama belum terisi
-                $categoryId = $item->finance_category_id
-                    ?? $item->category_id
-                    ?? FinanceCategory::where('type', $item->type)
-                        ->where('unit_id', $item->unit_id)
-                        ->value('id');
-
-                if ($categoryId) {
-                    // JIKA OTOMATIS: Dibuat langsung ke transaksi resmi & majukan tanggal
-                    $trx = FinanceTransaction::create([
-                        'unit_id'             => $item->unit_id,
-                        'finance_category_id' => $categoryId,
-                        'user_id'             => Auth::id() ?? 1,
-                        'reference_no'        => 'TRX-REC-' . time() . '-' . $item->id,
-                        'type'                => $item->type,
-                        'status'              => 'completed',
-                        'amount'              => $item->amount,
-                        'description'         => $item->title . ' (Otomatis dibuat dari Transaksi Berulang)',
-                        'transaction_date'    => now(),
-                    ]);
-
-                    AuditLog::record(
-                        'RECURRING_TRANSACTION_AUTO_RUN',
-                        $item->title,
-                        "Transaksi otomatis dibuat dari transaksi berulang '{$item->title}' sejumlah Rp " . number_format($item->amount, 0, ',', '.') . ".",
-                        null,
-                        $trx->toArray()
-                    );
-
-                    // Kirim notifikasi pengingat (bukan konfirmasi) bahwa transaksi sudah diproses otomatis
-                    $targetUsers = User::all();
-
-                    foreach ($targetUsers as $user) {
-                        $user->notify(new SystemNotification(
-                            title: 'Transaksi Berulang Diproses Otomatis',
-                            message: "Transaksi '{$item->title}' (Rp " . number_format($item->amount, 0, ',', '.') . ") telah dibuat otomatis ke Transaksi Keuangan.",
-                            badge: 'Otomatis',
-                            actionable: false,
-                            url: route('master.recurring-transactions.index'),
-                            extraData: [
-                                'recurring_transaction_id' => $item->id,
-                            ]
-                        ));
-                    }
-
-                    $item->next_run_date = $this->calculateNextRunDate($item->next_run_date, $item->frequency);
-                    $item->save();
-                }
-            } else {
-                // JIKA MANUAL: Kirim Notifikasi Interaktif ke Sidebar
-                $targetUsers = User::all();
-
-                foreach ($targetUsers as $user) {
-                    $hasPending = $user->unreadNotifications()
-                        ->where('data->recurring_transaction_id', $item->id)
-                        ->exists();
-
-                    if (!$hasPending) {
-                        $user->notify(new SystemNotification(
-                            title: 'Konfirmasi Transaksi Berulang',
-                            message: "Transaksi '{$item->title}' (Rp " . number_format($item->amount, 0, ',', '.') . ") telah jatuh tempo dan butuh konfirmasi.",
-                            badge: 'Jatuh Tempo',
-                            actionable: true,
-                            url: route('master.recurring-transactions.index'),
-                            extraData: [
-                                'recurring_transaction_id' => $item->id
-                            ]
-                        ));
-                    }
-                }
-            }
-        }
-    }
-
-    private function calculateNextRunDate($currentDate, $frequency)
-    {
-        $date = Carbon::parse($currentDate);
-
-        $nextDate = match ($frequency) {
-            'daily'   => $date->addDay(),
-            'weekly'  => $date->addWeek(),
-            'monthly' => $date->addMonth(),
-            'yearly'  => $date->addYear(),
-            default   => $date->addMonth(),
-        };
-
-        return $nextDate->toDateString();
+        // Jalankan pengecekan transaksi yang jatuh tempo saat halaman diakses.
+        // Implementasi sesungguhnya sudah dipindah & disatukan ke
+        // App\Services\RecurringTransactionService (dipakai bareng oleh
+        // command terjadwal `recurring:process`), supaya tidak ada dua
+        // salinan logika yang bisa saling tidak sinkron, dan N+1 query-nya
+        // (User::all() + exists() per pasangan user+item) cukup diperbaiki
+        // di satu tempat -- lihat docblock di service tersebut untuk detail.
+        $recurringTransactionService->processDueTransactions();
     }
 
     // Reset halaman ketika filter atau pencarian berubah
