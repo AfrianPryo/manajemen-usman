@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ $title ?? 'Dashboard' }} - Usaha Mandiri Sekolah</title>
+    <link rel="icon" href="{{ asset('favicon.svg') }}" type="image/svg+xml">
+
     <style>
         #main-content:not(.is-ready) {
             opacity: 0 !important;
@@ -11,13 +13,12 @@
             pointer-events: none !important;
         }
 
-        /* Sembunyikan scrollbar tapi area tetap bisa discroll (mouse/trackpad/keyboard) */
         .no-scrollbar {
-            scrollbar-width: none;       /* Firefox */
-            -ms-overflow-style: none;    /* IE / Edge lama */
+            scrollbar-width: none;
+            -ms-overflow-style: none;
         }
         .no-scrollbar::-webkit-scrollbar {
-            display: none;               /* Chrome, Safari, Edge (WebKit) */
+            display: none;
         }
     </style>
     @vite(['resources/css/app.css', 'resources/js/app.js'])

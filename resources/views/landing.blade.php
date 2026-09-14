@@ -8,11 +8,15 @@
     {{-- ===================== NAVBAR ===================== --}}
     <nav class="fixed inset-x-0 top-0 z-50 transition-colors duration-300">
         <div class="relative max-w-7xl mx-auto px-6 lg:px-6 h-16 flex items-center justify-between">
-            <a href="{{ route('landing') }}" class="font-display font-bold text-blue-900 dark:text-blue-400 text-lg tracking-tighter">
-                SIMS<span class="text-slate-400 dark:text-slate-500 font-medium">.Usaha</span>
+            <a href="{{ route('landing') }}" class="flex items-center">
+                {{-- Logo untuk mode terang --}}
+                <img src="{{ asset('images/logo-light.svg') }}" alt="SIMS.Usaha" class="h-6 w-auto block dark:hidden">
+
+                {{-- Logo untuk mode gelap --}}
+                <img src="{{ asset('images/logo-dark.svg') }}" alt="SIMS.Usaha" class="h-6  w-auto hidden dark:block">
             </a>
 
-            {{-- Nav Links dengan indikator "rolling" ala cantor8 --}}
+            {{-- Nav Links dengan indikator "rolling" ala cantor8 (desktop) --}}
             <div id="nav-pill" class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 hidden md:flex items-center gap-1 rounded-[2px] bg-black/70 dark:bg-blue-950/70 backdrop-blur px-1 py-1">
                 <span
                     id="nav-indicator"
@@ -53,6 +57,7 @@
                 </a>
             </div>
 
+            {{-- Grup kanan (tablet ke atas) --}}
             <div
                 class="hidden sm:flex items-center gap-1 rounded-[2px] bg-black/70 dark:bg-blue-900/70 backdrop-blur border border-white/10 p-0.5"
             >
@@ -97,7 +102,7 @@
                 <a href="{{ route('login') }}" class="group inline-flex items-center gap-2 rounded-[1px] bg-white pt-[3px] pb-[3px] pl-2 pr-1 text-[11px] font-medium text-blue-900">
                     <span
                         class="login-text relative inline-flex items-center overflow-hidden text-[12px] font-[450] tracking-tight"
-                        data-text="Login Admin"
+                        data-text="Buka Dashboard"
                     ></span>
 
                     <span class="flex h-6 w-6 items-center justify-center rounded-[3px] bg-blue-900/90">
@@ -116,6 +121,65 @@
                     </span>
                 </a>
             </div>
+
+            {{-- Tombol Hamburger (mobile only, muncul di bawah breakpoint sm) --}}
+            <button
+                id="mobile-menu-toggle"
+                type="button"
+                aria-label="Buka menu navigasi"
+                aria-expanded="false"
+                aria-controls="mobile-menu"
+                class="sm:hidden flex h-9 w-9 items-center justify-center rounded-[3px] bg-black/70 dark:bg-blue-900/70 backdrop-blur border border-white/10 text-white/90"
+            >
+                <svg id="mobile-menu-icon-open" class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 6h18M3 12h18M3 18h18"/>
+                </svg>
+                <svg id="mobile-menu-icon-close" class="hidden h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M6 6l12 12M18 6L6 18"/>
+                </svg>
+            </button>
+        </div>
+
+        {{-- Panel Menu Mobile --}}
+        <div
+            id="mobile-menu"
+            class="sm:hidden hidden flex-col gap-1 mx-4 mt-1 mb-2 rounded-[4px] bg-black/85 dark:bg-blue-950/85 backdrop-blur border border-white/10 p-2"
+        >
+            <a href="#home" class="mobile-nav-link px-4 py-2 rounded-[2px] text-[13px] font-semibold tracking-tight text-white/90 hover:bg-white/10">Home</a>
+            <a href="#cara-kerja" class="mobile-nav-link px-4 py-2 rounded-[2px] text-[13px] font-semibold tracking-tight text-white/90 hover:bg-white/10">Cara Kerja</a>
+            <a href="#tentang" class="mobile-nav-link px-4 py-2 rounded-[2px] text-[13px] font-semibold tracking-tight text-white/90 hover:bg-white/10">Tentang</a>
+            <a href="#faq" class="mobile-nav-link px-4 py-2 rounded-[2px] text-[13px] font-semibold tracking-tight text-white/90 hover:bg-white/10">FAQ</a>
+
+            <div class="flex items-center justify-between gap-2 mt-1 px-1">
+                {{-- Theme toggle versi mobile (id terpisah agar tidak duplikat) --}}
+                <button
+                    id="theme-toggle-mobile"
+                    type="button"
+                    aria-label="Ganti tema gelap/terang"
+                    class="flex h-9 w-10 items-center justify-center rounded-[3px] bg-white/10 text-white/90"
+                >
+                    <svg id="theme-icon-sun-mobile" class="hidden h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="4"/>
+                        <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>
+                    </svg>
+                    <svg id="theme-icon-moon-mobile" class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
+                    </svg>
+                </button>
+
+                {{-- CTA versi mobile, mengikuti pola login-cta di bagian lain halaman --}}
+                <a href="{{ route('login') }}" class="login-cta group flex-1 inline-flex items-center justify-center gap-4 rounded-[2px] bg-white py-2 px-3 text-[11px] font-medium text-blue-900">
+                    <span
+                        class="login-text relative inline-flex items-center overflow-hidden text-[12px] font-semibold tracking-tight"
+                        data-text="Buka Dashboard"
+                    ></span>
+                    <span class="flex h-6 w-6 items-center justify-center rounded-[3px] bg-blue-900/90">
+                        <svg class="h-3 w-3 transition-transform duration-300 group-hover:rotate-45" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M7 17L17 7M17 7H8M17 7V16"/>
+                        </svg>
+                    </span>
+                </a>
+            </div>
         </div>
     </nav>
 
@@ -127,7 +191,7 @@
             <div
                 id="ascii-3d-container"
                 data-animate="hero-visual"
-                class="pointer-events-none absolute right-6 lg:left-140 -translate-y-[7rem] w-[320px] h-[320px] lg:w-[180px] lg:h-[180px] hidden lg:block text-blue-900 dark:text-slate-200"
+                class="pointer-events-none absolute right-6 lg:left-140 !-translate-y-[-1rem] w-[320px] h-[320px] lg:w-[180px] lg:h-[180px] hidden lg:block text-blue-900 dark:text-slate-200"
             ></div>
 
             <!-- Parent utama dilepas class relative-nya agar text tepi bisa merapat ke ujung layar -->
@@ -334,7 +398,7 @@
                     >
                         <span
                             class="login-text relative inline-flex items-center overflow-hidden text-[13px] font-semibold tracking-tight"
-                            data-text="Login Admin"
+                            data-text="Buka Dashboard"
                         ></span>
 
                         <span class="flex h-9 w-9 items-center justify-center rounded-[3px] bg-white/90">
@@ -543,7 +607,7 @@
                         >
                             <span
                                 class="login-text relative inline-flex items-center overflow-hidden text-[13px] font-semibold tracking-tight"
-                                data-text="Login Admin"
+                                data-text="Buka Dashboard"
                             ></span>
 
                             <span class="flex h-9 w-9 items-center justify-center rounded-[3px] bg-white/90">
@@ -754,7 +818,7 @@
                                 <li><a href="{{ route('landing') }}" class="text-white/90 hover:text-white transition-colors">Beranda</a></li>
                                 <li><a href="#tentang" class="text-white/90 hover:text-white transition-colors">Tentang</a></li>
                                 <li><a href="#cara-kerja" class="text-white/90 hover:text-white transition-colors">Cara Kerja</a></li>
-                                <li><a href="/login" class="text-white/90 hover:text-white transition-colors">Login Admin</a></li>
+                                <li><a href="/login" class="text-white/90 hover:text-white transition-colors">Buka Dashboard</a></li>
                                 <li><a href="#faq" class="text-white/90 hover:text-white transition-colors">FAQ</a></li>
                             </ul>
                         </div>
@@ -832,5 +896,46 @@
         class="absolute inset-0 z-30 bg-white pointer-events-none translate-y-full"
     ></div>
 </div>
+
+<script>
+    (function () {
+        const toggleBtn   = document.getElementById('mobile-menu-toggle');
+        const mobileMenu  = document.getElementById('mobile-menu');
+        const iconOpen    = document.getElementById('mobile-menu-icon-open');
+        const iconClose   = document.getElementById('mobile-menu-icon-close');
+        const mobileLinks = document.querySelectorAll('.mobile-nav-link');
+
+        if (!toggleBtn || !mobileMenu) return;
+
+        function closeMenu() {
+            mobileMenu.classList.add('hidden');
+            mobileMenu.classList.remove('flex');
+            iconOpen.classList.remove('hidden');
+            iconClose.classList.add('hidden');
+            toggleBtn.setAttribute('aria-expanded', 'false');
+        }
+
+        function openMenu() {
+            mobileMenu.classList.remove('hidden');
+            mobileMenu.classList.add('flex');
+            iconOpen.classList.add('hidden');
+            iconClose.classList.remove('hidden');
+            toggleBtn.setAttribute('aria-expanded', 'true');
+        }
+
+        toggleBtn.addEventListener('click', function () {
+            const isOpen = !mobileMenu.classList.contains('hidden');
+            isOpen ? closeMenu() : openMenu();
+        });
+
+        mobileLinks.forEach(function (link) {
+            link.addEventListener('click', closeMenu);
+        });
+
+        window.addEventListener('resize', function () {
+            if (window.innerWidth >= 640) closeMenu();
+        });
+    })();
+</script>
 
 @endsection

@@ -5,10 +5,13 @@
 
         {{-- Logo --}}
         <div class="relative z-10 flex items-center gap-2">
-            <span class="flex h-7 w-7 items-center justify-center rounded-[4px] border border-white/25 text-white">
-                <x-heroicon-o-squares-2x2 class="h-4 w-4" stroke-width="1.8" />
-            </span>
-            <p class="text-md text-white font-bold tracking-tighter leading-none">Logo</p>
+            <a href="{{ route('landing') }}" class="flex items-center">
+                {{-- Logo untuk mode terang --}}
+                <img src="{{ asset('images/logo-light.svg') }}" alt="SIMS.Usaha" class="h-6 w-auto hidden dark:block">
+
+                {{-- Logo untuk mode gelap --}}
+                <img src="{{ asset('images/logo-dark.svg') }}" alt="SIMS.Usaha" class="h-6  w-auto block dark:hidden">
+            </a>
         </div>
 
         {{-- Dekorasi Garis Ringan (pengganti objek 3D ASCII, tanpa Three.js) --}}
@@ -130,9 +133,9 @@
                 >
                     <span
                         class="login-text relative inline-flex items-center overflow-hidden text-[12px] font-[450] tracking-tight"
-                        data-text="Login Admin"
+                        data-text="Buka Dashboard"
                     >
-                        Login Admin
+                        Buka Dashboard
                     </span>
 
                     <span class="flex h-8 w-8 items-center justify-center rounded-[3px] bg-blue-900/90 shrink-0">

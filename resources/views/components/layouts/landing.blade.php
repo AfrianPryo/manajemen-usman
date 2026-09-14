@@ -6,6 +6,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'SIMS - Sistem Manajemen Usaha Mandiri Sekolah')</title>
     <meta name="description" content="Portal terpadu untuk mengelola seluruh unit usaha mandiri sekolah: TEFA, Bengkel, FotoCopy, Alfamart Mini, Teh Siswa, dan Bank Sekolah.">
+    <link rel="icon" href="{{ asset('favicon.svg') }}" type="image/svg+xml">
 
     {{-- Cegah flash tema salah saat reload (dijalankan sebelum CSS/JS lain) --}}
     <script>
