@@ -383,7 +383,7 @@ class Index extends Component
             ->keyBy('finance_category_id');
 
         return FinanceCategory::query()
-            ->where('unit_id', $unitId)
+            ->forUnit($unitId)
             ->orderBy('name', 'asc')
             ->get()
             ->map(function ($category) use ($incomeByCategory, $expenseByCategory) {

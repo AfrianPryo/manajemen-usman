@@ -58,6 +58,16 @@ class Dashboard extends Component
     // SENGAJA TIDAK ikut di-cache supaya pencarian tetap terasa instan.
     private const CACHE_TTL_SECONDS = 120;
 
+    // 🔴 Naikkan angka ini SETIAP KALI struktur data yang dikembalikan oleh
+    // computeDashboardAggregates() berubah (mis. menambah/menghapus key,
+    // mengubah tipe suatu value dari model jadi array/string, dsb).
+    // Tanpa versi ini, cache lama (TTL 120 detik) yang masih menyimpan
+    // struktur data versi sebelumnya bisa ikut terbaca oleh kode/Blade
+    // versi baru dan menyebabkan error seperti
+    // "Attempt to read property ... on string" karena bentuk datanya
+    // sudah tidak cocok lagi dengan yang diharapkan view.
+    private const CACHE_VERSION = 2;
+
     // 🔴 Type-hint Model Unit agar Livewire otomatis resolve dari route-model-binding {unit}
     public Unit $unit;
 
@@ -269,7 +279,7 @@ class Dashboard extends Component
         // supaya interaksi yang tidak mengubah unit/rentang tanggal (mis.
         // mengetik di kolom pencarian transaksi) tidak menghantam ulang
         // belasan query aggregate ini.
-        $cacheKey = "dashboard-unit:{$unitId}:{$this->startDate}:{$this->endDate}";
+        $cacheKey = 'dashboard-unit:v' . self::CACHE_VERSION . ":{$unitId}:{$this->startDate}:{$this->endDate}";
 
         $aggregates = Cache::remember($cacheKey, self::CACHE_TTL_SECONDS, function () use ($unitId, $start, $end, $periodLabel) {
             return $this->computeDashboardAggregates($unitId, $start, $end, $periodLabel);

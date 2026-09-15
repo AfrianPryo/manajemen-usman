@@ -142,7 +142,7 @@ class Index extends MasterRecurringTransactionIndex
     public function render()
     {
         $categories = $this->unit_id
-            ? FinanceCategory::where('unit_id', $this->unit_id)
+            ? FinanceCategory::forUnit($this->unit_id)
                 ->where('type', $this->type)
                 ->orderBy('name')
                 ->get()

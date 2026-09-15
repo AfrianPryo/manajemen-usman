@@ -31,7 +31,7 @@ export function initAsciiHero({
     modelUrl,
     characters = " -+01@",
     resolution = 0.3,
-    modelScale = 1.1,
+    modelScale = 1.2,
     autoRotate = true,
     rotateSpeed = 0.25,
     tiltCursor = true,

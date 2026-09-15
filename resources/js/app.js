@@ -42,9 +42,16 @@ function initGlobalScripts() {
     initLandingAnimations();
 
     // 4. Inisialisasi Model 3D ASCII Hero (Khusus Landing Page) — modul
-    // di-load secara dinamis, hanya jika container-nya memang ada di halaman.
+    // di-load secara dinamis, hanya jika container-nya memang ada di halaman
+    // DAN lebar layar saat ini >= breakpoint lg (1024px). Elemen container
+    // sendiri sudah disembunyikan lewat class "hidden lg:block" di Blade,
+    // tapi tanpa guard ini Three.js chunk tetap di-fetch & dijalankan
+    // sia-sia di mobile (di belakang display:none), memboroskan bandwidth
+    // dan CPU/battery pengguna mobile yang tidak pernah melihat elemennya.
     const landingContainer = document.querySelector("#ascii-3d-container");
-    if (landingContainer) {
+    const isDesktopViewport = window.matchMedia("(min-width: 1024px)").matches;
+
+    if (landingContainer && isDesktopViewport) {
         loadAsciiHeroModule().then(({ initAsciiHero }) => {
             // Guard tambahan: pada SPA navigation (livewire:navigated), container
             // bisa saja sudah tidak ada lagi di DOM pada saat chunk selesai di-fetch.

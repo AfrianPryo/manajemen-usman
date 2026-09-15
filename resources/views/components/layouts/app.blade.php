@@ -60,7 +60,11 @@
             @endphp
             <div class="h-12 flex items-center justify-between px-4 font-bold text-sm text-slate-900 border-b border-slate-100 shrink-0 tracking-tight">
                 <span class="flex items-center gap-2 overflow-hidden">
-                    <span class="h-6 w-6 rounded-full bg-slate-900 text-white flex items-center justify-center font-extrabold text-[11px] shadow-xs shrink-0">{{ strtoupper(substr($appName, 0, 1)) }}</span>
+                    <img 
+                        src="{{ asset('favicon.svg') }}" 
+                        alt="{{ $appName }}" 
+                        class="h-6 w-6 rounded-full object-contain shrink-0"
+                    />
                     <span x-show="!sidebarCollapsed || mobileSidebarOpen"
                           x-transition:enter="transition-opacity duration-150 delay-140"
                           x-transition:enter-start="opacity-0"

@@ -289,7 +289,7 @@ class Index extends Component
             return collect();
         }
 
-        return FinanceCategory::where('unit_id', $this->unit_id)
+        return FinanceCategory::forUnit($this->unit_id)
             ->where('type', $this->type)
             ->orderBy('name')
             ->get();

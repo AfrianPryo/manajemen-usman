@@ -7,31 +7,54 @@ function initThemeToggle() {
     console.log("🔧 initThemeToggle() dipanggil");
 
     const toggleBtn = document.getElementById("theme-toggle");
+    const toggleBtnMobile = document.getElementById("theme-toggle-mobile");
     const sunIcon = document.getElementById("theme-icon-sun");
     const moonIcon = document.getElementById("theme-icon-moon");
+    const sunIconMobile = document.getElementById("theme-icon-sun-mobile");
+    const moonIconMobile = document.getElementById("theme-icon-moon-mobile");
 
-    console.log("🔧 toggleBtn:", toggleBtn);
+    console.log("🔧 toggleBtn:", toggleBtn, "toggleBtnMobile:", toggleBtnMobile);
 
-    if (!toggleBtn) {
-        console.log("❌ toggleBtn tidak ditemukan, keluar dari fungsi");
+    if (!toggleBtn && !toggleBtnMobile) {
+        console.log("❌ Tidak ada toggle button ditemukan, keluar dari fungsi");
         return;
     }
 
     const applyIcon = () => {
         const isDark = document.documentElement.classList.contains("dark");
-        sunIcon.classList.toggle("hidden", !isDark);
-        moonIcon.classList.toggle("hidden", isDark);
+
+        if (sunIcon && moonIcon) {
+            sunIcon.classList.toggle("hidden", !isDark);
+            moonIcon.classList.toggle("hidden", isDark);
+        }
+
+        if (sunIconMobile && moonIconMobile) {
+            sunIconMobile.classList.toggle("hidden", !isDark);
+            moonIconMobile.classList.toggle("hidden", isDark);
+        }
     };
 
     applyIcon();
 
-    toggleBtn.addEventListener("click", () => {
+    const handleToggleClick = () => {
         console.log("✅ Tombol theme-toggle diklik!");
         document.documentElement.classList.toggle("dark");
         const isDark = document.documentElement.classList.contains("dark");
         localStorage.setItem("sims-theme", isDark ? "dark" : "light");
         applyIcon();
-    });
+    };
+
+    // Guard: cegah listener dobel jika initThemeToggle() terpanggil lebih
+    // dari sekali (mis. DOMContentLoaded + livewire:navigated yang
+    // sama-sama bisa terpicu di load pertama pada Livewire v3).
+    const bindOnce = (btn) => {
+        if (!btn || btn.dataset.themeBound === "true") return;
+        btn.addEventListener("click", handleToggleClick);
+        btn.dataset.themeBound = "true";
+    };
+
+    bindOnce(toggleBtn);
+    bindOnce(toggleBtnMobile);
 
     console.log("🔧 Event listener berhasil dipasang");
 }

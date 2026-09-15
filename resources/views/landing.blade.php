@@ -187,15 +187,8 @@
     <section id="home" class="relative overflow-hidden bg-gradient-to-b from-blue-50/60 to-slate-50 dark:from-slate-900 dark:to-slate-950 transition-colors duration-300">
         <div class="max-w-7xl mx-auto px-6 lg:px-6 min-h-screen flex flex-col justify-center pb-10">
 
-            {{-- ASCII 3D — sisi kanan hero, sejajar vertikal di tengah --}}
-            <div
-                id="ascii-3d-container"
-                data-animate="hero-visual"
-                class="pointer-events-none absolute right-6 lg:left-140 !-translate-y-[-1rem] w-[320px] h-[320px] lg:w-[180px] lg:h-[180px] hidden lg:block text-blue-900 dark:text-slate-200"
-            ></div>
-
             <!-- Parent utama dilepas class relative-nya agar text tepi bisa merapat ke ujung layar -->
-            <div data-animate="hero-text" class="pt-6 z-10 flex flex-col items-center self-center w-full">             
+            <div data-animate="hero-text" class="pt-10 lg:pt-6 z-10 flex flex-col items-center self-center w-full">             
                 
                 <!-- PERBAIKAN: h1 sekarang menjadi 'relative' dan ditambahkan 'w-full' -->
                 <h1 class="relative w-full max-w-[680px] font-display text-4xl lg:text-[4rem] tracking-tighter font-medium text-slate-900 dark:text-white flex flex-col items-center text-center">                 
@@ -205,8 +198,21 @@
                     <span class="block">Kelola Unit</span>
                     <span class="block mb-1">Usaha Sekolah</span>
                     
-                    <span class="flex justify-between w-full max-w-[14rem] mx-auto my-[2rem] leading-none">
+                    {{-- Kurung buka-tutup: dekorasi khusus desktop, disembunyikan total di mobile
+                        (hidden, bukan cuma di-scale/shrink) supaya heading mobile terasa
+                        seolah elemen ini memang tidak pernah ada di layout.
+                        Diberi "relative" agar jadi anchor positioning untuk ASCII 3D
+                        di dalamnya — sehingga posisi ASCII selalu mengikuti kurung ini
+                        (yang sudah otomatis center via mx-auto), bukan lagi terikat
+                        offset pixel manual terhadap section. --}}
+                    <span class="hidden lg:flex relative justify-between w-full max-w-[14rem] mx-auto my-[2rem] leading-none">
                         <span>(</span>
+                        <div
+                            id="ascii-3d-container"
+                            data-animate="hero-visual"
+                            class="pointer-events-none absolute inset-0 left-[24px] m-auto w-[180px] h-[180px] text-blue-900 dark:text-slate-200"
+                        ></div>
+
                         <span>)</span>
                     </span>
                     
@@ -254,36 +260,30 @@
                 dapat dipertanggungjawabkan.
             </p>
 
-            <div class="mt-32 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 lg:grid-rows-3 gap-3">
+            <div class="mt-32 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
 
-                {{-- Baris 1: satu card sendirian di kolom 3 --}}
-                <div data-animate="bento" class="lg:col-start-3 lg:row-start-1 aspect-[16/10] rounded-[3px] bg-blue-800 dark:bg-blue-950 border border-white/10 flex items-center justify-center">
-                    <span class="font-display font-bold text-white text-sm tracking-wide">Mitra 1</span>
-                </div>
-
-                {{-- Baris 2: 5 card, gap di kolom 3 --}}
-                <div data-animate="bento" class="lg:col-start-1 lg:row-start-2 aspect-[16/10] rounded-[3px] bg-blue-800 dark:bg-blue-950 border border-white/10 flex items-center justify-center">
-                    <span class="font-display font-bold text-white text-sm tracking-tight">Mitra 2</span>
-                </div>
-                <div data-animate="bento" class="lg:col-start-2 lg:row-start-2 aspect-[16/10] rounded-[3px] bg-blue-800 dark:bg-blue-950 border border-white/10 flex items-center justify-center">
-                    <span class="font-display font-bold text-white text-sm tracking-tight">Mitra 3</span>
-                </div>
-                <div data-animate="bento" class="lg:col-start-4 lg:row-start-2 aspect-[16/10] rounded-[3px] bg-blue-800 dark:bg-blue-950 border border-white/10 flex items-center justify-center">
-                    <span class="font-display font-bold text-white text-sm tracking-tight">Mitra 4</span>
-                </div>
-                <div data-animate="bento" class="lg:col-start-5 lg:row-start-2 aspect-[16/10] rounded-[3px] bg-blue-800 dark:bg-blue-950 border border-white/10 flex items-center justify-center">
-                    <span class="font-display font-bold text-white text-sm tracking-tight">Mitra 5</span>
-                </div>
-                <div data-animate="bento" class="lg:col-start-6 lg:row-start-2 aspect-[16/10] rounded-[3px] bg-blue-800 dark:bg-blue-950 border border-white/10 flex items-center justify-center">
-                    <span class="font-display font-bold text-white text-sm tracking-tight">Mitra 6</span>
+                <div data-animate="bento" class="aspect-[16/10] rounded-[3px] bg-blue-800 dark:bg-blue-950 border border-white/10 flex items-center justify-center">
+                    <span class="font-display font-bold text-white text-sm tracking-wide">SMK</span>
                 </div>
 
-                {{-- Baris 3: 2 card menyebar, kolom 3 dan 5 --}}
-                <div data-animate="bento" class="lg:col-start-3 lg:row-start-3 aspect-[16/10] rounded-[3px] bg-blue-800 dark:bg-blue-950 border border-white/10 flex items-center justify-center">
-                    <span class="font-display font-bold text-white text-sm tracking-tight">Mitra 7</span>
+                <div data-animate="bento" class="aspect-[16/10] rounded-[3px] bg-blue-800 dark:bg-blue-950 border border-white/10 flex items-center justify-center">
+                    <span class="font-display font-bold text-white text-sm tracking-tight">TEFA</span>
                 </div>
-                <div data-animate="bento" class="lg:col-start-5 lg:row-start-3 aspect-[16/10] rounded-[3px] bg-blue-800 dark:bg-blue-950 border border-white/10 flex items-center justify-center">
-                    <span class="font-display font-bold text-white text-sm tracking-tight">Mitra 8</span>
+
+                <div data-animate="bento" class="aspect-[16/10] rounded-[3px] bg-blue-800 dark:bg-blue-950 border border-white/10 flex items-center justify-center">
+                    <span class="font-display font-bold text-white text-sm tracking-tight">Teh Siswa</span>
+                </div>
+
+                <div data-animate="bento" class="aspect-[16/10] rounded-[3px] bg-blue-800 dark:bg-blue-950 border border-white/10 flex items-center justify-center">
+                    <span class="font-display font-bold text-white text-sm tracking-tight">Bengkel</span>
+                </div>
+
+                <div data-animate="bento" class="aspect-[16/10] rounded-[3px] bg-blue-800 dark:bg-blue-950 border border-white/10 flex items-center justify-center">
+                    <span class="font-display font-bold text-white text-sm tracking-tight">Foto Copy</span>
+                </div>
+
+                <div data-animate="bento" class="aspect-[16/10] rounded-[3px] bg-blue-800 dark:bg-blue-950 border border-white/10 flex items-center justify-center">
+                    <span class="font-display font-bold text-white text-sm tracking-tight">Bussiness Center</span>
                 </div>
 
             </div>
@@ -933,7 +933,7 @@
         });
 
         window.addEventListener('resize', function () {
-            if (window.innerWidth >= 640) closeMenu();
+            if (window.innerWidth >= 768) closeMenu();
         });
     })();
 </script>
