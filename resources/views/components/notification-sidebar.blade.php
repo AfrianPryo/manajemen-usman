@@ -50,9 +50,6 @@
                 <span class="font-bold text-sm text-slate-900 dark:text-slate-100">
                     Notifikasi {{ $role === 'master' ? 'System' : 'Unit' }}
                 </span>
-                <span class="text-[10px] bg-rose-50 text-rose-600 font-semibold px-2 py-0.5 rounded-md border border-rose-100 dark:bg-rose-950/50 dark:border-rose-900 dark:text-rose-400">
-                    {{ $badgeText }}
-                </span>
             </div>
 
             <div class="flex items-center gap-1">
