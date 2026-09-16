@@ -10,10 +10,10 @@
         <div class="relative max-w-7xl mx-auto px-6 lg:px-6 h-16 flex items-center justify-between">
             <a href="{{ route('landing') }}" class="flex items-center">
                 {{-- Logo untuk mode terang --}}
-                <img src="{{ asset('images/logo-light.svg') }}" alt="SIMS.Usaha" class="h-6 w-auto block dark:hidden">
+                <img src="{{ asset('images/logo-light.svg') }}" alt="SIMS.Usaha" class="h-6 w-auto block dark:hidden mix-blend-difference">
 
                 {{-- Logo untuk mode gelap --}}
-                <img src="{{ asset('images/logo-dark.svg') }}" alt="SIMS.Usaha" class="h-6  w-auto hidden dark:block">
+                <img src="{{ asset('images/logo-dark.svg') }}" alt="SIMS.Usaha" class="h-6 w-auto hidden dark:block mix-blend-difference">
             </a>
 
             {{-- Nav Links dengan indikator "rolling" ala cantor8 (desktop) --}}
@@ -262,28 +262,52 @@
 
             <div class="mt-32 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
 
-                <div data-animate="bento" class="aspect-[16/10] rounded-[3px] bg-blue-800 dark:bg-blue-950 border border-white/10 flex items-center justify-center">
-                    <span class="font-display font-bold text-white text-sm tracking-wide">SMK</span>
+                <div data-animate="bento" class="aspect-[16/10] rounded-[3px] bg-blue-800 dark:bg-blue-950 border border-white/10 flex items-center justify-center overflow-hidden">
+                    <img 
+                        src="{{ asset('LogoMitra/LogoSMK.png') }}" 
+                        alt="Logo SMK"
+                        class="w-20 h-20 object-contain"
+                    >
                 </div>
 
-                <div data-animate="bento" class="aspect-[16/10] rounded-[3px] bg-blue-800 dark:bg-blue-950 border border-white/10 flex items-center justify-center">
-                    <span class="font-display font-bold text-white text-sm tracking-tight">TEFA</span>
+                <div data-animate="bento" class="aspect-[16/10] rounded-[3px] bg-blue-800 dark:bg-blue-950 border border-white/10 flex items-center justify-center overflow-hidden">
+                    <img 
+                        src="{{ asset('LogoMitra/TEFA.png') }}" 
+                        alt="Logo TEFA"
+                        class="w-20 h-20 object-contain"
+                    >
                 </div>
 
-                <div data-animate="bento" class="aspect-[16/10] rounded-[3px] bg-blue-800 dark:bg-blue-950 border border-white/10 flex items-center justify-center">
-                    <span class="font-display font-bold text-white text-sm tracking-tight">Teh Siswa</span>
+                <div data-animate="bento" class="aspect-[16/10] rounded-[3px] bg-blue-800 dark:bg-blue-950 border border-white/10 flex items-center justify-center overflow-hidden">
+                    <img 
+                        src="{{ asset('LogoMitra/TehSiswa.png') }}" 
+                        alt="Logo Teh Siswa"
+                        class="w-20 h-20 object-contain"
+                    >
                 </div>
 
-                <div data-animate="bento" class="aspect-[16/10] rounded-[3px] bg-blue-800 dark:bg-blue-950 border border-white/10 flex items-center justify-center">
-                    <span class="font-display font-bold text-white text-sm tracking-tight">Bengkel</span>
+                <div data-animate="bento" class="aspect-[16/10] rounded-[3px] bg-blue-800 dark:bg-blue-950 border border-white/10 flex items-center justify-center overflow-hidden">
+                    <img 
+                        src="{{ asset('LogoMitra/ToBengkel.png') }}" 
+                        alt="Logo Bengkel"
+                        class="w-20 h-20 object-contain"
+                    >
                 </div>
 
-                <div data-animate="bento" class="aspect-[16/10] rounded-[3px] bg-blue-800 dark:bg-blue-950 border border-white/10 flex items-center justify-center">
-                    <span class="font-display font-bold text-white text-sm tracking-tight">Foto Copy</span>
+                <div data-animate="bento" class="aspect-[16/10] rounded-[3px] bg-blue-800 dark:bg-blue-950 border border-white/10 flex items-center justify-center overflow-hidden">
+                    <img 
+                        src="{{ asset('LogoMitra/Prnt.png') }}" 
+                        alt="Logo Foto Copy"
+                        class="w-20 h-20 object-contain"
+                    >
                 </div>
 
-                <div data-animate="bento" class="aspect-[16/10] rounded-[3px] bg-blue-800 dark:bg-blue-950 border border-white/10 flex items-center justify-center">
-                    <span class="font-display font-bold text-white text-sm tracking-tight">Bussiness Center</span>
+                <div data-animate="bento" class="aspect-[16/10] rounded-[3px] bg-blue-800 dark:bg-blue-950 border border-white/10 flex items-center justify-center overflow-hidden">
+                    <img 
+                        src="{{ asset('LogoMitra/BC.png') }}" 
+                        alt="Logo Business Center"
+                        class="w-20 h-20 object-contain"
+                    >
                 </div>
 
             </div>
@@ -318,10 +342,10 @@
                     <span class="mt-2.5 h-1.5 w-1.5 shrink-0 bg-slate-950 dark:bg-white blink-dot"></span>
                     <div>
                         <h3 data-reveal-text class="font-display text-2xl lg:text-3xl font-medium tracking-tighter text-blue-950  dark:text-white">
-                            Pencatatan Transaksi
+                            Transaksi &amp; Inventaris Terpadu
                         </h3>
                         <p data-reveal-text class="mt-3 text-sm lg:text-sm font-semibold leading-tight tracking-tight text-blue-950/70 dark:text-white/70">
-                            Setiap transaksi unit usaha tercatat otomatis dengan detail lengkap — waktu, nominal, dan kategori — sehingga arus kas selalu bisa dipantau secara real-time oleh admin unit maupun pusat.
+                            Catat transaksi harian, transaksi berulang, pembelian ke vendor, hingga stok inventaris dalam satu sistem yang saling terhubung — setiap unit usaha, baik ritel maupun jasa, punya alur kerja yang sesuai kebutuhannya.
                         </p>
                     </div>
                 </div>
@@ -330,10 +354,10 @@
                     <span class="mt-2.5 h-1.5 w-1.5 shrink-0 bg-blue-950 dark:bg-white blink-dot"></span>
                     <div>
                         <h3 data-reveal-text class="font-display text-2xl lg:text-3xl font-medium tracking-tighter text-blue-950  dark:text-white">
-                            Laporan Keuangan Konsolidasi
+                            Statistik &amp; Dokumen Resmi Lintas Unit
                         </h3>
                         <p data-reveal-text class="mt-3 text-sm lg:text-sm font-semibold leading-tight tracking-tight text-blue-950/70  dark:text-white/70">
-                            Gabungkan laporan dari seluruh unit usaha ke dalam satu tampilan ringkas. Admin pusat dapat memantau performa keuangan sekolah secara menyeluruh tanpa perlu merekap manual satu per satu.
+                            Pantau performa seluruh unit usaha lewat statistik dan analitik terpusat, lalu terbitkan dokumen resmi maupun ekspor data kapan saja tanpa perlu merekap manual satu per satu.
                         </p>
                     </div>
                 </div>
@@ -345,7 +369,7 @@
                             Multi Admin &amp; Hak Akses
                         </h3>
                         <p data-reveal-text class="mt-3 text-sm lg:text-sm font-semibold leading-tight tracking-tight text-blue-950/70 dark:text-white/70">
-                            Setiap unit usaha bisa dikelola oleh lebih dari satu admin dengan tingkat akses yang dapat diatur, menjaga keamanan data sekaligus memudahkan pembagian tanggung jawab operasional.
+                            Kelola peran Master Admin dan Admin Unit dengan hak akses yang jelas untuk tiap unit usaha, menjaga keamanan data sekaligus memudahkan pembagian tanggung jawab operasional.
                         </p>
                     </div>
                 </div>
@@ -354,10 +378,10 @@
                     <span class="mt-2.5 h-1.5 w-1.5 shrink-0 bg-blue-950 dark:bg-white blink-dot"></span>
                     <div>
                         <h3 data-reveal-text class="font-display text-2xl lg:text-3xl font-medium tracking-tighter text-blue-950 dark:text-white">
-                            Keamanan Data
+                            Audit Log &amp; Aktivitas
                         </h3>
                         <p data-reveal-text class="mt-3 text-sm lg:text-sm font-semibold leading-tight tracking-tight text-blue-950/70 dark:text-white/70">
-                            Seluruh data transaksi dan laporan disimpan dengan enkripsi serta sistem cadangan berkala, memastikan informasi sekolah tetap aman dan mudah dipulihkan kapan pun diperlukan.
+                            Setiap aktivitas dan perubahan data tercatat rapi dalam audit log, sehingga jejak penggunaan sistem tetap terpantau dan informasi sekolah tetap aman.
                         </p>
                     </div>
                 </div>
@@ -440,9 +464,9 @@
                     </div>
 
                     <div class="relative z-10 mt-auto">
-                        <h3 class="font-display font-semibold tracking-tighter text-xl text-white">Buat Akun Admin</h3>
+                        <h3 class="font-display font-semibold tracking-tighter text-xl text-white">Akun Dibuatkan Master Admin</h3>
                         <p class="mt-2 text-xs text-blue-100 leading-tight tracking-tight">
-                            Daftarkan akun admin unit, verifikasi oleh Super Admin, lalu atur profil unit usaha.
+                            Master Admin membuat akun Admin Unit dan kredensial login dikirim otomatis lewat WhatsApp.
                         </p>
                     </div>
                 </div>
@@ -463,15 +487,38 @@
                     </div>
 
                     <div class="relative z-10 mt-auto">
-                        <h3 class="font-display font-semibold tracking-tighter text-xl text-white">Setup Unit Usaha</h3>
+                        <h3 class="font-display font-semibold tracking-tighter text-xl text-white">Login &amp; Ganti Password</h3>
                         <p class="mt-2 text-xs text-blue-100 leading-tight tracking-tight">
-                            Pilih jenis unit usaha, input data produk dan stok, lalu atur kategori keuangan.
+                            Admin login pakai kredensial awal, lalu wajib ganti password sebelum bisa mengakses dashboard.
                         </p>
                     </div>
                 </div>
 
                 {{-- Step 3 --}}
                 <div class="howitworks-card snap-center shrink-0 w-[85vw] sm:w-[300px] h-[75%] lg:h-[65%] rounded-[3px] lg:-translate-y-5 bg-blue-900 dark:bg-blue-950 p-3 relative overflow-hidden flex flex-col">
+                    <div class="relative z-10 flex items-start justify-between">
+                        <span class="px-2.5 py-0.5 rounded-[1px] bg-white/15 text-white text-[10px] font-semibold uppercase tracking-wide">Unit Usaha</span>
+                        <span class="flex h-9 w-9 items-center justify-center rounded-[3px] bg-white">
+                            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="#1e3a8a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M17 7H8M17 7V16"/></svg>
+                        </span>
+                    </div>
+
+                    <div class="relative z-10 flex-1 flex items-center justify-center">
+                        <div class="h-20 w-20 rounded-xl border-2 border-dashed border-white/25 flex items-center justify-center">
+                            <svg class="h-8 w-8 text-white/40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-5-5L5 21"/></svg>
+                        </div>
+                    </div>
+
+                    <div class="relative z-10 mt-auto">
+                        <h3 class="font-display font-semibold tracking-tighter text-xl text-white">Atur Unit Usaha</h3>
+                        <p class="mt-2 text-xs text-blue-100 leading-tight tracking-tight">
+                            Tentukan kategori unit — ritel atau jasa — lalu kelola inventaris atau pesanan layanan sesuai jenisnya.
+                        </p>
+                    </div>
+                </div>
+
+                {{-- Step 4 --}}
+                <div class="howitworks-card snap-center shrink-0 w-[85vw] sm:w-[300px] h-[75%] lg:h-[65%] lg:-translate-y-16 rounded-[3px] bg-blue-900 dark:bg-blue-950 p-3 relative overflow-hidden flex flex-col">
                     <div class="relative z-10 flex items-start justify-between">
                         <span class="px-2.5 py-0.5 rounded-[1px] bg-white/15 text-white text-[10px] font-semibold uppercase tracking-wide">Transaksi</span>
                         <span class="flex h-9 w-9 items-center justify-center rounded-[3px] bg-white">
@@ -486,15 +533,15 @@
                     </div>
 
                     <div class="relative z-10 mt-auto">
-                        <h3 class="font-display font-semibold tracking-tighter text-xl text-white">Catat Transaksi Harian</h3>
+                        <h3 class="font-display font-semibold tracking-tighter text-xl text-white">Catat Transaksi &amp; Pembelian</h3>
                         <p class="mt-2 text-xs text-blue-100 leading-tight tracking-tight">
-                            Pemasukan penjualan, pengeluaran belanja stok, dan setoran ke Bank Sekolah.
+                            Catat transaksi harian, transaksi berulang, dan pembelian ke vendor secara terpusat.
                         </p>
                     </div>
                 </div>
 
-                {{-- Step 4 --}}
-                <div class="howitworks-card snap-center shrink-0 w-[85vw] sm:w-[300px] h-[75%] lg:h-[65%] lg:-translate-y-16 rounded-[3px] bg-blue-900 dark:bg-blue-950 p-3 relative overflow-hidden flex flex-col">
+                {{-- Step 5 --}}
+                <div class="howitworks-card snap-center shrink-0 w-[85vw] sm:w-[300px] h-[75%] lg:h-[65%] lg:translate-y-10 rounded-[3px] bg-blue-900 dark:bg-blue-950 p-3 relative overflow-hidden flex flex-col">
                     <div class="relative z-10 flex items-start justify-between">
                         <span class="px-2.5 py-0.5 rounded-[1px] bg-white/15 text-white text-[10px] font-semibold uppercase tracking-wide">Laporan</span>
                         <span class="flex h-9 w-9 items-center justify-center rounded-[3px] bg-white">
@@ -511,30 +558,7 @@
                     <div class="relative z-10 mt-auto">
                         <h3 class="font-display font-semibold tracking-tighter text-xl text-white">Pantau dan Laporkan</h3>
                         <p class="mt-2 text-xs text-blue-100 leading-tight tracking-tight">
-                            Lihat laporan real-time, rekap keuangan bulanan, dan ekspor ke PDF atau Excel.
-                        </p>
-                    </div>
-                </div>
-
-                {{-- Step 5 --}}
-                <div class="howitworks-card snap-center shrink-0 w-[85vw] sm:w-[300px] h-[75%] lg:h-[65%] lg:translate-y-10 rounded-[3px] bg-blue-900 dark:bg-blue-950 p-3 relative overflow-hidden flex flex-col">
-                    <div class="relative z-10 flex items-start justify-between">
-                        <span class="px-2.5 py-0.5 rounded-[1px] bg-white/15 text-white text-[10px] font-semibold uppercase tracking-wide">Integrasi</span>
-                        <span class="flex h-9 w-9 items-center justify-center rounded-[3px] bg-white">
-                            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="#1e3a8a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M17 7H8M17 7V16"/></svg>
-                        </span>
-                    </div>
-
-                    <div class="relative z-10 flex-1 flex items-center justify-center">
-                        <div class="h-20 w-20 rounded-xl border-2 border-dashed border-white/25 flex items-center justify-center">
-                            <svg class="h-8 w-8 text-white/40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-5-5L5 21"/></svg>
-                        </div>
-                    </div>
-
-                    <div class="relative z-10 mt-auto">
-                        <h3 class="font-display font-semibold tracking-tighter text-xl text-white">Integrasi Bank Sekolah</h3>
-                        <p class="mt-2 text-xs text-blue-100 leading-tight tracking-tight">
-                            Setoran unit usaha tersinkron otomatis ke tabungan siswa di Bank Sekolah.
+                            Lihat statistik unit secara real-time, terbitkan dokumen resmi, lalu ekspor data kapan saja.
                         </p>
                     </div>
                 </div>
@@ -572,9 +596,8 @@
 
             {{-- Kiri: Gambar (60%) --}}
             <div class="relative w-full lg:w-[60%] h-72 lg:h-[100vh] bg-slate-800 flex-shrink-0">
-                {{-- Ganti src dengan gambar asli nanti --}}
                 <img
-                    src="https://placehold.co/1200x900/1e293b/475569?text=Image"
+                    src="{{ asset('images/images (1).jpg') }}"
                     alt="About"
                     class="absolute inset-0 w-full h-full object-cover"
                 >
@@ -688,7 +711,7 @@
                         <div class="faq-panel grid grid-rows-[0fr] transition-[grid-template-rows] duration-600 ease-out">
                             <div class="overflow-hidden">
                                 <p class="pb-6 text-sm lg:text-sm tracking-tight text-blue-900/70 dark:text-slate-400 max-w-2xl">
-                                    Admin pusat dapat menambahkan unit usaha baru melalui menu Pengaturan &gt; Unit Usaha, lalu mengisi data dasar dan menetapkan admin penanggung jawabnya.
+                                    Master Admin dapat menambahkan unit usaha baru melalui menu Master Management &gt; Unit Usaha, mengisi data dasar beserta kategorinya (ritel atau jasa), lalu membuat akun Admin Unit penanggung jawabnya.
                                 </p>
                             </div>
                         </div>
@@ -714,7 +737,7 @@
                         <div class="faq-panel grid grid-rows-[0fr] transition-[grid-template-rows] duration-600 ease-out">
                             <div class="overflow-hidden">
                                 <p class="pb-6 text-sm lg:text-sm tracking-tight text-blue-900/70 dark:text-slate-400 max-w-2xl">
-                                    Bisa. Sistem menyediakan laporan konsolidasi yang menggabungkan seluruh transaksi dari setiap unit usaha secara otomatis dan real-time.
+                                    Bisa. Master Admin punya menu Statistik Usaha dan Dokumen Resmi lintas unit yang merangkum data dari seluruh unit usaha, selain bisa diekspor per unit lewat menu Export Data.
                                 </p>
                             </div>
                         </div>
@@ -740,7 +763,7 @@
                         <div class="faq-panel grid grid-rows-[0fr] transition-[grid-template-rows] duration-600 ease-out">
                             <div class="overflow-hidden">
                                 <p class="pb-6 text-sm lg:text-sm tracking-tight text-blue-900/70 dark:text-slate-400 max-w-2xl">
-                                    Tidak ada batasan jumlah admin. Setiap unit usaha bisa memiliki lebih dari satu admin dengan hak akses yang dapat diatur sesuai kebutuhan.
+                                    Tidak ada batasan jumlah admin. Satu unit usaha bisa memiliki lebih dari satu Admin Unit, dan seluruh akunnya dibuat serta dikelola oleh Master Admin.
                                 </p>
                             </div>
                         </div>
@@ -766,7 +789,7 @@
                         <div class="faq-panel grid grid-rows-[0fr] transition-[grid-template-rows] duration-600 ease-out">
                             <div class="overflow-hidden">
                                 <p class="pb-6 text-sm lg:text-sm tracking-tight text-blue-900/70  dark:text-slate-400 max-w-2xl">
-                                    Ya. Setiap data disimpan dengan enkripsi dan sistem cadangan (backup) berkala untuk mencegah kehilangan data.
+                                    Ya. Setiap akun hanya bisa aktif di satu sesi login — login di perangkat lain otomatis mengakhiri sesi sebelumnya — dan seluruh aktivitas serta perubahan data tercatat dalam Audit Log yang bisa ditelusuri kapan saja.
                                 </p>
                             </div>
                         </div>
@@ -784,7 +807,7 @@
             <div class="grid grid-cols-1 lg:grid-cols-[1fr_1fr] gap-12 lg:gap-28 pb-40">
 
                 {{-- Kiri: Heading + Subscribe Form --}}
-                <div>
+                <div id="kontak">
                     <h2 class="font-display text-3xl font-medium leading-none tracking-tighter text-white">
                         Hubungi <br class="hidden sm:block" />
                         Admin Pusat SIMS
@@ -815,10 +838,10 @@
                                 Sistem
                             </p>
                             <ul class="space-y-1 text-[12px] font-medium tracking-tighter">
-                                <li><a href="{{ route('landing') }}" class="text-white/90 hover:text-white transition-colors">Beranda</a></li>
+                                <li><a href="#home" class="text-white/90 hover:text-white transition-colors">Beranda</a></li>
                                 <li><a href="#tentang" class="text-white/90 hover:text-white transition-colors">Tentang</a></li>
                                 <li><a href="#cara-kerja" class="text-white/90 hover:text-white transition-colors">Cara Kerja</a></li>
-                                <li><a href="/login" class="text-white/90 hover:text-white transition-colors">Buka Dashboard</a></li>
+                                <li><a href="{{ route('login') }}" class="text-white/90 hover:text-white transition-colors">Buka Dashboard</a></li>
                                 <li><a href="#faq" class="text-white/90 hover:text-white transition-colors">FAQ</a></li>
                             </ul>
                         </div>
@@ -828,11 +851,11 @@
                                 Fitur
                             </p>
                             <ul class="space-y-1 text-[12px] font-medium tracking-tighter">
-                                <li><a href="#" class="text-white/90 hover:text-white transition-colors">Pencatatan Transaksi</a></li>
-                                <li><a href="#" class="text-white/90 hover:text-white transition-colors">Laporan Keuangan</a></li>
-                                <li><a href="#" class="text-white/90 hover:text-white transition-colors">Manajemen Unit Usaha</a></li>
-                                <li><a href="#" class="text-white/90 hover:text-white transition-colors">Multi Admin</a></li>
-                                <li><a href="#" class="text-white/90 hover:text-white transition-colors">Keamanan Data</a></li>
+                                <li><a href="#fitur-transaksi" class="text-white/90 hover:text-white transition-colors">Pencatatan Transaksi</a></li>
+                                <li><a href="#fitur-laporan" class="text-white/90 hover:text-white transition-colors">Laporan Keuangan</a></li>
+                                <li><a href="#fitur" class="text-white/90 hover:text-white transition-colors">Manajemen Unit Usaha</a></li>
+                                <li><a href="#fitur-multiadmin" class="text-white/90 hover:text-white transition-colors">Multi Admin</a></li>
+                                <li><a href="#fitur-keamanan" class="text-white/90 hover:text-white transition-colors">Keamanan Data</a></li>
                             </ul>
                         </div>
                     </div>
@@ -845,7 +868,7 @@
                             </p>
                             <ul class="space-y-1 text-[12px] font-medium tracking-tighter">
                                 <li><a href="#" class="text-white/90 hover:text-white transition-colors">Panduan Penggunaan</a></li>
-                                <li><a href="#" class="text-white/90 hover:text-white transition-colors">Hubungi Admin</a></li>
+                                <li><a href="#kontak" class="text-white/90 hover:text-white transition-colors">Hubungi Admin</a></li>
                             </ul>
                         </div>
                     </div>
