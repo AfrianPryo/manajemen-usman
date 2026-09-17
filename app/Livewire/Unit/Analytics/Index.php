@@ -13,38 +13,19 @@ use Livewire\Attributes\Title;
 use Livewire\Component;
 
 /**
- * Modul "Statistik Usaha" versi Unit Admin -- pasangan satu-unit dari
- * App\Livewire\Master\Analytics\Index. Ditulis berdiri sendiri (bukan
- * extends komponen Master) memakai konvensi yang sama dengan modul unit
- * lain: trait ScopedToUnit untuk penguncian unit_id (lihat komentar di
- * ScopedToUnit -- WAJIB dipakai, bukan Auth::user()->unit_id langsung,
- * supaya tetap benar saat Master Admin memantau unit ini), properti filter
- * periode & method applyPeriodFilter() disalin persis dari versi Master,
- * dan struktur render() (kartu ringkasan -> grafik -> tabel) mengikuti
- * urutan section yang sama persis dengan resources/views/livewire/master/
- * analytics/index.blade.php.
+ * Modul "Statistik Usaha" versi Unit Admin.
  *
- * PERBEDAAN DENGAN VERSI MASTER (karena halaman ini memang dikunci ke SATU
- * unit usaha, bukan lintas unit):
- *   - Tidak ada properti/dropdown $selectedUnit maupun daftar $unitsList --
- *     seluruh query sudah otomatis dikunci ke currentUnitId().
- *   - Widget "Kontribusi Omzet per Unit Usaha" (donut + peringkat) diganti
- *     jadi "Kontribusi Pendapatan per Kategori", dan tabel "Performa
- *     Seluruh Unit Usaha" diganti jadi "Performa per Kategori Transaksi" --
- *     keduanya memakai App\Models\FinanceCategory (kolom finance_category_id
- *     pada finance_transactions, lihat juga pola JOIN yang sama dipakai
- *     App\Exports\Finance\CategoryBreakdownSheetExport) sebagai pengganti
- *     dimensi "per unit" yang sudah tidak relevan ketika halamannya sendiri
- *     sudah dikunci ke satu unit.
- *   - Query total pengeluaran TIDAK melalui model Expense terpisah seperti
- *     versi Master (class_exists(Expense::class) selalu false di codebase
- *     ini karena model tsb tidak pernah dibuat -- cabang itu jadi dead code
- *     di versi Master), jadi di sini langsung memakai
- *     FinanceTransaction::where('type', 'expense') supaya konsisten dengan
- *     apa yang benar-benar dieksekusi oleh versi Master saat ini.
- *   - Query $topProducts pada versi Master dihitung tapi TIDAK PERNAH
- *     dirender di Blade-nya (dead code); tidak ikut disalin ke sini supaya
- *     tidak menambah query yang tidak dipakai.
+ * Perbaikan penting:
+ * - Cache hanya menyimpan data scalar/array yang aman untuk Livewire.
+ * - Collection Eloquent $topCategories TIDAK lagi disimpan di cache.
+ *   Data tersebut selalu diambil dari database pada setiap render.
+ * - Cache key diberi versi agar cache lama tidak pernah dipakai lagi.
+ *
+ * Ini mencegah error seperti:
+ *   Attempt to read property "total_income" on string
+ *
+ * karena Blade memang mengharapkan setiap item $topCategories berupa
+ * object/model yang mempunyai property total_income, total_expense, dst.
  */
 #[Layout('components.layouts.unit', [
     'category' => 'Unit Usaha',
@@ -55,11 +36,13 @@ class Index extends Component
 {
     use ScopedToUnit;
 
-    // Sama seperti versi Master (lihat komentar di
-    // App\Livewire\Master\Analytics\Index): halaman ini dirender ulang di
-    // setiap interaksi Livewire dan sebelumnya menghitung ulang semua
-    // agregat dari nol setiap kali, termasuk N+1 per kategori transaksi.
-    // Hasil komputasi di-cache per kombinasi filter + unit selama TTL ini.
+    /**
+     * Naikkan angka ini jika struktur DATA YANG DI-CACHE berubah.
+     *
+     * v2 -> v3:
+     * topCategories dikeluarkan dari cache karena berupa Eloquent Collection.
+     */
+    private const CACHE_VERSION = 3;
     private const CACHE_TTL_SECONDS = 120;
 
     // Filter Rentang Waktu Ringkasan Metrik Utama
@@ -129,18 +112,22 @@ class Index extends Component
                 $this->startDate = Carbon::now()->subMonth()->startOfMonth()->toDateString();
                 $this->endDate   = Carbon::now()->subMonth()->endOfMonth()->toDateString();
                 break;
+
             case 'this_year':
                 $this->startDate = Carbon::now()->startOfYear()->toDateString();
                 $this->endDate   = Carbon::now()->endOfYear()->toDateString();
                 break;
+
             case 'custom':
                 if (!$this->startDate) {
                     $this->startDate = Carbon::now()->startOfMonth()->toDateString();
                 }
+
                 if (!$this->endDate) {
                     $this->endDate = Carbon::now()->toDateString();
                 }
                 break;
+
             case 'this_month':
             default:
                 $this->startDate = Carbon::now()->startOfMonth()->toDateString();
@@ -154,9 +141,18 @@ class Index extends Component
         $unitId = $this->currentUnitId();
         $unit   = $this->currentUnit();
 
-        $data = Cache::remember($this->analyticsCacheKey($unitId), self::CACHE_TTL_SECONDS, function () use ($unitId) {
-            return $this->computeAnalyticsData($unitId);
-        });
+        /*
+         * Hanya data scalar/array yang masuk cache.
+         *
+         * JANGAN masukkan Eloquent Collection/model ke dalam cache.
+         */
+        $data = Cache::remember(
+            $this->analyticsCacheKey($unitId),
+            self::CACHE_TTL_SECONDS,
+            function () use ($unitId) {
+                return $this->computeAnalyticsData($unitId);
+            }
+        );
 
         [
             'totalRevenue'        => $totalRevenue,
@@ -167,10 +163,27 @@ class Index extends Component
             'revenueChartData'    => $this->revenueChartData,
             'expenseChartData'    => $this->expenseChartData,
             'revenueContribution' => $revenueContribution,
-            'topCategories'       => $topCategories,
         ] = $data;
 
-        // Kirim event pembaruan data grafik ke AlpineJS
+        /*
+         * IMPORTANT:
+         * topCategories sengaja DIQUERY DI LUAR CACHE.
+         *
+         * Blade mengakses:
+         *   $item->name
+         *   $item->total_tx
+         *   $item->total_income
+         *   $item->total_expense
+         *   $item->total_profit
+         *
+         * Karena itu hasilnya harus tetap berupa Collection berisi
+         * Eloquent model/objects, bukan string atau data cache lama.
+         */
+        [$cStart, $cEnd] = $this->categoryDateRange();
+
+        $topCategories = $this->computeTopCategories($unitId, $cStart, $cEnd);
+
+        // Kirim event pembaruan data grafik ke AlpineJS.
         $this->dispatch(
             'update-cashflow-chart',
             labels: $this->chartLabels,
@@ -190,75 +203,67 @@ class Index extends Component
     }
 
     /**
-     * Key cache unik untuk kombinasi unit + filter yang sedang aktif.
+     * Key cache unik untuk kombinasi unit + filter aktif.
+     *
+     * Prefix version membuat cache lama tidak ikut terbaca meskipun
+     * php artisan cache:clear belum dijalankan.
      */
     private function analyticsCacheKey(int $unitId): string
     {
         return implode(':', [
-            'analytics-unit',
+            'analytics-unit-v' . self::CACHE_VERSION,
             $unitId,
             $this->startDate,
             $this->endDate,
             $this->cashflowPeriod,
             $this->cfStartDate ?: '-',
             $this->cfEndDate ?: '-',
-            $this->categoryPeriod,
-            $this->categoryStartDate ?: '-',
-            $this->categoryEndDate ?: '-',
         ]);
     }
 
     /**
+     * Menghasilkan hanya data yang aman untuk disimpan di cache.
+     *
      * @return array{
-     *   totalRevenue: float, totalExpense: float, totalTransactions: int,
-     *   netProfit: float, chartLabels: array, revenueChartData: array,
-     *   expenseChartData: array, revenueContribution: array,
-     *   topCategories: \Illuminate\Support\Collection
+     *   totalRevenue: float|int,
+     *   totalExpense: float|int,
+     *   totalTransactions: int,
+     *   netProfit: float|int,
+     *   chartLabels: array,
+     *   revenueChartData: array,
+     *   expenseChartData: array,
+     *   revenueContribution: array
      * }
      */
     private function computeAnalyticsData(int $unitId): array
     {
-        // 1. Rentang Tanggal Filter Umum (Ringkasan Metrik)
+        // 1. Rentang tanggal filter umum.
         $start = Carbon::parse($this->startDate)->startOfDay();
         $end   = Carbon::parse($this->endDate)->endOfDay();
 
-        // --- Transaksi Pendapatan ---
+        // Pendapatan.
         $incomeQuery = FinanceTransaction::query()
             ->where('unit_id', $unitId)
             ->where('type', 'income')
             ->where('status', 'completed')
             ->whereBetween('transaction_date', [$start, $end]);
 
-        $totalRevenue      = (clone $incomeQuery)->sum('amount') ?? 0;
-        $totalTransactions = (clone $incomeQuery)->count();
+        $totalRevenue      = (float) ((clone $incomeQuery)->sum('amount') ?? 0);
+        $totalTransactions = (int) (clone $incomeQuery)->count();
 
-        // --- Pengeluaran ---
-        $totalExpense = FinanceTransaction::query()
+        // Pengeluaran.
+        $totalExpense = (float) (FinanceTransaction::query()
             ->where('unit_id', $unitId)
             ->where('type', 'expense')
             ->where('status', 'completed')
             ->whereBetween('transaction_date', [$start, $end])
-            ->sum('amount') ?? 0;
+            ->sum('amount') ?? 0);
 
-        // --- Metrik Finansial ---
         $netProfit = $totalRevenue - $totalExpense;
 
-        // 2. Rentang Tanggal Khusus Grafik Arus Kas
-        $cfStart = match ($this->cashflowPeriod) {
-            'this_week'    => Carbon::now()->startOfWeek(),
-            'last_30_days' => Carbon::now()->subDays(30)->startOfDay(),
-            'this_month'   => Carbon::now()->startOfMonth(),
-            'this_year'    => Carbon::now()->startOfYear(),
-            'custom'       => $this->cfStartDate ? Carbon::parse($this->cfStartDate)->startOfDay() : Carbon::now()->startOfMonth(),
-            default        => Carbon::now()->startOfMonth(),
-        };
+        // 2. Rentang tanggal grafik arus kas.
+        [$cfStart, $cfEnd] = $this->cashflowDateRange();
 
-        $cfEnd = match ($this->cashflowPeriod) {
-            'custom' => $this->cfEndDate ? Carbon::parse($this->cfEndDate)->endOfDay() : Carbon::now()->endOfDay(),
-            default  => Carbon::now()->endOfDay(),
-        };
-
-        // --- Data Grafik Arus Kas (Harian) ---
         $dailyRevenues = FinanceTransaction::query()
             ->where('unit_id', $unitId)
             ->where('type', 'income')
@@ -282,29 +287,40 @@ class Index extends Component
         $expenseChartData = [];
 
         $period = CarbonPeriod::create($cfStart, $cfEnd);
+
         foreach ($period as $date) {
-            $formattedDate       = $date->format('Y-m-d');
+            $formattedDate = $date->format('Y-m-d');
+
             $chartLabels[]       = $date->format('d M');
-            $revenueChartData[] = (float) ($dailyRevenues[$formattedDate] ?? 0);
-            $expenseChartData[] = (float) ($dailyExpenses[$formattedDate] ?? 0);
+            $revenueChartData[]  = (float) ($dailyRevenues[$formattedDate] ?? 0);
+            $expenseChartData[]  = (float) ($dailyExpenses[$formattedDate] ?? 0);
         }
 
-        // --- Data Kontribusi Pendapatan per Kategori Transaksi ---
-        // Pengganti "kontribusi per unit" milik versi Master, karena
-        // halaman ini sudah dikunci ke satu unit -- dimensi yang relevan
-        // untuk dipecah di sini adalah kategori transaksi, bukan unit.
+        /*
+         * 3. Kontribusi pendapatan per kategori.
+         *
+         * Hasil query hanya dipakai untuk membuat array scalar.
+         * Collection ini tidak ikut dikembalikan dari method cache.
+         */
         $categoryContributions = FinanceTransaction::query()
-            ->join('finance_categories', 'finance_transactions.finance_category_id', '=', 'finance_categories.id')
+            ->join(
+                'finance_categories',
+                'finance_transactions.finance_category_id',
+                '=',
+                'finance_categories.id'
+            )
             ->where('finance_transactions.unit_id', $unitId)
             ->where('finance_transactions.type', 'income')
             ->where('finance_transactions.status', 'completed')
             ->whereBetween('finance_transactions.transaction_date', [$start, $end])
-            ->selectRaw('finance_categories.name, SUM(finance_transactions.amount) as total_income')
+            ->selectRaw(
+                'finance_categories.name, SUM(finance_transactions.amount) as total_income'
+            )
             ->groupBy('finance_categories.id', 'finance_categories.name')
             ->orderByDesc('total_income')
             ->get();
 
-        $grandTotalContribution = $categoryContributions->sum('total_income');
+        $grandTotalContribution = (float) $categoryContributions->sum('total_income');
 
         $revenueContribution = [
             'labels'      => [],
@@ -314,29 +330,13 @@ class Index extends Component
 
         foreach ($categoryContributions as $contrib) {
             $val = (float) $contrib->total_income;
-            $revenueContribution['labels'][]      = $contrib->name;
-            $revenueContribution['series'][]      = $val;
+
+            $revenueContribution['labels'][] = (string) $contrib->name;
+            $revenueContribution['series'][] = $val;
             $revenueContribution['percentages'][] = $grandTotalContribution > 0
                 ? round(($val / $grandTotalContribution) * 100, 1)
                 : 0;
         }
-
-        // 3. Rentang Tanggal Khusus Tabel Performa per Kategori Transaksi
-        $cStart = match ($this->categoryPeriod) {
-            'this_week'    => Carbon::now()->startOfWeek(),
-            'last_30_days' => Carbon::now()->subDays(30)->startOfDay(),
-            'this_month'   => Carbon::now()->startOfMonth(),
-            'this_year'    => Carbon::now()->startOfYear(),
-            'custom'       => $this->categoryStartDate ? Carbon::parse($this->categoryStartDate)->startOfDay() : Carbon::now()->startOfMonth(),
-            default        => Carbon::now()->startOfMonth(),
-        };
-
-        $cEnd = match ($this->categoryPeriod) {
-            'custom' => $this->categoryEndDate ? Carbon::parse($this->categoryEndDate)->endOfDay() : Carbon::now()->endOfDay(),
-            default  => Carbon::now()->endOfDay(),
-        };
-
-        $topCategories = $this->computeTopCategories($unitId, $cStart, $cEnd);
 
         return [
             'totalRevenue'        => $totalRevenue,
@@ -347,18 +347,71 @@ class Index extends Component
             'revenueChartData'    => $revenueChartData,
             'expenseChartData'    => $expenseChartData,
             'revenueContribution' => $revenueContribution,
-            'topCategories'       => $topCategories,
         ];
     }
 
     /**
-     * Performa Seluruh Kategori Transaksi Milik Unit Ini.
+     * Rentang tanggal untuk grafik arus kas.
      *
-     * SEBELUMNYA: FinanceCategory::all()->map() menjalankan beberapa query
-     * TERPISAH per kategori (income + expense, masing-masing sum & count).
-     * Sekarang cukup 2 query GROUP BY total (terlepas dari jumlah kategori),
-     * hasilnya di-index per finance_category_id lalu ditempel ke masing-
-     * masing kategori di memori -- angka yang dihasilkan identik.
+     * @return array{0: Carbon, 1: Carbon}
+     */
+    private function cashflowDateRange(): array
+    {
+        $cfStart = match ($this->cashflowPeriod) {
+            'this_week'    => Carbon::now()->startOfWeek(),
+            'last_30_days' => Carbon::now()->subDays(30)->startOfDay(),
+            'this_month'   => Carbon::now()->startOfMonth(),
+            'this_year'    => Carbon::now()->startOfYear(),
+            'custom'       => $this->cfStartDate
+                ? Carbon::parse($this->cfStartDate)->startOfDay()
+                : Carbon::now()->startOfMonth(),
+            default        => Carbon::now()->startOfMonth(),
+        };
+
+        $cfEnd = match ($this->cashflowPeriod) {
+            'custom' => $this->cfEndDate
+                ? Carbon::parse($this->cfEndDate)->endOfDay()
+                : Carbon::now()->endOfDay(),
+            default => Carbon::now()->endOfDay(),
+        };
+
+        return [$cfStart, $cfEnd];
+    }
+
+    /**
+     * Rentang tanggal tabel performa kategori.
+     *
+     * @return array{0: Carbon, 1: Carbon}
+     */
+    private function categoryDateRange(): array
+    {
+        $cStart = match ($this->categoryPeriod) {
+            'this_week'    => Carbon::now()->startOfWeek(),
+            'last_30_days' => Carbon::now()->subDays(30)->startOfDay(),
+            'this_month'   => Carbon::now()->startOfMonth(),
+            'this_year'    => Carbon::now()->startOfYear(),
+            'custom'       => $this->categoryStartDate
+                ? Carbon::parse($this->categoryStartDate)->startOfDay()
+                : Carbon::now()->startOfMonth(),
+            default        => Carbon::now()->startOfMonth(),
+        };
+
+        $cEnd = match ($this->categoryPeriod) {
+            'custom' => $this->categoryEndDate
+                ? Carbon::parse($this->categoryEndDate)->endOfDay()
+                : Carbon::now()->endOfDay(),
+            default => Carbon::now()->endOfDay(),
+        };
+
+        return [$cStart, $cEnd];
+    }
+
+    /**
+     * Performa seluruh kategori transaksi milik unit ini.
+     *
+     * Method ini sengaja TIDAK dipanggil dari callback Cache::remember().
+     * Hasil akhirnya berupa Eloquent Collection sehingga Blade dapat
+     * menggunakan property access ($item->total_income, dll).
      */
     private function computeTopCategories(int $unitId, Carbon $cStart, Carbon $cEnd)
     {
@@ -367,7 +420,9 @@ class Index extends Component
             ->where('type', 'income')
             ->where('status', 'completed')
             ->whereBetween('transaction_date', [$cStart, $cEnd])
-            ->selectRaw('finance_category_id, SUM(amount) as total_income, COUNT(*) as total_tx')
+            ->selectRaw(
+                'finance_category_id, SUM(amount) as total_income, COUNT(*) as total_tx'
+            )
             ->groupBy('finance_category_id')
             ->get()
             ->keyBy('finance_category_id');
@@ -377,7 +432,9 @@ class Index extends Component
             ->where('type', 'expense')
             ->where('status', 'completed')
             ->whereBetween('transaction_date', [$cStart, $cEnd])
-            ->selectRaw('finance_category_id, SUM(amount) as total_expense, COUNT(*) as total_tx')
+            ->selectRaw(
+                'finance_category_id, SUM(amount) as total_expense, COUNT(*) as total_tx'
+            )
             ->groupBy('finance_category_id')
             ->get()
             ->keyBy('finance_category_id');
@@ -387,16 +444,16 @@ class Index extends Component
             ->orderBy('name', 'asc')
             ->get()
             ->map(function ($category) use ($incomeByCategory, $expenseByCategory) {
-                $totalIncome = (float) ($incomeByCategory[$category->id]->total_income ?? 0);
-                $totalExpense = (float) ($expenseByCategory[$category->id]->total_expense ?? 0);
+                $incomeRow = $incomeByCategory->get($category->id);
+                $expenseRow = $expenseByCategory->get($category->id);
 
-                // Kategori bertipe 'expense' tidak akan punya transaksi
-                // 'income' (begitu pula sebaliknya) -- tapi tetap dihitung
-                // dari kedua sisi supaya baris tabel tetap akurat kalau
-                // suatu saat data tercampur.
-                $totalTx = (int) ($incomeByCategory[$category->id]->total_tx ?? 0)
-                    + (int) ($expenseByCategory[$category->id]->total_tx ?? 0);
+                $totalIncome = (float) ($incomeRow->total_income ?? 0);
+                $totalExpense = (float) ($expenseRow->total_expense ?? 0);
 
+                $totalTx = (int) ($incomeRow->total_tx ?? 0)
+                    + (int) ($expenseRow->total_tx ?? 0);
+
+                // Tetap Eloquent model, bukan array/string.
                 $category->total_tx      = $totalTx;
                 $category->total_income  = $totalIncome;
                 $category->total_expense = $totalExpense;

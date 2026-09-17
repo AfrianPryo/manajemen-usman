@@ -266,7 +266,7 @@
                     <img 
                         src="{{ asset('LogoMitra/LogoSMK.png') }}" 
                         alt="Logo SMK"
-                        class="w-20 h-20 object-contain"
+                        class="w-20 h-20 object-contain opacity-50 hover:opacity-100 transition-opacity duration-300"
                     >
                 </div>
 
@@ -274,7 +274,7 @@
                     <img 
                         src="{{ asset('LogoMitra/TEFA.png') }}" 
                         alt="Logo TEFA"
-                        class="w-20 h-20 object-contain"
+                        class="w-20 h-20 object-contain opacity-50 hover:opacity-100 transition-opacity duration-300"
                     >
                 </div>
 
@@ -282,7 +282,7 @@
                     <img 
                         src="{{ asset('LogoMitra/TehSiswa.png') }}" 
                         alt="Logo Teh Siswa"
-                        class="w-20 h-20 object-contain"
+                        class="w-20 h-20 object-contain opacity-50 hover:opacity-100 transition-opacity duration-300"
                     >
                 </div>
 
@@ -290,7 +290,7 @@
                     <img 
                         src="{{ asset('LogoMitra/ToBengkel.png') }}" 
                         alt="Logo Bengkel"
-                        class="w-20 h-20 object-contain"
+                        class="w-20 h-20 object-contain opacity-50 hover:opacity-100 transition-opacity duration-300"
                     >
                 </div>
 
@@ -298,7 +298,7 @@
                     <img 
                         src="{{ asset('LogoMitra/Prnt.png') }}" 
                         alt="Logo Foto Copy"
-                        class="w-20 h-20 object-contain"
+                        class="w-20 h-20 object-contain opacity-50 hover:opacity-100 transition-opacity duration-300"
                     >
                 </div>
 
@@ -306,7 +306,7 @@
                     <img 
                         src="{{ asset('LogoMitra/BC.png') }}" 
                         alt="Logo Business Center"
-                        class="w-20 h-20 object-contain"
+                        class="w-20 h-20 object-contain opacity-50 hover:opacity-100 transition-opacity duration-300"
                     >
                 </div>
 
@@ -449,138 +449,225 @@
             <div id="horizontal-track" class="flex h-full items-center gap-18 px-6 lg:px-8 snap-x snap-mandatory will-change-transform">
 
                 {{-- Step 1 --}}
-                <div class="howitworks-card snap-center shrink-0 w-[85vw] sm:w-[340px] h-[75%] lg:h-[65%] lg:-translate-y-20 rounded-[3px] bg-blue-900 dark:bg-blue-950 p-3 relative overflow-hidden flex flex-col">
+                <div class="howitworks-card snap-center shrink-0 w-[85vw] sm:w-[340px] h-[75%] lg:h-[65%] lg:-translate-y-20 rounded-[3px] bg-blue-800 dark:bg-blue-950 p-5 relative overflow-hidden flex flex-col">
+
+                    {{-- Header --}}
                     <div class="relative z-10 flex items-start justify-between">
-                        <span class="px-2.5 py-0.5 rounded-[1px] bg-white/15 text-white text-[10px] font-semibold uppercase tracking-wide">Akun</span>
-                        <span class="flex h-9 w-9 items-center justify-center rounded-[3px] bg-white">
-                            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="#1e3a8a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M17 7H8M17 7V16"/></svg>
+                        <span class="px-2.5 py-1 rounded-[2px] bg-white/10 text-white text-[10px] font-semibold uppercase tracking-wide">
+                            AKUN
+                        </span>
+
+                        <span class="flex h-12 w-12 items-center justify-center rounded-[4px] bg-white">
+                            <svg class="h-5 w-5 text-blue-800" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M18 7.5a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0ZM5.25 20.25a6.75 6.75 0 0 1 13.5 0M19.5 10.5v6m-3-3h6" />
+                            </svg>
                         </span>
                     </div>
 
-                    <div class="relative z-10 flex-1 flex items-center justify-center">
-                        <div class="h-20 w-20 rounded-xl border-2 border-dashed border-white/25 flex items-center justify-center">
-                            <svg class="h-8 w-8 text-blue-950/40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-5-5L5 21"/></svg>
-                        </div>
+                    {{-- Visual --}}
+                    <div class="absolute inset-x-0 top-[18%] bottom-[25%] flex items-center justify-center pointer-events-none">
+                        <svg class="w-[75%] h-auto text-white/35" viewBox="0 0 240 180" fill="none">
+                            <rect x="48" y="30" width="144" height="105" rx="3" stroke="currentColor" stroke-width="1.5"/>
+                            <circle cx="120" cy="67" r="18" stroke="currentColor" stroke-width="1.5"/>
+                            <path d="M82 119c8-22 20-32 38-32s30 10 38 32" stroke="currentColor" stroke-width="1.5"/>
+                            <path d="M18 55h30M18 70h20M192 55h30M202 70h20" stroke="currentColor" stroke-width="1.5"/>
+                        </svg>
                     </div>
 
-                    <div class="relative z-10 mt-auto">
-                        <h3 class="font-display font-semibold tracking-tighter text-xl text-white">Akun Dibuatkan Master Admin</h3>
-                        <p class="mt-2 text-xs text-blue-100 leading-tight tracking-tight">
+                    {{-- Content --}}
+                    <div class="relative z-10 mt-auto max-w-[95%]">
+                        <h3 class="font-display font-medium tracking-tight text-[22px] leading-none text-white">
+                            Akun Dibuatkan Master Admin
+                        </h3>
+
+                        <p class="mt-4 text-[13px] text-white/80 leading-[1.35] tracking-tight">
                             Master Admin membuat akun Admin Unit dan kredensial login dikirim otomatis lewat WhatsApp.
                         </p>
                     </div>
                 </div>
 
+
                 {{-- Step 2 --}}
-                <div class="howitworks-card snap-center shrink-0 w-[85vw] sm:w-[340px] h-[75%] lg:h-[65%] lg:translate-y-20 rounded-[3px] bg-blue-900 dark:bg-blue-950 p-3 relative overflow-hidden flex flex-col">
+                <div class="howitworks-card snap-center shrink-0 w-[85vw] sm:w-[340px] h-[75%] lg:h-[65%] lg:translate-y-20 rounded-[3px] bg-blue-800 dark:bg-blue-950 p-5 relative overflow-hidden flex flex-col">
+
                     <div class="relative z-10 flex items-start justify-between">
-                        <span class="px-2.5 py-0.5 rounded-[1px] bg-white/15 text-white text-[10px] font-semibold uppercase tracking-wide">Setup</span>
-                        <span class="flex h-9 w-9 items-center justify-center rounded-[3px] bg-white">
-                            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="#1e3a8a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M17 7H8M17 7V16"/></svg>
+                        <span class="px-2.5 py-1 rounded-[2px] bg-white/10 text-white text-[10px] font-semibold uppercase tracking-wide">
+                            SETUP
+                        </span>
+
+                        <span class="flex h-12 w-12 items-center justify-center rounded-[4px] bg-white">
+                            <svg class="h-5 w-5 text-blue-800" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M16.5 10.5V8.25a4.5 4.5 0 0 0-9 0v2.25m-.75 0h10.5A1.5 1.5 0 0 1 18.75 12v6A1.5 1.5 0 0 1 17.25 19.5H6.75A1.5 1.5 0 0 1 5.25 18v-6a1.5 1.5 0 0 1 1.5-1.5Z" />
+                            </svg>
                         </span>
                     </div>
 
-                    <div class="relative z-10 flex-1 flex items-center justify-center">
-                        <div class="h-20 w-20 rounded-xl border-2 border-dashed border-white/25 flex items-center justify-center">
-                            <svg class="h-8 w-8 text-white/40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-5-5L5 21"/></svg>
-                        </div>
+                    <div class="absolute inset-x-0 top-[18%] bottom-[25%] flex items-center justify-center pointer-events-none">
+                        <svg class="w-[75%] h-auto text-white/35" viewBox="0 0 240 180" fill="none">
+                            <rect x="72" y="35" width="96" height="110" rx="4" stroke="currentColor" stroke-width="1.5"/>
+                            <rect x="94" y="52" width="52" height="8" rx="2" stroke="currentColor" stroke-width="1.5"/>
+                            <path d="M94 78h52M94 94h36M94 110h44" stroke="currentColor" stroke-width="1.5"/>
+                            <circle cx="120" cy="132" r="5" stroke="currentColor" stroke-width="1.5"/>
+                            <path d="M25 70h40M175 70h40M25 90h25M190 90h25" stroke="currentColor" stroke-width="1.5"/>
+                        </svg>
                     </div>
 
-                    <div class="relative z-10 mt-auto">
-                        <h3 class="font-display font-semibold tracking-tighter text-xl text-white">Login &amp; Ganti Password</h3>
-                        <p class="mt-2 text-xs text-blue-100 leading-tight tracking-tight">
+                    <div class="relative z-10 mt-auto max-w-[95%]">
+                        <h3 class="font-display font-medium tracking-tight text-[22px] leading-none text-white">
+                            Login &amp; Ganti Password
+                        </h3>
+
+                        <p class="mt-4 text-[13px] text-white/80 leading-[1.35] tracking-tight">
                             Admin login pakai kredensial awal, lalu wajib ganti password sebelum bisa mengakses dashboard.
                         </p>
                     </div>
                 </div>
 
+
                 {{-- Step 3 --}}
-                <div class="howitworks-card snap-center shrink-0 w-[85vw] sm:w-[300px] h-[75%] lg:h-[65%] rounded-[3px] lg:-translate-y-5 bg-blue-900 dark:bg-blue-950 p-3 relative overflow-hidden flex flex-col">
+                <div class="howitworks-card snap-center shrink-0 w-[85vw] sm:w-[300px] h-[75%] lg:h-[65%] rounded-[3px] lg:-translate-y-5 bg-blue-800 dark:bg-blue-950 p-5 relative overflow-hidden flex flex-col">
+
                     <div class="relative z-10 flex items-start justify-between">
-                        <span class="px-2.5 py-0.5 rounded-[1px] bg-white/15 text-white text-[10px] font-semibold uppercase tracking-wide">Unit Usaha</span>
-                        <span class="flex h-9 w-9 items-center justify-center rounded-[3px] bg-white">
-                            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="#1e3a8a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M17 7H8M17 7V16"/></svg>
+                        <span class="px-2.5 py-1 rounded-[2px] bg-white/10 text-white text-[10px] font-semibold uppercase tracking-wide">
+                            UNIT USAHA
+                        </span>
+
+                        <span class="flex h-12 w-12 items-center justify-center rounded-[4px] bg-white">
+                            <svg class="h-5 w-5 text-blue-800" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M3.75 21h16.5M5.25 21V8.25L12 4.5l6.75 3.75V21M8.25 21v-7.5h7.5V21" />
+                            </svg>
                         </span>
                     </div>
 
-                    <div class="relative z-10 flex-1 flex items-center justify-center">
-                        <div class="h-20 w-20 rounded-xl border-2 border-dashed border-white/25 flex items-center justify-center">
-                            <svg class="h-8 w-8 text-white/40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-5-5L5 21"/></svg>
-                        </div>
+                    <div class="absolute inset-x-0 top-[18%] bottom-[25%] flex items-center justify-center pointer-events-none">
+                        <svg class="w-[80%] h-auto text-white/35" viewBox="0 0 240 180" fill="none">
+                            <path d="M50 145V62l70-35 70 35v83H50Z" stroke="currentColor" stroke-width="1.5"/>
+                            <path d="M82 145V92h76v53M120 27v65" stroke="currentColor" stroke-width="1.5"/>
+                            <path d="M25 78h25M190 78h25M25 96h25M190 96h25" stroke="currentColor" stroke-width="1.5"/>
+                        </svg>
                     </div>
 
-                    <div class="relative z-10 mt-auto">
-                        <h3 class="font-display font-semibold tracking-tighter text-xl text-white">Atur Unit Usaha</h3>
-                        <p class="mt-2 text-xs text-blue-100 leading-tight tracking-tight">
+                    <div class="relative z-10 mt-auto max-w-[95%]">
+                        <h3 class="font-display font-medium tracking-tight text-[22px] leading-none text-white">
+                            Atur Unit Usaha
+                        </h3>
+
+                        <p class="mt-4 text-[13px] text-white/80 leading-[1.35] tracking-tight">
                             Tentukan kategori unit — ritel atau jasa — lalu kelola inventaris atau pesanan layanan sesuai jenisnya.
                         </p>
                     </div>
                 </div>
 
+
                 {{-- Step 4 --}}
-                <div class="howitworks-card snap-center shrink-0 w-[85vw] sm:w-[300px] h-[75%] lg:h-[65%] lg:-translate-y-16 rounded-[3px] bg-blue-900 dark:bg-blue-950 p-3 relative overflow-hidden flex flex-col">
+                <div class="howitworks-card snap-center shrink-0 w-[85vw] sm:w-[300px] h-[75%] lg:h-[65%] lg:-translate-y-16 rounded-[3px] bg-blue-800 dark:bg-blue-950 p-5 relative overflow-hidden flex flex-col">
+
                     <div class="relative z-10 flex items-start justify-between">
-                        <span class="px-2.5 py-0.5 rounded-[1px] bg-white/15 text-white text-[10px] font-semibold uppercase tracking-wide">Transaksi</span>
-                        <span class="flex h-9 w-9 items-center justify-center rounded-[3px] bg-white">
-                            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="#1e3a8a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M17 7H8M17 7V16"/></svg>
+                        <span class="px-2.5 py-1 rounded-[2px] bg-white/10 text-white text-[10px] font-semibold uppercase tracking-wide">
+                            TRANSAKSI
+                        </span>
+
+                        <span class="flex h-12 w-12 items-center justify-center rounded-[4px] bg-white">
+                            <svg class="h-5 w-5 text-blue-800" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M7.5 7.5h9m-9 9h9M6 4.5h.008v.008H6V4.5Zm0 7.5h.008v.008H6V12Zm0 7.5h.008v.008H6V12Zm0 7.5h.008v.008H6V19.5Z" />
+                            </svg>
                         </span>
                     </div>
 
-                    <div class="relative z-10 flex-1 flex items-center justify-center">
-                        <div class="h-20 w-20 rounded-xl border-2 border-dashed border-white/25 flex items-center justify-center">
-                            <svg class="h-8 w-8 text-white/40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-5-5L5 21"/></svg>
-                        </div>
+                    <div class="absolute inset-x-0 top-[18%] bottom-[25%] flex items-center justify-center pointer-events-none">
+                        <svg class="w-[82%] h-auto text-white/35" viewBox="0 0 240 180" fill="none">
+                            <rect x="35" y="40" width="170" height="105" rx="3" stroke="currentColor" stroke-width="1.5"/>
+                            <path d="M55 68h130M55 90h75M55 112h105" stroke="currentColor" stroke-width="1.5"/>
+                            <path d="M25 55h10M205 55h10M25 78h10M205 78h10M25 101h10M205 101h10" stroke="currentColor" stroke-width="1.5"/>
+                            <circle cx="178" cy="112" r="12" stroke="currentColor" stroke-width="1.5"/>
+                            <path d="m172 112 4 4 8-9" stroke="currentColor" stroke-width="1.5"/>
+                        </svg>
                     </div>
 
-                    <div class="relative z-10 mt-auto">
-                        <h3 class="font-display font-semibold tracking-tighter text-xl text-white">Catat Transaksi &amp; Pembelian</h3>
-                        <p class="mt-2 text-xs text-blue-100 leading-tight tracking-tight">
+                    <div class="relative z-10 mt-auto max-w-[95%]">
+                        <h3 class="font-display font-medium tracking-tight text-[22px] leading-none text-white">
+                            Catat Transaksi &amp; Pembelian
+                        </h3>
+
+                        <p class="mt-4 text-[13px] text-white/80 leading-[1.35] tracking-tight">
                             Catat transaksi harian, transaksi berulang, dan pembelian ke vendor secara terpusat.
                         </p>
                     </div>
                 </div>
 
+
                 {{-- Step 5 --}}
-                <div class="howitworks-card snap-center shrink-0 w-[85vw] sm:w-[300px] h-[75%] lg:h-[65%] lg:translate-y-10 rounded-[3px] bg-blue-900 dark:bg-blue-950 p-3 relative overflow-hidden flex flex-col">
+                <div class="howitworks-card snap-center shrink-0 w-[85vw] sm:w-[300px] h-[75%] lg:h-[65%] lg:translate-y-10 rounded-[3px] bg-blue-800 dark:bg-blue-950 p-5 relative overflow-hidden flex flex-col">
+
                     <div class="relative z-10 flex items-start justify-between">
-                        <span class="px-2.5 py-0.5 rounded-[1px] bg-white/15 text-white text-[10px] font-semibold uppercase tracking-wide">Laporan</span>
-                        <span class="flex h-9 w-9 items-center justify-center rounded-[3px] bg-white">
-                            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="#1e3a8a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M17 7H8M17 7V16"/></svg>
+                        <span class="px-2.5 py-1 rounded-[2px] bg-white/10 text-white text-[10px] font-semibold uppercase tracking-wide">
+                            LAPORAN
+                        </span>
+
+                        <span class="flex h-12 w-12 items-center justify-center rounded-[4px] bg-white">
+                            <svg class="h-5 w-5 text-blue-800" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M4.5 19.5V10.5m5 9V4.5m5 15v-6m5 6V7.5" />
+                            </svg>
                         </span>
                     </div>
 
-                    <div class="relative z-10 flex-1 flex items-center justify-center">
-                        <div class="h-20 w-20 rounded-xl border-2 border-dashed border-white/25 flex items-center justify-center">
-                            <svg class="h-8 w-8 text-white/40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-5-5L5 21"/></svg>
-                        </div>
+                    <div class="absolute inset-x-0 top-[18%] bottom-[25%] flex items-center justify-center pointer-events-none">
+                        <svg class="w-[80%] h-auto text-white/35" viewBox="0 0 240 180" fill="none">
+                            <path d="M42 140V45h156v95H42Z" stroke="currentColor" stroke-width="1.5"/>
+                            <path d="M65 115V92M95 115V72M125 115V82M155 115V55M185 115V40" stroke="currentColor" stroke-width="7"/>
+                            <path d="M55 132h130" stroke="currentColor" stroke-width="1.5"/>
+                            <path d="M25 60h17M198 60h17M25 78h17M198 78h17" stroke="currentColor" stroke-width="1.5"/>
+                        </svg>
                     </div>
 
-                    <div class="relative z-10 mt-auto">
-                        <h3 class="font-display font-semibold tracking-tighter text-xl text-white">Pantau dan Laporkan</h3>
-                        <p class="mt-2 text-xs text-blue-100 leading-tight tracking-tight">
+                    <div class="relative z-10 mt-auto max-w-[95%]">
+                        <h3 class="font-display font-medium tracking-tight text-[22px] leading-none text-white">
+                            Pantau dan Laporkan
+                        </h3>
+
+                        <p class="mt-4 text-[13px] text-white/80 leading-[1.35] tracking-tight">
                             Lihat statistik unit secara real-time, terbitkan dokumen resmi, lalu ekspor data kapan saja.
                         </p>
                     </div>
                 </div>
 
+
                 {{-- Step 6 --}}
-                <div class="howitworks-card snap-center shrink-0 w-[85vw] sm:w-[300px] h-[75%] lg:h-[65%] lg:-translate-y-4 rounded-[3px] bg-blue-900 dark:bg-blue-950 p-3 relative overflow-hidden flex flex-col">
+                <div class="howitworks-card snap-center shrink-0 w-[85vw] sm:w-[300px] h-[75%] lg:h-[65%] lg:-translate-y-4 rounded-[3px] bg-blue-800 dark:bg-blue-950 p-5 relative overflow-hidden flex flex-col">
+
                     <div class="relative z-10 flex items-start justify-between">
-                        <span class="px-2.5 py-0.5 rounded-[1px] bg-white/15 text-white text-[10px] font-semibold uppercase tracking-wide">Keamanan</span>
-                        <span class="flex h-9 w-9 items-center justify-center rounded-[3px] bg-white">
-                            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="#1e3a8a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M17 7H8M17 7V16"/></svg>
+                        <span class="px-2.5 py-1 rounded-[2px] bg-white/10 text-white text-[10px] font-semibold uppercase tracking-wide">
+                            KEAMANAN
+                        </span>
+
+                        <span class="flex h-12 w-12 items-center justify-center rounded-[4px] bg-white">
+                            <svg class="h-5 w-5 text-blue-800" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M12 3.75 19.5 6v5.25c0 4.5-3.15 7.35-7.5 9-4.35-1.65-7.5-4.5-7.5-9V6L12 3.75Zm-3 8.25 2 2 4-4" />
+                            </svg>
                         </span>
                     </div>
 
-                    <div class="relative z-10 flex-1 flex items-center justify-center">
-                        <div class="h-20 w-20 rounded-xl border-2 border-dashed border-white/25 flex items-center justify-center">
-                            <svg class="h-8 w-8 text-white/40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-5-5L5 21"/></svg>
-                        </div>
+                    <div class="absolute inset-x-0 top-[18%] bottom-[25%] flex items-center justify-center pointer-events-none">
+                        <svg class="w-[78%] h-auto text-white/35" viewBox="0 0 240 180" fill="none">
+                            <path d="M120 25 184 48v43c0 38-25 57-64 70-39-13-64-32-64-70V48l64-23Z"
+                                stroke="currentColor" stroke-width="1.5"/>
+                            <path d="m91 92 19 19 40-43" stroke="currentColor" stroke-width="1.5"/>
+                            <path d="M45 65H25M195 65h20M45 82H30M195 82h15" stroke="currentColor" stroke-width="1.5"/>
+                        </svg>
                     </div>
 
-                    <div class="relative z-10 mt-auto">
-                        <h3 class="font-display font-semibold tracking-tighter text-xl text-white">Audit dan Keamanan Data</h3>
-                        <p class="mt-2 text-xs text-blue-100 leading-tight tracking-tight">
+                    <div class="relative z-10 mt-auto max-w-[95%]">
+                        <h3 class="font-display font-medium tracking-tight text-[22px] leading-none text-white">
+                            Audit dan Keamanan Data
+                        </h3>
+
+                        <p class="mt-4 text-[13px] text-white/80 leading-[1.35] tracking-tight">
                             Setiap perubahan data tercatat dalam log audit yang dapat ditelusuri kapan saja.
                         </p>
                     </div>
@@ -595,11 +682,11 @@
         <div class="flex flex-col lg:flex-row min-h-[600px] lg:min-h-screen my-30">
 
             {{-- Kiri: Gambar (60%) --}}
-            <div class="relative w-full lg:w-[60%] h-72 lg:h-[100vh] bg-slate-800 flex-shrink-0">
+            <div class="relative w-full lg:w-[60%] h-72 lg:h-[100vh] bg-slate-800 flex-shrink-0 overflow-hidden">
                 <img
                     src="{{ asset('images/images (1).jpg') }}"
                     alt="About"
-                    class="absolute inset-0 w-full h-full object-cover"
+                    class="absolute inset-0 w-full h-full object-cover opacity-50 hover:opacity-100 transition-opacity duration-300"
                 >
             </div>
 

@@ -66,7 +66,7 @@ class Dashboard extends Component
     // versi baru dan menyebabkan error seperti
     // "Attempt to read property ... on string" karena bentuk datanya
     // sudah tidak cocok lagi dengan yang diharapkan view.
-    private const CACHE_VERSION = 2;
+    private const CACHE_VERSION = 3;
 
     // 🔴 Type-hint Model Unit agar Livewire otomatis resolve dari route-model-binding {unit}
     public Unit $unit;
@@ -274,26 +274,50 @@ class Dashboard extends Component
 
         $unitId = $this->unit->id;
 
-        // Seluruh metrik agregat (omzet, tren, perbandingan periode, aset,
-        // pelanggan, dan widget spesifik kategori) di-cache bersama di sini
-        // supaya interaksi yang tidak mengubah unit/rentang tanggal (mis.
-        // mengetik di kolom pencarian transaksi) tidak menghantam ulang
-        // belasan query aggregate ini.
+        /*
+        |--------------------------------------------------------------------------
+        | CACHE
+        |--------------------------------------------------------------------------
+        | Hanya data scalar/array yang aman untuk di-cache.
+        | Eloquent Model/Collection yang dipakai langsung oleh Blade sengaja
+        | diambil di luar cache agar tidak pernah berubah menjadi string/array
+        | akibat data cache lama atau perubahan struktur data.
+        */
         $cacheKey = 'dashboard-unit:v' . self::CACHE_VERSION . ":{$unitId}:{$this->startDate}:{$this->endDate}";
 
-        $aggregates = Cache::remember($cacheKey, self::CACHE_TTL_SECONDS, function () use ($unitId, $start, $end, $periodLabel) {
-            return $this->computeDashboardAggregates($unitId, $start, $end, $periodLabel);
-        });
+        $aggregates = Cache::remember(
+            $cacheKey,
+            self::CACHE_TTL_SECONDS,
+            function () use ($unitId, $start, $end, $periodLabel) {
+                return $this->computeDashboardAggregates(
+                    $unitId,
+                    $start,
+                    $end,
+                    $periodLabel
+                );
+            }
+        );
 
-        // TRANSAKSI TERKINI (bisa dicari) -- SENGAJA di luar cache di atas
-        // karena bergantung pada input pencarian langsung ($searchTransaction)
-        // dan harus selalu mencerminkan apa yang baru saja diketik user.
+        /*
+        |--------------------------------------------------------------------------
+        | DATA ELOQUENT - DI LUAR CACHE
+        |--------------------------------------------------------------------------
+        */
+
+        // Transaksi terkini harus live karena bergantung pada pencarian.
         $recentTransactions = FinanceTransaction::with(['category', 'user'])
             ->where('unit_id', $unitId)
             ->when($this->searchTransaction, function ($q) {
                 $q->where(function ($sub) {
-                    $sub->where('description', 'like', '%' . $this->searchTransaction . '%')
-                        ->orWhere('reference_no', 'like', '%' . $this->searchTransaction . '%');
+                    $sub->where(
+                        'description',
+                        'like',
+                        '%' . $this->searchTransaction . '%'
+                    )->orWhere(
+                        'reference_no',
+                        'like',
+                        '%' . $this->searchTransaction . '%'
+                    );
                 });
             })
             ->latest('transaction_date')
@@ -301,12 +325,85 @@ class Dashboard extends Component
             ->limit(6)
             ->get();
 
+        // Collection Eloquent tidak dimasukkan ke cache.
+        $upcomingRecurring = RecurringTransaction::where('unit_id', $unitId)
+            ->where('status', 'active')
+            ->whereNotNull('next_run_date')
+            ->orderBy('next_run_date')
+            ->limit(5)
+            ->get();
+
+        // Collection + relationship user tidak dimasukkan ke cache.
+        $recentActivity = AuditLog::with('user')
+            ->whereHas('user', fn ($q) => $q->where('unit_id', $unitId))
+            ->latest()
+            ->limit(6)
+            ->get();
+
         $viewData = $aggregates['viewData'] + [
             'unit'               => $this->unit,
             'recentTransactions' => $recentTransactions,
+            'upcomingRecurring'  => $upcomingRecurring,
+            'recentActivity'     => $recentActivity,
         ];
 
-        return view($aggregates['view'], $viewData + $aggregates['extraData']);
+        /*
+        |--------------------------------------------------------------------------
+        | DASHBOARD JASA
+        |--------------------------------------------------------------------------
+        */
+
+        if ($this->isServiceCategory()) {
+            $serviceData = [
+                // Scalar aman untuk cache, tetapi collection tetap live.
+                'totalServiceOrders'            => $aggregates['extraData']['totalServiceOrders'],
+                'pendingServiceOrders'          => $aggregates['extraData']['pendingServiceOrders'],
+                'inProgressServiceOrders'       => $aggregates['extraData']['inProgressServiceOrders'],
+                'completedServiceOrdersInRange' => $aggregates['extraData']['completedServiceOrdersInRange'],
+
+                'upcomingServiceOrders' => ServiceOrder::where('unit_id', $unitId)
+                    ->whereIn('status', ['pending', 'in_progress'])
+                    ->whereNotNull('scheduled_at')
+                    ->orderBy('scheduled_at')
+                    ->limit(6)
+                    ->get(),
+
+                'recentServiceOrders' => ServiceOrder::where('unit_id', $unitId)
+                    ->latest('id')
+                    ->limit(6)
+                    ->get(),
+            ];
+
+            return view(
+                'livewire.unit.dashboard-services',
+                $viewData + $serviceData
+            );
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | DASHBOARD RITEL
+        |--------------------------------------------------------------------------
+        */
+
+        $retailData = [
+            // Nilai scalar boleh berasal dari cache.
+            'totalProducts' => $aggregates['extraData']['totalProducts'],
+            'lowStockCount' => $aggregates['extraData']['lowStockCount'],
+
+            // PENTING: Product Collection selalu diambil dari database.
+            // Blade membutuhkan $product->name, ->stock, dan ->min_stock.
+            'lowStockProducts' => Product::where('unit_id', $unitId)
+                ->whereColumn('stock', '<=', 'min_stock')
+                ->orderBy('stock')
+                ->limit(6)
+                ->get(),
+        ];
+
+        return view(
+            'livewire.unit.dashboard',
+            $viewData + $retailData
+        );
     }
 
     /**
@@ -373,25 +470,6 @@ class Dashboard extends Component
         ];
 
         // -------------------------------------------------------------
-        // TRANSAKSI BERULANG YANG AKAN JATUH TEMPO (SAMA UNTUK KEDUANYA)
-        // -------------------------------------------------------------
-        $upcomingRecurring = RecurringTransaction::where('unit_id', $unitId)
-            ->where('status', 'active')
-            ->whereNotNull('next_run_date')
-            ->orderBy('next_run_date')
-            ->limit(5)
-            ->get();
-
-        // -------------------------------------------------------------
-        // AKTIVITAS TERKINI MILIK ADMIN UNIT INI (SAMA UNTUK KEDUANYA)
-        // -------------------------------------------------------------
-        $recentActivity = AuditLog::with('user')
-            ->whereHas('user', fn ($q) => $q->where('unit_id', $unitId))
-            ->latest()
-            ->limit(6)
-            ->get();
-
-        // -------------------------------------------------------------
         // PELANGGAN (SAMA UNTUK KEDUA KATEGORI -- Manajemen Pelanggan
         // berlaku untuk unit ritel maupun jasa, lihat catatan di
         // config/menu.php & routes/web.php). Modulnya sudah ada sejak
@@ -452,8 +530,6 @@ class Dashboard extends Component
             'trxCount'             => $trxCount,
             'avgTrxValue'          => 'Rp ' . number_format($avgTrxValue, 0, ',', '.'),
             'revenueTrend'         => $revenueTrend,
-            'upcomingRecurring'    => $upcomingRecurring,
-            'recentActivity'       => $recentActivity,
             'periodComparison'     => $periodComparison,
             'totalActiveCustomers' => $totalActiveCustomers,
             'newCustomersInRange'  => $newCustomersInRange,
@@ -469,42 +545,32 @@ class Dashboard extends Component
         // yang tidak dipakai untuk kategori yang tidak relevan.
         // -------------------------------------------------------------
         if ($this->isServiceCategory()) {
-            // WIDGET KHUSUS UNIT JASA: RINGKASAN PESANAN LAYANAN
+            // Hanya scalar yang masuk cache.
             $serviceData = [
                 'totalServiceOrders'            => ServiceOrder::where('unit_id', $unitId)->count(),
-                'pendingServiceOrders'          => ServiceOrder::where('unit_id', $unitId)->where('status', 'pending')->count(),
-                'inProgressServiceOrders'       => ServiceOrder::where('unit_id', $unitId)->where('status', 'in_progress')->count(),
+                'pendingServiceOrders'          => ServiceOrder::where('unit_id', $unitId)
+                    ->where('status', 'pending')
+                    ->count(),
+                'inProgressServiceOrders'       => ServiceOrder::where('unit_id', $unitId)
+                    ->where('status', 'in_progress')
+                    ->count(),
                 'completedServiceOrdersInRange' => ServiceOrder::where('unit_id', $unitId)
                     ->where('status', 'completed')
                     ->whereBetween('updated_at', [$start, $end])
                     ->count(),
-                'upcomingServiceOrders' => ServiceOrder::where('unit_id', $unitId)
-                    ->whereIn('status', ['pending', 'in_progress'])
-                    ->whereNotNull('scheduled_at')
-                    ->orderBy('scheduled_at')
-                    ->limit(6)
-                    ->get(),
-                'recentServiceOrders' => ServiceOrder::where('unit_id', $unitId)
-                    ->latest('id')
-                    ->limit(6)
-                    ->get(),
             ];
 
             return [
-                'viewData'    => $viewData,
-                'view'        => 'livewire.unit.dashboard-services',
-                'extraData'   => $serviceData,
+                'viewData'  => $viewData,
+                'view'      => 'livewire.unit.dashboard-services',
+                'extraData' => $serviceData,
             ];
         }
 
-        // WIDGET DEFAULT UNIT RITEL: STOK & PRODUK (TIDAK BERUBAH)
+        // WIDGET DEFAULT UNIT RITEL:
+        // Hanya nilai scalar yang masuk cache.
         $retailData = [
             'totalProducts' => Product::where('unit_id', $unitId)->count(),
-            'lowStockProducts' => Product::where('unit_id', $unitId)
-                ->whereColumn('stock', '<=', 'min_stock')
-                ->orderBy('stock')
-                ->limit(6)
-                ->get(),
             'lowStockCount' => Product::where('unit_id', $unitId)
                 ->whereColumn('stock', '<=', 'min_stock')
                 ->count(),

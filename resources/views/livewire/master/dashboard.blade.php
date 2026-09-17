@@ -4,12 +4,12 @@
     @show-unit-form-modal.window="showUnitModal = true">
 
     {{-- ================= HEADER & QUICK ACTIONS ================= --}}
-    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-white dark:bg-slate-800 p-5 rounded-md border border-neutral-100 dark:border-slate-700 shadow-sm shadow-black/[0.02]">
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-white dark:bg-slate-800 p-5 rounded-sm border border-neutral-100 dark:border-slate-700 shadow-sm shadow-black/[0.02]">
         <div>
             <div class="flex items-center gap-2.5">
-                <h1 class="text-xl font-bold text-neutral-900 dark:text-white tracking-tight">Dashboard Master Admin</h1>
+                <h1 class="text-md font-bold tracking-tight text-neutral-900 dark:text-white tracking-tight">Dashboard Master Admin</h1>
             </div>
-            <p class="text-sm tracking-tight text-neutral-400 mt-1">
+            <p class="text-[12px] tracking-tight text-neutral-400 mt-1">
                 Ikhtisar kinerja bisnis, status operasional, dan manajemen unit usaha.
             </p>
         </div>
@@ -20,7 +20,7 @@
             <button type="button"
                     wire:click="export"
                     wire:loading.attr="disabled"
-                    class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800 rounded-[3px] hover:bg-sky-100 dark:hover:bg-sky-900/40 transition-all shadow-sm shadow-black/[0.02] cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed">
+                    class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-white bg-[#0d3b74] border border-[#0d3b74] rounded-sm hover:bg-blue-950 transition-all shadow-sm shadow-blue-900/20 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed">
                     <x-heroicon-o-arrow-down-tray stroke-width="2.5" wire:loading.remove wire:target="export" class="w-4 h-4" />
                     <svg wire:loading wire:target="export" class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -33,7 +33,7 @@
             {{-- Tombol + Admin Baru --}}
             <button type="button"
                     wire:click="openCreateAdminModal"
-                    class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-[3px] hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition-all shadow-sm shadow-black/[0.02] cursor-pointer">
+                    class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-[#0d3b74] dark:text-sky-300 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 rounded-sm hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-all shadow-sm shadow-black/[0.02] cursor-pointer">
                 <x-heroicon-o-user-plus class="w-4 h-4" />
                 <span>Admin Baru</span>
             </button>
@@ -41,7 +41,7 @@
             {{-- Tombol + Unit Usaha (Aksi Utama) --}}
             <button type="button"
                     wire:click="openCreateUnitModal"
-                    class="inline-flex items-center gap-2 px-4 py-2 text-xs font-bold text-white bg-blue-900 hover:bg-blue-950 rounded-[3px] transition-all shadow-sm shadow-blue-900/20 cursor-pointer">
+                    class="inline-flex items-center gap-2 px-4 py-2 text-xs font-bold text-white bg-blue-900 hover:bg-blue-950 rounded-sm transition-all shadow-sm shadow-blue-900/20 cursor-pointer">
                 <x-heroicon-o-plus class="w-4 h-4" />
                 <span>Unit Usaha</span>
             </button>
@@ -50,7 +50,7 @@
         {{-- Modal Form Tambah Admin --}}
         @if($showCreateAdminModal)
             <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-neutral-900/50 backdrop-blur-sm">
-                <div class="bg-white dark:bg-slate-800 w-full max-w-lg rounded-lg border border-neutral-200 dark:border-slate-700 shadow-2xl overflow-hidden my-8 animate-in fade-in zoom-in duration-150">
+                <div class="bg-white dark:bg-slate-800 w-full max-w-lg rounded-sm border border-neutral-200 dark:border-slate-700 shadow-2xl overflow-hidden my-8 animate-in fade-in zoom-in duration-150">
                     <div class="p-5 border-b border-neutral-100 dark:border-slate-700 flex justify-between items-center bg-neutral-50/50 dark:bg-slate-900/50">
                         <h3 class="text-lg font-bold text-neutral-900 dark:text-white">Tambah Admin Baru</h3>
                         <button type="button" wire:click="closeCreateAdminModal" class="text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 text-2xl font-bold leading-none">&times;</button>
@@ -60,14 +60,14 @@
                         {{-- Nama Lengkap --}}
                         <div>
                             <label class="block text-xs font-medium text-neutral-600 dark:text-neutral-300 mb-1">Nama Lengkap</label>
-                            <input type="text" wire:model="admin_name" class="w-full px-3 py-2.5 border rounded-xl text-sm bg-white dark:bg-slate-900 border-neutral-200 dark:border-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-500/10 focus:border-red-400" placeholder="Contoh: Budi Santoso">
+                            <input type="text" wire:model="admin_name" class="w-full px-3 py-2.5 border rounded-sm text-sm bg-white dark:bg-slate-900 border-neutral-200 dark:border-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400" placeholder="Contoh: Budi Santoso">
                             @error('admin_name') <span class="text-xs text-red-500">{{ $message }}</span> @enderror
                         </div>
 
                         {{-- Status Pegawai --}}
                         <div>
                             <label class="block text-xs font-medium text-neutral-600 dark:text-neutral-300 mb-1">Status Pegawai</label>
-                            <select wire:model.live="employee_status" class="w-full px-3 py-2.5 border rounded-xl text-sm bg-white dark:bg-slate-900 border-neutral-200 dark:border-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-500/10 focus:border-red-400">
+                            <select wire:model.live="employee_status" class="w-full px-3 py-2.5 border rounded-sm text-sm bg-white dark:bg-slate-900 border-neutral-200 dark:border-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400">
                                 <option value="nip">Pegawai NIP</option>
                                 <option value="non_nip">Pegawai Non-NIP</option>
                             </select>
@@ -78,7 +78,7 @@
                         @if($employee_status === 'nip')
                             <div>
                                 <label class="block text-xs font-medium text-neutral-600 dark:text-neutral-300 mb-1">NIP (18 Digit)</label>
-                                <input type="text" wire:model="nip" maxlength="18" class="w-full px-3 py-2.5 border rounded-xl text-sm bg-white dark:bg-slate-900 border-neutral-200 dark:border-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-500/10 focus:border-red-400" placeholder="199001012023011001">
+                                <input type="text" wire:model="nip" maxlength="18" class="w-full px-3 py-2.5 border rounded-sm text-sm bg-white dark:bg-slate-900 border-neutral-200 dark:border-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400" placeholder="199001012023011001">
                                 @error('nip') <span class="text-xs text-red-500">{{ $message }}</span> @enderror
                             </div>
                         @endif
@@ -86,14 +86,14 @@
                         {{-- Nomor HP / WhatsApp --}}
                         <div>
                             <label class="block text-xs font-medium text-neutral-600 dark:text-neutral-300 mb-1">Nomor HP / WhatsApp</label>
-                            <input type="text" wire:model="admin_phone" inputmode="numeric" class="w-full px-3 py-2.5 border rounded-xl text-sm bg-white dark:bg-slate-900 border-neutral-200 dark:border-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-500/10 focus:border-red-400" placeholder="08xxxxxxxxxx">
+                            <input type="text" wire:model="admin_phone" inputmode="numeric" class="w-full px-3 py-2.5 border rounded-sm text-sm bg-white dark:bg-slate-900 border-neutral-200 dark:border-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400" placeholder="08xxxxxxxxxx">
                             @error('admin_phone') <span class="text-xs text-red-500">{{ $message }}</span> @enderror
                         </div>
 
                         {{-- Role Admin --}}
                         <div>
                             <label class="block text-xs font-medium text-neutral-600 dark:text-neutral-300 mb-1">Role / Peran</label>
-                            <select wire:model.live="role" class="w-full px-3 py-2.5 border rounded-xl text-sm bg-white dark:bg-slate-900 border-neutral-200 dark:border-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-500/10 focus:border-red-400">
+                            <select wire:model.live="role" class="w-full px-3 py-2.5 border rounded-sm text-sm bg-white dark:bg-slate-900 border-neutral-200 dark:border-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400">
                                 <option value="unit-admin">Unit Admin (Pengelola Usaha)</option>
                                 <option value="master-admin">Master Admin (Akses Penuh)</option>
                             </select>
@@ -104,7 +104,7 @@
                         @if($role === 'unit-admin')
                             <div>
                                 <label class="block text-xs font-medium text-neutral-600 dark:text-neutral-300 mb-1">Unit Usaha</label>
-                                <select wire:model="admin_unit_id" class="w-full px-3 py-2.5 border rounded-xl text-sm bg-white dark:bg-slate-900 border-neutral-200 dark:border-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-500/10 focus:border-red-400">
+                                <select wire:model="admin_unit_id" class="w-full px-3 py-2.5 border rounded-sm text-sm bg-white dark:bg-slate-900 border-neutral-200 dark:border-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400">
                                     <option value="">-- Pilih Unit Usaha --</option>
                                     @foreach($units as $unit)
                                         <option value="{{ $unit->id }}">{{ $unit->name }}</option>
@@ -114,16 +114,16 @@
                             </div>
                         @endif
 
-                        <div class="p-3 bg-red-50/60 dark:bg-red-950/20 rounded-xl text-xs text-blue-950 dark:text-red-300 space-y-1">
+                        <div class="p-3 bg-blue-50/60 dark:bg-blue-950/20 rounded-sm text-xs text-blue-950 dark:text-blue-300 space-y-1">
                             <div>💡 <strong>Username &amp; Password</strong> akan dibuat otomatis oleh sistem.</div>
                         </div>
 
                         {{-- Actions --}}
                         <div class="pt-4 flex justify-end gap-2 border-t border-neutral-100 dark:border-slate-700">
-                            <button type="button" wire:click="closeCreateAdminModal" class="px-4 py-2.5 border border-neutral-200 dark:border-slate-700 rounded-full text-sm font-semibold hover:bg-neutral-50 dark:hover:bg-slate-700 dark:text-white transition-colors">
+                            <button type="button" wire:click="closeCreateAdminModal" class="px-4 py-2.5 border border-neutral-200 dark:border-slate-700 rounded-sm text-sm font-semibold hover:bg-neutral-50 dark:hover:bg-slate-700 dark:text-white transition-colors">
                                 Batal
                             </button>
-                            <button type="submit" wire:loading.attr="disabled" class="px-4 py-2.5 bg-blue-900 text-white rounded-full text-sm font-semibold hover:bg-blue-950 transition-colors shadow-sm shadow-blue-900/20">
+                            <button type="submit" wire:loading.attr="disabled" class="px-4 py-2.5 bg-blue-900 text-white rounded-sm text-sm font-semibold hover:bg-blue-950 transition-colors shadow-sm shadow-blue-900/20">
                                 <span wire:loading.remove wire:target="saveAdmin">Simpan &amp; Generate Kredensial</span>
                                 <span wire:loading wire:target="saveAdmin">Memproses...</span>
                             </button>
@@ -141,7 +141,7 @@
         {{-- Modal Create / Edit Unit --}}
         @if($showModal)
             <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-neutral-900/50 backdrop-blur-sm">
-                <div class="bg-white dark:bg-slate-800 w-full max-w-lg rounded-lg border border-neutral-200 dark:border-slate-700 shadow-2xl overflow-hidden my-8 animate-in fade-in zoom-in duration-150">
+                <div class="bg-white dark:bg-slate-800 w-full max-w-lg rounded-sm border border-neutral-200 dark:border-slate-700 shadow-2xl overflow-hidden my-8 animate-in fade-in zoom-in duration-150">
                     <div class="p-5 border-b border-neutral-100 dark:border-slate-700 flex justify-between items-center bg-neutral-50/50 dark:bg-slate-900/50">
                         <h3 class="text-lg font-bold text-neutral-900 dark:text-white">
                             {{ $isEditing ? 'Edit Unit Usaha' : 'Tambah Unit Usaha Baru' }}
@@ -152,14 +152,14 @@
                     <form wire:submit.prevent="save" class="p-6 space-y-4">
                         <div>
                             <label class="block text-xs font-medium text-neutral-600 dark:text-neutral-300 mb-1">Nama Unit Usaha</label>
-                            <input type="text" wire:model="name" class="w-full px-3 py-2.5 border rounded-xl text-sm bg-white dark:bg-slate-900 border-neutral-200 dark:border-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-500/10 focus:border-red-400" placeholder="Contoh: Bengkel TO">
+                            <input type="text" wire:model="name" class="w-full px-3 py-2.5 border rounded-sm text-sm bg-white dark:bg-slate-900 border-neutral-200 dark:border-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400" placeholder="Contoh: Bengkel TO">
                             @error('name') <span class="text-xs text-red-500">{{ $message }}</span> @enderror
                         </div>
 
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-xs font-medium text-neutral-600 dark:text-neutral-300 mb-1">Departemen / Jurusan</label>
-                                <select wire:model="department" class="w-full px-3 py-2.5 border rounded-xl text-sm bg-white dark:bg-slate-900 border-neutral-200 dark:border-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-500/10 focus:border-red-400">
+                                <select wire:model="department" class="w-full px-3 py-2.5 border rounded-sm text-sm bg-white dark:bg-slate-900 border-neutral-200 dark:border-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400">
                                     <option value="">Pilih Jurusan</option>
                                     <option value="PPLG">PPLG</option>
                                     <option value="TO">TO</option>
@@ -172,7 +172,7 @@
 
                             <div>
                                 <label class="block text-xs font-medium text-neutral-600 dark:text-neutral-300 mb-1">Kategori Usaha</label>
-                                <select wire:model="category" class="w-full px-3 py-2.5 border rounded-xl text-sm bg-white dark:bg-slate-900 border-neutral-200 dark:border-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-500/10 focus:border-red-400">
+                                <select wire:model="category" class="w-full px-3 py-2.5 border rounded-sm text-sm bg-white dark:bg-slate-900 border-neutral-200 dark:border-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400">
                                     <option value="">Pilih Kategori</option>
                                     <option value="ritel">Ritel</option>
                                     <option value="jasa">Jasa</option>
@@ -184,33 +184,33 @@
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-xs font-medium text-neutral-600 dark:text-neutral-300 mb-1">Nama PIC / Penanggung Jawab</label>
-                                <input type="text" wire:model="pic_name" class="w-full px-3 py-2.5 border rounded-xl text-sm bg-white dark:bg-slate-900 border-neutral-200 dark:border-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-500/10 focus:border-red-400" placeholder="Nama PIC">
+                                <input type="text" wire:model="pic_name" class="w-full px-3 py-2.5 border rounded-sm text-sm bg-white dark:bg-slate-900 border-neutral-200 dark:border-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400" placeholder="Nama PIC">
                                 @error('pic_name') <span class="text-xs text-red-500">{{ $message }}</span> @enderror
                             </div>
 
                             <div>
                                 <label class="block text-xs font-medium text-neutral-600 dark:text-neutral-300 mb-1">No. Telepon / HP</label>
-                                <input type="text" wire:model="phone" class="w-full px-3 py-2.5 border rounded-xl text-sm bg-white dark:bg-slate-900 border-neutral-200 dark:border-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-500/10 focus:border-red-400" placeholder="08123456789">
+                                <input type="text" wire:model="phone" class="w-full px-3 py-2.5 border rounded-sm text-sm bg-white dark:bg-slate-900 border-neutral-200 dark:border-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400" placeholder="08123456789">
                                 @error('phone') <span class="text-xs text-red-500">{{ $message }}</span> @enderror
                             </div>
                         </div>
 
                         <div>
                             <label class="block text-xs font-medium text-neutral-600 dark:text-neutral-300 mb-1">Deskripsi Singkat</label>
-                            <textarea wire:model="description" rows="3" class="w-full px-3 py-2.5 border rounded-xl text-sm bg-white dark:bg-slate-900 border-neutral-200 dark:border-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-500/10 focus:border-red-400" placeholder="Keterangan operasional..."></textarea>
+                            <textarea wire:model="description" rows="3" class="w-full px-3 py-2.5 border rounded-sm text-sm bg-white dark:bg-slate-900 border-neutral-200 dark:border-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400" placeholder="Keterangan operasional..."></textarea>
                             @error('description') <span class="text-xs text-red-500">{{ $message }}</span> @enderror
                         </div>
 
                         <div class="flex items-center gap-2 pt-1">
-                            <input type="checkbox" id="is_active" wire:model="is_active" class="rounded border-neutral-300 text-blue-900 focus:ring-red-400">
+                            <input type="checkbox" id="is_active" wire:model="is_active" class="rounded border-neutral-300 text-blue-900 focus:ring-blue-400">
                             <label for="is_active" class="text-xs font-medium text-neutral-600 dark:text-neutral-300">Unit Usaha Aktif / Operasional</label>
                         </div>
 
                         <div class="pt-4 flex justify-end gap-2 border-t border-neutral-100 dark:border-slate-700">
-                            <button type="button" wire:click="closeModal" class="px-4 py-2.5 border border-neutral-200 dark:border-slate-700 rounded-full text-sm font-semibold hover:bg-neutral-50 dark:hover:bg-slate-700 dark:text-white transition-colors">
+                            <button type="button" wire:click="closeModal" class="px-4 py-2.5 border border-neutral-200 dark:border-slate-700 rounded-sm text-sm font-semibold hover:bg-neutral-50 dark:hover:bg-slate-700 dark:text-white transition-colors">
                                 Batal
                             </button>
-                            <button type="submit" wire:loading.attr="disabled" class="px-4 py-2.5 bg-blue-900 text-white rounded-full text-sm font-semibold hover:bg-blue-950 transition-colors shadow-sm shadow-blue-900/20">
+                            <button type="submit" wire:loading.attr="disabled" class="px-4 py-2.5 bg-blue-900 text-white rounded-sm text-sm font-semibold hover:bg-blue-950 transition-colors shadow-sm shadow-blue-900/20">
                                 <span wire:loading.remove wire:target="save">Simpan Unit</span>
                                 <span wire:loading wire:target="save">Memproses...</span>
                             </button>
@@ -223,9 +223,9 @@
 
     {{-- ================= PERINGATAN / ACTION NEEDED (KONDISIONAL) ================= --}}
     @if ($inactiveUnits > 0)
-        <div class="flex items-center justify-between p-4 bg-amber-50/70 dark:bg-amber-950/30 border border-amber-100 dark:border-amber-800/50 rounded-md text-amber-900 dark:text-amber-300 shadow-sm shadow-black/[0.02]">
+        <div class="flex items-center justify-between p-4 bg-amber-50/70 dark:bg-amber-950/30 border border-amber-100 dark:border-amber-800/50 rounded-sm text-amber-900 dark:text-amber-300 shadow-sm shadow-black/[0.02]">
             <div class="flex items-center gap-3">
-                <span class="p-2.5 bg-amber-100 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 rounded-2xl shrink-0">
+                <span class="p-2.5 bg-amber-100 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 rounded-sm shrink-0">
                 <x-heroicon-o-exclamation-triangle class="w-5 h-5" />                   </span>
                 <div>
                     <p class="text-sm font-bold text-amber-900 dark:text-amber-200">Terdapat {{ $inactiveUnits }} Unit Usaha Nonaktif / Perlu Perhatian</p>
@@ -239,106 +239,75 @@
     {{-- ================= KARTU STATISTIK ================= --}}
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
 
-        {{-- Card Total Omzet Ringkas (Lebar 2 Kolom di Desktop agar Input Tanggal Sangat Luas & Anti-Terpotong) --}}
-        <div class="sm:col-span-2 lg:col-span-2 bg-white dark:bg-slate-800 rounded-lg border border-neutral-100 dark:border-slate-700 p-4 transition-all shadow-sm shadow-black/[0.02] flex flex-col justify-between">
-            
-            {{-- Header Kartu: Judul, Icon, & Dropdown Filter --}}
-            <div class="flex flex-col gap-2 border-b border-neutral-100 dark:border-slate-700/60 pb-2.5 mb-3">
-                <div class="flex items-center justify-between gap-2">
-                    <div class="flex items-center gap-2 min-w-0">
-                        <span class="p-1.5 rounded-lg bg-red-50 dark:bg-red-950/50 text-red-500 dark:text-red-400 shrink-0">
-                        <x-heroicon-o-currency-dollar class="w-4 h-4" />
-                        </span>
-                        <div class="truncate">
-                            <p class="text-xs font-semibold text-neutral-500 dark:text-neutral-400 truncate">Total Omzet</p>
-                            <p class="text-[10px] text-neutral-400 dark:text-neutral-500 font-medium leading-none mt-0.5 truncate">
-                                {{ $periodLabel ?? 'Bulan Ini' }}
-                            </p>
-                        </div>
-                    </div>
-
-                    {{-- Dropdown Filter Periode --}}
-                    <select wire:model.live="periodFilter" 
-                        class="px-2 py-1 text-[11px] font-medium bg-neutral-50 dark:bg-slate-900 text-neutral-700 dark:text-neutral-200 border border-neutral-200 dark:border-slate-700 rounded-[2px] focus:ring-1 focus:ring-blue-900 focus:border-blue-900 outline-none transition-all cursor-pointer shrink-0">
-                        <option value="today">Hari Ini</option>
-                        <option value="this_week">Minggu Ini</option>
-                        <option value="this_month">Bulan Ini</option>
-                        <option value="last_month">Bulan Lalu</option>
-                        <option value="this_year">Tahun Ini</option>
-                        <option value="custom">Custom...</option>
-                    </select>
-                </div>
-
-                {{-- Input Tanggal Kustom (Responsive & Anti-Overflow) --}}
-                @if ($periodFilter === 'custom')
-                    <div class="flex flex-wrap sm:flex-nowrap items-center justify-between gap-1.5 pt-2 border-t border-dashed border-neutral-100 dark:border-slate-700/60 animate-fadeIn">
-                        <span class="text-[10px] text-neutral-400 font-medium shrink-0">Rentang Tanggal:</span>
-                        <div class="flex items-center gap-1.5 w-full sm:w-auto">
-                            <input type="date" wire:model.live="startDate" 
-                                class="w-full sm:w-auto px-2 py-0.5 text-[11px] bg-neutral-50 dark:bg-slate-900 text-neutral-700 dark:text-neutral-200 border border-neutral-200 dark:border-slate-700 rounded outline-none focus:border-red-500">
-                            <span class="text-[10px] text-neutral-400">-</span>
-                            <input type="date" wire:model.live="endDate" 
-                                class="w-full sm:w-auto px-2 py-0.5 text-[11px] bg-neutral-50 dark:bg-slate-900 text-neutral-700 dark:text-neutral-200 border border-neutral-200 dark:border-slate-700 rounded outline-none focus:border-red-500">
-                        </div>
-                    </div>
-                @endif
+        {{-- Total Omzet --}}
+        <div class="sm:col-span-2 lg:col-span-2 bg-white dark:bg-slate-800 rounded-none border border-neutral-100 dark:border-slate-700 p-4 flex flex-col justify-between">
+            <div class="flex items-center justify-between">
+                <p class="text-xs text-neutral-400">Total Omzet</p>
+                <x-heroicon-o-currency-dollar stroke-width="1.5" class="w-4 h-4 text-neutral-300 dark:text-neutral-600" />
             </div>
 
-            {{-- Body Utama: Nominal Omzet Dinamis --}}
-            <div class="flex items-baseline justify-between pt-1">
-                <p class="text-2xl font-bold text-neutral-900 dark:text-white tracking-tight">
-                    {{ $totalRevenue ?? 'Rp —' }}
-                </p>
+            <p class="mt-2 text-2xl font-bold text-neutral-900 dark:text-white tracking-tight">
+                {{ $totalRevenue ?? 'Rp —' }}
+            </p>
+
+            <div class="mt-3 flex flex-wrap items-center gap-1.5">
+                <select wire:model.live="periodFilter"
+                    class="px-2 py-1 text-[11px] text-neutral-500 dark:text-neutral-300 bg-neutral-50 dark:bg-slate-900 border border-neutral-200 dark:border-slate-700 rounded-none focus:ring-1 focus:ring-blue-900 focus:border-blue-900 outline-none cursor-pointer">
+                    <option value="today">Hari Ini</option>
+                    <option value="this_week">Minggu Ini</option>
+                    <option value="this_month">Bulan Ini</option>
+                    <option value="last_month">Bulan Lalu</option>
+                    <option value="this_year">Tahun Ini</option>
+                    <option value="custom">Custom...</option>
+                </select>
+
+                @if ($periodFilter === 'custom')
+                    <div class="flex items-center gap-1.5">
+                        <input type="date" wire:model.live="startDate"
+                            class="px-2 py-1 text-[11px] text-neutral-500 dark:text-neutral-300 bg-neutral-50 dark:bg-slate-900 border border-neutral-200 dark:border-slate-700 rounded-none outline-none focus:border-blue-500">
+                        <span class="text-[10px] text-neutral-400">-</span>
+                        <input type="date" wire:model.live="endDate"
+                            class="px-2 py-1 text-[11px] text-neutral-500 dark:text-neutral-300 bg-neutral-50 dark:bg-slate-900 border border-neutral-200 dark:border-slate-700 rounded-none outline-none focus:border-blue-500">
+                    </div>
+                @endif
             </div>
         </div>
 
         {{-- Total Unit Usaha --}}
-        <div class="bg-white dark:bg-slate-800 rounded-lg border border-neutral-100 dark:border-slate-700 p-4 transition-all shadow-sm shadow-black/[0.02] flex flex-col justify-between">
+        <div class="bg-white dark:bg-slate-800 rounded-none border border-neutral-100 dark:border-slate-700 p-4 flex flex-col justify-between">
             <div class="flex items-center justify-between">
-                <p class="text-xs font-medium text-neutral-400">Total Unit Usaha</p>
-                <span class="p-2 rounded-xl bg-blue-50 dark:bg-blue-950/50 text-blue-500 dark:text-blue-400">
-                <x-heroicon-o-building-office class="w-4 h-4" />                </span>
+                <p class="text-xs text-neutral-400">Total Unit Usaha</p>
+                <x-heroicon-o-building-office stroke-width="1.5" class="w-4 h-4 text-neutral-300 dark:text-neutral-600" />
             </div>
-            <div class="mt-4">
-                <p class="text-2xl font-bold text-neutral-900 dark:text-white tracking-tight">{{ $totalUnits }}</p>
-                <p class="mt-2 text-xs text-neutral-400"><span class="font-semibold text-emerald-500">{{ $activeUnits }} Aktif</span> dari seluruh jurusan</p>
-            </div>
+            <p class="mt-2 text-2xl font-bold text-neutral-900 dark:text-white tracking-tight">{{ $totalUnits }}</p>
+            <p class="mt-1 text-[11px] text-neutral-400">{{ $activeUnits }} aktif</p>
         </div>
 
-        {{-- Total Admin Pengelola --}}
-        <div class="bg-white dark:bg-slate-800 rounded-lg border border-neutral-100 dark:border-slate-700 p-4 transition-all shadow-sm shadow-black/[0.02] flex flex-col justify-between">
+        {{-- Total Admin --}}
+        <div class="bg-white dark:bg-slate-800 rounded-none border border-neutral-100 dark:border-slate-700 p-4 flex flex-col justify-between">
             <div class="flex items-center justify-between">
-                <p class="text-xs font-medium text-neutral-400">Total Admin</p>
-                <span class="p-2 rounded-xl bg-violet-50 dark:bg-violet-950/50 text-violet-500 dark:text-violet-400">
-                <x-heroicon-o-users class="w-4 h-4" />                </span>
+                <p class="text-xs text-neutral-400">Total Admin</p>
+                <x-heroicon-o-users stroke-width="1.5" class="w-4 h-4 text-neutral-300 dark:text-neutral-600" />
             </div>
-            <div class="mt-4">
-                <p class="text-2xl font-bold text-neutral-900 dark:text-white tracking-tight">{{ $totalAdmins }}</p>
-                <p class="mt-2 text-xs text-neutral-400">Staf pengelola unit terdaftar</p>
-            </div>
+            <p class="mt-2 text-2xl font-bold text-neutral-900 dark:text-white tracking-tight">{{ $totalAdmins }}</p>
+            <p class="mt-1 text-[11px] text-neutral-400">Staf terdaftar</p>
         </div>
 
         {{-- Status Sistem --}}
-        <div class="bg-white dark:bg-slate-800 rounded-lg border border-neutral-100 dark:border-slate-700 p-4 transition-all shadow-sm shadow-black/[0.02] flex flex-col justify-between">
+        <div class="bg-white dark:bg-slate-800 rounded-none border border-neutral-100 dark:border-slate-700 p-4 flex flex-col justify-between">
             <div class="flex items-center justify-between">
-                <p class="text-xs font-medium text-neutral-400">Status Sistem</p>
-                <span class="p-2 rounded-xl {{ $inactiveUnits === 0 ? 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-500 dark:text-emerald-400' : 'bg-amber-50 dark:bg-amber-950/50 text-amber-500 dark:text-amber-400' }}">
-                <x-heroicon-o-bolt class="w-4 h-4" />                </span>
+                <p class="text-xs text-neutral-400">Status Sistem</p>
+                <x-heroicon-o-bolt stroke-width="1.5" class="w-4 h-4 text-neutral-300 dark:text-neutral-600" />
             </div>
-            <div class="mt-4">
-                <div class="flex items-center gap-2.5">
-                    <span class="relative flex h-2.5 w-2.5">
-                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full {{ $inactiveUnits === 0 ? 'bg-emerald-400' : 'bg-amber-400' }} opacity-75"></span>
-                        <span class="relative inline-flex rounded-full h-2.5 w-2.5 {{ $inactiveUnits === 0 ? 'bg-emerald-500' : 'bg-amber-500' }}"></span>
-                    </span>
-                    <p class="text-xl font-bold text-neutral-900 dark:text-white tracking-tight">
-                        {{ $inactiveUnits === 0 ? 'Optimal' : 'Perlu Perhatian' }}
-                    </p>
-                </div>
-                <p class="mt-2 text-xs text-neutral-400">
-                    {{ $inactiveUnits === 0 ? 'Semua layanan beroperasional' : $inactiveUnits . ' unit perlu penanganan' }}
+            <div class="mt-2 flex items-center gap-1.5">
+                <span class="h-1.5 w-1.5 rounded-full {{ $inactiveUnits === 0 ? 'bg-emerald-500' : 'bg-amber-500' }}"></span>
+                <p class="text-xl font-bold text-neutral-900 dark:text-white tracking-tight">
+                    {{ $inactiveUnits === 0 ? 'Optimal' : 'Perlu Perhatian' }}
                 </p>
             </div>
+            <p class="mt-1 text-[11px] text-neutral-400">
+                {{ $inactiveUnits === 0 ? 'Semua beroperasi' : $inactiveUnits . ' unit bermasalah' }}
+            </p>
         </div>
     </div>
 
@@ -346,7 +315,7 @@
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
 
         {{-- Widget Chart Donut (ApexCharts + Alpine.js) --}}
-        <div class="lg:col-span-2 bg-white dark:bg-slate-800 rounded-md border border-neutral-100 dark:border-slate-700 p-4 shadow-sm shadow-black/[0.02] flex flex-col justify-between">
+        <div class="lg:col-span-2 bg-white dark:bg-slate-800 rounded-sm border border-neutral-100 dark:border-slate-700 p-4 shadow-sm shadow-black/[0.02] flex flex-col justify-between">
             <div class="flex items-center justify-between mb-4">
                 <div>
                     <h2 class="text-base font-extrabold text-neutral-900 dark:text-white tracking-tight">Kontribusi Omzet per Unit Usaha</h2>
@@ -371,7 +340,7 @@
                                 height: 310,
                                 fontFamily: 'Plus Jakarta Sans, Inter, sans-serif'
                             },
-                            colors: ['#2563EB', '#38BDF8', '#F43F5E', '#8B5CF6', '#F59E0B'],
+                            colors: ['#0d3b74', '#2563EB', '#38BDF8', '#64748B', '#94A3B8'],
                             stroke: { width: 3, colors: ['#ffffff'] },
                             legend: {
                                 position: 'bottom',
@@ -449,14 +418,14 @@
         </div>
 
         {{-- Widget Rincian & Peringkat Pendapatan Unit --}}
-        <div class="bg-white dark:bg-slate-800 rounded-md border border-neutral-100 dark:border-slate-700 p-4 shadow-sm shadow-black/[0.02] flex flex-col justify-between">
+        <div class="bg-white dark:bg-slate-800 rounded-sm border border-neutral-100 dark:border-slate-700 p-4 shadow-sm shadow-black/[0.02] flex flex-col justify-between">
             <div>
                 <div class="flex items-center justify-between mb-5">
                     <div>
                         <h2 class="text-base font-extrabold text-neutral-900 dark:text-white tracking-tight">Peringkat Omzet</h2>
                         <p class="text-xs text-neutral-400 mt-0.5">Kontribusi unit bisnis</p>
                     </div>
-                    <span class="text-[11px] font-bold text-neutral-500 dark:text-neutral-400 bg-neutral-100/80 dark:bg-slate-900/80 px-2.5 py-1 rounded-[2px] border border-neutral-200/50 dark:border-slate-700">
+                    <span class="text-[11px] font-bold text-[#0d3b74] dark:text-neutral-400 bg-blue-50 dark:bg-slate-900/80 px-2.5 py-1 rounded-sm border border-blue-100 dark:border-slate-700">
                         Top 5
                     </span>
                 </div>
@@ -464,11 +433,11 @@
                 <div class="space-y-3.5">
                     @php
                         $colors = [
+                            ['bg' => 'bg-[#0d3b74]', 'badge' => 'bg-blue-50 dark:bg-blue-950/50 text-[#0d3b74] dark:text-blue-400'],
                             ['bg' => 'bg-blue-600', 'badge' => 'bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-400'],
                             ['bg' => 'bg-sky-400', 'badge' => 'bg-sky-50 dark:bg-sky-950/50 text-sky-700 dark:text-sky-400'],
-                            ['bg' => 'bg-rose-500', 'badge' => 'bg-rose-50 dark:bg-rose-950/50 text-rose-700 dark:text-rose-400'],
-                            ['bg' => 'bg-purple-500', 'badge' => 'bg-purple-50 dark:bg-purple-950/50 text-purple-700 dark:text-purple-400'],
-                            ['bg' => 'bg-amber-500', 'badge' => 'bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-400'],
+                            ['bg' => 'bg-slate-400', 'badge' => 'bg-slate-50 dark:bg-slate-900/50 text-slate-600 dark:text-slate-400'],
+                            ['bg' => 'bg-slate-300', 'badge' => 'bg-slate-50 dark:bg-slate-900/50 text-slate-500 dark:text-slate-400'],
                         ];
                     @endphp
 
@@ -478,14 +447,14 @@
                             $percent = $revenueContribution['percentages'][$index];
                             $colorScheme = $colors[$index % count($colors)];
                         @endphp
-                        <div class="group p-2 rounded-2xl hover:bg-neutral-50 dark:hover:bg-slate-900/50 transition-all">
+                        <div class="group p-2 rounded-sm hover:bg-neutral-50 dark:hover:bg-slate-900/50 transition-all">
                             <div class="flex items-center justify-between text-xs mb-2">
                                 <div class="flex items-center gap-2.5 truncate max-w-[60%]">
-                                    <span class="w-2.5 h-2.5 rounded-full {{ $colorScheme['bg'] }} shrink-0"></span>
+                                    <span class="w-2.5 h-2.5 rounded-sm {{ $colorScheme['bg'] }} shrink-0"></span>
                                     <span class="font-bold text-neutral-800 dark:text-neutral-200 truncate group-hover:text-neutral-900 dark:group-hover:text-white">{{ $label }}</span>
                                 </div>
                                 <div class="flex items-center gap-2 shrink-0">
-                                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-md {{ $colorScheme['badge'] }}">
+                                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-sm {{ $colorScheme['badge'] }}">
                                         {{ $percent }}%
                                     </span>
                                     <span class="font-extrabold text-neutral-900 dark:text-white text-xs">
@@ -494,8 +463,8 @@
                                 </div>
                             </div>
 
-                            <div class="w-full bg-neutral-100 dark:bg-slate-700 h-2 rounded-full overflow-hidden">
-                                <div class="{{ $colorScheme['bg'] }} h-full rounded-full transition-all duration-700" style="width: {{ $percent }}%"></div>
+                            <div class="w-full bg-neutral-100 dark:bg-slate-700 h-2 rounded-sm overflow-hidden">
+                                <div class="{{ $colorScheme['bg'] }} h-full rounded-sm transition-all duration-700" style="width: {{ $percent }}%"></div>
                             </div>
                         </div>
                     @endforeach
@@ -516,7 +485,7 @@
                     <input type="text"
                         wire:model.live.debounce.300ms="searchUnit"
                         placeholder="Cari unit..."
-                        class="w-48 sm:w-60 pl-9 pr-3 py-2.5 text-xs bg-white dark:bg-slate-900 border border-neutral-200 dark:border-slate-700 text-neutral-800 dark:text-neutral-100 placeholder-neutral-400 rounded-[3px] focus:outline-none focus:ring-2 focus:ring-red-500/10 focus:border-red-400 transition-all shadow-sm shadow-black/[0.02]">
+                        class="w-48 sm:w-60 pl-9 pr-3 py-2.5 text-xs bg-white dark:bg-slate-900 border border-neutral-200 dark:border-slate-700 text-neutral-800 dark:text-neutral-100 placeholder-neutral-400 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400 transition-all shadow-sm shadow-black/[0.02]">
                     <x-heroicon-o-magnifying-glass class="w-4 h-4 text-neutral-400 absolute left-3 top-3" />                </div>
             </div>
         </div>
@@ -528,10 +497,10 @@
                 <div class="shrink-0 w-64 snap-start bg-white dark:bg-slate-800 rounded-sm border border-neutral-100 dark:border-slate-700 p-4 hover:shadow-md hover:border-neutral-200 dark:hover:border-slate-600 transition-all flex flex-col justify-between group shadow-sm shadow-black/[0.02]">
                     <div>
                         <div class="flex items-center justify-between gap-2">
-                            <span class="h-10 w-10 rounded-sm bg-red-50 dark:bg-red-950/50 text-red-500 dark:text-red-400 flex items-center justify-center font-bold text-xs shrink-0">
+                            <span class="h-10 w-10 rounded-sm bg-blue-50 dark:bg-blue-950/50 text-[#0d3b74] dark:text-blue-400 flex items-center justify-center font-bold text-xs shrink-0">
                                 {{ strtoupper(substr($unit->name, 0, 1)) }}
                             </span>
-                            <span class="px-2.5 py-1 text-[10px] font-bold tracking-wide rounded-[2px] {{ $unit->is_active ? 'bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400' : 'bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400' }}">
+                            <span class="px-2.5 py-1 text-[10px] font-bold tracking-wide rounded-sm {{ $unit->is_active ? 'bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400' : 'bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400' }}">
                                 {{ $unit->is_active ? 'Aktif' : 'Nonaktif' }}
                             </span>
                         </div>
@@ -549,12 +518,12 @@
                     </div>
 
                     <a href="{{ Route::has('unit.dashboard') ? route('unit.dashboard', $unit->slug ?? $unit->id) : '#' }}"
-                        class="mt-4 w-full inline-flex items-center justify-center gap-1.5 py-2.5 px-3 text-xs font-semibold text-neutral-600 dark:text-neutral-300 bg-neutral-50 dark:bg-slate-900 hover:bg-neutral-100 dark:hover:bg-slate-700 rounded-[2px] transition-all">
+                        class="mt-4 w-full inline-flex items-center justify-center gap-1.5 py-2.5 px-3 text-xs font-semibold text-[#0d3b74] dark:text-neutral-300 bg-blue-50 dark:bg-slate-900 hover:bg-blue-100 dark:hover:bg-slate-700 rounded-sm transition-all">
                         <span>Buka Dashboard</span>
                         <x-heroicon-o-arrow-right class="w-3.5 h-3.5" />                    </a>
                 </div>
             @empty
-                <div class="w-full bg-white dark:bg-slate-800 rounded-md p-6 text-center border border-neutral-100 dark:border-slate-700 text-xs text-neutral-400">
+                <div class="w-full bg-white dark:bg-slate-800 rounded-sm p-6 text-center border border-neutral-100 dark:border-slate-700 text-xs text-neutral-400">
                     Tidak ditemukan unit usaha yang sesuai dengan pencarian.
                 </div>
             @endforelse
@@ -565,13 +534,13 @@
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 pt-2">
 
         {{-- Transaksi Terkini --}}
-        <div class="bg-white dark:bg-slate-800 rounded-md border border-neutral-100 dark:border-slate-700 p-5 shadow-sm shadow-black/[0.02] flex flex-col">
+        <div class="bg-white dark:bg-slate-800 rounded-sm border border-neutral-100 dark:border-slate-700 p-5 shadow-sm shadow-black/[0.02] flex flex-col">
             <div class="flex items-center justify-between pb-4 border-b border-neutral-100 dark:border-slate-700">
                 <div>
                     <h2 class="text-base font-bold text-neutral-900 dark:text-white">Transaksi Terkini</h2>
                     <p class="text-xs text-neutral-400">Aktivitas keuangan terbaru dari seluruh unit usaha</p>
                 </div>
-                <a href="{{ Route::has('master.transactions.index') ? route('master.transactions.index') : '#' }}" class="text-xs font-bold text-neutral-900 dark:text-white hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors shrink-0">
+                <a href="{{ Route::has('master.transactions.index') ? route('master.transactions.index') : '#' }}" class="text-xs font-bold text-[#0d3b74] dark:text-white hover:text-blue-700 dark:hover:text-neutral-300 transition-colors shrink-0">
                     Lihat Semua &rarr;
                 </a>
             </div>
@@ -580,7 +549,7 @@
                 @forelse ($recentTransactions as $tr)
                     <div class="py-3 flex items-center justify-between gap-3">
                         <div class="flex items-center gap-3 min-w-0">
-                            <span class="h-9 w-9 rounded-2xl flex items-center justify-center shrink-0 {{ $tr->type === 'income' ? 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-500 dark:text-emerald-400' : 'bg-rose-50 dark:bg-rose-950/50 text-rose-500 dark:text-rose-400' }}">
+                            <span class="h-9 w-9 rounded-sm flex items-center justify-center shrink-0 {{ $tr->type === 'income' ? 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-500 dark:text-emerald-400' : 'bg-rose-50 dark:bg-rose-950/50 text-rose-500 dark:text-rose-400' }}">
                                 @if($tr->type === 'income')
                                     <x-heroicon-o-arrow-down stroke-width="2.5" class="w-4 h-4" />
                                 @else
@@ -598,7 +567,7 @@
                             <p class="text-xs font-bold {{ $tr->type === 'income' ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400' }}">
                                 {{ $tr->type === 'income' ? '+' : '-' }} Rp {{ number_format($tr->amount, 0, ',', '.') }}
                             </p>
-                            <span class="mt-0.5 inline-block px-2 py-0.5 text-[9px] font-bold rounded-full uppercase
+                            <span class="mt-0.5 inline-block px-2 py-0.5 text-[9px] font-bold rounded-sm uppercase
                                 {{ $tr->status === 'completed' ? 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400' : ($tr->status === 'pending' ? 'bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400' : 'bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400') }}">
                                 {{ $tr->status }}
                             </span>
@@ -613,13 +582,13 @@
         </div>
 
         {{-- Log Aktivitas Sistem --}}
-        <div class="bg-white dark:bg-slate-800 rounded-md border border-neutral-100 dark:border-slate-700 p-5 shadow-sm shadow-black/[0.02] flex flex-col">
+        <div class="bg-white dark:bg-slate-800 rounded-sm border border-neutral-100 dark:border-slate-700 p-5 shadow-sm shadow-black/[0.02] flex flex-col">
             <div class="flex items-center justify-between pb-4 border-b border-neutral-100 dark:border-slate-700">
                 <div>
                     <h2 class="text-base font-bold text-neutral-900 dark:text-white">Log Aktivitas</h2>
                     <p class="text-xs text-neutral-400">Riwayat aksi sistem terkini dari seluruh unit</p>
                 </div>
-                <a href="{{ Route::has('master.audit-logs.index') ? route('master.audit-logs.index') : '#' }}" class="text-xs font-bold text-neutral-900 dark:text-white hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors shrink-0">
+                <a href="{{ Route::has('master.audit-logs.index') ? route('master.audit-logs.index') : '#' }}" class="text-xs font-bold text-[#0d3b74] dark:text-white hover:text-blue-700 dark:hover:text-neutral-300 transition-colors shrink-0">
                     Lihat Semua Audit Log &rarr;
                 </a>
             </div>
@@ -627,14 +596,14 @@
             <div class="mt-2 space-y-1">
                 @forelse ($logs as $log)
                     @php $info = $this->eventInfo($log->event); @endphp
-                    <div class="p-3 rounded-md hover:bg-neutral-50 dark:hover:bg-slate-900/50 border border-transparent hover:border-neutral-100 dark:hover:border-slate-700 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <div class="p-3 rounded-sm hover:bg-neutral-50 dark:hover:bg-slate-900/50 border border-transparent hover:border-neutral-100 dark:hover:border-slate-700 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                         <div class="flex items-center gap-3 min-w-0">
-                            <span class="h-9 w-9 rounded-2xl bg-neutral-50 dark:bg-slate-900 text-neutral-500 dark:text-neutral-400 flex items-center justify-center shrink-0">
+                            <span class="h-9 w-9 rounded-sm bg-blue-50 dark:bg-slate-900 text-[#0d3b74] dark:text-neutral-400 flex items-center justify-center shrink-0">
                                 <x-heroicon-o-clock class="w-4 h-4" />
                             </span>
                             <div class="min-w-0">
                                 <div class="flex items-center gap-2">
-                                    <span class="px-2 py-0.5 text-[9px] font-bold rounded-[2px] border {{ $info['class'] }}">
+                                    <span class="px-2 py-0.5 text-[9px] font-bold rounded-sm border {{ $info['class'] }}">
                                         {{ $info['label'] }}
                                     </span>
                                 </div>
@@ -657,7 +626,7 @@
     </div>
 
     {{-- ================= TABEL ADMIN & HAK AKSES ================= --}}
-    <div class="bg-white dark:bg-slate-800 rounded-md border border-neutral-100 dark:border-slate-700 overflow-hidden shadow-sm shadow-black/[0.02] flex flex-col justify-between">
+    <div class="bg-white dark:bg-slate-800 rounded-sm border border-neutral-100 dark:border-slate-700 overflow-hidden shadow-sm shadow-black/[0.02] flex flex-col justify-between">
         <div>
             {{-- Header Tabel & Filter --}}
             <div class="p-5 border-b border-neutral-100 dark:border-slate-700 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -671,7 +640,7 @@
                     <input type="text"
                         wire:model.live.debounce.300ms="searchAdmin"
                         placeholder="Cari nama/email..."
-                        class="w-full sm:w-64 pl-9 pr-3 py-2.5 text-xs bg-white dark:bg-slate-900 border border-neutral-200 dark:border-slate-700 text-neutral-800 dark:text-neutral-100 placeholder-neutral-400 rounded-[3px] focus:outline-none focus:ring-2 focus:ring-red-500/10 focus:border-red-400 transition-all shadow-sm shadow-black/[0.02]">
+                        class="w-full sm:w-64 pl-9 pr-3 py-2.5 text-xs bg-white dark:bg-slate-900 border border-neutral-200 dark:border-slate-700 text-neutral-800 dark:text-neutral-100 placeholder-neutral-400 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400 transition-all shadow-sm shadow-black/[0.02]">
                     <x-heroicon-o-magnifying-glass class="w-4 h-4 text-neutral-400 absolute left-3 top-3" />
                 </div>
             </div>
@@ -693,7 +662,7 @@
                             <tr class="hover:bg-neutral-50/60 dark:hover:bg-slate-700/30 transition-colors">
                                 <td class="px-5 py-3.5">
                                     <div class="flex items-center gap-3">
-                                        <span class="h-9 w-9 rounded-2xl bg-neutral-50 dark:bg-slate-900 text-neutral-600 dark:text-neutral-300 flex items-center justify-center text-xs font-bold shrink-0">
+                                        <span class="h-9 w-9 rounded-sm bg-blue-50 dark:bg-slate-900 text-[#0d3b74] dark:text-neutral-300 flex items-center justify-center text-xs font-bold shrink-0">
                                             {{ collect(explode(' ', $user->name))->map(fn ($w) => strtoupper(substr($w, 0, 1)))->take(2)->implode('') }}
                                         </span>
                                         <div class="min-w-0">
@@ -706,7 +675,7 @@
                                     {{ (method_exists($user, 'isMasterAdmin') && $user->isMasterAdmin()) ? 'Semua Unit' : ($user->unit->name ?? '—') }}
                                 </td>
                                 <td class="px-5 py-3.5">
-                                    <span class="px-2.5 py-1 text-[10px] font-bold tracking-wide rounded-[2px] {{ (method_exists($user, 'isMasterAdmin') && $user->isMasterAdmin()) ? 'bg-violet-50 dark:bg-violet-950/50 text-violet-600 dark:text-violet-400' : 'bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400' }}">
+                                    <span class="px-2.5 py-1 text-[10px] font-bold tracking-wide rounded-sm {{ (method_exists($user, 'isMasterAdmin') && $user->isMasterAdmin()) ? 'bg-[#0d3b74] text-white' : 'bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400' }}">
                                         {{ (method_exists($user, 'isMasterAdmin') && $user->isMasterAdmin()) ? 'Master Admin' : 'Admin Unit' }}
                                     </span>
                                 </td>
@@ -715,7 +684,7 @@
                                 </td>
                                 <td class="px-5 py-3.5 text-right">
                                     <span class="inline-flex items-center gap-1.5 text-xs font-semibold {{ $user->is_active ? 'text-emerald-600 dark:text-emerald-400' : 'text-neutral-400' }}">
-                                        <span class="h-1.5 w-1.5 rounded-full {{ $user->is_active ? 'bg-emerald-500' : 'bg-neutral-300 dark:bg-slate-600' }}"></span>
+                                        <span class="h-1.5 w-1.5 rounded-sm {{ $user->is_active ? 'bg-emerald-500' : 'bg-neutral-300 dark:bg-slate-600' }}"></span>
                                         {{ $user->is_active ? 'Aktif' : 'Nonaktif' }}
                                     </span>
                                 </td>
@@ -735,7 +704,7 @@
         {{-- Footer Tabel --}}
         <div class="p-4 border-t border-neutral-100 dark:border-slate-700 bg-neutral-50/40 dark:bg-slate-900/40 flex items-center justify-between text-xs text-neutral-400">
             <span>Menampilkan {{ count($users) }} admin terdaftar</span>
-            <a href="{{ Route::has('master.users.index') ? route('master.users.index') : '#' }}" class="font-bold text-neutral-900 dark:text-white hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors">Kelola Semua Admin &rarr;</a>
+            <a href="{{ Route::has('master.users.index') ? route('master.users.index') : '#' }}" class="font-bold text-[#0d3b74] dark:text-white hover:text-blue-700 dark:hover:text-neutral-300 transition-colors">Kelola Semua Admin &rarr;</a>
         </div>
     </div>
 
@@ -746,7 +715,7 @@
         <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
             <div x-show="showAdminModal" x-transition.opacity class="fixed inset-0 bg-neutral-900/40 backdrop-blur-xs" @click="showAdminModal = false"></div>
             <span class="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
-            <div x-show="showAdminModal" x-transition.scale.95 class="inline-block align-bottom bg-white dark:bg-slate-800 rounded-md text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full p-6">
+            <div x-show="showAdminModal" x-transition.scale.95 class="inline-block align-bottom bg-white dark:bg-slate-800 rounded-sm text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full p-6">
                 <div class="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-slate-700">
                     <h3 class="text-sm font-bold text-neutral-900 dark:text-white">+ Tambah Admin Baru</h3>
                     <button @click="showAdminModal = false" class="text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200">
@@ -756,15 +725,15 @@
                 <form class="mt-4 space-y-3" @submit.prevent="showAdminModal = false">
                     <div>
                         <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Nama Lengkap</label>
-                        <input type="text" placeholder="Masukkan nama" class="w-full px-3 py-2.5 text-xs border border-neutral-200 dark:border-slate-700 dark:bg-slate-900 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500/10 focus:border-red-400">
+                        <input type="text" placeholder="Masukkan nama" class="w-full px-3 py-2.5 text-xs border border-neutral-200 dark:border-slate-700 dark:bg-slate-900 dark:text-white rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400">
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Alamat Email</label>
-                        <input type="email" placeholder="email@sekolah.sch.id" class="w-full px-3 py-2.5 text-xs border border-neutral-200 dark:border-slate-700 dark:bg-slate-900 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500/10 focus:border-red-400">
+                        <input type="email" placeholder="email@sekolah.sch.id" class="w-full px-3 py-2.5 text-xs border border-neutral-200 dark:border-slate-700 dark:bg-slate-900 dark:text-white rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400">
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Unit Kerja</label>
-                        <select class="w-full px-3 py-2.5 text-xs border border-neutral-200 dark:border-slate-700 dark:bg-slate-900 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500/10 focus:border-red-400">
+                        <select class="w-full px-3 py-2.5 text-xs border border-neutral-200 dark:border-slate-700 dark:bg-slate-900 dark:text-white rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400">
                             <option value="">Pilih Unit...</option>
                             @foreach($units as $u)
                                 <option value="{{ $u->id }}">{{ $u->name }}</option>
@@ -772,8 +741,8 @@
                         </select>
                     </div>
                     <div class="pt-3 flex justify-end gap-2">
-                        <button type="button" @click="showAdminModal = false" class="px-4 py-2.5 text-xs font-semibold text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-slate-700 rounded-full transition-colors">Batal</button>
-                        <button type="submit" class="px-4 py-2.5 text-xs font-semibold text-white bg-blue-900 rounded-full shadow-sm shadow-blue-900/20 hover:bg-blue-950 transition-colors">Simpan Admin</button>
+                        <button type="button" @click="showAdminModal = false" class="px-4 py-2.5 text-xs font-semibold text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-slate-700 rounded-sm transition-colors">Batal</button>
+                        <button type="submit" class="px-4 py-2.5 text-xs font-semibold text-white bg-blue-900 rounded-sm shadow-sm shadow-blue-900/20 hover:bg-blue-950 transition-colors">Simpan Admin</button>
                     </div>
                 </form>
             </div>
@@ -785,7 +754,7 @@
         <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
             <div x-show="showUnitModal" x-transition.opacity class="fixed inset-0 bg-neutral-900/40 backdrop-blur-xs" @click="showUnitModal = false"></div>
             <span class="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
-            <div x-show="showUnitModal" x-transition.scale.95 class="inline-block align-bottom bg-white dark:bg-slate-800 rounded-md text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full p-6">
+            <div x-show="showUnitModal" x-transition.scale.95 class="inline-block align-bottom bg-white dark:bg-slate-800 rounded-sm text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full p-6">
                 <div class="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-slate-700">
                     <h3 class="text-sm font-bold text-neutral-900 dark:text-white">+ Tambah Unit Usaha</h3>
                     <button @click="showUnitModal = false" class="text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200">
@@ -795,15 +764,15 @@
                 <form class="mt-4 space-y-3" @submit.prevent="showUnitModal = false">
                     <div>
                         <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Nama Unit Usaha</label>
-                        <input type="text" placeholder="Contoh: Kantin Utama, Unit Print & Copy" class="w-full px-3 py-2.5 text-xs border border-neutral-200 dark:border-slate-700 dark:bg-slate-900 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500/10 focus:border-red-400">
+                        <input type="text" placeholder="Contoh: Kantin Utama, Unit Print & Copy" class="w-full px-3 py-2.5 text-xs border border-neutral-200 dark:border-slate-700 dark:bg-slate-900 dark:text-white rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400">
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Jurusan / Departemen</label>
-                        <input type="text" placeholder="Contoh: Tata Boga, RPL, Dll" class="w-full px-3 py-2.5 text-xs border border-neutral-200 dark:border-slate-700 dark:bg-slate-900 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500/10 focus:border-red-400">
+                        <input type="text" placeholder="Contoh: Tata Boga, RPL, Dll" class="w-full px-3 py-2.5 text-xs border border-neutral-200 dark:border-slate-700 dark:bg-slate-900 dark:text-white rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400">
                     </div>
                     <div class="pt-3 flex justify-end gap-2">
-                        <button type="button" @click="showUnitModal = false" class="px-4 py-2.5 text-xs font-semibold text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-slate-700 rounded-full transition-colors">Batal</button>
-                        <button type="submit" class="px-4 py-2.5 text-xs font-semibold text-white bg-blue-900 rounded-full shadow-sm shadow-blue-900/20 hover:bg-blue-950 transition-colors">Simpan Unit</button>
+                        <button type="button" @click="showUnitModal = false" class="px-4 py-2.5 text-xs font-semibold text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-slate-700 rounded-sm transition-colors">Batal</button>
+                        <button type="submit" class="px-4 py-2.5 text-xs font-semibold text-white bg-blue-900 rounded-sm shadow-sm shadow-blue-900/20 hover:bg-blue-950 transition-colors">Simpan Unit</button>
                     </div>
                 </form>
             </div>
