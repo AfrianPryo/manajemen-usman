@@ -15,6 +15,7 @@ use App\Livewire\Master\Documents\SignatureSettings as DocumentsSignatureSetting
 use App\Livewire\Master\Documents\TemplateManager as DocumentsTemplateManager;
 use App\Livewire\Master\Exports\Index as ExportsIndex;
 use App\Livewire\Master\Inventory\Index as InventoryIndex;
+use App\Livewire\Master\LogArchives\Index as LogArchivesIndex;
 use App\Livewire\Master\Notifications\Index as NotificationsIndex;
 use App\Livewire\Master\Profile\Index as ProfileIndex;
 use App\Livewire\Master\Purchasing\Index as MasterPurchasingIndex;
@@ -43,6 +44,7 @@ use App\Livewire\Unit\Purchasing\Index as UnitPurchasingIndex;
 use App\Livewire\Unit\RecurringTransaction\Index as UnitRecurringTransactionIndex;
 use App\Livewire\Unit\ServiceOrder\Index as UnitServiceOrderIndex;
 use App\Livewire\Unit\Transactions\Index as UnitTransactionsIndex;
+use App\Http\Middleware\EnsureSessionNotExpired;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -73,7 +75,12 @@ if (app()->environment('local', 'testing')) {
 }
 
 // 3. Base Authenticated Routes (Butuh Login, Status Aktif, dan Sesi Tunggal)
-Route::middleware(['auth', 'user.active', 'single.session'])->group(function () {
+// EnsureSessionNotExpired didaftarkan langsung pakai nama class (bukan
+// alias string) supaya tidak perlu mendaftarkan alias baru di
+// bootstrap/app.php -- durasi timeout-nya sendiri diatur dari menu
+// Pengaturan > Fitur & Modul > Sesi & Keamanan, default MATI sampai
+// admin mengaktifkannya (lihat App\Http\Middleware\EnsureSessionNotExpired).
+Route::middleware(['auth', 'user.active', 'single.session', EnsureSessionNotExpired::class])->group(function () {
 
     // Logout Action
     Route::post('/logout', function () {
@@ -179,15 +186,14 @@ Route::middleware(['auth', 'user.active', 'single.session'])->group(function () 
             // seluruh unit tanpa perlu dijaga middleware 'unit.access'.
             Route::get('/service-orders', MasterServiceOrderIndex::class)->name('service-orders.index');
 
-            // ================= PEMBELIAN (LINTAS UNIT, READ-ONLY) =================
+            // ================= PEMBELIAN (LINTAS UNIT) =================
             // Pasangan lintas-unit dari 'unit.purchasing.index' di bawah.
-            // BERBEDA dengan 'service-orders.index' di atas (yang punya form
-            // Tambah/Edit sendiri di sisi Master): modul ini SENGAJA
-            // read-only -- pembelian tetap harus dicatat dari sisi Unit yang
-            // benar-benar berbelanja (supaya stok & transaksi keuangannya
-            // otomatis terkunci ke unit yang benar), Master Admin di sini
-            // hanya merekap total belanja lintas-unit per vendor untuk
-            // keperluan negosiasi kontrak vendor terpusat. Tidak ada
+            // Sama seperti 'service-orders.index' di atas, modul ini punya
+            // form Catat Pembelian & aksi Batalkan sendiri di sisi Master
+            // (form-nya memakai pilihan Unit Usaha, sehingga stok &
+            // transaksi keuangan yang dibuat tetap terkunci ke unit yang
+            // dipilih), selain merekap total belanja lintas-unit per vendor
+            // untuk keperluan negosiasi kontrak vendor terpusat. Tidak ada
             // middleware 'unit.category:...' (sama seperti customers.index &
             // analytics.index) karena Pembelian berlaku untuk SEMUA kategori
             // unit, bukan cuma 'jasa'.
@@ -199,6 +205,11 @@ Route::middleware(['auth', 'user.active', 'single.session'])->group(function () 
             // System
             Route::get('/activities', ActivitiesIndex::class)->name('activities.index');
             Route::get('/audit-logs', AuditLogsIndex::class)->name('audit-logs.index');
+
+            // Arsip Log: daftar file arsip Excel per bulan (hasil rotasi
+            // otomatis log login & audit log -- lihat 'logs:archive' di
+            // routes/console.php) + download. Khusus Master Admin.
+            Route::get('/log-archives', LogArchivesIndex::class)->name('log-archives.index');
 
             // ================= PENGUMUMAN (BROADCAST KE SELURUH UNIT ADMIN) =================
             // Reuse penuh infrastruktur notifikasi App\Notifications\SystemNotification

@@ -17,6 +17,12 @@ class AuthLogExport implements FromQuery, WithHeadings, WithMapping, WithTitle, 
 {
     use Exportable;
 
+    // Filter opsional (selain 'search' & 'eventFilter') yang dipakai oleh
+    // App\Services\LogArchiveService untuk mengekspor satu bulan penuh:
+    //   'createdFrom'   => 'Y-m-d H:i:s' (created_at >= ini)
+    //   'createdBefore' => 'Y-m-d H:i:s' (created_at <  ini)
+    //   'maxId'         => int           (id <= ini, "snapshot" saat arsip)
+
     protected array $filters;
 
     public function __construct(array $filters = [])
@@ -39,7 +45,13 @@ class AuthLogExport implements FromQuery, WithHeadings, WithMapping, WithTitle, 
                 });
             })
             ->when($this->filters['eventFilter'] ?? null, fn ($q, $val) => $q->where('event', $val))
-            ->latest('created_at');
+            ->when($this->filters['createdFrom'] ?? null, fn ($q, $val) => $q->where('created_at', '>=', $val))
+            ->when($this->filters['createdBefore'] ?? null, fn ($q, $val) => $q->where('created_at', '<', $val))
+            ->when($this->filters['maxId'] ?? null, fn ($q, $val) => $q->where('id', '<=', $val))
+            ->latest('created_at')
+            // Tie-breaker: banyak log punya created_at yang sama (per detik),
+            // tanpa ini urutan antar-chunk export bisa tidak stabil.
+            ->orderByDesc('id');
     }
 
     public function headings(): array

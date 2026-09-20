@@ -1,10 +1,19 @@
 <div class="w-full max-w-[1500px] mx-auto space-y-5 text-neutral-800 dark:text-neutral-100 px-4 py-4 sm:px-6 font-sans">
 
+    {{-- Flash Notification --}}
+    @if (session()->has('message'))
+        <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 4000)"
+             class="p-4 rounded-md bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 text-sm flex items-center justify-between">
+            <span class="font-medium">{{ session('message') }}</span>
+            <button @click="show = false" type="button" class="text-emerald-500 hover:text-emerald-700 dark:hover:text-emerald-300">&times;</button>
+        </div>
+    @endif
+
     {{-- Header Section --}}
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
             <h1 class="text-xl font-bold text-neutral-900 dark:text-white tracking-tight">Pembelian Lintas-Unit</h1>
-            <p class="text-xs text-neutral-400 mt-0.5">Rekap belanja ke vendor dari seluruh Unit Usaha. Pembelian dicatat dari sisi Unit masing-masing.</p>
+            <p class="text-xs text-neutral-400 mt-0.5">Pantau dan rekap belanja ke vendor dari seluruh Unit Usaha. Pencatatan pembelian dikelola langsung dari panel masing-masing Unit.</p>
         </div>
     </div>
 
@@ -85,6 +94,7 @@
                         <th class="px-4 py-3">Tanggal</th>
                         <th class="px-4 py-3 text-right">Total</th>
                         <th class="px-4 py-3 text-center">Status</th>
+                        <th class="px-4 py-3 text-center">Aksi</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-neutral-100 dark:divide-slate-700">
@@ -106,10 +116,19 @@
                                     <span class="text-[11px] font-medium px-2 py-1 rounded-full border bg-rose-100 text-rose-700 border-rose-200">Dibatalkan</span>
                                 @endif
                             </td>
+                            <td class="px-4 py-3.5 whitespace-nowrap text-center">
+                                <div class="flex items-center justify-center gap-1">
+                                    <button wire:click="viewDetail({{ $purchase->id }})"
+                                            class="p-1.5 text-sky-600 hover:text-sky-800 dark:text-sky-400 hover:bg-sky-50 dark:hover:bg-sky-950/40 rounded-md transition-all cursor-pointer"
+                                            title="Lihat Detail">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                                    </button>
+                                </div>
+                            </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="px-6 py-12 text-center text-xs text-neutral-400">
+                            <td colspan="7" class="px-6 py-12 text-center text-xs text-neutral-400">
                                 Belum ada pembelian yang tercatat dari unit manapun.
                             </td>
                         </tr>
@@ -129,5 +148,63 @@
             </div>
         </div>
     </div>
+
+
+    {{-- Modal Detail Pembelian --}}
+    @if($showDetailModal && $selectedPurchase)
+        <div class="fixed inset-0 z-50 flex items-center justify-center bg-neutral-900/60 backdrop-blur-sm p-4 overflow-y-auto">
+            <div class="bg-white dark:bg-slate-800 w-full max-w-lg rounded-lg border border-neutral-200 dark:border-slate-700 shadow-2xl overflow-hidden my-8 animate-in fade-in zoom-in duration-150">
+                <div class="p-5 border-b border-neutral-100 dark:border-slate-700 flex items-center justify-between bg-neutral-50/50 dark:bg-slate-900/50">
+                    <div>
+                        <h3 class="text-base font-bold text-neutral-900 dark:text-white">{{ $selectedPurchase->po_number }}</h3>
+                        <p class="text-xs text-neutral-400">Unit: {{ $selectedPurchase->unit?->name ?? '-' }} · Vendor: {{ $selectedPurchase->vendor?->name ?? '-' }}</p>
+                    </div>
+                    <button wire:click="closeDetailModal" class="text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 text-2xl font-bold leading-none">&times;</button>
+                </div>
+
+                <div class="p-6 space-y-4 text-xs">
+                    <div class="divide-y divide-neutral-100 dark:divide-slate-700 border border-neutral-100 dark:border-slate-700 rounded-md overflow-hidden">
+                        @foreach($selectedPurchase->items as $item)
+                            <div class="flex items-center justify-between px-3 py-2">
+                                <div>
+                                    <div class="font-medium text-neutral-800 dark:text-neutral-100">{{ $item['name'] }}</div>
+                                    <div class="text-[11px] text-neutral-400">{{ $item['qty'] }} x Rp {{ number_format($item['unit_price'], 0, ',', '.') }}</div>
+                                </div>
+                                <div class="font-semibold text-neutral-700 dark:text-neutral-200">Rp {{ number_format($item['subtotal'], 0, ',', '.') }}</div>
+                            </div>
+                        @endforeach
+                    </div>
+
+                    <div class="flex items-center justify-between font-bold text-sm text-neutral-900 dark:text-white pt-1">
+                        <span>Total</span>
+                        <span>Rp {{ number_format($selectedPurchase->total_amount, 0, ',', '.') }}</span>
+                    </div>
+
+                    @if($selectedPurchase->notes)
+                        <div class="text-[11px] text-neutral-500 bg-neutral-50 dark:bg-slate-900/50 rounded-md p-2.5">
+                            {{ $selectedPurchase->notes }}
+                        </div>
+                    @endif
+
+                    <div class="text-[11px] text-neutral-400">
+                        Status:
+                        @if($selectedPurchase->status === 'completed')
+                            <span class="font-semibold text-emerald-600">Selesai</span>
+                        @else
+                            <span class="font-semibold text-rose-600">Dibatalkan</span>
+                        @endif
+                    </div>
+
+                    <div class="pt-3 border-t border-neutral-100 dark:border-slate-700 flex items-center justify-end gap-2.5">
+                        {{-- Read-only: pembatalan pembelian hanya dilakukan dari panel Unit terkait. --}}
+                        <button type="button" wire:click="closeDetailModal"
+                                class="px-4 py-2 text-xs font-semibold text-neutral-600 dark:text-neutral-300 bg-neutral-100 dark:bg-slate-700 rounded-md hover:bg-neutral-200 dark:hover:bg-slate-600 transition-all cursor-pointer">
+                            Tutup
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
 
 </div>

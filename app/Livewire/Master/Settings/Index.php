@@ -7,6 +7,8 @@ use App\Models\Setting;
 use App\Models\User;
 use App\Notifications\SystemNotification;
 use App\Services\FonnteOtpService;
+use App\Services\LogArchiveService;
+use App\Services\RoutineReportService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
@@ -52,7 +54,11 @@ class Index extends Component
     public string $appName = '';
     public bool $maintenanceMode = false;
 
-    // 2a. Fitur & Modul — Akses Fitur & Otomatisasi
+    // 2a. Fitur & Modul — Logo Aplikasi (dipakai di sidebar Master & seluruh Unit)
+    public $logo;
+    public ?string $existingLogo = null;
+
+    // 2b. Fitur & Modul — Akses Fitur & Otomatisasi
     public bool $allowMultiUnitAdmin = true;
     public string $defaultCategory = 'ritel';
 
@@ -61,6 +67,41 @@ class Index extends Component
     public string $waProvider = 'fonnte';
     public string $waSenderNumber = '';
     public string $waApiKey = '';
+
+    // 3b. Preferensi Notifikasi per Channel -- kategori WA non-OTP yang
+    // boleh dimatikan admin satu per satu, tanpa mematikan OTP (OTP selalu
+    // wajib terkirim, tidak ada toggle-nya di sini). Lihat gerbang
+    // sesungguhnya di App\Services\FonnteOtpService::channelEnabled().
+    public bool $waNotifyCredentials = true;
+    public bool $waNotifyAnnouncements = true;
+
+    // 3c. Laporan Rutin Otomatis -- ringkasan aspek penting sistem
+    // (keuangan, unit usaha, admin, stok, dst) dikirim berkala ke
+    // seluruh Admin Master aktif via WhatsApp. Lihat
+    // App\Services\RoutineReportService (isi & jadwal pengiriman) dan
+    // App\Console\Commands\SendRoutineReport (pemicu terjadwal, lihat
+    // routes/console.php).
+    public bool $reportRoutineEnabled = false;
+    public string $reportRoutineFrequency = 'daily'; // 'daily' | 'weekly' | 'monthly'
+    public string $reportRoutineTime = '07:00';
+    public int $reportRoutineDayOfWeek = 1; // 0=Minggu ... 6=Sabtu (dipakai kalau frequency='weekly')
+    public int $reportRoutineDayOfMonth = 1; // 1-28 (dipakai kalau frequency='monthly')
+    public array $reportRoutineSections = []; // subset key dari RoutineReportService::SECTIONS
+    public ?string $reportRoutineLastSentAt = null; // info saja (read-only), diisi service saat kirim
+
+    // 3d. Sesi & Keamanan -- auto-logout karena idle. Lihat
+    // App\Http\Middleware\EnsureSessionNotExpired untuk implementasinya.
+    public bool $sessionTimeoutEnabled = false;
+    public int $sessionTimeoutMasterMinutes = 60;
+    public int $sessionTimeoutUnitMinutes = 30;
+
+    // 3e. Retensi & Arsip Log -- berapa hari log login & audit log "hidup"
+    // di tabel utama sebelum diarsipkan ke Excel per bulan lalu dihapus dari
+    // tabel. Lihat App\Services\LogArchiveService & command `logs:archive`
+    // (routes/console.php). Sengaja TIDAK di-type int: input number yang
+    // dikosongkan mengirim string '' dan Livewire akan error kalau
+    // properti bertipe int; validasi 'integer' di saveFeatures() yang menjaga.
+    public $logRetentionDays = LogArchiveService::DEFAULT_RETENTION_DAYS;
 
     public function mount(): void
     {
@@ -75,6 +116,7 @@ class Index extends Component
         $this->existingAvatar = $user->profile_photo_path;
 
         $this->appName          = Setting::get('app_name', 'USMAN - Usaha Mandiri Sekolah');
+        $this->existingLogo     = Setting::get('app_logo');
         $this->maintenanceMode  = (bool) Setting::get('maintenance_mode', false);
 
         $this->defaultCategory     = Setting::get('default_category', 'ritel');
@@ -84,6 +126,27 @@ class Index extends Component
         $this->waProvider            = Setting::get('wa_provider', 'fonnte');
         $this->waSenderNumber        = Setting::get('wa_sender_number', '');
         $this->waApiKey              = Setting::get('wa_api_key', '');
+
+        $this->waNotifyCredentials    = (bool) Setting::get('wa_notify_credentials', true);
+        $this->waNotifyAnnouncements  = (bool) Setting::get('wa_notify_announcements', true);
+
+        $this->reportRoutineEnabled      = (bool) Setting::get('report_routine_enabled', false);
+        $this->reportRoutineFrequency    = Setting::get('report_routine_frequency', 'daily');
+        $this->reportRoutineTime         = Setting::get('report_routine_time', '07:00');
+        $this->reportRoutineDayOfWeek    = (int) Setting::get('report_routine_day_of_week', 1);
+        $this->reportRoutineDayOfMonth   = (int) Setting::get('report_routine_day_of_month', 1);
+        $this->reportRoutineLastSentAt   = Setting::get('report_routine_last_sent_at');
+
+        $storedSections = json_decode(Setting::get('report_routine_sections', ''), true);
+        $this->reportRoutineSections = is_array($storedSections) && ! empty($storedSections)
+            ? array_values(array_intersect($storedSections, array_keys(RoutineReportService::SECTIONS)))
+            : array_keys(RoutineReportService::SECTIONS);
+
+        $this->sessionTimeoutEnabled       = (bool) Setting::get('session_timeout_enabled', false);
+        $this->sessionTimeoutMasterMinutes = (int) Setting::get('session_timeout_master_minutes', 60);
+        $this->sessionTimeoutUnitMinutes   = (int) Setting::get('session_timeout_unit_minutes', 30);
+
+        $this->logRetentionDays = app(LogArchiveService::class)->retentionDays();
     }
 
     public function setTab(string $tab): void
@@ -448,6 +511,33 @@ class Index extends Component
         $this->reset(['phoneOtp', 'phoneOtpRequested']);
     }
 
+    /**
+     * Hapus logo aplikasi yang tersimpan, sidebar Master & Unit otomatis
+     * kembali memakai ikon/inisial default (lihat components/layouts/app.blade.php
+     * dan unit/app.blade.php).
+     */
+    public function removeLogo(): void
+    {
+        if (! $this->canAccessFeaturesTab()) {
+            abort(403);
+        }
+
+        if ($this->existingLogo && Storage::disk('public')->exists($this->existingLogo)) {
+            Storage::disk('public')->delete($this->existingLogo);
+        }
+
+        Setting::set('app_logo', null);
+        $this->existingLogo = null;
+
+        AuditLog::record(
+            event: 'SETTINGS_UPDATED',
+            identifier: Auth::user()->username ?? null,
+            description: 'Admin master menghapus logo aplikasi (kembali ke default).',
+        );
+
+        session()->flash('success', 'Logo aplikasi berhasil dihapus, sidebar kembali memakai ikon default.');
+    }
+
     /*
     |--------------------------------------------------------------------------
     | FITUR & MODUL — gabungan Parameter Aplikasi (dulu tab "Preferensi Sistem")
@@ -467,12 +557,41 @@ class Index extends Component
         $this->validate([
             // Parameter Aplikasi
             'appName' => 'required|string|max:50',
+            'logo'    => 'nullable|image|max:2048',
 
             // Akses Fitur & Otomatisasi
             'defaultCategory' => 'required|in:ritel,jasa',
             'waProvider'      => 'nullable|string|in:fonnte,wablas,twilio,lainnya',
             'waSenderNumber'  => 'required_if:enableWaNotifications,true|nullable|string|max:20',
             'waApiKey'        => 'required_if:enableWaNotifications,true|nullable|string|max:255',
+
+            // Preferensi Notifikasi per Channel
+            'waNotifyCredentials'   => 'boolean',
+            'waNotifyAnnouncements' => 'boolean',
+
+            // Laporan Rutin Otomatis
+            'reportRoutineEnabled'      => 'boolean',
+            'reportRoutineFrequency'    => 'required_if:reportRoutineEnabled,true|nullable|in:daily,weekly,monthly',
+            'reportRoutineTime'         => 'required_if:reportRoutineEnabled,true|nullable|date_format:H:i',
+            'reportRoutineDayOfWeek'    => 'required_if:reportRoutineFrequency,weekly|nullable|integer|min:0|max:6',
+            'reportRoutineDayOfMonth'   => 'required_if:reportRoutineFrequency,monthly|nullable|integer|min:1|max:28',
+            'reportRoutineSections'     => 'required_if:reportRoutineEnabled,true|array|min:1',
+            'reportRoutineSections.*'   => 'string|in:' . implode(',', array_keys(RoutineReportService::SECTIONS)),
+
+            // Sesi & Keamanan
+            'sessionTimeoutEnabled'       => 'boolean',
+            'sessionTimeoutMasterMinutes' => 'required_if:sessionTimeoutEnabled,true|nullable|integer|min:5|max:1440',
+            'sessionTimeoutUnitMinutes'   => 'required_if:sessionTimeoutEnabled,true|nullable|integer|min:5|max:1440',
+
+            // Retensi & Arsip Log
+            'logRetentionDays' => 'required|integer|min:' . LogArchiveService::MIN_RETENTION_DAYS . '|max:' . LogArchiveService::MAX_RETENTION_DAYS,
+        ], [
+            'logRetentionDays.required' => 'Batas retensi log wajib diisi.',
+            'logRetentionDays.integer'  => 'Batas retensi log harus berupa angka bulat (hari).',
+            'logRetentionDays.min'      => 'Batas retensi log minimal ' . LogArchiveService::MIN_RETENTION_DAYS . ' hari.',
+            'logRetentionDays.max'      => 'Batas retensi log maksimal ' . LogArchiveService::MAX_RETENTION_DAYS . ' hari.',
+            'reportRoutineSections.required_if' => 'Pilih minimal satu kategori laporan yang ingin dikirim.',
+            'reportRoutineSections.min'          => 'Pilih minimal satu kategori laporan yang ingin dikirim.',
         ]);
 
         $user = Auth::user();
@@ -481,16 +600,40 @@ class Index extends Component
         // Catatan: 'wa_api_key' sengaja TIDAK ikut dicatat (data sensitif/kredensial).
         $oldValues = [
             'app_name'                => Setting::get('app_name'),
+            'app_logo'                => Setting::get('app_logo'),
             'maintenance_mode'        => (bool) Setting::get('maintenance_mode', false),
             'default_category'       => Setting::get('default_category'),
             'allow_multi_unit_admin' => (bool) Setting::get('allow_multi_unit_admin', true),
             'enable_wa_notifications'=> (bool) Setting::get('enable_wa_notifications', false),
             'wa_provider'            => Setting::get('wa_provider'),
             'wa_sender_number'       => Setting::get('wa_sender_number'),
+            'wa_notify_credentials'   => (bool) Setting::get('wa_notify_credentials', true),
+            'wa_notify_announcements' => (bool) Setting::get('wa_notify_announcements', true),
+            'report_routine_enabled'        => (bool) Setting::get('report_routine_enabled', false),
+            'report_routine_frequency'      => Setting::get('report_routine_frequency'),
+            'report_routine_time'           => Setting::get('report_routine_time'),
+            'report_routine_day_of_week'    => (int) Setting::get('report_routine_day_of_week', 1),
+            'report_routine_day_of_month'   => (int) Setting::get('report_routine_day_of_month', 1),
+            'report_routine_sections'       => Setting::get('report_routine_sections'),
+            'session_timeout_enabled'        => (bool) Setting::get('session_timeout_enabled', false),
+            'session_timeout_master_minutes' => (int) Setting::get('session_timeout_master_minutes', 60),
+            'session_timeout_unit_minutes'   => (int) Setting::get('session_timeout_unit_minutes', 30),
+            'log_retention_days'             => app(LogArchiveService::class)->retentionDays(),
         ];
+
+        // Proses ganti logo (kalau ada file baru diupload). Logo lama
+        // dihapus dari disk supaya tidak menumpuk file yatim.
+        if ($this->logo) {
+            if ($this->existingLogo && Storage::disk('public')->exists($this->existingLogo)) {
+                Storage::disk('public')->delete($this->existingLogo);
+            }
+            $this->existingLogo = $this->logo->store('logos', 'public');
+            $this->reset('logo');
+        }
 
         // Parameter Aplikasi
         Setting::set('app_name', $this->appName);
+        Setting::set('app_logo', $this->existingLogo);
         Setting::set('maintenance_mode', $this->maintenanceMode);
 
         // Akses Fitur & Otomatisasi
@@ -502,6 +645,30 @@ class Index extends Component
         Setting::set('wa_sender_number', $this->waSenderNumber);
         Setting::set('wa_api_key', $this->waApiKey);
 
+        // Preferensi Notifikasi per Channel
+        Setting::set('wa_notify_credentials', $this->waNotifyCredentials);
+        Setting::set('wa_notify_announcements', $this->waNotifyAnnouncements);
+
+        // Laporan Rutin Otomatis
+        Setting::set('report_routine_enabled', $this->reportRoutineEnabled);
+        Setting::set('report_routine_frequency', $this->reportRoutineFrequency);
+        Setting::set('report_routine_time', $this->reportRoutineTime);
+        Setting::set('report_routine_day_of_week', $this->reportRoutineDayOfWeek);
+        Setting::set('report_routine_day_of_month', $this->reportRoutineDayOfMonth);
+        // Disimpan sebagai JSON string (bukan array PHP mentah) karena
+        // Setting::set() men-cast value ke (string) -- array mentah akan
+        // rusak jadi literal "Array". Dibaca balik lewat json_decode() di
+        // mount() & RoutineReportService::enabledSections().
+        Setting::set('report_routine_sections', json_encode(array_values($this->reportRoutineSections)));
+
+        // Sesi & Keamanan
+        Setting::set('session_timeout_enabled', $this->sessionTimeoutEnabled);
+        Setting::set('session_timeout_master_minutes', $this->sessionTimeoutMasterMinutes ?: 60);
+        Setting::set('session_timeout_unit_minutes', $this->sessionTimeoutUnitMinutes ?: 30);
+
+        // Retensi & Arsip Log
+        Setting::set('log_retention_days', (int) $this->logRetentionDays);
+
         AuditLog::record(
             event: 'SETTINGS_UPDATED',
             identifier: $user->username ?? null,
@@ -509,12 +676,25 @@ class Index extends Component
             oldValues: $oldValues,
             newValues: [
                 'app_name'                => $this->appName,
+                'app_logo'                => $this->existingLogo,
                 'maintenance_mode'        => $this->maintenanceMode,
                 'default_category'        => $this->defaultCategory,
                 'allow_multi_unit_admin'  => $this->allowMultiUnitAdmin,
                 'enable_wa_notifications' => $this->enableWaNotifications,
                 'wa_provider'             => $this->waProvider,
                 'wa_sender_number'        => $this->waSenderNumber,
+                'wa_notify_credentials'   => $this->waNotifyCredentials,
+                'wa_notify_announcements' => $this->waNotifyAnnouncements,
+                'report_routine_enabled'        => $this->reportRoutineEnabled,
+                'report_routine_frequency'      => $this->reportRoutineFrequency,
+                'report_routine_time'           => $this->reportRoutineTime,
+                'report_routine_day_of_week'    => $this->reportRoutineDayOfWeek,
+                'report_routine_day_of_month'   => $this->reportRoutineDayOfMonth,
+                'report_routine_sections'       => $this->reportRoutineSections,
+                'session_timeout_enabled'        => $this->sessionTimeoutEnabled,
+                'session_timeout_master_minutes' => $this->sessionTimeoutMasterMinutes,
+                'session_timeout_unit_minutes'   => $this->sessionTimeoutUnitMinutes,
+                'log_retention_days'             => (int) $this->logRetentionDays,
             ],
         );
 

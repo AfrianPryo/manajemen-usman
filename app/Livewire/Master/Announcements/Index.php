@@ -158,7 +158,7 @@ class Index extends Component
                 // "berhasil dijadwalkan untuk dikirim", bukan lagi "sudah
                 // terkirim" -- kegagalan pengiriman asli (kalau ada) hanya
                 // tercatat di log job, bukan lagi terlihat real-time di sini.
-                if ($fonnte->sendPlainMessageAsync($user->phone, $waText)) {
+                if ($fonnte->sendPlainMessageAsync($user->phone, $waText, FonnteOtpService::CATEGORY_ANNOUNCEMENT)) {
                     $waSentCount++;
                 } else {
                     $waSkipped[] = "{$user->name} (gagal dijadwalkan)";

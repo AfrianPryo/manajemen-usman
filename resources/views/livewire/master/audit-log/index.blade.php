@@ -7,6 +7,14 @@
         </div>
 
         <div class="flex items-center gap-2.5 shrink-0">
+            {{-- Pintasan ke arsip log bulanan (data lama yang sudah dirotasi) --}}
+            @if (Route::has('master.log-archives.index'))
+                <a href="{{ route('master.log-archives.index') }}" class="px-3.5 py-2 text-xs font-semibold text-neutral-600 dark:text-neutral-300 bg-white dark:bg-slate-800 border border-neutral-200 dark:border-slate-700 rounded-[3px] hover:bg-neutral-50 dark:hover:bg-slate-700 transition-all flex items-center gap-1.5 cursor-pointer">
+                    <x-heroicon-o-archive-box class="w-4 h-4" />
+                    <span>Arsip Log</span>
+                </a>
+            @endif
+
             {{-- Tombol Export Audit Log --}}
             <button wire:click="exportLog" wire:loading.attr="disabled" class="px-3.5 py-2 text-xs font-semibold text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800 rounded-[3px] hover:bg-sky-100 dark:hover:bg-sky-900/40 transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-60">
                 <x-heroicon-o-arrow-down-tray wire:loading.remove wire:target="exportLog" class="w-4 h-4" />

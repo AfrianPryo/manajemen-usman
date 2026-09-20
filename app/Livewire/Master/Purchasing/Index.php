@@ -13,16 +13,23 @@ use Livewire\WithPagination;
 
 /**
  * "Pembelian Lintas-Unit" -- pasangan Master dari App\Livewire\Unit\Purchasing\Index.
- * BERBEDA dengan pasangan lintas-unit lain (mis. Master\ServiceOrder\Index)
- * yang punya form Tambah/Edit sendiri, modul ini SENGAJA read-only: setiap
- * pembelian tetap dicatat dari sisi Unit yang benar-benar berbelanja
- * (transaksi & stok memang harus terkunci ke satu unit), Master Admin di
- * sini hanya MEREKAP -- total belanja per vendor dari SELURUH unit,
- * berguna untuk negosiasi kontrak vendor terpusat.
+ *
+ * READ-ONLY khusus untuk Master Admin: modul ini HANYA memantau & merekap
+ * belanja dari SELURUH unit (mis. untuk negosiasi kontrak vendor terpusat).
+ * Master Admin TIDAK bisa mencatat pembelian baru maupun membatalkan
+ * pembelian dari sini.
+ *
+ * Alasan: pencatatan pembelian harus terikat langsung ke stok fisik &
+ * keuangan pada unit yang benar-benar berbelanja. Kalau dibuka dari Master
+ * (yang tidak terikat ke satu unit), data pusat berisiko desync dengan
+ * pergerakan stok nyata di lapangan. Karena itu pembelian WAJIB dikelola
+ * langsung dari panel masing-masing Unit (lihat App\Livewire\Unit\Purchasing\Index,
+ * yang tetap punya form catat & batalkan, terkunci ke satu unit lewat trait
+ * ScopedToUnit).
  *
  * Tidak ada middleware 'unit.category:...' (sama seperti master.customers.index
- * & master.analytics.index): Pembelian berlaku untuk SEMUA kategori unit,
- * bukan cuma 'jasa' seperti Pesanan Layanan.
+ * & master.analytics.index): rekap ini mencakup SEMUA kategori unit, bukan
+ * cuma 'jasa' seperti Pesanan Layanan.
  */
 #[Layout('components.layouts.app')]
 #[Title('Pembelian Lintas-Unit')]
@@ -35,10 +42,26 @@ class Index extends Component
     public string $vendorFilter = '';
     public string $statusFilter = '';
 
+    public bool $showDetailModal = false;
+    public ?PurchaseOrder $selectedPurchase = null;
+
     public function updatingSearch(): void { $this->resetPage(); }
     public function updatingUnitFilter(): void { $this->resetPage(); }
     public function updatingVendorFilter(): void { $this->resetPage(); }
     public function updatingStatusFilter(): void { $this->resetPage(); }
+
+    public function viewDetail(int $id): void
+    {
+        $this->selectedPurchase = PurchaseOrder::with(['unit', 'vendor', 'user', 'financeTransaction'])
+            ->findOrFail($id);
+        $this->showDetailModal = true;
+    }
+
+    public function closeDetailModal(): void
+    {
+        $this->showDetailModal = false;
+        $this->selectedPurchase = null;
+    }
 
     private function getFilteredQuery()
     {

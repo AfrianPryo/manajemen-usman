@@ -39,13 +39,13 @@
         <div class="bg-white dark:bg-slate-800 rounded-lg max-w-sm w-full border border-neutral-200 dark:border-slate-700 shadow-2xl p-6 space-y-4 animate-in fade-in zoom-in duration-150">
 
             <div class="text-center space-y-1">
-                <div class="h-10 w-10 bg-amber-50 dark:bg-amber-950/60 text-amber-600 rounded-full flex items-center justify-center mx-auto text-lg">
+                <div class="h-10 w-10 bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 rounded-full flex items-center justify-center mx-auto text-lg">
                     🔑
                 </div>
                 <h3 class="text-sm font-bold text-neutral-900 dark:text-white">
                     {{ $credentials['title'] ?? 'Informasi Akun' }}
                 </h3>
-                <p class="text-[11px] text-neutral-400">
+                <p class="text-[11px] text-neutral-400 dark:text-neutral-500">
                     Harap salin kredensial berikut sebelum menutup.
                 </p>
             </div>
@@ -66,17 +66,17 @@
 
             <div class="p-3.5 bg-neutral-50 dark:bg-slate-900 rounded-md border border-neutral-200 dark:border-slate-700 text-xs space-y-2 font-mono">
                 <div class="flex justify-between items-center">
-                    <span class="text-neutral-400 font-sans">Nama:</span>
+                    <span class="text-neutral-400 dark:text-neutral-500 font-sans">Nama:</span>
                     <span class="font-semibold text-neutral-800 dark:text-white font-sans">{{ $credentials['name'] }}</span>
                 </div>
                 <div class="flex justify-between items-center">
-                    <span class="text-neutral-400 font-sans">Username:</span>
+                    <span class="text-neutral-400 dark:text-neutral-500 font-sans">Username:</span>
                     <span class="text-neutral-900 dark:text-slate-100 font-bold px-1.5 py-0.5 rounded bg-neutral-200/60 dark:bg-slate-800">
                         {{ $credentials['username'] }}
                     </span>
                 </div>
                 <div class="flex justify-between items-center">
-                    <span class="text-neutral-400 font-sans">Password:</span>
+                    <span class="text-neutral-400 dark:text-neutral-500 font-sans">Password:</span>
                     <span class="text-amber-600 dark:text-amber-400 font-bold px-1.5 py-0.5 rounded bg-amber-50 dark:bg-amber-950">
                         {{ $credentials['password'] }}
                     </span>

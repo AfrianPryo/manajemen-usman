@@ -8,6 +8,19 @@
 
     <title>{{ $title ?? 'Login' }} - SIMS.Usaha</title>
 
+    <script>
+        // Samakan dengan preferensi tema yang dipilih user di dashboard
+        // (lihat components/layouts/app.blade.php & unit.blade.php), supaya
+        // halaman login pun konsisten dan tidak "kedip" mode terang dulu.
+        (function () {
+            try {
+                const stored = localStorage.getItem('theme');
+                const isDark = stored === 'dark' || (!stored && window.matchMedia('(prefers-color-scheme: dark)').matches);
+                document.documentElement.classList.toggle('dark', isDark);
+            } catch (e) {}
+        })();
+    </script>
+
     {{-- Load Vite & Tailwind --}}
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     

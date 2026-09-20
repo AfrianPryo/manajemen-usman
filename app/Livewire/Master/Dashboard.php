@@ -320,7 +320,7 @@ class Dashboard extends Component
             . "Password: *{$plainPassword}*\n\n"
             . "Segera login dan ganti password Anda. Jangan bagikan kredensial ini kepada siapapun.";
 
-        $waSent = app(FonnteOtpService::class)->sendPlainMessageAsync($user->phone, $waMessage);
+        $waSent = app(FonnteOtpService::class)->sendPlainMessageAsync($user->phone, $waMessage, FonnteOtpService::CATEGORY_CREDENTIALS);
 
         // Catat ke Audit Log: pembuatan akun admin baru beserta role & unit terkait.
         // Password plain sengaja TIDAK disimpan ke log demi keamanan.

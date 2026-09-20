@@ -288,6 +288,34 @@
             <div class="space-y-4">
                 <h3 class="text-[11px] font-bold text-neutral-500 dark:text-neutral-400 uppercase tracking-wide">Parameter Aplikasi</h3>
 
+                {{-- Logo Aplikasi -- tampil di sidebar dashboard Master & seluruh Unit,
+                     lihat components/layouts/app.blade.php dan unit/app.blade.php --}}
+                <div class="flex items-center gap-4">
+                    <div class="w-16 h-16 rounded-md border border-neutral-200 dark:border-slate-700 overflow-hidden bg-neutral-50 dark:bg-slate-900 flex items-center justify-center shrink-0">
+                        @if ($logo)
+                            <img src="{{ $logo->temporaryUrl() }}" class="w-full h-full object-contain">
+                        @elseif ($existingLogo)
+                            <img src="{{ asset('storage/' . $existingLogo) }}" class="w-full h-full object-contain">
+                        @else
+                            <x-heroicon-o-photo class="w-6 h-6 text-neutral-300" />
+                        @endif
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Logo Aplikasi</label>
+                        <input type="file" wire:model="logo" accept="image/*" class="text-xs text-neutral-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-red-50 file:text-blue-950 dark:file:bg-slate-700 dark:file:text-neutral-300">
+                        <p class="text-[10px] text-neutral-400 mt-1">Tampil di sidebar dashboard Admin Master & seluruh Admin Unit.</p>
+                        @error('logo') <p class="text-[11px] text-rose-500 mt-0.5">{{ $message }}</p> @enderror
+                        @if ($existingLogo)
+                            <button type="button"
+                                    wire:click="removeLogo"
+                                    wire:confirm="Hapus logo aplikasi dan kembali ke ikon default?"
+                                    class="mt-1.5 text-[11px] font-semibold text-rose-500 hover:text-rose-600">
+                                Hapus Logo
+                            </button>
+                        @endif
+                    </div>
+                </div>
+
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Nama Aplikasi</label>
@@ -364,9 +392,178 @@
                                         @error('waApiKey') <p class="text-[11px] text-rose-500 mt-0.5">{{ $message }}</p> @enderror
                                     </div>
                                 </div>
+
+                                {{-- Preferensi Notifikasi per Channel -- kategori WA non-OTP
+                                     yang boleh dimatikan satu per satu. OTP TIDAK ada di sini
+                                     sama sekali (selalu wajib terkirim, lihat penjelasan di
+                                     bawah), gerbangnya ada di
+                                     App\Services\FonnteOtpService::channelEnabled(). --}}
+                                <div class="pt-3 mt-1 border-t border-neutral-100 dark:border-slate-600 space-y-2.5">
+                                    <p class="text-[11px] font-bold text-neutral-500 dark:text-neutral-400 uppercase tracking-wide">Preferensi Notifikasi per Channel</p>
+                                    <p class="text-[11px] text-neutral-400 -mt-1.5">
+                                        Kode OTP keamanan (ganti password/nomor WA) selalu wajib terkirim dan tidak bisa dimatikan.
+                                        Kategori di bawah ini bersifat opsional -- kalau dimatikan, notifikasi tetap muncul di dalam aplikasi (lonceng notifikasi), hanya salinan WhatsApp-nya yang tidak dikirim.
+                                    </p>
+
+                                    <label class="flex items-center gap-3 cursor-pointer">
+                                        <input type="checkbox" wire:model="waNotifyCredentials" class="w-4 h-4 text-blue-900 rounded border-neutral-300 focus:ring-red-500/20 cursor-pointer">
+                                        <div>
+                                            <span class="text-xs font-semibold text-neutral-800 dark:text-neutral-200">Kredensial Akun (Password Baru)</span>
+                                            <p class="text-[11px] text-neutral-400">Username & password saat akun admin dibuat, direset, atau permintaan reset password disetujui. Kredensial tetap muncul di popup layar meski ini dimatikan.</p>
+                                        </div>
+                                    </label>
+
+                                    <label class="flex items-center gap-3 cursor-pointer">
+                                        <input type="checkbox" wire:model="waNotifyAnnouncements" class="w-4 h-4 text-blue-900 rounded border-neutral-300 focus:ring-red-500/20 cursor-pointer">
+                                        <div>
+                                            <span class="text-xs font-semibold text-neutral-800 dark:text-neutral-200">Broadcast Pengumuman</span>
+                                            <p class="text-[11px] text-neutral-400">Salinan WhatsApp untuk pengumuman yang dikirim Master Admin ke Admin Unit lewat menu Pengumuman.</p>
+                                        </div>
+                                    </label>
+                                </div>
+
+                                {{-- Laporan Rutin Otomatis -- ringkasan aspek penting sistem
+                                     dikirim berkala ke seluruh Admin Master aktif via WhatsApp.
+                                     Lihat App\Services\RoutineReportService. --}}
+                                <div class="pt-3 mt-1 border-t border-neutral-100 dark:border-slate-600 space-y-2.5">
+                                    <label class="flex items-center gap-3 cursor-pointer">
+                                        <input type="checkbox" wire:model.live="reportRoutineEnabled" class="w-4 h-4 text-blue-900 rounded border-neutral-300 focus:ring-red-500/20 cursor-pointer">
+                                        <div>
+                                            <span class="text-xs font-semibold text-neutral-800 dark:text-neutral-200">Laporan Rutin Otomatis</span>
+                                            <p class="text-[11px] text-neutral-400">Kirim ringkasan aspek penting sistem (keuangan, unit usaha, admin, stok, dst) secara berkala ke seluruh Admin Master aktif lewat WhatsApp.</p>
+                                        </div>
+                                    </label>
+
+                                    @if ($reportRoutineEnabled)
+                                        <div class="mt-3 ml-7 pl-4 border-l-2 border-red-100 dark:border-slate-600 space-y-3">
+                                            @if ($reportRoutineLastSentAt)
+                                                <div class="bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200/60 dark:border-emerald-800 text-emerald-700 dark:text-emerald-400 text-[11px] font-medium px-3 py-2 rounded-md">
+                                                    Laporan terakhir terkirim: {{ \Carbon\Carbon::parse($reportRoutineLastSentAt)->translatedFormat('d M Y H:i') }}.
+                                                </div>
+                                            @else
+                                                <div class="bg-blue-50 dark:bg-blue-950/50 border border-blue-200/60 dark:border-blue-800 text-blue-600 dark:text-blue-400 text-[11px] font-medium px-3 py-2 rounded-md">
+                                                    Belum pernah terkirim. Pengiriman pertama akan mengikuti jadwal yang diatur di bawah, paling lambat 15 menit setelah waktu terjadwal terlewati.
+                                                </div>
+                                            @endif
+
+                                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                <div>
+                                                    <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Frekuensi</label>
+                                                    <select wire:model.live="reportRoutineFrequency" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-red-500 cursor-pointer">
+                                                        <option value="daily">Harian</option>
+                                                        <option value="weekly">Mingguan</option>
+                                                        <option value="monthly">Bulanan</option>
+                                                    </select>
+                                                    @error('reportRoutineFrequency') <p class="text-[11px] text-rose-500 mt-0.5">{{ $message }}</p> @enderror
+                                                </div>
+
+                                                <div>
+                                                    <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Jam Pengiriman</label>
+                                                    <input type="time" wire:model="reportRoutineTime" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-red-500">
+                                                    @error('reportRoutineTime') <p class="text-[11px] text-rose-500 mt-0.5">{{ $message }}</p> @enderror
+                                                </div>
+
+                                                @if ($reportRoutineFrequency === 'weekly')
+                                                    <div>
+                                                        <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Hari Pengiriman</label>
+                                                        <select wire:model="reportRoutineDayOfWeek" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-red-500 cursor-pointer">
+                                                            <option value="0">Minggu</option>
+                                                            <option value="1">Senin</option>
+                                                            <option value="2">Selasa</option>
+                                                            <option value="3">Rabu</option>
+                                                            <option value="4">Kamis</option>
+                                                            <option value="5">Jumat</option>
+                                                            <option value="6">Sabtu</option>
+                                                        </select>
+                                                        @error('reportRoutineDayOfWeek') <p class="text-[11px] text-rose-500 mt-0.5">{{ $message }}</p> @enderror
+                                                    </div>
+                                                @endif
+
+                                                @if ($reportRoutineFrequency === 'monthly')
+                                                    <div>
+                                                        <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Tanggal Pengiriman</label>
+                                                        <input type="number" min="1" max="28" wire:model="reportRoutineDayOfMonth" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-red-500">
+                                                        <p class="text-[10px] text-neutral-400 mt-1">Maks. tanggal 28 supaya berlaku untuk semua bulan (termasuk Februari).</p>
+                                                        @error('reportRoutineDayOfMonth') <p class="text-[11px] text-rose-500 mt-0.5">{{ $message }}</p> @enderror
+                                                    </div>
+                                                @endif
+                                            </div>
+
+                                            <div>
+                                                <p class="text-[11px] font-bold text-neutral-500 dark:text-neutral-400 uppercase tracking-wide mb-2">Kategori yang Dikirim</p>
+                                                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-2">
+                                                    @foreach (\App\Services\RoutineReportService::SECTIONS as $sectionKey => $sectionLabel)
+                                                        <label class="flex items-center gap-2.5 cursor-pointer">
+                                                            <input type="checkbox" value="{{ $sectionKey }}" wire:model="reportRoutineSections" class="w-4 h-4 text-blue-900 rounded border-neutral-300 focus:ring-red-500/20 cursor-pointer">
+                                                            <span class="text-[11px] font-medium text-neutral-700 dark:text-neutral-300">{{ $sectionLabel }}</span>
+                                                        </label>
+                                                    @endforeach
+                                                </div>
+                                                @error('reportRoutineSections') <p class="text-[11px] text-rose-500 mt-1">{{ $message }}</p> @enderror
+                                            </div>
+                                        </div>
+                                    @endif
+                                </div>
                             </div>
                         @endif
                     </div>
+                </div>
+            </div>
+
+            <!-- Bagian: Sesi & Keamanan -->
+            <div class="pt-4 space-y-4 border-t border-neutral-100 dark:border-slate-700">
+                <h3 class="text-[11px] font-bold text-neutral-500 dark:text-neutral-400 uppercase tracking-wide">Sesi & Keamanan</h3>
+
+                <div>
+                    <label class="flex items-center gap-3 cursor-pointer">
+                        <input type="checkbox" wire:model.live="sessionTimeoutEnabled" class="w-4 h-4 text-blue-900 rounded border-neutral-300 focus:ring-red-500/20 cursor-pointer">
+                        <div>
+                            <span class="text-xs font-semibold text-neutral-800 dark:text-neutral-200">Auto-Logout Karena Idle (Session Timeout)</span>
+                            <p class="text-[11px] text-neutral-400">Keluarkan otomatis dari akun kalau tidak ada aktivitas selama durasi tertentu. Berlaku terpisah untuk Admin Master dan Admin Unit.</p>
+                        </div>
+                    </label>
+
+                    @if ($sessionTimeoutEnabled)
+                        <div class="mt-3 ml-7 pl-4 border-l-2 border-red-100 dark:border-slate-600 space-y-3">
+                            <div class="bg-blue-50 dark:bg-blue-950/50 border border-blue-200/60 dark:border-blue-800 text-blue-600 dark:text-blue-400 text-[11px] font-medium px-3 py-2 rounded-md">
+                                Admin Unit biasanya memakai perangkat kasir/shared, jadi wajar diberi durasi lebih pendek daripada Admin Master. Perhitungan idle dimulai sejak interaksi terakhir dengan aplikasi (klik, submit form, dsb), bukan sejak login.
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Durasi untuk Admin Master (menit)</label>
+                                    <input type="number" min="5" max="1440" wire:model="sessionTimeoutMasterMinutes" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-red-500">
+                                    @error('sessionTimeoutMasterMinutes') <p class="text-[11px] text-rose-500 mt-0.5">{{ $message }}</p> @enderror
+                                </div>
+
+                                <div>
+                                    <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Durasi untuk Admin Unit (menit)</label>
+                                    <input type="number" min="5" max="1440" wire:model="sessionTimeoutUnitMinutes" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-red-500">
+                                    @error('sessionTimeoutUnitMinutes') <p class="text-[11px] text-rose-500 mt-0.5">{{ $message }}</p> @enderror
+                                </div>
+                            </div>
+                        </div>
+                    @endif
+                </div>
+            </div>
+
+            <!-- Bagian: Retensi & Arsip Log -->
+            <div class="pt-4 space-y-4 border-t border-neutral-100 dark:border-slate-700">
+                <h3 class="text-[11px] font-bold text-neutral-500 dark:text-neutral-400 uppercase tracking-wide">Retensi & Arsip Log</h3>
+
+                <div class="max-w-xs">
+                    <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Batas Retensi Log (hari)</label>
+                    <input type="number" min="{{ \App\Services\LogArchiveService::MIN_RETENTION_DAYS }}" max="{{ \App\Services\LogArchiveService::MAX_RETENTION_DAYS }}" wire:model="logRetentionDays" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-red-500">
+                    @error('logRetentionDays') <p class="text-[11px] text-rose-500 mt-0.5">{{ $message }}</p> @enderror
+                </div>
+
+                <div class="bg-blue-50 dark:bg-blue-950/50 border border-blue-200/60 dark:border-blue-800 text-blue-600 dark:text-blue-400 text-[11px] font-medium px-3 py-2 rounded-md space-y-1">
+                    <p>Log login & audit log yang lebih tua dari batas ini <span class="font-bold">tidak dihapus begitu saja</span>: diekspor dulu ke file Excel per bulan (disimpan di server), diverifikasi, baru dihapus dari tabel utama supaya tabel tetap ramping dan query tetap cepat.</p>
+                    <p>Pengarsipan berjalan otomatis tiap hari pukul 02:00 dan dilakukan per bulan penuh, jadi data bisa bertahan di tabel utama sampai sekitar 31 hari lebih lama dari batas ini. Minimal {{ \App\Services\LogArchiveService::MIN_RETENTION_DAYS }} hari.
+                        @if (Route::has('master.log-archives.index'))
+                            <a href="{{ route('master.log-archives.index') }}" class="underline font-semibold">Lihat Arsip Log</a>
+                        @endif
+                    </p>
                 </div>
             </div>
 

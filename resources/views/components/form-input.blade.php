@@ -2,11 +2,11 @@
 
 <div>
     @if($label)
-        <label class="block text-sm font-medium text-gray-700 mb-1">{{ $label }}</label>
+        <label class="block text-sm font-medium text-gray-700 dark:text-neutral-300 mb-1">{{ $label }}</label>
     @endif
     <input type="{{ $type }}" wire:model="{{ $name }}"
-           {{ $attributes->merge(['class' => 'w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 text-sm']) }}>
+           {{ $attributes->merge(['class' => 'w-full rounded-lg border-gray-300 dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:placeholder-slate-500 focus:border-indigo-500 focus:ring-indigo-500 dark:focus:border-indigo-400 dark:focus:ring-indigo-400/20 text-sm']) }}>
     @error($name)
-        <p class="text-xs text-blue-900 mt-1">{{ $message }}</p>
+        <p class="text-xs text-blue-900 dark:text-rose-400 mt-1">{{ $message }}</p>
     @enderror
 </div>

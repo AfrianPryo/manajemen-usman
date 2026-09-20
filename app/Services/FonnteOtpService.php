@@ -24,6 +24,17 @@ class FonnteOtpService
     protected const RESEND_COOLDOWN_SECONDS = 60;
     protected const MAX_SEND_PER_HOUR = 5;
 
+    /**
+     * Kategori pesan WA non-OTP, dipetakan ke setting granular yang bisa
+     * dimatikan admin lewat Pengaturan > Fitur & Modul > Preferensi
+     * Notifikasi per Channel (lihat App\Livewire\Master\Settings\Index).
+     * OTP (generateAndSend/sendViaFonnte) SENGAJA TIDAK punya kategori di
+     * sini -- OTP selalu wajib terkirim, tidak bisa dimatikan lewat
+     * preferensi channel, karena itu bagian dari alur keamanan.
+     */
+    public const CATEGORY_CREDENTIALS = 'credentials';
+    public const CATEGORY_ANNOUNCEMENT = 'announcement';
+
     protected function otpCacheKey(int $userId, string $purpose): string
     {
         return "otp:{$purpose}:{$userId}";
@@ -210,19 +221,62 @@ class FonnteOtpService
      * diubah dan tetap sinkron, supaya feedback sukses/gagal OTP ke user
      * tetap akurat saat itu juga.
      *
+     * Sebelum dispatch, dicek dulu lewat channelEnabled($category) apakah
+     * kategori pesan ini memang boleh dikirim -- baik lewat saklar utama
+     * 'enable_wa_notifications' MAUPUN saklar granular per kategori di
+     * Preferensi Notifikasi per Channel. Kalau salah satu mati, method ini
+     * mengembalikan false TANPA men-dispatch job apa pun (bukan gagal
+     * kirim, tapi memang sengaja tidak dikirim sesuai preferensi admin).
+     *
+     * @param  string  $category  self::CATEGORY_CREDENTIALS | self::CATEGORY_ANNOUNCEMENT
      * @return bool true jika pesan berhasil DI-DISPATCH ke queue (BUKAN
      *              indikasi pesan sudah benar-benar terkirim ke WhatsApp --
      *              itu baru terjadi di background lewat SendFonnteMessageJob).
      */
-    public function sendPlainMessageAsync(string $phone, string $message): bool
+    public function sendPlainMessageAsync(string $phone, string $message, string $category): bool
     {
         if (empty($phone)) {
+            return false;
+        }
+
+        if (! $this->channelEnabled($category)) {
             return false;
         }
 
         SendFonnteMessageJob::dispatch($phone, $message);
 
         return true;
+    }
+
+    /**
+     * Cek apakah kategori pesan WA non-OTP ini boleh dikirim, berdasarkan
+     * dua lapis setting:
+     *   1. Saklar utama 'enable_wa_notifications' -- mematikan SEMUA pesan
+     *      WA non-OTP sekaligus (setting ini sudah ada sebelumnya, tapi
+     *      dulu TIDAK benar-benar dicek di sendPlainMessageAsync(), cuma
+     *      memengaruhi validasi form di tab Fitur & Modul).
+     *   2. Saklar granular per kategori ('wa_notify_credentials' /
+     *      'wa_notify_announcements'), DEFAULT AKTIF supaya perilaku lama
+     *      (sebelum Preferensi Notifikasi per Channel ada) tetap sama
+     *      persis untuk admin yang belum pernah menyentuh setting ini.
+     * OTP tidak pernah lewat method ini sama sekali.
+     */
+    protected function channelEnabled(string $category): bool
+    {
+        if (! (bool) Setting::get('enable_wa_notifications', false)) {
+            return false;
+        }
+
+        $settingKey = match ($category) {
+            self::CATEGORY_ANNOUNCEMENT => 'wa_notify_announcements',
+            self::CATEGORY_CREDENTIALS  => 'wa_notify_credentials',
+            default                     => null,
+        };
+
+        // Kategori tak dikenal (mis. salah ketik di pemanggil) -- jangan
+        // diam-diam diblokir, biar cepat ketahuan saat testing daripada
+        // pesan hilang tanpa jejak.
+        return $settingKey === null ? true : (bool) Setting::get($settingKey, true);
     }
 
     /**

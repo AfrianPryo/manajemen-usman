@@ -17,6 +17,13 @@ class AuditLogExport implements FromQuery, WithHeadings, WithMapping, WithTitle,
 {
     use Exportable;
 
+    // Filter opsional tambahan yang dipakai oleh App\Services\LogArchiveService:
+    //   'includeAuthEvents' => true  (ikutkan event USER_LOGIN/USER_LOGOUT/LOGIN_FAILED,
+    //                                 supaya arsip memuat SEMUA baris yang akan dihapus)
+    //   'createdFrom'   => 'Y-m-d H:i:s' (created_at >= ini)
+    //   'createdBefore' => 'Y-m-d H:i:s' (created_at <  ini)
+    //   'maxId'         => int           (id <= ini, "snapshot" saat arsip)
+
     protected array $filters;
 
     public function __construct(array $filters = [])
@@ -30,7 +37,10 @@ class AuditLogExport implements FromQuery, WithHeadings, WithMapping, WithTitle,
             ->with('user')
             // Samakan dengan logika halaman: audit log "sistem" tidak menampilkan event login/logout,
             // karena itu sudah punya halaman & export sendiri (Monitoring Aktivitas).
-            ->whereNotIn('event', ['USER_LOGIN', 'USER_LOGOUT', 'LOGIN_FAILED'])
+            ->when(
+                ! ($this->filters['includeAuthEvents'] ?? false),
+                fn ($q) => $q->whereNotIn('event', ['USER_LOGIN', 'USER_LOGOUT', 'LOGIN_FAILED'])
+            )
             ->when($this->filters['search'] ?? null, function ($q, $search) {
                 $q->where(function ($sub) use ($search) {
                     $sub->where('identifier', 'like', "%{$search}%")
@@ -41,7 +51,12 @@ class AuditLogExport implements FromQuery, WithHeadings, WithMapping, WithTitle,
             ->when($this->filters['eventFilter'] ?? null, fn ($q, $val) => $q->where('event', $val))
             ->when($this->filters['startDate'] ?? null, fn ($q, $val) => $q->whereDate('created_at', '>=', $val))
             ->when($this->filters['endDate'] ?? null, fn ($q, $val) => $q->whereDate('created_at', '<=', $val))
-            ->latest();
+            ->when($this->filters['createdFrom'] ?? null, fn ($q, $val) => $q->where('created_at', '>=', $val))
+            ->when($this->filters['createdBefore'] ?? null, fn ($q, $val) => $q->where('created_at', '<', $val))
+            ->when($this->filters['maxId'] ?? null, fn ($q, $val) => $q->where('id', '<=', $val))
+            ->latest()
+            // Tie-breaker supaya urutan antar-chunk export stabil.
+            ->orderByDesc('id');
     }
 
     public function headings(): array

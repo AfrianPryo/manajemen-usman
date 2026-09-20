@@ -457,11 +457,8 @@
                             AKUN
                         </span>
 
-                        <span class="flex h-12 w-12 items-center justify-center rounded-[4px] bg-white">
-                            <svg class="h-5 w-5 text-blue-800" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M18 7.5a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0ZM5.25 20.25a6.75 6.75 0 0 1 13.5 0M19.5 10.5v6m-3-3h6" />
-                            </svg>
+                        <span class="flex h-9 w-9 items-center justify-center rounded-[3px] bg-white">
+                            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="#1e3a8a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M17 7H8M17 7V16"/></svg>
                         </span>
                     </div>
 
@@ -496,11 +493,8 @@
                             SETUP
                         </span>
 
-                        <span class="flex h-12 w-12 items-center justify-center rounded-[4px] bg-white">
-                            <svg class="h-5 w-5 text-blue-800" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M16.5 10.5V8.25a4.5 4.5 0 0 0-9 0v2.25m-.75 0h10.5A1.5 1.5 0 0 1 18.75 12v6A1.5 1.5 0 0 1 17.25 19.5H6.75A1.5 1.5 0 0 1 5.25 18v-6a1.5 1.5 0 0 1 1.5-1.5Z" />
-                            </svg>
+                        <span class="flex h-9 w-9 items-center justify-center rounded-[3px] bg-white">
+                            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="#1e3a8a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M17 7H8M17 7V16"/></svg>
                         </span>
                     </div>
 
@@ -534,11 +528,8 @@
                             UNIT USAHA
                         </span>
 
-                        <span class="flex h-12 w-12 items-center justify-center rounded-[4px] bg-white">
-                            <svg class="h-5 w-5 text-blue-800" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M3.75 21h16.5M5.25 21V8.25L12 4.5l6.75 3.75V21M8.25 21v-7.5h7.5V21" />
-                            </svg>
+                        <span class="flex h-9 w-9 items-center justify-center rounded-[3px] bg-white">
+                            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="#1e3a8a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M17 7H8M17 7V16"/></svg>
                         </span>
                     </div>
 
@@ -570,11 +561,8 @@
                             TRANSAKSI
                         </span>
 
-                        <span class="flex h-12 w-12 items-center justify-center rounded-[4px] bg-white">
-                            <svg class="h-5 w-5 text-blue-800" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M7.5 7.5h9m-9 9h9M6 4.5h.008v.008H6V4.5Zm0 7.5h.008v.008H6V12Zm0 7.5h.008v.008H6V12Zm0 7.5h.008v.008H6V19.5Z" />
-                            </svg>
+                        <span class="flex h-9 w-9 items-center justify-center rounded-[3px] bg-white">
+                            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="#1e3a8a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M17 7H8M17 7V16"/></svg>
                         </span>
                     </div>
 
@@ -608,11 +596,8 @@
                             LAPORAN
                         </span>
 
-                        <span class="flex h-12 w-12 items-center justify-center rounded-[4px] bg-white">
-                            <svg class="h-5 w-5 text-blue-800" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M4.5 19.5V10.5m5 9V4.5m5 15v-6m5 6V7.5" />
-                            </svg>
+                        <span class="flex h-9 w-9 items-center justify-center rounded-[3px] bg-white">
+                            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="#1e3a8a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M17 7H8M17 7V16"/></svg>
                         </span>
                     </div>
 
@@ -645,11 +630,8 @@
                             KEAMANAN
                         </span>
 
-                        <span class="flex h-12 w-12 items-center justify-center rounded-[4px] bg-white">
-                            <svg class="h-5 w-5 text-blue-800" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M12 3.75 19.5 6v5.25c0 4.5-3.15 7.35-7.5 9-4.35-1.65-7.5-4.5-7.5-9V6L12 3.75Zm-3 8.25 2 2 4-4" />
-                            </svg>
+                        <span class="flex h-9 w-9 items-center justify-center rounded-[3px] bg-white">
+                            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="#1e3a8a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M17 7H8M17 7V16"/></svg>
                         </span>
                     </div>
 

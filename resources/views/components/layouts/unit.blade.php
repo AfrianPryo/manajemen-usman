@@ -4,7 +4,32 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ $title ?? 'Dashboard Unit' }} - Usaha Mandiri Sekolah</title>
-    <link rel="icon" href="{{ asset('favicon.svg') }}" type="image/svg+xml">
+    {{-- Ikon tab browser: pakai logo yang diatur di Pengaturan (Setting 'app_logo'),
+         fallback ke favicon.svg bawaan kalau belum ada logo yang diupload. Nama
+         file logo hasil upload selalu unik (di-hash oleh store()), jadi URL-nya
+         otomatis berubah saat logo diganti dan browser tidak menampilkan ikon lama. --}}
+    @php $faviconLogo = \App\Models\Setting::get('app_logo'); @endphp
+    @if ($faviconLogo)
+        <link rel="icon" href="{{ asset('storage/' . $faviconLogo) }}">
+    @else
+        <link rel="icon" href="{{ asset('favicon.svg') }}" type="image/svg+xml">
+    @endif
+
+    <script>
+        // Terapkan preferensi tema SEBELUM CSS/HTML lain dirender, supaya
+        // tidak ada "kedipan" mode terang sesaat sebelum Alpine menyala
+        // (flash of unstyled/incorrect theme). Sumber kebenaran tema tetap
+        // sama seperti tombol toggle di header: localStorage 'theme', lalu
+        // fallback ke preferensi sistem (prefers-color-scheme).
+        (function () {
+            try {
+                const stored = localStorage.getItem('theme');
+                const isDark = stored === 'dark' || (!stored && window.matchMedia('(prefers-color-scheme: dark)').matches);
+                document.documentElement.classList.toggle('dark', isDark);
+            } catch (e) {}
+        })();
+    </script>
+
     <style>
         #main-content:not(.is-ready) {
             opacity: 0 !important;
@@ -24,7 +49,7 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @livewireStyles
 </head>
-<body class="bg-gray-100 font-sans antialiased">
+<body class="bg-gray-100 dark:bg-slate-950 font-sans antialiased">
     <div class="flex h-screen overflow-hidden font-sans"
          x-data="{
             sidebarCollapsed: localStorage.getItem('sidebarCollapsed') === 'true',
@@ -43,7 +68,7 @@
              x-transition:leave-start="opacity-100"
              x-transition:leave-end="opacity-0"
              @click="mobileSidebarOpen = false"
-             class="fixed inset-0 z-40 bg-slate-900/50 md:hidden"
+             class="fixed inset-0 z-40 bg-slate-900/50 dark:bg-black/60 md:hidden"
              aria-hidden="true"></div>
 
         {{-- Sidebar --}}
@@ -64,15 +89,28 @@
                 mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
             ]"
             style="transition: width 280ms cubic-bezier(0.4, 0, 0.2, 1), transform 280ms cubic-bezier(0.4, 0, 0.2, 1); will-change: width, transform;"
-            class="fixed inset-y-0 left-0 z-50 w-64 md:relative md:z-auto bg-white border-r border-slate-200/70 text-slate-700 flex-shrink-0 flex flex-col justify-between select-none overflow-hidden">
+            class="fixed inset-y-0 left-0 z-50 w-64 md:relative md:z-auto bg-white dark:bg-slate-900 border-r border-slate-200/70 dark:border-slate-800 text-slate-700 dark:text-slate-300 flex-shrink-0 flex flex-col justify-between select-none overflow-hidden">
 
             {{-- Logo Header (fixed, TIDAK ikut ter-scroll) --}}
             @php
-                $appName = \App\Models\Setting::get('app_name', 'USMAN - Usaha Mandiri Sekolah');
+                $appName    = \App\Models\Setting::get('app_name', 'USMAN - Usaha Mandiri Sekolah');
+                $appLogo    = \App\Models\Setting::get('app_logo');
+                $appLogoUrl = $appLogo ? asset('storage/' . $appLogo) : null;
             @endphp
-            <div class="h-12 flex items-center justify-between px-4 font-bold text-sm text-slate-900 border-b border-slate-100 shrink-0 tracking-tight">
+            <div class="h-12 flex items-center justify-between px-4 font-bold text-sm text-slate-900 dark:text-white border-b border-slate-100 dark:border-slate-800 shrink-0 tracking-tight">
                 <span class="flex items-center gap-2 overflow-hidden">
-                    <span class="h-6 w-6 rounded-full bg-slate-900 text-white flex items-center justify-center font-extrabold text-[11px] shadow-xs shrink-0">{{ strtoupper(substr($appName, 0, 1)) }}</span>
+                    {{-- Logo custom (hasil upload di Pengaturan Sistem, lihat Master\Settings\Index)
+                         dibungkus lingkaran putih supaya tetap kontras & jelas terlihat baik di
+                         mode terang maupun gelap, apa pun warna dasar logonya. Fallback inisial
+                         huruf (kalau belum ada logo) tidak dibungkus karena warnanya sudah
+                         menyesuaikan tema lewat dark: variant. --}}
+                    @if ($appLogoUrl)
+                        <span class="h-6 w-6 rounded-full bg-white shrink-0 overflow-hidden flex items-center justify-center ring-1 ring-black/5">
+                            <img src="{{ $appLogoUrl }}" alt="{{ $appName }}" class="h-full w-full object-contain p-0.5">
+                        </span>
+                    @else
+                        <span class="h-6 w-6 rounded-full bg-slate-900 dark:bg-slate-700 text-white flex items-center justify-center font-extrabold text-[11px] shadow-xs shrink-0">{{ strtoupper(substr($appName, 0, 1)) }}</span>
+                    @endif
                     <span x-show="!sidebarCollapsed || mobileSidebarOpen"
                           x-transition:enter="transition-opacity duration-150 delay-140"
                           x-transition:enter-start="opacity-0"
@@ -90,7 +128,7 @@
                     x-cloak
                     type="button"
                     title="Ciutkan sidebar"
-                    class="hidden md:inline-flex shrink-0 p-1 rounded-md text-slate-400 hover:text-slate-900 hover:bg-slate-100 transition-colors focus:outline-none">
+                    class="hidden md:inline-flex shrink-0 p-1 rounded-md text-slate-400 dark:text-slate-500 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus:outline-none">
                     <x-heroicon-o-chevron-double-left class="w-3.5 h-3.5" />
                 </button>
 
@@ -99,18 +137,18 @@
                     @click="mobileSidebarOpen = false"
                     type="button"
                     title="Tutup menu"
-                    class="md:hidden shrink-0 p-1 rounded-md text-slate-400 hover:text-slate-900 hover:bg-slate-100 transition-colors focus:outline-none">
+                    class="md:hidden shrink-0 p-1 rounded-md text-slate-400 dark:text-slate-500 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus:outline-none">
                     <x-heroicon-o-x-mark class="w-4 h-4" />
                 </button>
             </div>
 
             {{-- Tombol Expand saat collapsed (fixed, tampil di bawah logo, terpusat, desktop only) --}}
-            <div x-show="sidebarCollapsed" x-cloak class="hidden md:flex justify-center py-1.5 border-b border-slate-100 shrink-0">
+            <div x-show="sidebarCollapsed" x-cloak class="hidden md:flex justify-center py-1.5 border-b border-slate-100 dark:border-slate-800 shrink-0">
                 <button
                     @click="sidebarCollapsed = !sidebarCollapsed"
                     type="button"
                     title="Perluas sidebar"
-                    class="p-1 rounded-md text-slate-400 hover:text-slate-900 hover:bg-slate-100 transition-colors focus:outline-none">
+                    class="p-1 rounded-md text-slate-400 dark:text-slate-500 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus:outline-none">
                     <x-heroicon-o-chevron-double-right class="w-3.5 h-3.5" />
                 </button>
             </div>
@@ -177,7 +215,7 @@
                                              x-transition:leave="transition-opacity duration-75 ease-in"
                                              x-transition:leave-start="opacity-100"
                                              x-transition:leave-end="opacity-0"
-                                             x-cloak class="px-2.5 pb-1 text-[9px] font-bold text-slate-400 tracking-wider uppercase">
+                                             x-cloak class="px-2.5 pb-1 text-[9px] font-bold text-slate-400 dark:text-slate-500 tracking-wider uppercase">
                                             {{ $item['label'] }}
                                         </div>
 
@@ -197,10 +235,10 @@
                                                 @endphp
                                                 <a href="{{ route($child['route'], $childRouteParams) }}"
                                                    title="{{ $child['label'] }}"
-                                                   class="flex items-center justify-between px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors duration-150 {{ $childActive ? 'bg-slate-100 text-slate-900 font-semibold shadow-2xs' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900' }}">
+                                                   class="flex items-center justify-between px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors duration-150 {{ $childActive ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white font-semibold shadow-2xs' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100' }}">
                                                     <div class="flex items-center gap-2 overflow-hidden">
                                                         @if(isset($child['icon']))
-                                                            <span class="w-5 h-5 flex items-center justify-center shrink-0 {{ $childActive ? 'text-slate-900' : 'text-slate-400' }}">
+                                                            <span class="w-5 h-5 flex items-center justify-center shrink-0 {{ $childActive ? 'text-slate-900 dark:text-white' : 'text-slate-400 dark:text-slate-500' }}">
                                                                 <x-dynamic-component :component="'heroicon-o-'.$child['icon']" class="w-4 h-4" />
                                                             </span>
                                                         @endif
@@ -227,10 +265,10 @@
                                 @endphp
                                 <a href="{{ route($item['route'], $itemRouteParams) }}"
                                    title="{{ $item['label'] }}"
-                                   class="flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors duration-150 {{ $itemActive ? 'bg-slate-100 text-slate-900 font-semibold shadow-2xs' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900' }}">
+                                   class="flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors duration-150 {{ $itemActive ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white font-semibold shadow-2xs' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100' }}">
                                     <div class="flex items-center gap-2 overflow-hidden">
                                         @if(isset($item['icon']))
-                                            <span class="w-5 h-5 flex items-center justify-center shrink-0 {{ $itemActive ? 'text-slate-900' : 'text-slate-400' }}">
+                                            <span class="w-5 h-5 flex items-center justify-center shrink-0 {{ $itemActive ? 'text-slate-900 dark:text-white' : 'text-slate-400 dark:text-slate-500' }}">
                                                 <x-dynamic-component :component="'heroicon-o-'.$item['icon']" class="w-4 h-4" />
                                             </span>
                                         @endif
@@ -250,7 +288,7 @@
                                          x-transition:leave="transition-opacity duration-75 ease-in"
                                          x-transition:leave-start="opacity-100"
                                          x-transition:leave-end="opacity-0"
-                                         x-cloak class="w-3 h-3 text-slate-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                         x-cloak class="w-3 h-3 text-slate-400 dark:text-slate-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                                     </svg>
                                 </a>
@@ -267,7 +305,7 @@
                 $sidebarPhotoUrl  = $sidebarPhotoPath ? asset('storage/' . $sidebarPhotoPath) : null;
                 $sidebarInitial   = strtoupper(substr(auth()->user()->name ?? 'U', 0, 1));
             @endphp
-            <div class="p-2 border-t border-slate-100 relative" x-data="{ userMenuOpen: false }">
+            <div class="p-2 border-t border-slate-100 dark:border-slate-800 relative" x-data="{ userMenuOpen: false }">
                 {{-- Pop-up Menu Floating Upward --}}
                 <div x-show="userMenuOpen"
                     @click.outside="userMenuOpen = false"
@@ -278,12 +316,12 @@
                     x-transition:leave-start="opacity-100 translate-y-0 scale-100"
                     x-transition:leave-end="opacity-0 translate-y-2 scale-95"
                     :class="(sidebarCollapsed && !mobileSidebarOpen) ? 'left-2 w-12' : 'left-2 right-2 w-56'"
-                    class="absolute bottom-full mb-1.5 bg-white border border-slate-200/90 rounded-xl shadow-xl p-1.5 z-50 text-slate-800">
+                    class="absolute bottom-full mb-1.5 bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-700 rounded-xl shadow-xl dark:shadow-black/40 p-1.5 z-50 text-slate-800 dark:text-slate-200">
 
                     {{-- ====== MODE COLLAPSED: hanya ikon ====== --}}
                     <template x-if="sidebarCollapsed && !mobileSidebarOpen">
                         <div class="flex flex-col items-center gap-1">
-                            <div class="w-8 h-8 rounded-lg bg-slate-100 text-slate-700 border border-slate-200/80 flex items-center justify-center font-bold text-[11px] shrink-0 overflow-hidden mb-0.5"
+                            <div class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200/80 dark:border-slate-700 flex items-center justify-center font-bold text-[11px] shrink-0 overflow-hidden mb-0.5"
                                  title="{{ auth()->user()->name }}">
                                 @if ($sidebarPhotoUrl)
                                     <img src="{{ $sidebarPhotoUrl }}" alt="Foto profil" class="w-full h-full object-cover">
@@ -292,7 +330,7 @@
                                 @endif
                             </div>
 
-                            <div class="w-6 h-px bg-slate-100"></div>
+                            <div class="w-6 h-px bg-slate-100 dark:bg-slate-700"></div>
 
                             {{-- Link Profil Saya (ikon saja) --}}
                             @php
@@ -318,7 +356,7 @@
                             <a href="{{ $settingsUrl }}"
                                @click="userMenuOpen = false; mobileSidebarOpen = false"
                                title="{{ $settingsLabel }}"
-                               class="flex items-center justify-center w-8 h-8 rounded-lg transition-all {{ $isActive ? 'bg-slate-900 text-white shadow-xs' : 'text-slate-500 hover:bg-slate-100 hover:text-slate-900' }}">
+                               class="flex items-center justify-center w-8 h-8 rounded-lg transition-all {{ $isActive ? 'bg-slate-900 dark:bg-slate-700 text-white shadow-xs' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100' }}">
                                 <x-heroicon-o-user-circle class="w-4 h-4" />
                             </a>
 
@@ -326,7 +364,7 @@
                             <form method="POST" action="{{ route('logout') }}">
                                 @csrf
                                 <button type="submit" title="Log out"
-                                        class="flex items-center justify-center w-8 h-8 rounded-lg text-slate-500 hover:bg-rose-50 hover:text-rose-700 transition-all">
+                                        class="flex items-center justify-center w-8 h-8 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-rose-50 dark:hover:bg-rose-950/50 hover:text-rose-700 dark:hover:text-rose-400 transition-all">
                                     <x-heroicon-o-arrow-right-on-rectangle class="w-4 h-4" />
                                 </button>
                             </form>
@@ -337,8 +375,8 @@
                     <template x-if="!(sidebarCollapsed && !mobileSidebarOpen)">
                         <div>
                             {{-- Detail User --}}
-                            <div class="flex items-center gap-2.5 p-2 border-b border-slate-100 mb-1">
-                                <div class="w-7 h-7 rounded-lg bg-slate-100 text-slate-700 border border-slate-200/80 flex items-center justify-center font-bold text-xs shrink-0 overflow-hidden">
+                            <div class="flex items-center gap-2.5 p-2 border-b border-slate-100 dark:border-slate-800 mb-1">
+                                <div class="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200/80 dark:border-slate-700 flex items-center justify-center font-bold text-xs shrink-0 overflow-hidden">
                                     @if ($sidebarPhotoUrl)
                                         <img src="{{ $sidebarPhotoUrl }}" alt="Foto profil" class="w-full h-full object-cover">
                                     @else
@@ -346,8 +384,8 @@
                                     @endif
                                 </div>
                                 <div class="overflow-hidden">
-                                    <p class="text-xs font-bold text-slate-900 truncate leading-tight">{{ auth()->user()->name }}</p>
-                                    <p class="text-[10px] text-slate-500 truncate leading-tight">{{ auth()->user()->email ?? auth()->user()->getRoleNames()->first() }}</p>
+                                    <p class="text-xs font-bold text-slate-900 dark:text-white truncate leading-tight">{{ auth()->user()->name }}</p>
+                                    <p class="text-[10px] text-slate-500 dark:text-slate-400 truncate leading-tight">{{ auth()->user()->email ?? auth()->user()->getRoleNames()->first() }}</p>
                                 </div>
                             </div>
 
@@ -375,16 +413,16 @@
 
                             <a href="{{ $settingsUrl }}"
                             @click="userMenuOpen = false; mobileSidebarOpen = false"
-                            class="flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs transition-all {{ $isActive ? 'bg-slate-900 text-white font-semibold shadow-xs' : 'text-slate-600 hover:bg-slate-100/80 hover:text-slate-900 font-medium' }}">
-                                <x-heroicon-o-user-circle class="w-3.5 h-3.5 {{ $isActive ? 'text-white' : 'text-slate-400' }}" />
+                            class="flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs transition-all {{ $isActive ? 'bg-slate-900 dark:bg-slate-700 text-white font-semibold shadow-xs' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100/80 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100 font-medium' }}">
+                                <x-heroicon-o-user-circle class="w-3.5 h-3.5 {{ $isActive ? 'text-white' : 'text-slate-400 dark:text-slate-500' }}" />
                                 <span>{{ $settingsLabel }}</span>
                             </a>
 
                             {{-- Tombol Logout --}}
                             <form method="POST" action="{{ route('logout') }}">
                                 @csrf
-                                <button type="submit" class="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs text-slate-600 hover:bg-rose-50 hover:text-rose-700 transition-all text-left font-medium group">
-                                    <x-heroicon-o-arrow-right-on-rectangle class="w-3.5 h-3.5 text-slate-400 group-hover:text-rose-600" />
+                                <button type="submit" class="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs text-slate-600 dark:text-slate-400 hover:bg-rose-50 dark:hover:bg-rose-950/50 hover:text-rose-700 dark:hover:text-rose-400 transition-all text-left font-medium group">
+                                    <x-heroicon-o-arrow-right-on-rectangle class="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 group-hover:text-rose-600 dark:group-hover:text-rose-400" />
                                     <span>Log out</span>
                                 </button>
                             </form>
@@ -395,9 +433,9 @@
                 {{-- Trigger Button --}}
                 <button @click="userMenuOpen = !userMenuOpen"
                         title="{{ auth()->user()->name }}"
-                        class="w-full flex items-center justify-between p-1.5 rounded-lg hover:bg-slate-50 transition-colors text-left focus:outline-none border border-transparent hover:border-slate-200/60">
+                        class="w-full flex items-center justify-between p-1.5 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-left focus:outline-none border border-transparent hover:border-slate-200/60 dark:hover:border-slate-700">
                     <div class="flex items-center gap-2 overflow-hidden">
-                        <div class="w-6.5 h-6.5 rounded-md bg-slate-900 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-xs overflow-hidden">
+                        <div class="w-6.5 h-6.5 rounded-md bg-slate-900 dark:bg-slate-700 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-xs overflow-hidden">
                             @if ($sidebarPhotoUrl)
                                 <img src="{{ $sidebarPhotoUrl }}" alt="Foto profil" class="w-full h-full object-cover">
                             @else
@@ -411,7 +449,7 @@
                               x-transition:leave="transition-opacity duration-75 ease-in"
                               x-transition:leave-start="opacity-100"
                               x-transition:leave-end="opacity-0"
-                              x-cloak class="text-xs font-semibold text-slate-800 truncate">{{ auth()->user()->name }}</span>
+                              x-cloak class="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate">{{ auth()->user()->name }}</span>
                     </div>
                     <x-heroicon-o-chevron-up-down
                         x-show="!sidebarCollapsed || mobileSidebarOpen"
@@ -422,16 +460,16 @@
                         x-transition:leave-start="opacity-100"
                         x-transition:leave-end="opacity-0"
                         x-cloak
-                        class="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                        class="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 shrink-0" />
                 </button>
             </div>
         </aside>
 
         {{-- Main Content Area --}}
-        <div class="flex-1 flex flex-col overflow-hidden bg-[#f8f9fa] min-w-0">
+        <div class="flex-1 flex flex-col overflow-hidden bg-[#f8f9fa] dark:bg-slate-950 min-w-0">
 
             {{-- HEADER STYLE REFERENSI (BREADCRUMB HEADER) --}}
-            <header class="h-12 bg-white border-b border-slate-200/70 flex items-center justify-between px-3 md:px-6 shrink-0 gap-2">
+            <header class="h-12 bg-white dark:bg-slate-900 border-b border-slate-200/70 dark:border-slate-800 flex items-center justify-between px-3 md:px-6 shrink-0 gap-2">
 
                 {{-- Left: Hamburger (mobile) + Path Breadcrumb --}}
                 <div class="flex items-center gap-2 min-w-0">
@@ -441,24 +479,24 @@
                         @click="mobileSidebarOpen = true"
                         type="button"
                         title="Buka menu"
-                        class="md:hidden shrink-0 p-1.5 -ml-1 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors focus:outline-none">
+                        class="md:hidden shrink-0 p-1.5 -ml-1 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors focus:outline-none">
                         <x-heroicon-o-bars-3 class="w-5 h-5" />
                     </button>
 
-                    <div class="flex items-center gap-2 text-xs font-medium text-slate-500 min-w-0">
+                    <div class="flex items-center gap-2 text-xs font-medium text-slate-500 dark:text-slate-400 min-w-0">
 
                         {{-- Parent / Kategori --}}
-                        <div class="hidden sm:flex items-center gap-1.5 px-2 py-1 text-slate-700 font-semibold shrink-0">
-                            <x-heroicon-o-building-storefront class="w-3.5 h-3.5 text-slate-500" />
+                        <div class="hidden sm:flex items-center gap-1.5 px-2 py-1 text-slate-700 dark:text-slate-300 font-semibold shrink-0">
+                            <x-heroicon-o-building-storefront class="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
                             <span>{{ $category ?? 'Unit Usaha' }}</span>
                         </div>
 
                         {{-- Separator Slash --}}
-                        <span class="hidden sm:inline text-slate-300 font-normal">/</span>
+                        <span class="hidden sm:inline text-slate-300 dark:text-slate-600 font-normal">/</span>
 
                         {{-- Current Page Title --}}
-                        <div class="flex items-center gap-1.5 text-slate-900 font-bold min-w-0">
-                            <x-heroicon-o-squares-2x2 class="w-3.5 h-3.5 text-slate-700 shrink-0" />
+                        <div class="flex items-center gap-1.5 text-slate-900 dark:text-white font-bold min-w-0">
+                            <x-heroicon-o-squares-2x2 class="w-3.5 h-3.5 text-slate-700 dark:text-slate-300 shrink-0" />
                             <span class="truncate">{{ $title ?? 'Dashboard Unit' }}</span>
                         </div>
                     </div>
@@ -529,7 +567,7 @@
             </header>
 
             {{-- Main Scroll Content Area --}}
-            <main class="no-scrollbar flex-1 overflow-y-auto p-2 bg-slate-50/60">
+            <main class="no-scrollbar flex-1 overflow-y-auto p-2 bg-slate-50/60 dark:bg-slate-950">
                 <x-alert />
                 {{ $slot }}
             </main>

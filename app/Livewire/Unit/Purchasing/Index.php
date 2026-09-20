@@ -252,9 +252,10 @@ class Index extends Component
         $poNumber = $this->generatePoNumber();
 
         DB::transaction(function () use ($unitId, $vendor, $cleanItems, $total, $poNumber) {
-            $category = FinanceCategory::firstOrCreate(
-                ['unit_id' => $unitId, 'name' => 'Pembelian', 'type' => 'expense'],
-            );
+            // Kategori keuangan tidak lagi punya kolom unit_id -- pakai helper
+            // firstOrCreateForUnit() (kategori "Pembelian" yang sudah berlaku
+            // untuk unit ini, atau buat baru berscope 'specific').
+            $category = FinanceCategory::firstOrCreateForUnit('Pembelian', 'expense', $unitId);
 
             $transaction = FinanceTransaction::create([
                 'unit_id'              => $unitId,
