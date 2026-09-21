@@ -758,7 +758,9 @@ class Index extends Component
         return view('livewire.master.inventory.index', [
             'products'            => $query->orderBy('name')->paginate($this->perPage),
             'units'               => Unit::orderBy('name')->get(),
-            'categories'          => Category::orderBy('name')->get(),
+            // Hanya dipakai sebagai opsi <select> filter kategori, jadi cukup
+            // id + name. Tidak perlu menghidrasi seluruh kolom Category.
+            'categories'          => Category::select('id', 'name')->orderBy('name')->get(),
             'formCategories'      => $formCategories,
             'totalProductsCount'  => (clone $query)->count(),
             'totalStockSum'       => (clone $query)->sum('stock'),

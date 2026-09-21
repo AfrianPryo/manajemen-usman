@@ -97,7 +97,10 @@ class Index extends Component
      */
     private function activeUnitAdmins()
     {
-        return User::role('unit-admin')->active()->orderBy('name')->get();
+        // with('unit'): view menampilkan `$admin->unit->name` pada tiap baris
+        // checkbox penerima. Tanpa eager load, 30 admin = 30 query tambahan
+        // (N+1 terselubung, audit performa poin 4).
+        return User::role('unit-admin')->active()->with('unit')->orderBy('name')->get();
     }
 
     /**
@@ -214,11 +217,21 @@ class Index extends Component
 
         $activeUnitAdmins = $this->activeUnitAdmins();
 
+        // Sebelumnya baris ini memanggil $this->recipients(), yang untuk
+        // recipientType = 'all' menjalankan ULANG query activeUnitAdmins()
+        // yang baru saja dieksekusi di atas -- dua query identik setiap
+        // render, hanya untuk mengambil satu angka. Sekarang dihitung dari
+        // collection yang sudah ada di memori (hasilnya sama persis, karena
+        // penerima 'specific' selalu merupakan subset dari admin unit aktif).
+        $targetCount = $this->recipientType === 'specific'
+            ? $activeUnitAdmins->whereIn('id', $this->selectedUserIds)->count()
+            : $activeUnitAdmins->count();
+
         return view('livewire.master.announcements.index', [
             'announcements'     => $announcements,
             'activeUnitAdmins'  => $activeUnitAdmins,
             'recipientsCount'   => $activeUnitAdmins->count(),
-            'targetCount'       => $this->recipients()->count(),
+            'targetCount'       => $targetCount,
         ]);
     }
 }

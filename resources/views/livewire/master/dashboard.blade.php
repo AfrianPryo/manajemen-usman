@@ -106,7 +106,7 @@
                                 <label class="block text-xs font-medium text-neutral-600 dark:text-neutral-300 mb-1">Unit Usaha</label>
                                 <select wire:model="admin_unit_id" class="w-full px-3 py-2.5 border rounded-sm text-sm bg-white dark:bg-slate-900 border-neutral-200 dark:border-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400">
                                     <option value="">-- Pilih Unit Usaha --</option>
-                                    @foreach($units as $unit)
+                                    @foreach($unitOptions as $unit)
                                         <option value="{{ $unit->id }}">{{ $unit->name }}</option>
                                     @endforeach
                                 </select>
@@ -493,7 +493,7 @@
         {{-- Horizontal Scroll Container --}}
         <div class="flex overflow-x-auto gap-3 pb-2 snap-x snap-mandatory scrollbar-thin scrollbar-thumb-neutral-200 scrollbar-track-transparent">
             @forelse ($units as $unit)
-                @php $admin = $unit->users->first(); @endphp
+                {{-- Nama admin diambil lewat subquery select di komponen (primary_admin_name), bukan lagi eager-load relasi users --}}
                 <div class="shrink-0 w-64 snap-start bg-white dark:bg-slate-800 rounded-sm border border-neutral-100 dark:border-slate-700 p-4 hover:shadow-md hover:border-neutral-200 dark:hover:border-slate-600 transition-all flex flex-col justify-between group shadow-sm shadow-black/[0.02]">
                     <div>
                         <div class="flex items-center justify-between gap-2">
@@ -512,7 +512,7 @@
 
                         <div class="mt-4 pt-3 border-t border-neutral-100 dark:border-slate-700 flex items-center gap-2">
                             <x-heroicon-o-user class="w-3.5 h-3.5 text-neutral-300 shrink-0" />                            <p class="text-[11px] font-medium text-neutral-500 dark:text-neutral-400 truncate">
-                                {{ $admin ? $admin->name : 'Belum Ada Admin' }}
+                                {{ $unit->primary_admin_name ?: 'Belum Ada Admin' }}
                             </p>
                         </div>
                     </div>
@@ -626,87 +626,17 @@
     </div>
 
     {{-- ================= TABEL ADMIN & HAK AKSES ================= --}}
-    <div class="bg-white dark:bg-slate-800 rounded-sm border border-neutral-100 dark:border-slate-700 overflow-hidden shadow-sm shadow-black/[0.02] flex flex-col justify-between">
-        <div>
-            {{-- Header Tabel & Filter --}}
-            <div class="p-5 border-b border-neutral-100 dark:border-slate-700 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <div>
-                    <h2 class="text-base font-bold text-neutral-900 dark:text-white">Admin &amp; Hak Akses</h2>
-                    <p class="text-xs text-neutral-400">Daftar staf pengelola sistem dan unit</p>
-                </div>
+    {{--
+        Tabel ini DIPISAH menjadi komponen Livewire tersendiri
+        (App\Livewire\Master\Widgets\UsersTable) sesuai audit performa poin 3.
 
-                {{-- Quick Search Table --}}
-                <div class="relative">
-                    <input type="text"
-                        wire:model.live.debounce.300ms="searchAdmin"
-                        placeholder="Cari nama/email..."
-                        class="w-full sm:w-64 pl-9 pr-3 py-2.5 text-xs bg-white dark:bg-slate-900 border border-neutral-200 dark:border-slate-700 text-neutral-800 dark:text-neutral-100 placeholder-neutral-400 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400 transition-all shadow-sm shadow-black/[0.02]">
-                    <x-heroicon-o-magnifying-glass class="w-4 h-4 text-neutral-400 absolute left-3 top-3" />
-                </div>
-            </div>
-
-            {{-- Table Content --}}
-            <div class="overflow-x-auto">
-                <table class="w-full text-sm text-left">
-                    <thead class="bg-neutral-50/70 dark:bg-slate-900/50 text-[11px] font-semibold uppercase tracking-wider text-neutral-400 border-b border-neutral-100 dark:border-slate-700">
-                        <tr>
-                            <th class="px-5 py-3.5">Pengguna</th>
-                            <th class="px-5 py-3.5">Unit Kerja</th>
-                            <th class="px-5 py-3.5">Akses</th>
-                            <th class="px-5 py-3.5">Login Terakhir</th>
-                            <th class="px-5 py-3.5 text-right">Status</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-neutral-100 dark:divide-slate-700">
-                        @forelse ($users as $user)
-                            <tr class="hover:bg-neutral-50/60 dark:hover:bg-slate-700/30 transition-colors">
-                                <td class="px-5 py-3.5">
-                                    <div class="flex items-center gap-3">
-                                        <span class="h-9 w-9 rounded-sm bg-blue-50 dark:bg-slate-900 text-[#0d3b74] dark:text-neutral-300 flex items-center justify-center text-xs font-bold shrink-0">
-                                            {{ collect(explode(' ', $user->name))->map(fn ($w) => strtoupper(substr($w, 0, 1)))->take(2)->implode('') }}
-                                        </span>
-                                        <div class="min-w-0">
-                                            <p class="font-semibold text-neutral-900 dark:text-white truncate text-xs sm:text-sm">{{ $user->name }}</p>
-                                            <p class="text-[11px] text-neutral-400 truncate">{{ $user->email }}</p>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td class="px-5 py-3.5 text-xs text-neutral-500 dark:text-neutral-400 font-medium">
-                                    {{ (method_exists($user, 'isMasterAdmin') && $user->isMasterAdmin()) ? 'Semua Unit' : ($user->unit->name ?? '—') }}
-                                </td>
-                                <td class="px-5 py-3.5">
-                                    <span class="px-2.5 py-1 text-[10px] font-bold tracking-wide rounded-sm {{ (method_exists($user, 'isMasterAdmin') && $user->isMasterAdmin()) ? 'bg-[#0d3b74] text-white' : 'bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400' }}">
-                                        {{ (method_exists($user, 'isMasterAdmin') && $user->isMasterAdmin()) ? 'Master Admin' : 'Admin Unit' }}
-                                    </span>
-                                </td>
-                                <td class="px-5 py-3.5 text-xs text-neutral-400">
-                                    {{ $user->last_login_at ? ucfirst($user->last_login_at->diffForHumans()) : 'Belum pernah' }}
-                                </td>
-                                <td class="px-5 py-3.5 text-right">
-                                    <span class="inline-flex items-center gap-1.5 text-xs font-semibold {{ $user->is_active ? 'text-emerald-600 dark:text-emerald-400' : 'text-neutral-400' }}">
-                                        <span class="h-1.5 w-1.5 rounded-sm {{ $user->is_active ? 'bg-emerald-500' : 'bg-neutral-300 dark:bg-slate-600' }}"></span>
-                                        {{ $user->is_active ? 'Aktif' : 'Nonaktif' }}
-                                    </span>
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="5" class="px-5 py-8 text-center text-xs text-neutral-400">
-                                    Data admin tidak ditemukan.
-                                </td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        {{-- Footer Tabel --}}
-        <div class="p-4 border-t border-neutral-100 dark:border-slate-700 bg-neutral-50/40 dark:bg-slate-900/40 flex items-center justify-between text-xs text-neutral-400">
-            <span>Menampilkan {{ count($users) }} admin terdaftar</span>
-            <a href="{{ Route::has('master.users.index') ? route('master.users.index') : '#' }}" class="font-bold text-[#0d3b74] dark:text-white hover:text-blue-700 dark:hover:text-neutral-300 transition-colors">Kelola Semua Admin &rarr;</a>
-        </div>
-    </div>
+        Alasannya: sebelumnya SELURUH baris admin dirender di sini, sehingga
+        setiap interaksi kecil di dashboard (buka modal, ganti filter periode,
+        mengetik di pencarian unit) memaksa Livewire mem-*diff* ratusan <tr>
+        sekaligus. Sekarang datanya paginated dan state-nya terisolasi: render
+        ulang dashboard TIDAK ikut me-render tabel ini, dan sebaliknya.
+    --}}
+    <livewire:master.widgets.users-table />
 
     {{-- ================= MODAL DIALOGS (ALPINE.JS DEMO) ================= --}}
 
@@ -735,7 +665,7 @@
                         <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Unit Kerja</label>
                         <select class="w-full px-3 py-2.5 text-xs border border-neutral-200 dark:border-slate-700 dark:bg-slate-900 dark:text-white rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400">
                             <option value="">Pilih Unit...</option>
-                            @foreach($units as $u)
+                            @foreach($unitOptions as $u)
                                 <option value="{{ $u->id }}">{{ $u->name }}</option>
                             @endforeach
                         </select>

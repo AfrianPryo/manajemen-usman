@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Master;
 
+use App\Livewire\Master\Widgets\UsersTable;
 use App\Models\AuditLog;
 use App\Models\AuthLog;
 use App\Models\FinanceTransaction;
@@ -30,8 +31,18 @@ class Dashboard extends Component
     // detik-per-detik. TTL pendek dipakai supaya tetap "cukup baru".
     private const CACHE_TTL_SECONDS = 120;
 
-    #[Url(as: 'q_admin', history: true)]
-    public string $searchAdmin = '';
+    // Dijadikan konstanta supaya key yang sama dipakai konsisten saat
+    // membaca (render) maupun saat membuang cache (save / saveAdmin).
+    private const SUMMARY_COUNTS_CACHE_KEY = 'dashboard-master:summary-counts';
+
+    // CATATAN: properti pencarian admin ($searchAdmin + query string 'q_admin')
+    // SUDAH DIPINDAH ke App\Livewire\Master\Widgets\UsersTable. Kalau tetap
+    // didefinisikan di sini juga, dua komponen akan berebut query string yang
+    // sama DAN setiap ketikan di kotak pencarian akan ikut me-render ulang
+    // seluruh dashboard -- justru beban yang mau dihilangkan.
+    //
+    // Nilai pencarian yang sedang aktif tetap bisa dibaca untuk keperluan
+    // ekspor lewat session (lihat currentAdminSearch()).
 
     #[Url(as: 'q_unit', history: true)]
     public string $searchUnit = '';
@@ -100,6 +111,18 @@ class Dashboard extends Component
 
         $this->applyPeriodFilter();
         $this->persistFilterToSession();
+    }
+
+    /**
+     * Kata kunci pencarian admin yang sedang aktif di komponen anak
+     * (Widgets\UsersTable). Dibaca dari session, BUKAN lewat prop/event
+     * Livewire, supaya mengetik di kotak pencarian tidak memicu render ulang
+     * dashboard induk. Hanya dipakai saat ekspor (jarang), jadi tidak ada
+     * biaya di jalur render normal.
+     */
+    private function currentAdminSearch(): string
+    {
+        return (string) session(UsersTable::SESSION_SEARCH_KEY, '');
     }
 
     private function persistFilterToSession(): void
@@ -343,6 +366,12 @@ class Dashboard extends Component
             ]
         );
 
+        // Kartu ringkasan (jumlah admin/unit) di-cache 120 detik. Tanpa
+        // dibuang manual di sini, admin yang baru saja dibuat tidak akan
+        // terhitung di kartu "Total Admin" selama maksimal 2 menit -- terlihat
+        // seperti bug walau datanya sudah masuk database.
+        Cache::forget(self::SUMMARY_COUNTS_CACHE_KEY);
+
         // Tampilkan modal kredensial
         $this->createdCredentials = [
             'title'    => '🎉 Akun Admin Berhasil Dibuat!',
@@ -447,6 +476,10 @@ class Dashboard extends Component
             $data
         );
 
+        // Sama seperti saveAdmin(): buang cache ringkasan supaya jumlah unit
+        // aktif/nonaktif langsung ikut berubah, tidak menunggu TTL habis.
+        Cache::forget(self::SUMMARY_COUNTS_CACHE_KEY);
+
         $this->closeModal();
         session()->flash('message', $this->isEditing ? 'Unit Usaha berhasil diperbarui.' : 'Unit Usaha baru berhasil ditambahkan.');
     }
@@ -523,8 +556,10 @@ class Dashboard extends Component
                 : 0,
         ];
 
+        $searchAdmin = $this->currentAdminSearch();
+
         $filters = [
-            'searchAdmin' => $this->searchAdmin,
+            'searchAdmin' => $searchAdmin,
             'searchUnit'  => $this->searchUnit,
         ];
 
@@ -541,7 +576,7 @@ class Dashboard extends Component
                 'period_label'  => $periodLabel,
                 'start_date'    => $this->startDate,
                 'end_date'      => $this->endDate,
-                'search_admin'  => $this->searchAdmin,
+                'search_admin'  => $searchAdmin,
                 'search_unit'   => $this->searchUnit,
                 'file_name'     => $fileName,
             ]
@@ -573,24 +608,57 @@ class Dashboard extends Component
             default        => 'Bulan Ini',
         };
 
-        $units = Unit::with('users')
-            ->when($this->searchUnit, fn ($q) => $q->where('name', 'like', '%' . $this->searchUnit . '%')
-                                                  ->orWhere('department', 'like', '%' . $this->searchUnit . '%'))
-            ->orderBy('name')
-            ->get();
-
-        $users = User::with(['unit', 'roles'])
-            ->when($this->searchAdmin, function ($query) {
+        // -------------------------------------------------------------
+        // KARTU "KESEHATAN UNIT USAHA"
+        // -------------------------------------------------------------
+        // Sebelumnya: Unit::with('users')->get() -- memuat SEMUA user dari
+        // SETIAP unit ke memori, padahal view cuma butuh NAMA satu admin
+        // (`$unit->users->first()->name`). Untuk 30 unit x puluhan user itu
+        // ribuan model Eloquent yang langsung dibuang.
+        //
+        // Sekarang: 1 query saja, kolom seperlunya, dan nama admin diambil
+        // lewat subquery select (`primary_admin_name`). Tidak ada lagi query
+        // relasi tambahan maupun hidrasi model User.
+        $units = Unit::query()
+            ->select('units.id', 'units.name', 'units.slug', 'units.department', 'units.is_active')
+            ->addSelect([
+                'primary_admin_name' => User::query()
+                    ->select('users.name')
+                    ->whereColumn('users.unit_id', 'units.id')
+                    ->orderBy('users.id')
+                    ->limit(1),
+            ])
+            // Kondisi pencarian dibungkus closure sendiri: tanpa ini, orWhere
+            // akan "bocor" ke level teratas query dan bisa menganulir filter
+            // lain yang ditambahkan di kemudian hari.
+            ->when($this->searchUnit !== '', function ($query) {
                 $query->where(function ($q) {
-                    $q->where('name', 'like', '%' . $this->searchAdmin . '%')
-                      ->orWhere('username', 'like', '%' . $this->searchAdmin . '%')
-                      ->orWhere('email', 'like', '%' . $this->searchAdmin . '%');
+                    $term = '%' . $this->searchUnit . '%';
+
+                    $q->where('units.name', 'like', $term)
+                      ->orWhere('units.department', 'like', $term);
                 });
             })
+            ->orderBy('units.name')
+            ->get();
+
+        // -------------------------------------------------------------
+        // OPSI DROPDOWN UNIT USAHA (MODAL "TAMBAH ADMIN")
+        // -------------------------------------------------------------
+        // Dipisah dari $units di atas karena dua alasan:
+        //  1. Dropdown hanya perlu id + name, bukan seluruh kolom.
+        //  2. BUG LAMA: dropdown memakai $units yang sudah TERFILTER oleh
+        //     kotak "Cari unit...". Akibatnya, begitu Master Admin mengetik
+        //     sesuatu di pencarian unit, pilihan Unit Usaha di modal Tambah
+        //     Admin ikut menyusut/kosong. Daftar opsi sekarang selalu utuh.
+        $unitOptions = Unit::query()
+            ->select('id', 'name')
             ->orderBy('name')
             ->get();
 
-        $logs = AuthLog::latest()->limit(6)->get();
+        // with('user'): view menampilkan `$log->user->name`. Tanpa eager load,
+        // 6 baris log = 6 query tambahan (N+1 terselubung, audit poin 4).
+        $logs = AuthLog::with('user')->latest()->limit(6)->get();
 
         // TRANSAKSI TERKINI
         $recentTransactions = FinanceTransaction::with('unit')
@@ -603,7 +671,7 @@ class Dashboard extends Component
         // tidak bergantung pada filter apa pun di halaman ini, tapi
         // sebelumnya tetap dihitung ulang (3 query COUNT) di setiap render.
         // Di-cache singkat sebagai satu paket karena selalu dipakai bersama.
-        $summaryCounts = Cache::remember('dashboard-master:summary-counts', self::CACHE_TTL_SECONDS, function () {
+        $summaryCounts = Cache::remember(self::SUMMARY_COUNTS_CACHE_KEY, self::CACHE_TTL_SECONDS, function () {
             $allUnitsCount    = Unit::count();
             $activeUnitsCount = Unit::where('is_active', true)->count();
 
@@ -624,7 +692,10 @@ class Dashboard extends Component
 
         return view('livewire.master.dashboard', [
             'units'               => $units,
-            'users'               => $users,
+            'unitOptions'         => $unitOptions,
+            // 'users' sudah tidak dikirim lagi: tabel admin dirender oleh
+            // komponen anak <livewire:master.widgets.users-table /> yang
+            // mengambil datanya sendiri secara paginated.
             'logs'                => $logs,
             'recentTransactions'  => $recentTransactions,
             'totalRevenue'        => 'Rp ' . number_format($grandTotalContribution, 0, ',', '.'),
