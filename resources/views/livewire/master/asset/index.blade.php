@@ -1,8 +1,38 @@
 <div class="w-full max-w-[1500px] mx-auto space-y-5 text-neutral-800 dark:text-neutral-100 px-4 py-4 sm:px-6 font-sans">
 
+    {{-- Header & Action Button --}}
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 bg-white dark:bg-slate-800 p-4 rounded-sm border border-neutral-100 dark:border-slate-700 shadow-sm shadow-black/[0.02]">
+        <div class="shrink-0">
+            <h1 class="text-sm font-bold tracking-tight text-neutral-900 dark:text-white">Manajemen Aset</h1>
+            <p class="text-[11px] tracking-tight text-neutral-400 mt-0.5">
+                Kelola data aset, kondisi, status, dan alokasi penggunaan unit usaha.
+            </p>
+        </div>
+
+        <div class="flex items-center gap-2 overflow-x-auto md:justify-end -mx-1 px-1 md:mx-0 md:px-0">
+            {{-- Tombol Tambah Aset --}}
+            <button wire:click="openModal" class="shrink-0 whitespace-nowrap inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-white bg-blue-900 hover:bg-blue-950 rounded-sm transition-all shadow-sm shadow-blue-900/20 cursor-pointer">
+                <x-heroicon-o-plus stroke-width="2.5" class="w-3.5 h-3.5" />
+                <span>Tambah Aset</span>
+            </button>
+
+            {{-- Tombol Export --}}
+            <button wire:click="exportData" class="shrink-0 whitespace-nowrap inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800 rounded-sm hover:bg-sky-100 dark:hover:bg-sky-900/40 transition-all cursor-pointer">
+                <x-heroicon-o-arrow-down-tray class="w-3.5 h-3.5" />
+                <span>Export Excel</span>
+            </button>
+
+            {{-- Tombol Import --}}
+            <button wire:click="openImportModal" class="shrink-0 whitespace-nowrap inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-sm hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition-all cursor-pointer">
+                <x-heroicon-o-arrow-up-tray class="w-3.5 h-3.5" />
+                <span>Import Excel</span>
+            </button>
+        </div>
+    </div>
+
     {{-- Flash Notification --}}
     @if (session()->has('message'))
-        <div class="p-4 rounded-md bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 text-sm flex items-center justify-between">
+        <div class="p-4 rounded-sm bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 text-sm flex items-center justify-between">
             <span class="font-medium">{{ session('message') }}</span>
             <button type="button" onclick="this.parentElement.remove()" class="text-emerald-500 hover:text-emerald-700">&times;</button>
         </div>
@@ -10,85 +40,52 @@
 
     {{-- KPI Cards --}}
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div class="bg-white dark:bg-slate-800 rounded-md border border-neutral-100 dark:border-slate-700 p-5 shadow-sm shadow-black/[0.02]">
+        <div class="bg-white dark:bg-slate-800 rounded-none border border-neutral-100 dark:border-slate-700 p-4 flex flex-col justify-between">
             <div class="flex items-center justify-between">
-                <p class="text-xs font-medium text-neutral-400">Total Aset & Nilai</p>
-                <span class="p-2 rounded-xl bg-blue-50 dark:bg-blue-950/50 text-blue-500">
-                    <x-heroicon-o-cube class="w-4 h-4" />
-                </span>
+                <p class="text-xs text-neutral-400">Total Aset & Nilai</p>
+                <x-heroicon-o-cube stroke-width="1.5" class="w-4 h-4 text-neutral-300 dark:text-neutral-600" />
             </div>
-            <div class="mt-4 flex items-baseline justify-between">
+            <div class="mt-2 flex items-baseline justify-between">
                 <p class="text-2xl font-bold text-neutral-900 dark:text-white tracking-tight">{{ $totalAssets }}</p>
                 <span class="text-xs font-bold text-emerald-600 dark:text-emerald-400">Rp {{ number_format($totalValue, 0, ',', '.') }}</span>
             </div>
             <p class="mt-2 text-[11px] text-neutral-400">Total unit & estimasi nilai</p>
         </div>
 
-        <div class="bg-white dark:bg-slate-800 rounded-md border border-neutral-100 dark:border-slate-700 p-5 shadow-sm shadow-black/[0.02]">
+        <div class="bg-white dark:bg-slate-800 rounded-none border border-neutral-100 dark:border-slate-700 p-4 flex flex-col justify-between">
             <div class="flex items-center justify-between">
-                <p class="text-xs font-medium text-neutral-400">Tersedia</p>
-                <span class="p-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-500">
-                    <x-heroicon-o-check-circle class="w-4 h-4" />
-                </span>
+                <p class="text-xs text-neutral-400">Tersedia</p>
+                <x-heroicon-o-check-circle stroke-width="1.5" class="w-4 h-4 text-emerald-300 dark:text-emerald-700" />
             </div>
-            <p class="mt-4 text-2xl font-bold text-emerald-600 dark:text-emerald-400 tracking-tight">{{ $availableCount }}</p>
+            <p class="mt-2 text-2xl font-bold text-emerald-600 dark:text-emerald-400 tracking-tight">{{ $availableCount }}</p>
             <p class="mt-2 text-[11px] text-neutral-400">Siap untuk digunakan</p>
         </div>
 
-        <div class="bg-white dark:bg-slate-800 rounded-md border border-neutral-100 dark:border-slate-700 p-5 shadow-sm shadow-black/[0.02]">
+        <div class="bg-white dark:bg-slate-800 rounded-none border border-neutral-100 dark:border-slate-700 p-4 flex flex-col justify-between">
             <div class="flex items-center justify-between">
-                <p class="text-xs font-medium text-neutral-400">Sedang Digunakan</p>
-                <span class="p-2 rounded-xl bg-sky-50 dark:bg-sky-950/50 text-sky-500">
-                    <x-heroicon-o-user class="w-4 h-4" />
-                </span>
+                <p class="text-xs text-neutral-400">Sedang Digunakan</p>
+                <x-heroicon-o-user stroke-width="1.5" class="w-4 h-4 text-sky-300 dark:text-sky-700" />
             </div>
-            <p class="mt-4 text-2xl font-bold text-sky-600 dark:text-sky-400 tracking-tight">{{ $assignedCount }}</p>
+            <p class="mt-2 text-2xl font-bold text-sky-600 dark:text-sky-400 tracking-tight">{{ $assignedCount }}</p>
             <p class="mt-2 text-[11px] text-neutral-400">Teralokasi ke pengguna</p>
         </div>
 
-        <div class="bg-white dark:bg-slate-800 rounded-md border border-neutral-100 dark:border-slate-700 p-5 shadow-sm shadow-black/[0.02]">
+        <div class="bg-white dark:bg-slate-800 rounded-none border border-neutral-100 dark:border-slate-700 p-4 flex flex-col justify-between">
             <div class="flex items-center justify-between">
-                <p class="text-xs font-medium text-neutral-400">Dalam Perbaikan</p>
-                <span class="p-2 rounded-xl bg-amber-50 dark:bg-amber-950/50 text-amber-500">
-                    <x-heroicon-o-wrench class="w-4 h-4" />
-                </span>
+                <p class="text-xs text-neutral-400">Dalam Perbaikan</p>
+                <x-heroicon-o-wrench stroke-width="1.5" class="w-4 h-4 text-amber-300 dark:text-amber-700" />
             </div>
-            <p class="mt-4 text-2xl font-bold text-amber-600 dark:text-amber-400 tracking-tight">{{ $maintenanceCount }}</p>
+            <p class="mt-2 text-2xl font-bold text-amber-600 dark:text-amber-400 tracking-tight">{{ $maintenanceCount }}</p>
             <p class="mt-2 text-[11px] text-neutral-400">Dalam proses pemeliharaan</p>
         </div>
     </div>
 
-    {{-- Action Header --}}
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-2">
-        <div class="flex items-center gap-2.5 shrink-0">
-            {{-- Tombol Export --}}
-            <button wire:click="exportData" class="px-3.5 py-2 text-xs font-semibold text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800 rounded-[3px] hover:bg-sky-100 dark:hover:bg-sky-900/40 transition-all flex items-center gap-1.5 cursor-pointer">
-                <x-heroicon-o-arrow-down-tray class="w-4 h-4" />
-                <span>Export Excel</span>
-            </button>
-
-            {{-- Tombol Import --}}
-            <button wire:click="openImportModal" class="px-3.5 py-2 text-xs font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-[3px] hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition-all flex items-center gap-1.5 cursor-pointer">
-                <x-heroicon-o-arrow-up-tray class="w-4 h-4" />
-                <span>Import Excel</span>
-            </button>
-        </div>
-
-        <div class="flex items-center gap-2.5 shrink-0">
-            {{-- Tombol Tambah Aset --}}
-            <button wire:click="openModal" class="px-4 py-2 text-xs font-bold text-white bg-blue-900 hover:bg-blue-950 rounded-[3px] transition-all flex items-center gap-2 shadow-sm shadow-blue-900/20 cursor-pointer">
-                <x-heroicon-o-plus stroke-width="2.5" class="w-4 h-4" />
-                <span>Tambah Aset</span>
-            </button>
-        </div>
-    </div>
-
     {{-- Filter Bar Toolbar --}}
-    <div class="bg-white dark:bg-slate-800 rounded-md border border-neutral-100 dark:border-slate-700 p-4 space-y-3 shadow-sm shadow-black/[0.02]">
+    <div class="bg-white dark:bg-slate-800 rounded-sm border border-neutral-100 dark:border-slate-700 p-4 space-y-3 shadow-sm shadow-black/[0.02]">
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3">
             <div class="md:col-span-2">
                 <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cari tag aset, nama, s/n, user..."
-                    class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-[3px] bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-red-500/10 focus:border-red-400">
+                    class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400">
             </div>
             {{-- Filter Unit Usaha. Placeholder "semua unit" hanya relevan kalau
                  ada lebih dari 1 unit untuk dipilih (konteks Master). Saat
@@ -97,7 +94,7 @@
                  terkunci ke nama unit sendiri sebagai satu-satunya opsi --
                  pola yang sama dipakai di modul Inventaris & Transaksi. --}}
             <div>
-                <select wire:model.live="unitFilter" class="w-full px-3.5 py-2 text-xs font-semibold text-neutral-600 dark:text-neutral-300 bg-white dark:bg-slate-900 border border-neutral-200 dark:border-slate-700 rounded-[3px] focus:outline-none focus:ring-2 focus:ring-red-500/10 focus:border-red-400 cursor-pointer">
+                <select wire:model.live="unitFilter" class="w-full px-3.5 py-2 text-xs font-semibold text-neutral-600 dark:text-neutral-300 bg-white dark:bg-slate-900 border border-neutral-200 dark:border-slate-700 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400 cursor-pointer">
                     @if($units->count() > 1)
                         <option value="">Semua Unit Usaha</option>
                     @endif
@@ -107,7 +104,7 @@
                 </select>
             </div>
             <div>
-                <select wire:model.live="statusFilter" class="w-full px-3.5 py-2 text-xs font-semibold text-neutral-600 dark:text-neutral-300 bg-white dark:bg-slate-900 border border-neutral-200 dark:border-slate-700 rounded-[3px] focus:outline-none focus:ring-2 focus:ring-red-500/10 focus:border-red-400 cursor-pointer">
+                <select wire:model.live="statusFilter" class="w-full px-3.5 py-2 text-xs font-semibold text-neutral-600 dark:text-neutral-300 bg-white dark:bg-slate-900 border border-neutral-200 dark:border-slate-700 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400 cursor-pointer">
                     <option value="">Semua Status</option>
                     <option value="available">Tersedia</option>
                     <option value="assigned">Digunakan</option>
@@ -116,7 +113,7 @@
                 </select>
             </div>
             <div>
-                <select wire:model.live="categoryFilter" class="w-full px-3.5 py-2 text-xs font-semibold text-neutral-600 dark:text-neutral-300 bg-white dark:bg-slate-900 border border-neutral-200 dark:border-slate-700 rounded-[3px] focus:outline-none focus:ring-2 focus:ring-red-500/10 focus:border-red-400 cursor-pointer">
+                <select wire:model.live="categoryFilter" class="w-full px-3.5 py-2 text-xs font-semibold text-neutral-600 dark:text-neutral-300 bg-white dark:bg-slate-900 border border-neutral-200 dark:border-slate-700 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400 cursor-pointer">
                     <option value="">Semua Kategori</option>
                     <option value="Elektronik">Elektronik</option>
                     <option value="Kendaraan">Kendaraan</option>
@@ -129,36 +126,43 @@
 
     {{-- Bulk Action Bar --}}
     @if(count($selectedRows) > 0)
-        <div class="flex items-center justify-between bg-neutral-900 text-white p-3.5 rounded-md shadow-md text-xs">
+        <div class="flex items-center justify-between bg-neutral-900 text-white p-3.5 rounded-sm shadow-md text-xs">
             <div class="flex items-center gap-2">
-                <span class="font-bold text-red-400">{{ count($selectedRows) }}</span> aset dipilih
+                <span class="font-bold text-blue-400">{{ count($selectedRows) }}</span> aset dipilih
             </div>
             <div class="flex items-center gap-2">
-                <button wire:click="bulkUpdateStatus('available')" class="px-3 py-1 bg-emerald-600 hover:bg-emerald-500 rounded font-semibold transition-colors cursor-pointer">
+                <button wire:click="bulkUpdateStatus('available')" class="px-3 py-1 bg-emerald-600 hover:bg-emerald-500 rounded-sm font-semibold transition-colors cursor-pointer">
                     Set Tersedia
                 </button>
-                <button wire:click="bulkUpdateStatus('maintenance')" class="px-3 py-1 bg-amber-600 hover:bg-amber-500 rounded font-semibold transition-colors cursor-pointer">
+                <button wire:click="bulkUpdateStatus('maintenance')" class="px-3 py-1 bg-amber-600 hover:bg-amber-500 rounded-sm font-semibold transition-colors cursor-pointer">
                     Set Perbaikan
                 </button>
                 <button type="button" x-on:click.prevent="$store.confirmDialog.open({
                         message: 'Yakin hapus data terpilih?',
                         confirmText: 'Ya, Hapus',
                         onConfirm: () => $wire.bulkDelete()
-                    })" class="px-3 py-1 bg-rose-600 hover:bg-rose-500 rounded font-semibold transition-colors cursor-pointer">
+                    })" class="px-3 py-1 bg-rose-600 hover:bg-rose-500 rounded-sm font-semibold transition-colors cursor-pointer">
                     Hapus
                 </button>
             </div>
         </div>
     @endif
 
-    {{-- Table Asset --}}
-    <div class="bg-white dark:bg-slate-800 rounded-md border border-neutral-100 dark:border-slate-700 overflow-hidden shadow-sm shadow-black/[0.02]">
+    {{-- Daftar Aset --}}
+    <section class="space-y-3 pt-1">
+        <div>
+            <h2 class="text-sm font-bold tracking-tight text-neutral-900 dark:text-white">Daftar Aset</h2>
+            <p class="text-[11px] tracking-tight text-neutral-400 mt-0.5">Rincian seluruh aset dalam inventaris unit usaha</p>
+        </div>
+
+        {{-- Table Asset --}}
+        <div class="bg-white dark:bg-slate-800 rounded-sm border border-neutral-100 dark:border-slate-700 overflow-hidden shadow-sm shadow-black/[0.02]">
         <div class="overflow-x-auto">
             <table class="w-full text-sm text-left">
                 <thead class="bg-neutral-50/70 dark:bg-slate-900/50 text-[11px] font-semibold uppercase tracking-wider text-neutral-400 border-b border-neutral-100 dark:border-slate-700">
                     <tr>
                         <th class="p-4 w-10 text-center">
-                            <input type="checkbox" wire:model.live="selectAll" class="rounded border-neutral-300 text-blue-900 focus:ring-red-500/20 cursor-pointer">
+                            <input type="checkbox" wire:model.live="selectAll" class="rounded border-neutral-300 text-blue-900 focus:ring-blue-500/20 cursor-pointer">
                         </th>
                         <th class="px-4 py-3.5">Tag & Nama Aset</th>
                         <th class="px-4 py-3.5">Unit Usaha & Kategori</th>
@@ -173,14 +177,14 @@
                     @forelse($assets as $asset)
                         <tr wire:key="asset-{{ $asset->id }}" class="hover:bg-neutral-50/60 dark:hover:bg-slate-700/30 transition-colors">
                             <td class="p-4 text-center">
-                                <input type="checkbox" wire:model.live="selectedRows" value="{{ $asset->id }}" class="rounded border-neutral-300 text-blue-900 focus:ring-red-500/20 cursor-pointer">
+                                <input type="checkbox" wire:model.live="selectedRows" value="{{ $asset->id }}" class="rounded border-neutral-300 text-blue-900 focus:ring-blue-500/20 cursor-pointer">
                             </td>
 
                             {{-- Tag & Nama Aset --}}
                             <td class="px-4 py-3.5">
                                 <div class="font-semibold text-neutral-900 dark:text-white text-xs">{{ $asset->name }}</div>
                                 <div class="flex items-center gap-2 mt-0.5">
-                                    <span class="text-[10px] font-mono text-blue-900 dark:text-red-400 font-semibold bg-red-50 dark:bg-red-950/40 px-1.5 py-0.2 rounded border border-red-100 dark:border-red-900/50">{{ $asset->asset_tag }}</span>
+                                    <span class="text-[10px] font-mono text-blue-900 dark:text-blue-400 font-semibold bg-blue-50 dark:bg-blue-950/40 px-1.5 py-0.5 rounded-sm border border-blue-100 dark:border-blue-900/50">{{ $asset->asset_tag }}</span>
                                     @if($asset->serial_number)
                                         <span class="text-[11px] font-mono text-neutral-400">S/N: {{ $asset->serial_number }}</span>
                                     @endif
@@ -212,11 +216,11 @@
                             {{-- Kondisi Badge --}}
                             <td class="px-4 py-3.5 text-center whitespace-nowrap">
                                 @if($asset->condition === 'good')
-                                    <span class="px-2.5 py-0.5 text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/50 rounded-[3px] border border-emerald-200/60 dark:border-emerald-800">Bagus</span>
+                                    <span class="px-2.5 py-1 text-[10px] font-bold tracking-wide rounded-sm text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/50">Bagus</span>
                                 @elseif($asset->condition === 'fair')
-                                    <span class="px-2.5 py-0.5 text-[10px] font-semibold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/50 rounded-[3px] border border-amber-200/60 dark:border-amber-800">Cukup</span>
+                                    <span class="px-2.5 py-1 text-[10px] font-bold tracking-wide rounded-sm text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/50">Cukup</span>
                                 @else
-                                    <span class="px-2.5 py-0.5 text-[10px] font-semibold text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/50 rounded-[3px] border border-rose-200/60 dark:border-rose-800">Rusak</span>
+                                    <span class="px-2.5 py-1 text-[10px] font-bold tracking-wide rounded-sm text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/50">Rusak</span>
                                 @endif
                             </td>
 
@@ -224,30 +228,30 @@
                             <td class="px-4 py-3.5 text-center whitespace-nowrap">
                                 @switch($asset->status)
                                     @case('available')
-                                        <span class="px-2.5 py-0.5 text-[10px] font-semibold rounded-[3px] bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 border border-emerald-200/60 dark:border-emerald-800">Tersedia</span>
+                                        <span class="px-2.5 py-1 text-[10px] font-bold tracking-wide rounded-sm bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400">Tersedia</span>
                                         @break
                                     @case('assigned')
-                                        <span class="px-2.5 py-0.5 text-[10px] font-semibold rounded-[3px] bg-sky-50 dark:bg-sky-950/50 text-sky-600 dark:text-sky-400 border border-sky-200/60 dark:border-sky-800">Digunakan</span>
+                                        <span class="px-2.5 py-1 text-[10px] font-bold tracking-wide rounded-sm bg-sky-50 dark:bg-sky-950/50 text-sky-600 dark:text-sky-400">Digunakan</span>
                                         @break
                                     @case('maintenance')
-                                        <span class="px-2.5 py-0.5 text-[10px] font-semibold rounded-[3px] bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 border border-amber-200/60 dark:border-amber-800">Perbaikan</span>
+                                        <span class="px-2.5 py-1 text-[10px] font-bold tracking-wide rounded-sm bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400">Perbaikan</span>
                                         @break
                                     @default
-                                        <span class="px-2.5 py-0.5 text-[10px] font-semibold rounded-[3px] bg-neutral-100 dark:bg-slate-700 text-neutral-500 dark:text-neutral-400 border border-neutral-200 dark:border-slate-600">Afkir</span>
+                                        <span class="px-2.5 py-1 text-[10px] font-bold tracking-wide rounded-sm bg-neutral-100 dark:bg-slate-700 text-neutral-500 dark:text-neutral-400">Afkir</span>
                                 @endswitch
                             </td>
 
                             {{-- Actions --}}
                             <td class="px-4 py-3.5 text-center whitespace-nowrap">
                                 <div class="flex items-center justify-center gap-1">
-                                    <button wire:click="edit({{ $asset->id }})" class="p-1.5 text-amber-600 hover:text-amber-800 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/40 rounded-md transition-all cursor-pointer" title="Edit Aset">
+                                    <button wire:click="edit({{ $asset->id }})" class="p-1.5 text-amber-600 hover:text-amber-800 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/40 rounded-sm transition-all cursor-pointer" title="Edit Aset">
                                         <x-heroicon-o-pencil-square class="w-4 h-4" />
                                     </button>
                                     <button type="button" x-on:click.prevent="$store.confirmDialog.open({
                                             message: 'Yakin hapus aset ini?',
                                             confirmText: 'Ya, Hapus',
                                             onConfirm: () => $wire.delete({{ $asset->id }})
-                                        })" class="p-1.5 text-rose-500 hover:text-rose-700 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-md transition-all cursor-pointer" title="Hapus Aset">
+                                        })" class="p-1.5 text-rose-500 hover:text-rose-700 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-sm transition-all cursor-pointer" title="Hapus Aset">
                                         <x-heroicon-o-trash class="w-4 h-4" />
                                     </button>
                                 </div>
@@ -269,7 +273,7 @@
             <div class="flex items-center gap-3 text-xs text-neutral-500 dark:text-neutral-400">
                 <div class="flex items-center gap-2">
                     <span>Tampilkan</span>
-                    <select wire:model.live="perPage" class="py-1 px-2 text-xs bg-white dark:bg-slate-900 border border-neutral-200 dark:border-slate-700 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 text-neutral-700 dark:text-neutral-300 font-medium cursor-pointer">
+                    <select wire:model.live="perPage" class="py-1 px-2 text-xs bg-white dark:bg-slate-900 border border-neutral-200 dark:border-slate-700 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-neutral-700 dark:text-neutral-300 font-medium cursor-pointer">
                         <option value="10">10</option>
                         <option value="25">25</option>
                         <option value="50">50</option>
@@ -287,15 +291,16 @@
                 {{ $assets->links('components.custom-pagination') }}
             </div>
         </div>
-    </div>
+        </div>
+    </section>
 
     {{-- Form Modal --}}
     @if($showModal)
         <div class="fixed inset-0 z-50 flex items-center justify-center bg-neutral-900/60 backdrop-blur-sm p-4 overflow-y-auto">
-            <div class="bg-white dark:bg-slate-800 w-full max-w-2xl rounded-lg border border-neutral-200 dark:border-slate-700 shadow-2xl overflow-hidden my-8 animate-in fade-in zoom-in duration-150">
+            <div class="bg-white dark:bg-slate-800 w-full max-w-2xl rounded-sm border border-neutral-200 dark:border-slate-700 shadow-2xl overflow-hidden my-8 animate-in fade-in zoom-in duration-150">
                 <div class="p-5 border-b border-neutral-100 dark:border-slate-700 flex items-center justify-between bg-neutral-50/50 dark:bg-slate-900/50">
                     <div>
-                        <h3 class="text-base font-bold text-neutral-900 dark:text-white">
+                        <h3 class="text-lg font-bold text-neutral-900 dark:text-white">
                             {{ $editingId ? 'Edit Data Aset' : 'Tambah Aset Baru' }}
                         </h3>
                         <p class="text-xs text-neutral-400">
@@ -309,19 +314,19 @@
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                             <label class="block font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Tag / Kode Aset <span class="text-red-500">*</span></label>
-                            <input type="text" wire:model="asset_tag" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-red-500">
+                            <input type="text" wire:model="asset_tag" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-blue-500">
                             @error('asset_tag') <span class="text-rose-500 text-[11px] mt-0.5 block">{{ $message }}</span> @enderror
                         </div>
 
                         <div>
                             <label class="block font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Nama Aset <span class="text-red-500">*</span></label>
-                            <input type="text" wire:model="name" placeholder="misal: Laptop MacBook Pro" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-red-500">
+                            <input type="text" wire:model="name" placeholder="misal: Laptop MacBook Pro" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-blue-500">
                             @error('name') <span class="text-rose-500 text-[11px] mt-0.5 block">{{ $message }}</span> @enderror
                         </div>
 
                         <div>
                             <label class="block font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Kategori <span class="text-red-500">*</span></label>
-                            <select wire:model="category" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-red-500">
+                            <select wire:model="category" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-blue-500">
                                 <option value="Elektronik">Elektronik</option>
                                 <option value="Kendaraan">Kendaraan</option>
                                 <option value="Mebel & Perabot">Mebel & Perabot</option>
@@ -339,7 +344,7 @@
                              Unit\Asset\Index::lockUnitScope()). --}}
                         <div>
                             <label class="block font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Unit Usaha</label>
-                            <select wire:model="unit_id" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-red-500">
+                            <select wire:model="unit_id" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-blue-500">
                                 @if($units->count() > 1)
                                     <option value="">-- Aset Pusat (Tanpa Unit) --</option>
                                 @endif
@@ -352,22 +357,22 @@
 
                         <div>
                             <label class="block font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Nomor Seri (S/N)</label>
-                            <input type="text" wire:model="serial_number" placeholder="misal: C02XL123456" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-red-500">
+                            <input type="text" wire:model="serial_number" placeholder="misal: C02XL123456" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-blue-500">
                         </div>
 
                         <div>
                             <label class="block font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Tanggal Pembelian</label>
-                            <input type="date" wire:model="purchase_date" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-red-500">
+                            <input type="date" wire:model="purchase_date" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-blue-500">
                         </div>
 
                         <div>
                             <label class="block font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Harga Beli (Rp)</label>
-                            <input type="number" wire:model="purchase_cost" placeholder="0" class="w-full px-3.5 py-2 text-xs font-bold border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-red-500">
+                            <input type="number" wire:model="purchase_cost" placeholder="0" class="w-full px-3.5 py-2 text-xs font-bold border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-blue-500">
                         </div>
 
                         <div>
                             <label class="block font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Status Aset <span class="text-red-500">*</span></label>
-                            <select wire:model="status" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-red-500">
+                            <select wire:model="status" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-blue-500">
                                 <option value="available">Tersedia</option>
                                 <option value="assigned">Digunakan</option>
                                 <option value="maintenance">Perbaikan</option>
@@ -377,7 +382,7 @@
 
                         <div>
                             <label class="block font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Kondisi <span class="text-red-500">*</span></label>
-                            <select wire:model="condition" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-red-500">
+                            <select wire:model="condition" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-blue-500">
                                 <option value="good">Bagus</option>
                                 <option value="fair">Cukup</option>
                                 <option value="damaged">Rusak</option>
@@ -386,25 +391,25 @@
 
                         <div>
                             <label class="block font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Penanggung Jawab / User</label>
-                            <input type="text" wire:model="assigned_to" placeholder="misal: Budi Santoso" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-red-500">
+                            <input type="text" wire:model="assigned_to" placeholder="misal: Budi Santoso" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-blue-500">
                         </div>
 
                         <div>
                             <label class="block font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Lokasi Penempatan</label>
-                            <input type="text" wire:model="location" placeholder="misal: Ruang IT Lt. 2" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-red-500">
+                            <input type="text" wire:model="location" placeholder="misal: Ruang IT Lt. 2" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-blue-500">
                         </div>
                     </div>
 
                     <div>
                         <label class="block font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Catatan Tambahan</label>
-                        <textarea wire:model="notes" rows="2" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-red-500" placeholder="Keterangan garansi, kelengkapan, dll..."></textarea>
+                        <textarea wire:model="notes" rows="2" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-blue-500" placeholder="Keterangan garansi, kelengkapan, dll..."></textarea>
                     </div>
 
                     <div class="pt-4 border-t border-neutral-100 dark:border-slate-700 flex items-center justify-end gap-2.5">
-                        <button type="button" wire:click="closeModal" class="px-4 py-2 text-xs font-semibold text-neutral-600 dark:text-neutral-300 bg-neutral-100 dark:bg-slate-700 rounded-md hover:bg-neutral-200 dark:hover:bg-slate-600 transition-all cursor-pointer">
+                        <button type="button" wire:click="closeModal" class="px-4 py-2 text-xs font-semibold text-neutral-600 dark:text-neutral-300 bg-neutral-100 dark:bg-slate-700 rounded-sm hover:bg-neutral-200 dark:hover:bg-slate-600 transition-all cursor-pointer">
                             Batal
                         </button>
-                        <button type="submit" class="px-5 py-2 text-xs font-bold text-white bg-blue-900 hover:bg-blue-950 rounded-md transition-all shadow-sm cursor-pointer">
+                        <button type="submit" class="px-5 py-2 text-xs font-bold text-white bg-blue-900 hover:bg-blue-950 rounded-sm transition-all shadow-sm cursor-pointer">
                             {{ $editingId ? 'Simpan Perubahan' : 'Tambah Aset' }}
                         </button>
                     </div>
@@ -416,14 +421,14 @@
     {{-- Modal Import Excel --}}
     @if($showImportModal)
         <div class="fixed inset-0 z-50 flex items-center justify-center bg-neutral-900/50 backdrop-blur-sm p-4">
-            <div class="bg-white dark:bg-slate-800 w-full max-w-md rounded-md border border-neutral-200 dark:border-slate-700 shadow-xl overflow-hidden animate-in fade-in zoom-in duration-150">
+            <div class="bg-white dark:bg-slate-800 w-full max-w-md rounded-sm border border-neutral-200 dark:border-slate-700 shadow-xl overflow-hidden animate-in fade-in zoom-in duration-150">
                 <div class="p-4 border-b border-neutral-100 dark:border-slate-700 flex items-center justify-between">
                     <h3 class="text-sm font-bold text-neutral-900 dark:text-white">Import Aset Massal</h3>
                     <button wire:click="closeImportModal" class="text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 text-lg font-bold">&times;</button>
                 </div>
 
                 <form wire:submit.prevent="importExcel" class="p-4 space-y-4 text-xs">
-                    <div class="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/50 rounded-md p-3 text-amber-800 dark:text-amber-300 space-y-1">
+                    <div class="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/50 rounded-sm p-3 text-amber-800 dark:text-amber-300 space-y-1">
                         <p class="font-bold">Petunjuk Pengisian:</p>
                         <ul class="list-disc list-inside space-y-0.5 text-[11px] text-amber-700 dark:text-amber-400">
                             <li>Unduh template terlebih dahulu untuk format yang sesuai.</li>
@@ -435,7 +440,7 @@
                     </div>
 
                     <div>
-                        <button type="button" wire:click="downloadTemplate" class="w-full py-2 px-3 text-xs font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-md hover:bg-emerald-100 transition flex items-center justify-center gap-2">
+                        <button type="button" wire:click="downloadTemplate" class="w-full py-2 px-3 text-xs font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-sm hover:bg-emerald-100 transition flex items-center justify-center gap-2">
                             <x-heroicon-o-arrow-down-tray class="w-4 h-4" />
                             Unduh Template (.XLSX)
                         </button>
@@ -443,15 +448,15 @@
 
                     <div>
                         <label class="block font-medium text-neutral-700 dark:text-neutral-300 mb-1">Unggah Berkas Excel</label>
-                        <input type="file" wire:model="excel_file" accept=".xlsx, .xls" class="w-full text-xs border border-neutral-200 dark:border-slate-700 rounded p-1.5 bg-neutral-50 dark:bg-slate-900 text-neutral-800 dark:text-neutral-200">
+                        <input type="file" wire:model="excel_file" accept=".xlsx, .xls" class="w-full text-xs border border-neutral-200 dark:border-slate-700 rounded-sm p-1.5 bg-neutral-50 dark:bg-slate-900 text-neutral-800 dark:text-neutral-200">
 
                         <div wire:loading wire:target="excel_file" class="text-amber-600 mt-1">Membaca file...</div>
                         @error('excel_file') <span class="text-rose-500 text-xs mt-1 block">{{ $message }}</span> @enderror
                     </div>
 
                     <div class="pt-2 flex items-center justify-end gap-2 border-t border-neutral-100 dark:border-slate-700">
-                        <button type="button" wire:click="closeImportModal" class="px-3 py-1.5 text-xs font-semibold text-neutral-600 dark:text-neutral-300 bg-neutral-100 dark:bg-slate-700 rounded hover:bg-neutral-200">Batal</button>
-                        <button type="submit" wire:loading.attr="disabled" class="px-4 py-1.5 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded transition flex items-center gap-1.5">
+                        <button type="button" wire:click="closeImportModal" class="px-3 py-1.5 text-xs font-semibold text-neutral-600 dark:text-neutral-300 bg-neutral-100 dark:bg-slate-700 rounded-sm hover:bg-neutral-200">Batal</button>
+                        <button type="submit" wire:loading.attr="disabled" class="px-4 py-1.5 text-xs font-bold text-white bg-blue-900 hover:bg-blue-950 rounded-sm transition flex items-center gap-1.5">
                             <span wire:loading.remove wire:target="importExcel">Import Data</span>
                             <span wire:loading wire:target="importExcel">Memproses...</span>
                         </button>
@@ -464,10 +469,10 @@
     {{-- Modal Detail Error Import Excel --}}
     @if($showErrorModal)
     <div class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-fadeIn">
-        <div class="bg-white dark:bg-slate-800 rounded-2xl max-w-2xl w-full p-6 shadow-2xl border border-neutral-200 dark:border-slate-700">
+        <div class="bg-white dark:bg-slate-800 rounded-sm max-w-2xl w-full p-6 shadow-2xl border border-neutral-200 dark:border-slate-700">
             <div class="flex items-start justify-between border-b border-neutral-100 dark:border-slate-700/80 pb-4 mb-4">
                 <div class="flex items-center gap-3">
-                    <div class="p-2.5 rounded-xl bg-rose-50 text-rose-600 dark:bg-rose-950/50 dark:text-rose-400 shrink-0">
+                    <div class="p-2.5 rounded-sm bg-rose-50 text-rose-600 dark:bg-rose-950/50 dark:text-rose-400 shrink-0">
                         <x-heroicon-o-exclamation-circle class="w-6 h-6" />
                     </div>
                     <div>
@@ -480,7 +485,7 @@
                 </button>
             </div>
 
-            <div class="max-h-64 overflow-y-auto border border-neutral-200 dark:border-slate-700 rounded-xl mb-5">
+            <div class="max-h-64 overflow-y-auto border border-neutral-200 dark:border-slate-700 rounded-sm mb-5">
                 <table class="w-full text-left border-collapse text-xs">
                     <thead class="bg-neutral-50 dark:bg-slate-900 text-neutral-600 dark:text-neutral-400 font-semibold sticky top-0 z-10 border-b dark:border-slate-700">
                         <tr>
@@ -496,7 +501,7 @@
                                 <td class="p-3 text-center font-bold text-rose-600 dark:text-rose-400 bg-rose-50/30 dark:bg-rose-950/10">Baris {{ $err['row'] }}</td>
                                 <td class="p-3 font-semibold text-neutral-800 dark:text-neutral-200">{{ $err['column'] }}</td>
                                 <td class="p-3">
-                                    <code class="px-2 py-0.5 rounded bg-neutral-100 dark:bg-slate-700 text-neutral-800 dark:text-neutral-200 font-mono text-[11px]">{{ $err['value'] }}</code>
+                                    <code class="px-2 py-0.5 rounded-sm bg-neutral-100 dark:bg-slate-700 text-neutral-800 dark:text-neutral-200 font-mono text-[11px]">{{ $err['value'] }}</code>
                                 </td>
                                 <td class="p-3 text-rose-600 dark:text-rose-400 font-medium">{{ $err['messages'] }}</td>
                             </tr>
@@ -507,7 +512,7 @@
 
             <div class="flex items-center justify-between pt-2">
                 <span class="text-xs text-neutral-400">Total item bermasalah: <strong>{{ count($importErrors) }}</strong></span>
-                <button type="button" wire:click="closeErrorModal" class="px-4 py-2 text-xs font-semibold text-white bg-neutral-900 hover:bg-neutral-800 dark:bg-slate-700 dark:hover:bg-slate-600 rounded-lg transition-all shadow-sm">
+                <button type="button" wire:click="closeErrorModal" class="px-4 py-2 text-xs font-semibold text-white bg-neutral-900 hover:bg-neutral-800 dark:bg-slate-700 dark:hover:bg-slate-600 rounded-sm transition-all shadow-sm">
                     Perbaiki File & Coba Lagi
                 </button>
             </div>

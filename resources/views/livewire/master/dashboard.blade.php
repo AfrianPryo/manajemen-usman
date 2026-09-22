@@ -3,6 +3,121 @@
     @show-admin-form-modal.window="showAdminModal = true"
     @show-unit-form-modal.window="showUnitModal = true">
 
+    {{-- ================= TUTORIAL SETUP AWAL (LOGIN PERTAMA MASTER ADMIN) =================
+         Tampil SEKALI untuk akun Master Admin yang 'onboarding_completed_at'-nya masih
+         kosong -- pada praktiknya hanya akun awal hasil MasterAdminSeeder (kredensial
+         "dari dev"), setelah alur wajib ganti password & setup nomor WA selesai.
+         Lihat App\Livewire\Master\Dashboard::$showOnboarding / completeOnboarding(). --}}
+    @if($showOnboarding)
+        <div
+            x-data="{ step: 1, total: 3 }"
+            class="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-neutral-900/60 backdrop-blur-sm"
+        >
+            <div class="bg-white dark:bg-slate-800 w-full max-w-lg rounded-lg border border-neutral-200 dark:border-slate-700 shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-150">
+
+                {{-- Header --}}
+                <div class="p-5 border-b border-neutral-100 dark:border-slate-700 flex items-start justify-between gap-3 bg-neutral-50/50 dark:bg-slate-900/50">
+                    <div class="flex items-center gap-3">
+                        <div class="h-10 w-10 shrink-0 bg-blue-50 dark:bg-blue-950/50 text-blue-900 dark:text-sky-300 rounded-full flex items-center justify-center">
+                            <x-heroicon-o-sparkles class="w-5 h-5" />
+                        </div>
+                        <div>
+                            <h3 class="text-sm font-bold text-neutral-900 dark:text-white">Selamat Datang, Master Admin! 👋</h3>
+                            <p class="text-[11px] text-neutral-400 mt-0.5">Yuk, selesaikan 3 langkah setup awal sebelum mulai.</p>
+                        </div>
+                    </div>
+                    <button type="button" wire:click="completeOnboarding" title="Lewati tutorial"
+                            class="text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 text-xl font-bold leading-none shrink-0 cursor-pointer">
+                        &times;
+                    </button>
+                </div>
+
+                {{-- Langkah 1: Unit Usaha --}}
+                <div x-show="step === 1" x-cloak class="p-6 space-y-4">
+                    <div class="h-11 w-11 bg-blue-50 dark:bg-blue-950/50 text-blue-900 dark:text-sky-300 rounded-lg flex items-center justify-center">
+                        <x-heroicon-o-building-office class="w-6 h-6" />
+                    </div>
+                    <div>
+                        <p class="text-[11px] font-bold text-blue-800 dark:text-sky-400 uppercase tracking-wide">Langkah 1 dari 3</p>
+                        <h4 class="text-sm font-bold text-neutral-900 dark:text-white mt-1">Tambahkan Unit Usaha Pertama</h4>
+                        <p class="text-xs text-neutral-500 dark:text-neutral-400 mt-2 leading-relaxed">
+                            Unit Usaha (mis. Kantin, Koperasi, Percetakan) adalah pondasi sistem ini -- transaksi, stok, dan admin unit semuanya menempel ke sebuah Unit Usaha.
+                        </p>
+                    </div>
+                    <button type="button" wire:click="openCreateUnitModal"
+                            class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-blue-900 dark:text-sky-300 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 rounded-sm hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-all cursor-pointer">
+                        <x-heroicon-o-plus class="w-4 h-4" />
+                        <span>Tambah Unit Usaha Sekarang</span>
+                    </button>
+                </div>
+
+                {{-- Langkah 2: Admin --}}
+                <div x-show="step === 2" x-cloak class="p-6 space-y-4">
+                    <div class="h-11 w-11 bg-blue-50 dark:bg-blue-950/50 text-blue-900 dark:text-sky-300 rounded-lg flex items-center justify-center">
+                        <x-heroicon-o-user-plus class="w-6 h-6" />
+                    </div>
+                    <div>
+                        <p class="text-[11px] font-bold text-blue-800 dark:text-sky-400 uppercase tracking-wide">Langkah 2 dari 3</p>
+                        <h4 class="text-sm font-bold text-neutral-900 dark:text-white mt-1">Tambahkan Admin Unit</h4>
+                        <p class="text-xs text-neutral-500 dark:text-neutral-400 mt-2 leading-relaxed">
+                            Setelah Unit Usaha dibuat, tambahkan Admin Unit yang akan mengelola operasional harian unit tersebut. Kredensial login otomatis dibuat & dikirim ke nomor WhatsApp admin.
+                        </p>
+                    </div>
+                    <button type="button" wire:click="openCreateAdminModal"
+                            class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-blue-900 dark:text-sky-300 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 rounded-sm hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-all cursor-pointer">
+                        <x-heroicon-o-plus class="w-4 h-4" />
+                        <span>Tambah Admin Sekarang</span>
+                    </button>
+                </div>
+
+                {{-- Langkah 3: Integrasi Fonnte --}}
+                <div x-show="step === 3" x-cloak class="p-6 space-y-4">
+                    <div class="h-11 w-11 bg-blue-50 dark:bg-blue-950/50 text-blue-900 dark:text-sky-300 rounded-lg flex items-center justify-center">
+                        <x-heroicon-o-chat-bubble-left-right class="w-6 h-6" />
+                    </div>
+                    <div>
+                        <p class="text-[11px] font-bold text-blue-800 dark:text-sky-400 uppercase tracking-wide">Langkah 3 dari 3</p>
+                        <h4 class="text-sm font-bold text-neutral-900 dark:text-white mt-1">Sambungkan Integrasi Fonnte (WhatsApp)</h4>
+                        <p class="text-xs text-neutral-500 dark:text-neutral-400 mt-2 leading-relaxed">
+                            Fonnte dipakai untuk mengirim kredensial admin baru, kode OTP, dan notifikasi otomatis lewat WhatsApp. Atur nomor pengirim & API key di menu Pengaturan.
+                        </p>
+                    </div>
+                    <a href="{{ route('master.settings.index') }}"
+                       class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-blue-900 dark:text-sky-300 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 rounded-sm hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-all cursor-pointer">
+                        <x-heroicon-o-cog-6-tooth class="w-4 h-4" />
+                        <span>Buka Pengaturan Integrasi</span>
+                    </a>
+                </div>
+
+                {{-- Footer: Navigasi & Indikator Langkah --}}
+                <div class="px-6 py-4 border-t border-neutral-100 dark:border-slate-700 bg-neutral-50/50 dark:bg-slate-900/50 flex items-center justify-between gap-3">
+                    <div class="flex items-center gap-1.5">
+                        <template x-for="i in total" :key="i">
+                            <span class="h-1.5 rounded-full transition-all" :class="step === i ? 'w-5 bg-blue-900 dark:bg-sky-400' : 'w-1.5 bg-neutral-200 dark:bg-slate-600'"></span>
+                        </template>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button type="button" x-show="step > 1" x-cloak @click="step--"
+                                class="px-3 py-1.5 text-xs font-semibold text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 cursor-pointer">
+                            Kembali
+                        </button>
+                        <button type="button" x-show="step < total" x-cloak @click="step++"
+                                class="inline-flex items-center gap-1 px-3.5 py-1.5 text-xs font-bold text-white bg-blue-900 hover:bg-blue-950 rounded-sm transition-all cursor-pointer">
+                            <span>Lanjut</span>
+                            <x-heroicon-o-arrow-right class="w-3.5 h-3.5" />
+                        </button>
+                        <button type="button" x-show="step === total" x-cloak wire:click="completeOnboarding"
+                                class="inline-flex items-center gap-1 px-3.5 py-1.5 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-sm transition-all cursor-pointer">
+                            <x-heroicon-o-check class="w-3.5 h-3.5" />
+                            <span>Selesai</span>
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    @endif
+
     {{-- ================= HEADER & QUICK ACTIONS ================= --}}
     <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-white dark:bg-slate-800 p-5 rounded-sm border border-neutral-100 dark:border-slate-700 shadow-sm shadow-black/[0.02]">
         <div>

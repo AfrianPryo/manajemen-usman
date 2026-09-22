@@ -10,6 +10,7 @@ use App\Models\Unit;
 use App\Models\User;
 use App\Services\FonnteOtpService;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -89,6 +90,18 @@ class Dashboard extends Component
     public ?array $createdCredentials = null;
 
     // ------------------------------------------
+    // TUTORIAL SETUP AWAL (LOGIN PERTAMA MASTER ADMIN)
+    // ------------------------------------------
+    // Tampil SEKALI, hanya untuk akun yang 'onboarding_completed_at'-nya
+    // masih NULL -- pada praktiknya hanya Master Admin awal hasil
+    // MasterAdminSeeder (kredensial "dari dev"), karena akun lain sudah
+    // otomatis dianggap "selesai" (lihat migrasi & User::needsOnboarding()).
+    // Muncul setelah alur wajib ganti password + setup nomor WA selesai,
+    // karena tutorial ini baru bisa tampil begitu user sampai di halaman
+    // dashboard ini.
+    public bool $showOnboarding = false;
+
+    // ------------------------------------------
     // LIFECYCLE HOOKS FILTER PERIODE
     // ------------------------------------------
 
@@ -99,6 +112,10 @@ class Dashboard extends Component
 
     public function mount(): void
     {
+        /** @var User|null $user */
+        $user = Auth::user();
+        $this->showOnboarding = (bool) ($user && $user->needsOnboarding());
+
         if (! request()->has('period')) {
             $this->periodFilter = session(self::SESSION_KEY . '.period', $this->periodFilter);
         }
@@ -263,10 +280,33 @@ class Dashboard extends Component
     }
 
     /**
+     * Menutup tutorial setup awal (baik karena user menekan "Selesai" di
+     * langkah terakhir, maupun "Lewati") & menandai akun ini sudah tidak
+     * perlu melihatnya lagi. Dipanggil dari dashboard.blade.php.
+     */
+    public function completeOnboarding(): void
+    {
+        /** @var User|null $user */
+        $user = Auth::user();
+
+        if ($user && $user->needsOnboarding()) {
+            $user->update(['onboarding_completed_at' => now()]);
+        }
+
+        $this->showOnboarding = false;
+    }
+
+    /**
      * Membuka Modal Tambah Admin Baru
      */
     public function openCreateAdminModal(): void
     {
+        // Kalau dibuka lewat tombol CTA di tutorial setup awal, anggap
+        // tutorial sudah "dipakai" & tidak perlu tampil lagi.
+        if ($this->showOnboarding) {
+            $this->completeOnboarding();
+        }
+
         $this->reset(['admin_name', 'nip', 'admin_phone', 'admin_unit_id']);
         $this->resetValidation();
         $this->employee_status = 'nip';
@@ -389,6 +429,12 @@ class Dashboard extends Component
      */
     public function openCreateUnitModal(): void
     {
+        // Kalau dibuka lewat tombol CTA di tutorial setup awal, anggap
+        // tutorial sudah "dipakai" & tidak perlu tampil lagi.
+        if ($this->showOnboarding) {
+            $this->completeOnboarding();
+        }
+
         $this->resetValidation();
         $this->reset(['unitId', 'name', 'pic_name', 'phone', 'description']);
         $this->department = 'PPLG';

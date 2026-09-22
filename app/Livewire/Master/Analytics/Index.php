@@ -42,7 +42,7 @@ class Index extends Component
     // "usang" (key jadi beda) dan tidak akan pernah dibaca oleh kode baru --
     // mencegah error seperti "Attempt to read property ... on string" yang
     // muncul kalau kode berubah tapi cache lama (TTL 120 detik) masih hidup.
-    private const CACHE_VERSION = 2;
+    private const CACHE_VERSION = 3;
 
     #[Url(as: 'unit', history: true)]
     public $selectedUnit = '';
@@ -60,6 +60,9 @@ class Index extends Component
     public array $chartLabels = [];
     public array $revenueChartData = [];
     public array $expenseChartData = [];
+
+    public array $chartTimestamps = [];      // epoch ms (UTC) awal tiap titik
+    public string $chartGranularity = 'day'; // day | week | month
 
     // Data untuk grafik donut Kontribusi Omzet per Unit Usaha
     // (dibaca reaktif oleh Alpine lewat $wire, lihat blade)
@@ -191,29 +194,23 @@ class Index extends Component
         });
 
         [
-            'totalRevenue'       => $totalRevenue,
-            'totalExpense'       => $totalExpense,
-            'totalTransactions'  => $totalTransactions,
-            'incomeCount'        => $incomeCount,
-            'expenseCount'       => $expenseCount,
-            'netProfit'          => $netProfit,
-            'chartLabels'        => $this->chartLabels,
-            'revenueChartData'   => $this->revenueChartData,
-            'expenseChartData'   => $this->expenseChartData,
+            'totalRevenue'        => $totalRevenue,
+            'totalExpense'        => $totalExpense,
+            'totalTransactions'   => $totalTransactions,
+            'incomeCount'         => $incomeCount,
+            'expenseCount'        => $expenseCount,
+            'netProfit'           => $netProfit,
+            'chartLabels'         => $this->chartLabels,
+            'chartTimestamps'     => $this->chartTimestamps,
+            'chartGranularity'    => $this->chartGranularity,
+            'revenueChartData'    => $this->revenueChartData,
+            'expenseChartData'    => $this->expenseChartData,
             'revenueContribution' => $revenueContribution,
-            'revenueLabels'      => $this->revenueLabels,
-            'revenueSeries'      => $this->revenueSeries,
-            'topUnits'           => $topUnits,
-            'topProducts'        => $topProducts,
+            'revenueLabels'       => $this->revenueLabels,
+            'revenueSeries'       => $this->revenueSeries,
+            'topUnits'            => $topUnits,
+            'topProducts'         => $topProducts,
         ] = $data;
-
-        // Kirim event pembaruan data grafik ke AlpineJS (tetap dijalankan
-        // setiap render, baik datanya baru dihitung maupun dari cache).
-        $this->dispatch('update-cashflow-chart',
-            labels: $this->chartLabels,
-            revenue: $this->revenueChartData,
-            expense: $this->expenseChartData
-        );
 
         return view('livewire.master.analytics.index', compact(
             'unitsList',
@@ -255,7 +252,8 @@ class Index extends Component
      * @return array{
      *   totalRevenue: float, totalExpense: float, totalTransactions: int,
      *   incomeCount: int, expenseCount: int, netProfit: float,
-     *   chartLabels: array, revenueChartData: array, expenseChartData: array,
+     *   chartLabels: array, chartTimestamps: array, chartGranularity: string,
+     *   revenueChartData: array, expenseChartData: array,
      *   revenueContribution: array, revenueLabels: array, revenueSeries: array,
      *   topUnits: \Illuminate\Support\Collection, topProducts: \Illuminate\Support\Collection
      * }
@@ -343,17 +341,8 @@ class Index extends Component
             ->groupBy('date')
             ->pluck('total', 'date');
 
-        $chartLabels       = [];
-        $revenueChartData = [];
-        $expenseChartData = [];
-
-        $period = CarbonPeriod::create($start, $end);
-        foreach ($period as $date) {
-            $formattedDate       = $date->format('Y-m-d');
-            $chartLabels[]       = $date->format('d M');
-            $revenueChartData[] = (float) ($dailyRevenues[$formattedDate] ?? 0);
-            $expenseChartData[] = (float) ($dailyExpenses[$formattedDate] ?? 0);
-        }
+        [$chartLabels, $chartTimestamps, $revenueChartData, $expenseChartData, $chartGranularity]
+            = $this->buildCashflowSeries($start, $end, $dailyRevenues, $dailyExpenses);
 
         // --- Data Kontribusi Omzet per Unit Usaha ---
         $unitContributions = FinanceTransaction::query()
@@ -428,6 +417,8 @@ class Index extends Component
             'expenseCount'        => $expenseCount,
             'netProfit'           => $netProfit,
             'chartLabels'         => $chartLabels,
+            'chartTimestamps'     => $chartTimestamps,
+            'chartGranularity'    => $chartGranularity,
             'revenueChartData'    => $revenueChartData,
             'expenseChartData'    => $expenseChartData,
             'revenueContribution' => $revenueContribution,
@@ -436,6 +427,58 @@ class Index extends Component
             'topUnits'            => $topUnits,
             'topProducts'         => $topProducts,
         ];
+    }
+
+    /**
+     * Ringkas data harian ke bucket harian / mingguan / bulanan sesuai panjang
+     * rentang, supaya grafik tetap terbaca (dan ringan) untuk rentang panjang.
+     *
+     * @return array{0: array, 1: array, 2: array, 3: array, 4: string}
+     */
+    private function buildCashflowSeries(Carbon $start, Carbon $end, $dailyRevenues, $dailyExpenses): array
+    {
+        $from = $start->copy()->startOfDay();
+        $to   = $end->copy()->startOfDay();
+        $days = (int) floor($from->diffInDays($to)) + 1;
+
+        $granularity = $days <= 62 ? 'day' : ($days <= 210 ? 'week' : 'month');
+
+        $buckets = [];
+        foreach (CarbonPeriod::create($from, $to) as $date) {
+            $key = match ($granularity) {
+                'week'  => $date->copy()->startOfWeek()->format('Y-m-d'),
+                'month' => $date->format('Y-m'),
+                default => $date->format('Y-m-d'),
+            };
+
+            if (! isset($buckets[$key])) {
+                $buckets[$key] = ['from' => $date->copy(), 'to' => $date->copy(), 'rev' => 0.0, 'exp' => 0.0];
+            }
+
+            $d = $date->format('Y-m-d');
+            $buckets[$key]['to']   = $date->copy();
+            $buckets[$key]['rev'] += (float) ($dailyRevenues[$d] ?? 0);
+            $buckets[$key]['exp'] += (float) ($dailyExpenses[$d] ?? 0);
+        }
+
+        $labels = $timestamps = $revenue = $expense = [];
+
+        foreach ($buckets as $b) {
+            // Timestamp UTC midnight -> tidak geser hari di sumbu tanggal ApexCharts
+            $timestamps[] = Carbon::create($b['from']->year, $b['from']->month, $b['from']->day, 0, 0, 0, 'UTC')
+                ->getTimestamp() * 1000;
+
+            $labels[] = match ($granularity) {
+                'week'  => $b['from']->translatedFormat('d M') . ' – ' . $b['to']->translatedFormat('d M Y'),
+                'month' => $b['from']->translatedFormat('F Y'),
+                default => $b['from']->translatedFormat('d M Y'),
+            };
+
+            $revenue[] = round($b['rev'], 2);
+            $expense[] = round($b['exp'], 2);
+        }
+
+        return [$labels, $timestamps, $revenue, $expense, $granularity];
     }
 
     /**

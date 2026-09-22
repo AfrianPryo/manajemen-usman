@@ -12,6 +12,7 @@ use App\Models\RecurringTransaction;
 use App\Models\ServiceOrder;
 use App\Models\Unit;
 use Carbon\Carbon;
+use Carbon\CarbonPeriod;
 use Illuminate\Support\Facades\Cache;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
@@ -66,7 +67,7 @@ class Dashboard extends Component
     // versi baru dan menyebabkan error seperti
     // "Attempt to read property ... on string" karena bentuk datanya
     // sudah tidak cocok lagi dengan yang diharapkan view.
-    private const CACHE_VERSION = 3;
+    private const CACHE_VERSION = 4;
 
     // 🔴 Type-hint Model Unit agar Livewire otomatis resolve dari route-model-binding {unit}
     public Unit $unit;
@@ -82,6 +83,13 @@ class Dashboard extends Component
 
     public $startDate;
     public $endDate;
+
+    // Data grafik Tren Arus Kas (dibaca reaktif oleh Alpine lewat $wire)
+    public array $chartLabels = [];
+    public array $chartTimestamps = [];      // epoch ms (UTC) awal tiap titik
+    public array $revenueChartData = [];
+    public array $expenseChartData = [];
+    public string $chartGranularity = 'day'; // day | week | month
 
     // ------------------------------------------
     // LIFECYCLE HOOKS
@@ -298,6 +306,15 @@ class Dashboard extends Component
             }
         );
 
+        // Data grafik dari cache -> properti publik, supaya Alpine bisa
+        // membacanya lewat $wire (pola sama dengan dashboard Master/Analytics).
+        $chart = $aggregates['viewData']['cashflowChart'];
+        $this->chartLabels       = $chart['labels'];
+        $this->chartTimestamps   = $chart['timestamps'];
+        $this->revenueChartData  = $chart['revenue'];
+        $this->expenseChartData  = $chart['expense'];
+        $this->chartGranularity  = $chart['granularity'];
+
         /*
         |--------------------------------------------------------------------------
         | DATA ELOQUENT - DI LUAR CACHE
@@ -470,6 +487,31 @@ class Dashboard extends Component
         ];
 
         // -------------------------------------------------------------
+        // DATA GRAFIK TREN ARUS KAS (pendapatan vs pengeluaran per hari,
+        // nanti diringkas ke minggu/bulan oleh buildCashflowSeries()).
+        // -------------------------------------------------------------
+        $dailyRevenues = FinanceTransaction::query()
+            ->where('unit_id', $unitId)
+            ->where('type', 'income')
+            ->where('status', 'completed')
+            ->whereBetween('transaction_date', [$start, $end])
+            ->selectRaw('DATE(transaction_date) as date, SUM(amount) as total')
+            ->groupBy('date')
+            ->pluck('total', 'date');
+
+        $dailyExpenses = FinanceTransaction::query()
+            ->where('unit_id', $unitId)
+            ->where('type', 'expense')
+            ->where('status', 'completed')
+            ->whereBetween('transaction_date', [$start, $end])
+            ->selectRaw('DATE(transaction_date) as date, SUM(amount) as total')
+            ->groupBy('date')
+            ->pluck('total', 'date');
+
+        [$cfLabels, $cfTimestamps, $cfRevenue, $cfExpense, $cfGranularity]
+            = $this->buildCashflowSeries($start, $end, $dailyRevenues, $dailyExpenses);
+
+        // -------------------------------------------------------------
         // PELANGGAN (SAMA UNTUK KEDUA KATEGORI -- Manajemen Pelanggan
         // berlaku untuk unit ritel maupun jasa, lihat catatan di
         // config/menu.php & routes/web.php). Modulnya sudah ada sejak
@@ -536,6 +578,13 @@ class Dashboard extends Component
             'totalAssets'          => $totalAssets,
             'assetsNeedAttention'  => $assetsNeedAttention,
             'expenseByCategory'    => $expenseByCategory,
+            'cashflowChart'        => [
+                'labels'      => $cfLabels,
+                'timestamps'  => $cfTimestamps,
+                'revenue'     => $cfRevenue,
+                'expense'     => $cfExpense,
+                'granularity' => $cfGranularity,
+            ],
         ];
 
         // -------------------------------------------------------------
@@ -581,6 +630,58 @@ class Dashboard extends Component
             'view'      => 'livewire.unit.dashboard',
             'extraData' => $retailData,
         ];
+    }
+
+    /**
+     * Ringkas data harian ke bucket harian / mingguan / bulanan sesuai panjang
+     * rentang, supaya grafik tetap terbaca (dan ringan) untuk rentang panjang.
+     *
+     * @return array{0: array, 1: array, 2: array, 3: array, 4: string}
+     */
+    private function buildCashflowSeries(Carbon $start, Carbon $end, $dailyRevenues, $dailyExpenses): array
+    {
+        $from = $start->copy()->startOfDay();
+        $to   = $end->copy()->startOfDay();
+        $days = (int) floor($from->diffInDays($to)) + 1;
+
+        $granularity = $days <= 62 ? 'day' : ($days <= 210 ? 'week' : 'month');
+
+        $buckets = [];
+        foreach (CarbonPeriod::create($from, $to) as $date) {
+            $key = match ($granularity) {
+                'week'  => $date->copy()->startOfWeek()->format('Y-m-d'),
+                'month' => $date->format('Y-m'),
+                default => $date->format('Y-m-d'),
+            };
+
+            if (! isset($buckets[$key])) {
+                $buckets[$key] = ['from' => $date->copy(), 'to' => $date->copy(), 'rev' => 0.0, 'exp' => 0.0];
+            }
+
+            $d = $date->format('Y-m-d');
+            $buckets[$key]['to']   = $date->copy();
+            $buckets[$key]['rev'] += (float) ($dailyRevenues[$d] ?? 0);
+            $buckets[$key]['exp'] += (float) ($dailyExpenses[$d] ?? 0);
+        }
+
+        $labels = $timestamps = $revenue = $expense = [];
+
+        foreach ($buckets as $b) {
+            // Timestamp UTC midnight -> tidak geser hari di sumbu tanggal ApexCharts
+            $timestamps[] = Carbon::create($b['from']->year, $b['from']->month, $b['from']->day, 0, 0, 0, 'UTC')
+                ->getTimestamp() * 1000;
+
+            $labels[] = match ($granularity) {
+                'week'  => $b['from']->translatedFormat('d M') . ' – ' . $b['to']->translatedFormat('d M Y'),
+                'month' => $b['from']->translatedFormat('F Y'),
+                default => $b['from']->translatedFormat('d M Y'),
+            };
+
+            $revenue[] = round($b['rev'], 2);
+            $expense[] = round($b['exp'], 2);
+        }
+
+        return [$labels, $timestamps, $revenue, $expense, $granularity];
     }
 
     public function eventInfo(string $event): array

@@ -2,39 +2,39 @@
 
     {{-- Flash Notification --}}
     @if (session()->has('message'))
-        <div class="p-4 rounded-md bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 text-sm flex items-center justify-between">
+        <div class="p-4 rounded-sm bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 text-sm flex items-center justify-between">
             <span class="font-medium">{{ session('message') }}</span>
             <button type="button" onclick="this.parentElement.remove()" class="text-emerald-500 hover:text-emerald-700">&times;</button>
         </div>
     @endif
 
-    {{-- Action Header --}}
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
-        <div>
-            <h1 class="text-xl font-bold text-neutral-900 dark:text-white tracking-tight">Transaksi Berulang</h1>
-            <p class="text-xs text-neutral-400 mt-0.5">Atur jadwal otomatisasi arus kas harian, mingguan, bulanan, atau tahunan.</p>
+    {{-- ================= HEADER & QUICK ACTIONS ================= --}}
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 bg-white dark:bg-slate-800 p-4 rounded-sm border border-neutral-100 dark:border-slate-700 shadow-sm shadow-black/[0.02]">
+        <div class="min-w-0">
+            <h1 class="text-sm font-bold tracking-tight text-neutral-900 dark:text-white">Transaksi Berulang</h1>
+            <p class="text-[11px] text-neutral-400 mt-0.5 truncate">Atur jadwal otomatisasi arus kas harian, mingguan, bulanan, atau tahunan.</p>
         </div>
 
-        <div class="flex items-center gap-2.5 shrink-0">
-            <button wire:click="openModal" class="px-4 py-2 text-xs font-bold text-white bg-blue-900 hover:bg-blue-950 rounded-[3px] transition-all flex items-center gap-2 shadow-sm shadow-blue-900/20 cursor-pointer">
-                <x-heroicon-o-plus class="w-4 h-4" stroke-width="2.5" />
+        <div class="flex items-center gap-2 shrink-0">
+            <button wire:click="openModal" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-[11px] font-bold text-white bg-blue-900 hover:bg-blue-950 rounded-sm transition-all shadow-sm shadow-blue-900/20 cursor-pointer shrink-0 whitespace-nowrap">
+                <x-heroicon-o-plus class="w-3.5 h-3.5" stroke-width="2.5" />
                 <span>Buat Transaksi Berulang</span>
             </button>
         </div>
     </div>
 
-{{-- Filter Bar --}}
-    <div class="bg-white dark:bg-slate-800 rounded-md border border-neutral-100 dark:border-slate-700 p-4 shadow-sm shadow-black/[0.02]">
+    {{-- Filter Bar --}}
+    <div class="bg-white dark:bg-slate-800 rounded-sm border border-neutral-100 dark:border-slate-700 p-4 shadow-sm shadow-black/[0.02]">
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3">
             {{-- Input Search (Mengambil 2 Kolom di Layar Sedang/Besar) --}}
             <div class="sm:col-span-2 md:col-span-2">
                 <input wire:model.live.debounce.300ms="search" type="text" placeholder="Cari nama transaksi..."
-                    class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-[3px] bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-red-500/10 focus:border-red-400">
+                    class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400">
             </div>
 
             {{-- Filter Tipe --}}
             <div>
-                <select wire:model.live="typeFilter" class="w-full px-3.5 py-2 text-xs font-semibold text-neutral-600 dark:text-neutral-300 bg-white dark:bg-slate-900 border border-neutral-200 dark:border-slate-700 rounded-[3px] focus:outline-none focus:ring-2 focus:ring-red-500/10 focus:border-red-400 cursor-pointer">
+                <select wire:model.live="typeFilter" class="w-full px-3.5 py-2 text-xs font-semibold text-neutral-600 dark:text-neutral-300 bg-white dark:bg-slate-900 border border-neutral-200 dark:border-slate-700 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400 cursor-pointer">
                     <option value="">Semua Tipe</option>
                     <option value="income">Pendapatan (Income)</option>
                     <option value="expense">Pengeluaran (Expense)</option>
@@ -43,7 +43,7 @@
 
             {{-- Filter Status --}}
             <div>
-                <select wire:model.live="statusFilter" class="w-full px-3.5 py-2 text-xs font-semibold text-neutral-600 dark:text-neutral-300 bg-white dark:bg-slate-900 border border-neutral-200 dark:border-slate-700 rounded-[3px] focus:outline-none focus:ring-2 focus:ring-red-500/10 focus:border-red-400 cursor-pointer">
+                <select wire:model.live="statusFilter" class="w-full px-3.5 py-2 text-xs font-semibold text-neutral-600 dark:text-neutral-300 bg-white dark:bg-slate-900 border border-neutral-200 dark:border-slate-700 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400 cursor-pointer">
                     <option value="">Semua Status</option>
                     <option value="active">Aktif</option>
                     <option value="paused">Dijeda</option>
@@ -51,7 +51,7 @@
             </div>
 
             <div class="flex items-center">
-                <button wire:click="resetFilters" class="w-full px-3.5 py-2 text-xs font-semibold text-neutral-600 dark:text-neutral-300 bg-neutral-100 dark:bg-slate-700 hover:bg-neutral-200 dark:hover:bg-slate-600 rounded-[3px] transition-all cursor-pointer whitespace-nowrap text-center">
+                <button wire:click="resetFilters" class="w-full px-3.5 py-2 text-xs font-semibold text-neutral-600 dark:text-neutral-300 bg-neutral-100 dark:bg-slate-700 hover:bg-neutral-200 dark:hover:bg-slate-600 rounded-sm transition-all cursor-pointer whitespace-nowrap text-center">
                     Reset Filter
                 </button>
             </div>
@@ -60,22 +60,22 @@
 
     {{-- Bulk Action Bar --}}
     @if(count($selectedRows) > 0)
-        <div class="mb-3 flex items-center justify-between bg-neutral-900 text-white p-3.5 rounded-md shadow-md text-xs">
+        <div class="flex items-center justify-between bg-[#0d3b74] text-white p-3.5 rounded-sm shadow-sm shadow-blue-900/20 text-xs">
             <div class="flex items-center gap-2">
-                <span class="font-bold text-red-400">{{ count($selectedRows) }}</span> item dipilih
+                <span class="font-bold text-sky-300">{{ count($selectedRows) }}</span> item dipilih
             </div>
             <div class="flex items-center gap-2">
-                <button wire:click="bulkUpdateStatus('active')" class="px-3 py-1 bg-emerald-600 hover:bg-emerald-500 rounded font-semibold transition-colors">
+                <button wire:click="bulkUpdateStatus('active')" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 rounded-sm font-semibold transition-colors cursor-pointer">
                     Tandai Aktif
                 </button>
-                <button wire:click="bulkUpdateStatus('paused')" class="px-3 py-1 bg-amber-600 hover:bg-amber-500 rounded font-semibold transition-colors">
+                <button wire:click="bulkUpdateStatus('paused')" class="px-3 py-1.5 bg-amber-600 hover:bg-amber-500 rounded-sm font-semibold transition-colors cursor-pointer">
                     Tandai Dijeda
                 </button>
                 <button type="button" x-on:click.prevent="$store.confirmDialog.open({
                         message: 'Yakin ingin menghapus data terpilih?',
                         confirmText: 'Ya, Hapus',
                         onConfirm: () => $wire.bulkDelete()
-                    })" class="px-3 py-1 bg-rose-600 hover:bg-rose-500 rounded font-semibold transition-colors">
+                    })" class="px-3 py-1.5 bg-rose-600 hover:bg-rose-500 rounded-sm font-semibold transition-colors cursor-pointer">
                     Hapus
                 </button>
             </div>
@@ -83,13 +83,13 @@
     @endif
 
     {{-- Tabel Data --}}
-    <div class="bg-white dark:bg-slate-800 rounded-md border border-neutral-100 dark:border-slate-700 overflow-hidden shadow-sm shadow-black/[0.02]">
+    <div class="bg-white dark:bg-slate-800 rounded-sm border border-neutral-100 dark:border-slate-700 overflow-hidden shadow-sm shadow-black/[0.02]">
         <div class="overflow-x-auto">
             <table class="w-full text-sm text-left">
                 <thead class="bg-neutral-50/70 dark:bg-slate-900/50 text-[11px] font-semibold uppercase tracking-wider text-neutral-400 border-b border-neutral-100 dark:border-slate-700">
                     <tr>
                         <th class="p-4 w-10 text-center">
-                            <input type="checkbox" wire:model.live="selectAll" class="rounded border-neutral-300 text-blue-900 focus:ring-red-500/20 cursor-pointer">
+                            <input type="checkbox" wire:model.live="selectAll" class="rounded-sm border-neutral-300 text-blue-900 focus:ring-blue-500/20 cursor-pointer">
                         </th>
                         <th class="px-4 py-3.5">Judul & Unit</th>
                         <th class="px-4 py-3.5 text-right">Tipe & Jumlah</th>
@@ -104,14 +104,14 @@
                     @forelse($recurringTransactions as $item)
                         <tr wire:key="rec-{{ $item->id }}" class="hover:bg-neutral-50/60 dark:hover:bg-slate-700/30 transition-colors {{ $item->is_expired ? 'bg-neutral-100/60 dark:bg-slate-800/40 opacity-60' : '' }}">
                             <td class="p-4 text-center">
-                                <input type="checkbox" wire:model.live="selectedRows" value="{{ $item->id }}" class="rounded border-neutral-300 text-blue-900 focus:ring-red-500/20 cursor-pointer">
+                                <input type="checkbox" wire:model.live="selectedRows" value="{{ $item->id }}" class="rounded-sm border-neutral-300 text-blue-900 focus:ring-blue-500/20 cursor-pointer">
                             </td>
 
                             <td class="px-4 py-3.5 whitespace-nowrap">
                                 <div class="font-semibold text-neutral-900 dark:text-white text-xs flex items-center gap-2">
                                     {{ $item->title }}
                                     @if($item->is_expired)
-                                        <span class="px-1.5 py-0.5 text-[9px] font-semibold rounded bg-neutral-200 dark:bg-slate-700 text-neutral-600 dark:text-neutral-300">Selesai</span>
+                                        <span class="px-1.5 py-0.5 text-[9px] font-semibold rounded-sm bg-neutral-200 dark:bg-slate-700 text-neutral-600 dark:text-neutral-300">Selesai</span>
                                     @endif
                                 </div>
                                 <div class="text-[11px] text-neutral-400 mt-0.5">{{ $item->unit->name ?? '-' }}</div>
@@ -122,7 +122,7 @@
                             </td>
 
                             <td class="px-4 py-3.5 whitespace-nowrap text-center capitalize">
-                                <span class="px-2.5 py-0.5 text-[10px] font-semibold rounded-[3px] bg-neutral-100 dark:bg-slate-700 text-neutral-700 dark:text-neutral-300 border border-neutral-200/60 dark:border-slate-600">
+                                <span class="px-2.5 py-0.5 text-[10px] font-semibold rounded-sm bg-neutral-100 dark:bg-slate-700 text-neutral-700 dark:text-neutral-300 border border-neutral-200/60 dark:border-slate-600">
                                     {{ $item->frequency }}
                                 </span>
                             </td>
@@ -140,11 +140,11 @@
 
                             <td class="px-4 py-3.5 whitespace-nowrap text-center">
                                 @if($item->auto_approve)
-                                    <span class="px-2.5 py-0.5 text-[10px] font-semibold rounded-[3px] bg-sky-50 dark:bg-sky-950/50 text-sky-600 dark:text-sky-400 border border-sky-200/60 dark:border-sky-800">
+                                    <span class="px-2.5 py-0.5 text-[10px] font-semibold rounded-sm bg-sky-50 dark:bg-sky-950/50 text-sky-600 dark:text-sky-400 border border-sky-200/60 dark:border-sky-800">
                                         Otomatis Dibuat
                                     </span>
                                 @else
-                                    <span class="px-2.5 py-0.5 text-[10px] font-semibold rounded-[3px] bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 border border-amber-200/60 dark:border-amber-800">
+                                    <span class="px-2.5 py-0.5 text-[10px] font-semibold rounded-sm bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 border border-amber-200/60 dark:border-amber-800">
                                         Draf / Konfirmasi
                                     </span>
                                 @endif
@@ -152,11 +152,11 @@
 
                             <td class="px-4 py-3.5 whitespace-nowrap text-center">
                                 @if($item->is_expired)
-                                    <span class="px-2.5 py-0.5 text-[10px] font-semibold rounded-[3px] bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 border border-rose-200/60 dark:border-rose-800">
+                                    <span class="px-2.5 py-0.5 text-[10px] font-semibold rounded-sm bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 border border-rose-200/60 dark:border-rose-800">
                                         Kadaluarsa
                                     </span>
                                 @else
-                                    <button wire:click="toggleStatus({{ $item->id }})" class="px-2.5 py-0.5 text-[10px] font-semibold rounded-[3px] cursor-pointer transition-all border {{ $item->status === 'active' ? 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 border-emerald-200/60 dark:border-emerald-800' : 'bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 border-amber-200/60 dark:border-amber-800' }}">
+                                    <button wire:click="toggleStatus({{ $item->id }})" class="px-2.5 py-0.5 text-[10px] font-semibold rounded-sm cursor-pointer transition-all border {{ $item->status === 'active' ? 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 border-emerald-200/60 dark:border-emerald-800' : 'bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 border-amber-200/60 dark:border-amber-800' }}">
                                         {{ $item->status === 'active' ? 'Aktif' : 'Dijeda' }}
                                     </button>
                                 @endif
@@ -164,14 +164,14 @@
 
                             <td class="px-4 py-3.5 whitespace-nowrap text-center">
                                 <div class="flex items-center justify-center gap-1">
-                                    <button wire:click="edit({{ $item->id }})" class="p-1.5 text-amber-600 hover:text-amber-800 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/40 rounded-md transition-all" title="Edit Transaksi">
+                                    <button wire:click="edit({{ $item->id }})" class="p-1.5 text-amber-600 hover:text-amber-800 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/40 rounded-sm transition-all cursor-pointer" title="Edit Transaksi">
                                         <x-heroicon-o-pencil-square class="w-4 h-4" stroke-width="2" />
                                     </button>
                                     <button type="button" x-on:click.prevent="$store.confirmDialog.open({
                                             message: 'Apakah Anda yakin ingin menghapus transaksi berulang ini?',
                                             confirmText: 'Ya, Hapus',
                                             onConfirm: () => $wire.delete({{ $item->id }})
-                                        })" class="p-1.5 text-rose-600 hover:text-rose-800 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-md transition-all" title="Hapus Transaksi">
+                                        })" class="p-1.5 text-rose-600 hover:text-rose-800 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-sm transition-all cursor-pointer" title="Hapus Transaksi">
                                         <x-heroicon-o-trash class="w-4 h-4" stroke-width="2" />
                                     </button>
                                 </div>
@@ -193,7 +193,7 @@
             <div class="flex items-center gap-3 text-xs text-neutral-500 dark:text-neutral-400">
                 <div class="flex items-center gap-2">
                     <span>Tampilkan</span>
-                    <select wire:model.live="perPage" class="py-1 px-2 text-xs bg-white dark:bg-slate-900 border border-neutral-200 dark:border-slate-700 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 text-neutral-700 dark:text-neutral-300 font-medium cursor-pointer">
+                    <select wire:model.live="perPage" class="py-1.5 px-2 text-xs bg-white dark:bg-slate-900 border border-neutral-200 dark:border-slate-700 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400 text-neutral-700 dark:text-neutral-300 font-medium cursor-pointer">
                         <option value="10">10</option>
                         <option value="15">15</option>
                         <option value="25">25</option>
@@ -219,9 +219,9 @@
 
     {{-- Modal Form --}}
     @if($showModal)
-        <div class="fixed inset-0 z-50 flex items-center justify-center bg-neutral-900/60 backdrop-blur-sm p-4 overflow-y-auto">
-            <div class="bg-white dark:bg-slate-800 w-full max-w-xl rounded-lg border border-neutral-200 dark:border-slate-700 shadow-2xl overflow-hidden my-8 animate-in fade-in zoom-in duration-150">
-                
+        <div class="fixed inset-0 z-50 flex items-center justify-center bg-neutral-900/50 backdrop-blur-sm p-4 overflow-y-auto">
+            <div class="bg-white dark:bg-slate-800 w-full max-w-xl rounded-sm border border-neutral-200 dark:border-slate-700 shadow-2xl overflow-hidden my-8 animate-in fade-in zoom-in duration-150">
+
                 {{-- Modal Header --}}
                 <div class="p-5 border-b border-neutral-100 dark:border-slate-700 flex items-center justify-between bg-neutral-50/50 dark:bg-slate-900/50">
                     <div>
@@ -232,24 +232,24 @@
                             {{ $editingId ? 'Perbarui konfigurasi dan periode transaksi berulang.' : 'Atur transaksi otomatisasi arus kas secara berkala.' }}
                         </p>
                     </div>
-                    <button wire:click="closeModal" class="text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 text-2xl font-bold leading-none">&times;</button>
+                    <button wire:click="closeModal" class="text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 text-2xl font-bold leading-none cursor-pointer">&times;</button>
                 </div>
 
                 {{-- Modal Body --}}
                 <form wire:submit="save" class="p-6 space-y-4">
-                    
+
                     {{-- Judul Transaksi --}}
                     <div>
-                        <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Judul Transaksi <span class="text-red-500">*</span></label>
-                        <input type="text" wire:model="title" placeholder="cth. Biaya Sewa Kantin Bulanan" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-red-500">
+                        <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Judul Transaksi <span class="text-rose-500">*</span></label>
+                        <input type="text" wire:model="title" placeholder="cth. Biaya Sewa Kantin Bulanan" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400">
                         @error('title') <span class="text-[11px] text-rose-500 mt-0.5 block">{{ $message }}</span> @enderror
                     </div>
 
                     {{-- Row: Unit Usaha & Tipe Transaksi --}}
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Unit Usaha <span class="text-red-500">*</span></label>
-                            <select wire:model.live="unit_id" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-red-500">
+                            <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Unit Usaha <span class="text-rose-500">*</span></label>
+                            <select wire:model.live="unit_id" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400">
                                 @if($units->count() > 1)
                                     <option value="">-- Pilih Unit Usaha --</option>
                                 @endif
@@ -261,8 +261,8 @@
                         </div>
 
                         <div>
-                            <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Tipe Transaksi <span class="text-red-500">*</span></label>
-                            <select wire:model.live="type" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-red-500">
+                            <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Tipe Transaksi <span class="text-rose-500">*</span></label>
+                            <select wire:model.live="type" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400">
                                 <option value="income">Pendapatan (Income)</option>
                                 <option value="expense">Pengeluaran (Expense)</option>
                             </select>
@@ -271,10 +271,10 @@
 
                     {{-- Kategori Keuangan --}}
                     <div>
-                        <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Kategori Keuangan <span class="text-red-500">*</span></label>
+                        <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Kategori Keuangan <span class="text-rose-500">*</span></label>
                         <select wire:model="finance_category_id"
                             @if(!$unit_id) disabled @endif
-                            class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-red-500 disabled:opacity-50 disabled:cursor-not-allowed">
+                            class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400 disabled:opacity-50 disabled:cursor-not-allowed">
                             <option value="">
                                 {{ $unit_id ? '-- Pilih Kategori Keuangan --' : '-- Pilih Unit Usaha terlebih dahulu --' }}
                             </option>
@@ -293,14 +293,14 @@
                     {{-- Row: Nominal & Frekuensi --}}
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Nominal (Rp) <span class="text-red-500">*</span></label>
-                            <input type="number" wire:model="amount" placeholder="0" class="w-full px-3.5 py-2 text-xs font-bold border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-red-500">
+                            <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Nominal (Rp) <span class="text-rose-500">*</span></label>
+                            <input type="number" wire:model="amount" placeholder="0" class="w-full px-3.5 py-2 text-xs font-bold border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400">
                             @error('amount') <span class="text-[11px] text-rose-500 mt-0.5 block">{{ $message }}</span> @enderror
                         </div>
 
                         <div>
-                            <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Frekuensi Berulang <span class="text-red-500">*</span></label>
-                            <select wire:model="frequency" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-red-500">
+                            <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Frekuensi Berulang <span class="text-rose-500">*</span></label>
+                            <select wire:model="frequency" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400">
                                 <option value="daily">Harian</option>
                                 <option value="weekly">Mingguan</option>
                                 <option value="monthly">Bulanan</option>
@@ -312,25 +312,25 @@
                     {{-- Row: Tanggal Mulai & Tanggal Selesai --}}
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Tanggal Mulai <span class="text-red-500">*</span></label>
-                            <input type="date" wire:model="start_date" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-red-500">
+                            <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Tanggal Mulai <span class="text-rose-500">*</span></label>
+                            <input type="date" wire:model="start_date" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400">
                             @error('start_date') <span class="text-[11px] text-rose-500 mt-0.5 block">{{ $message }}</span> @enderror
                         </div>
 
                         <div>
                             <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Tanggal Selesai <span class="text-xs text-neutral-400 font-normal">(Opsional)</span></label>
-                            <input type="date" wire:model="end_date" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-red-500">
+                            <input type="date" wire:model="end_date" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400">
                         </div>
                     </div>
 
                     {{-- Card Opsi Otomatisasi (Highlighted) --}}
-                    <div class="p-3.5 rounded-lg border border-sky-200/80 bg-sky-50/50 dark:border-sky-900/50 dark:bg-sky-950/20 transition-all">
+                    <div class="p-3.5 rounded-sm border border-sky-200/80 bg-sky-50/50 dark:border-sky-900/50 dark:bg-sky-950/20 transition-all">
                         <div class="flex items-start gap-3">
-                            <input type="checkbox" id="auto_approve" wire:model="auto_approve" class="mt-0.5 rounded border-sky-300 dark:border-sky-700 text-blue-900 focus:ring-red-500/20 cursor-pointer">
+                            <input type="checkbox" id="auto_approve" wire:model="auto_approve" class="mt-0.5 rounded-sm border-sky-300 dark:border-sky-700 text-blue-900 focus:ring-blue-500/20 cursor-pointer">
                             <div class="space-y-1">
                                 <label for="auto_approve" class="text-xs font-bold text-neutral-800 dark:text-neutral-100 cursor-pointer flex items-center gap-1.5">
                                     <span>Otomatiskan ke Laporan Keuangan</span>
-                                    <span class="px-1.5 py-0.5 text-[9px] font-bold rounded bg-sky-100 dark:bg-sky-900/60 text-sky-700 dark:text-sky-300">Auto Approve</span>
+                                    <span class="px-1.5 py-0.5 text-[9px] font-bold rounded-sm bg-sky-100 dark:bg-sky-900/60 text-sky-700 dark:text-sky-300">Auto Approve</span>
                                 </label>
                                 <p class="text-[11px] text-neutral-500 dark:text-neutral-400 leading-relaxed">
                                     <strong class="text-sky-700 dark:text-sky-400">Dicentang:</strong> Transaksi langsung diterbitkan & dicatat ke laporan keuangan saat jatuh tempo.<br>
@@ -343,16 +343,17 @@
                     {{-- Catatan Tambahan --}}
                     <div>
                         <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Catatan Tambahan</label>
-                        <textarea wire:model="notes" rows="2" placeholder="Keterangan tambahan..." class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-red-500"></textarea>
+                        <textarea wire:model="notes" rows="2" placeholder="Keterangan tambahan..." class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400"></textarea>
                     </div>
 
                     {{-- Modal Footer --}}
                     <div class="pt-4 border-t border-neutral-100 dark:border-slate-700 flex items-center justify-end gap-2.5">
-                        <button type="button" wire:click="closeModal" class="px-4 py-2 text-xs font-semibold text-neutral-600 dark:text-neutral-300 bg-neutral-100 dark:bg-slate-700 rounded-md hover:bg-neutral-200 dark:hover:bg-slate-600 transition-all">
+                        <button type="button" wire:click="closeModal" class="px-4 py-2.5 border border-neutral-200 dark:border-slate-700 rounded-sm text-sm font-semibold hover:bg-neutral-50 dark:hover:bg-slate-700 dark:text-white transition-colors cursor-pointer">
                             Batal
                         </button>
-                        <button type="submit" wire:loading.attr="disabled" class="px-5 py-2 text-xs font-bold text-white bg-blue-900 hover:bg-blue-950 rounded-md transition-all flex items-center gap-2 shadow-sm">
-                            <span>Simpan</span>
+                        <button type="submit" wire:loading.attr="disabled" class="px-5 py-2.5 text-sm font-semibold text-white bg-blue-900 hover:bg-blue-950 rounded-sm transition-colors shadow-sm shadow-blue-900/20 cursor-pointer">
+                            <span wire:loading.remove>Simpan</span>
+                            <span wire:loading>Menyimpan...</span>
                         </button>
                     </div>
                 </form>

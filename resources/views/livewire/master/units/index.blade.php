@@ -156,10 +156,11 @@
                                     </span>
                                 @endforeach
                             </div>
-                        @else
-                            <p class="text-xs text-amber-600 dark:text-amber-400 font-medium italic pt-1 flex items-center gap-1">
-                                ⚠️ Belum ada admin aktif di unit ini
-                            </p>
+                            @else
+                                <p class="text-xs text-amber-600 dark:text-amber-400 font-medium italic pt-1 flex items-center gap-1">                                 
+                                    <x-heroicon-s-exclamation-triangle class="size-4 fill-current" />
+                                    Belum ada admin aktif di unit ini                             
+                                </p>
                         @endif
                     </div>
                 </div>

@@ -113,14 +113,25 @@ return [
     // untuk Master Admin mengirim pengumuman manual ke seluruh Unit Admin,
     // reuse infrastruktur notifikasi App\Notifications\SystemNotification
     // yang sudah ada. Diletakkan di grup System (bukan grup baru) karena
-    // sifatnya administrasi/siaran lintas-unit, sejajar dengan Aktivitas &
+    // sifatnya administrasi/siaran lintas-unit, sejajar dengan Keamanan &
     // Audit Log -- lihat App\Livewire\Master\Announcements\Index.
+    //
+    // 'Aktivitas' -> 'Keamanan': label (dan ikon) item ini diganti karena
+    // App\Livewire\Master\Activities\Index (route 'master.activities.index',
+    // route name TETAP TIDAK BERUBAH supaya tidak memutus referensi
+    // route() di tempat lain) sekarang menampilkan Monitoring Aktivitas
+    // Login SEKALIGUS fitur blokir IP/perangkat (Daftar Blokir Aktif +
+    // form blokir baru), khusus Master Admin -- lihat docblock class
+    // tersebut. Item 'Aktivitas' milik unit-admin di bawah (route
+    // 'unit.activities.index') SENGAJA TIDAK diubah -- Unit Admin cuma
+    // melihat log aktivitas unitnya sendiri, tidak punya akses fitur
+    // blokir ini.
     [
         'label' => 'System',
         'roles' => ['master-admin'],
         'children' => [
-            ['label' => 'Aktivitas', 'route' => 'master.activities.index', 'icon' => 'clock', 'roles' => ['master-admin']],
-            ['label' => 'Audit Log', 'route' => 'master.audit-logs.index', 'icon' => 'shield-check', 'roles' => ['master-admin']],
+            ['label' => 'Keamanan', 'route' => 'master.activities.index', 'icon' => 'shield-exclamation', 'roles' => ['master-admin']],
+            ['label' => 'Log Aktivitas', 'route' => 'master.audit-logs.index', 'icon' => 'shield-check', 'roles' => ['master-admin']],
             ['label' => 'Pengumuman', 'route' => 'master.announcements.index', 'icon' => 'megaphone', 'roles' => ['master-admin']],
         ],
     ],

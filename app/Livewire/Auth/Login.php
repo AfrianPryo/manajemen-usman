@@ -3,6 +3,7 @@
 namespace App\Livewire\Auth;
 
 use App\Models\AuthLog;
+use App\Models\BlockedAccess;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -41,6 +42,16 @@ class Login extends Component
         $this->identity = trim($this->identity);
 
         $this->validate();
+
+        // 🔒 Menu Keamanan (Master Admin): tolak percobaan login dari IP
+        // atau perangkat yang sedang diblokir, SEBELUM kredensial dicek
+        // sama sekali -- lihat App\Models\BlockedAccess &
+        // App\Livewire\Master\Activities\Index (fitur blokirnya).
+        if (BlockedAccess::isIpBlocked(request()->ip()) || BlockedAccess::isDeviceBlocked(request()->userAgent())) {
+            AuthLog::log('login.failed', null, $this->identity, 'Akses ditolak: IP/perangkat diblokir Master Admin');
+            $this->addError('identity', 'Akses dari perangkat/IP ini telah diblokir oleh Master Admin.');
+            return;
+        }
 
         $throttleKey = Str::lower($this->identity) . '|' . request()->ip();
 

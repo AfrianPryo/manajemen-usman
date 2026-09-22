@@ -78,8 +78,12 @@
                     ? 'bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400'
                     : 'bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-400'"
             >
-                <span x-show="$store.confirmDialog.variant === 'danger'">⚠️</span>
-                <span x-show="$store.confirmDialog.variant !== 'danger'">❓</span>
+            <span x-show="$store.confirmDialog.variant === 'danger'">
+                <x-heroicon-s-exclamation-triangle class="size-5 fill-current" />
+            </span>
+            <span x-show="$store.confirmDialog.variant !== 'danger'">
+                <x-heroicon-s-question-mark-circle class="size-5 fill-current" />
+            </span>
             </div>
             <div class="min-w-0 flex-1 pt-0.5">
                 <h3 class="text-sm font-bold text-neutral-900 dark:text-white" x-text="$store.confirmDialog.title"></h3>

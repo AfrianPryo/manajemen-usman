@@ -15,29 +15,29 @@
         $docsParams = $isUnitAdmin ? ['unit' => request()->route('unit')?->slug] : [];
     @endphp
 
-    <a href="{{ route($docsPrefix.'index', $docsParams) }}" class="inline-flex items-center gap-1 text-xs font-semibold text-neutral-500 hover:text-blue-900 dark:hover:text-red-400 transition-colors">
+    <a href="{{ route($docsPrefix.'index', $docsParams) }}" class="inline-flex items-center gap-1 text-xs font-semibold text-neutral-500 hover:text-[#0d3b74] dark:hover:text-sky-400 transition-colors">
         <x-heroicon-o-arrow-left class="w-3.5 h-3.5" />
         Kembali ke Menu Laporan
     </a>
 
-    <div>
-        <h1 class="text-xl font-bold text-neutral-900 dark:text-white tracking-tight">Riwayat Dokumen Resmi</h1>
-        <p class="text-xs text-neutral-400 mt-1">Semua dokumen resmi yang pernah dibuat, lengkap dengan nomor surat dan jejak data sumbernya.</p>
+    <div class="bg-white dark:bg-slate-800 p-5 rounded-sm border border-neutral-100 dark:border-slate-700 shadow-sm shadow-black/[0.02]">
+        <h1 class="text-md font-bold text-neutral-900 dark:text-white tracking-tight">Riwayat Dokumen Resmi</h1>
+        <p class="text-[12px] tracking-tight text-neutral-400 mt-1">Semua dokumen resmi yang pernah dibuat, lengkap dengan nomor surat dan jejak data sumbernya.</p>
     </div>
 
     @if (session('success'))
-        <div class="p-4 rounded-md bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 text-sm font-medium">{{ session('success') }}</div>
+        <div class="p-4 rounded-sm bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 text-sm font-medium">{{ session('success') }}</div>
     @endif
 
     {{-- Filter Bar --}}
-    <div class="bg-white dark:bg-slate-800 rounded-md border border-neutral-100 dark:border-slate-700 shadow-sm shadow-black/[0.02] p-4">
+    <div class="bg-white dark:bg-slate-800 rounded-sm border border-neutral-100 dark:border-slate-700 shadow-sm shadow-black/[0.02] p-4">
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div class="sm:col-span-2">
                 <input type="text" wire:model.live.debounce.400ms="search" placeholder="Cari nomor surat / judul / penerima..."
-                    class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-full bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-red-500/10 focus:border-red-400">
+                    class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400">
             </div>
             <div>
-                <select wire:model.live="typeFilter" class="w-full px-3.5 py-2 text-xs font-semibold text-neutral-600 dark:text-neutral-300 bg-white dark:bg-slate-900 border border-neutral-200 dark:border-slate-700 rounded-full focus:outline-none focus:ring-2 focus:ring-red-500/10 focus:border-red-400 cursor-pointer">
+                <select wire:model.live="typeFilter" class="w-full px-3.5 py-2 text-xs font-semibold text-neutral-600 dark:text-neutral-300 bg-white dark:bg-slate-900 border border-neutral-200 dark:border-slate-700 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400 cursor-pointer">
                     <option value="">Semua Jenis</option>
                     @foreach ($this->types() as $key => $label)
                         <option value="{{ $key }}">{{ $label }}</option>
@@ -48,7 +48,7 @@
     </div>
 
     {{-- Table --}}
-    <div class="bg-white dark:bg-slate-800 rounded-md border border-neutral-100 dark:border-slate-700 shadow-sm shadow-black/[0.02] overflow-hidden">
+    <div class="bg-white dark:bg-slate-800 rounded-sm border border-neutral-100 dark:border-slate-700 shadow-sm shadow-black/[0.02] overflow-hidden">
         <div class="overflow-x-auto">
             <table class="w-full text-sm text-left">
                 <thead class="bg-neutral-50/70 dark:bg-slate-900/50 text-[11px] font-semibold uppercase tracking-wider text-neutral-400 border-b border-neutral-100 dark:border-slate-700">
@@ -66,7 +66,7 @@
                         <tr wire:key="doc-{{ $doc->id }}" class="hover:bg-neutral-50/60 dark:hover:bg-slate-700/30 transition-colors">
                             <td class="px-4 py-3.5 font-mono text-[11px] text-neutral-400">{{ $doc->document_number }}</td>
                             <td class="px-4 py-3.5">
-                                <span class="px-2.5 py-0.5 text-[10px] font-semibold rounded-full bg-sky-50 dark:bg-sky-950/50 text-sky-600 dark:text-sky-400 border border-sky-200/60 dark:border-sky-800">
+                                <span class="px-2.5 py-0.5 text-[10px] font-bold rounded-sm bg-sky-50 dark:bg-sky-950/50 text-sky-600 dark:text-sky-400 border border-sky-200/60 dark:border-sky-800">
                                     {{ \App\Support\DocumentTypes::label($doc->type) }}
                                 </span>
                             </td>
@@ -75,14 +75,14 @@
                             <td class="px-4 py-3.5 text-[11px] text-neutral-400 whitespace-nowrap">{{ optional($doc->generated_at)->format('d M Y H:i') }}</td>
                             <td class="px-4 py-3.5 text-center">
                                 <div class="flex items-center justify-center gap-1">
-                                    <button wire:click="download({{ $doc->id }})" class="p-1.5 text-sky-600 hover:text-sky-800 dark:text-sky-400 hover:bg-sky-50 dark:hover:bg-sky-950/40 rounded-md transition-all" title="Unduh">
+                                    <button wire:click="download({{ $doc->id }})" class="p-1.5 text-sky-600 hover:text-sky-800 dark:text-sky-400 hover:bg-sky-50 dark:hover:bg-sky-950/40 rounded-sm transition-all" title="Unduh">
                                         <x-heroicon-o-arrow-down-tray class="w-4 h-4" />
                                     </button>
                                     <button type="button" x-on:click.prevent="$store.confirmDialog.open({
                                             message: 'Yakin hapus dokumen ini dari riwayat?',
                                             confirmText: 'Ya, Hapus',
                                             onConfirm: () => $wire.delete({{ $doc->id }})
-                                        })" class="p-1.5 text-rose-600 hover:text-rose-800 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-md transition-all" title="Hapus">
+                                        })" class="p-1.5 text-rose-600 hover:text-rose-800 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-sm transition-all" title="Hapus">
                                         <x-heroicon-o-trash class="w-4 h-4" />
                                     </button>
                                 </div>
@@ -107,7 +107,7 @@
 
             <div class="flex items-center gap-3">
                 @if ($documents->currentPage() > 1)
-                    <button wire:click="gotoPage(1)" class="inline-flex items-center gap-1 px-3 py-1.5 text-[11px] font-semibold text-neutral-600 dark:text-neutral-300 bg-neutral-100 dark:bg-slate-700 hover:bg-neutral-200 dark:hover:bg-slate-600 rounded-full transition-all">
+                    <button wire:click="gotoPage(1)" class="inline-flex items-center gap-1 px-3 py-1.5 text-[11px] font-semibold text-neutral-600 dark:text-neutral-300 bg-neutral-100 dark:bg-slate-700 hover:bg-neutral-200 dark:hover:bg-slate-600 rounded-sm transition-all">
                         <x-heroicon-o-chevron-double-left class="w-3.5 h-3.5" />
                         Kembali ke Awal
                     </button>

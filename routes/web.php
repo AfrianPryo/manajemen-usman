@@ -203,6 +203,16 @@ Route::middleware(['auth', 'user.active', 'single.session', EnsureSessionNotExpi
             Route::get('/analytics', AnalyticsIndex::class)->name('analytics.index');
 
             // System
+            // CATATAN MENU KEAMANAN: route & nama route ('activities.index')
+            // SENGAJA TETAP TIDAK BERUBAH supaya tidak memutus referensi
+            // route() yang sudah ada di tempat lain (mis. link "Lihat Semua"
+            // pada dashboard) -- yang berubah HANYA isi halamannya. Sejak
+            // penambahan fitur blokir IP/perangkat, App\Livewire\Master\
+            // Activities\Index kini merepresentasikan menu "Keamanan" (label
+            // sidebar di config/menu.php perlu diubah manual dari "Aktivitas"
+            // menjadi "Keamanan", lihat komentar class tersebut) -- halaman
+            // ini tetap menampilkan Monitoring Aktivitas Login SEKALIGUS
+            // Daftar Blokir Aktif & form blokir baru, khusus Master Admin.
             Route::get('/activities', ActivitiesIndex::class)->name('activities.index');
             Route::get('/audit-logs', AuditLogsIndex::class)->name('audit-logs.index');
 

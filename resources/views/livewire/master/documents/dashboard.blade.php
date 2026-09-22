@@ -1,74 +1,98 @@
 <div class="w-full max-w-[1500px] mx-auto space-y-5 text-neutral-800 dark:text-neutral-100 px-4 py-4 sm:px-6 font-sans">
 
-    <div>
-        <h1 class="text-xl font-bold text-neutral-900 dark:text-white tracking-tight">Dokumen Resmi</h1>
-        <p class="text-xs text-neutral-400 mt-1">
+    {{--
+        Heading atas DISAMAKAN dengan pola header "Dashboard Master Admin":
+        dibungkus kartu putih ber-border + shadow-sm, judul text-md font-bold
+        tracking-tight, subjudul text-[12px] tracking-tight text-neutral-400
+        -- sebelumnya judul mengambang tanpa kartu, jadi terasa beda keluarga
+        dengan dashboard utama.
+    --}}
+    <div class="bg-white dark:bg-slate-800 p-5 rounded-sm border border-neutral-100 dark:border-slate-700 shadow-sm shadow-black/[0.02]">
+        <h1 class="text-md font-bold tracking-tight text-neutral-900 dark:text-white">Dokumen Resmi</h1>
+        <p class="text-[12px] tracking-tight text-neutral-400 mt-1">
             Menggabungkan data sistem secara otomatis ke template resmi ber-KOP surat dan bertanda tangan — tanpa risiko salah ketik dari copy-paste manual.
         </p>
     </div>
 
     {{-- Quick Action Cards --}}
+    {{--
+        Warna badge ikon DISAMAKAN dengan aksen dashboard utama (biru #0d3b74
+        untuk aksi utama, netral untuk aksi sekunder) -- sebelumnya tiap kartu
+        pakai warna berbeda (merah/sky/amber/emerald) tanpa makna semantik,
+        jadi diseragamkan supaya hierarkinya jelas: "Buat Dokumen" adalah aksi
+        utama, tiga lainnya adalah aksi pendukung.
+    --}}
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <a href="{{ route('master.documents.generate') }}" class="bg-white dark:bg-slate-800 rounded-md border border-neutral-100 dark:border-slate-700 shadow-sm shadow-black/[0.02] p-5 hover:border-red-300 dark:hover:border-red-800/60 transition-all">
-            <span class="p-2 rounded-xl bg-red-50 dark:bg-red-950/50 text-red-500 dark:text-red-400 w-9 h-9 flex items-center justify-center text-lg font-bold">+</span>
+        <a href="{{ route('master.documents.generate') }}" class="bg-white dark:bg-slate-800 rounded-sm border border-neutral-100 dark:border-slate-700 shadow-sm shadow-black/[0.02] p-5 hover:border-blue-200 dark:hover:border-blue-800/60 transition-all">
+            <span class="w-9 h-9 rounded-sm bg-blue-50 dark:bg-blue-950/40 text-[#0d3b74] dark:text-blue-400 flex items-center justify-center">
+                <x-heroicon-o-document-plus class="w-4.5 h-4.5" />
+            </span>
             <h3 class="mt-4 text-sm font-bold text-neutral-900 dark:text-white">Buat Dokumen</h3>
             <p class="mt-1 text-[11px] text-neutral-400">Generate dokumen resmi baru dari data sistem.</p>
         </a>
 
-        <a href="{{ route('master.documents.history') }}" class="bg-white dark:bg-slate-800 rounded-md border border-neutral-100 dark:border-slate-700 shadow-sm shadow-black/[0.02] p-5 hover:border-red-300 dark:hover:border-red-800/60 transition-all">
-            <span class="p-2 rounded-xl bg-sky-50 dark:bg-sky-950/50 text-sky-500 dark:text-sky-400 w-9 h-9 flex items-center justify-center">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m6.75 12H9m6 3H9m3-12H9"/></svg>
+        <a href="{{ route('master.documents.history') }}" class="bg-white dark:bg-slate-800 rounded-sm border border-neutral-100 dark:border-slate-700 shadow-sm shadow-black/[0.02] p-5 hover:border-blue-200 dark:hover:border-blue-800/60 transition-all">
+            <span class="w-9 h-9 rounded-sm bg-neutral-100 dark:bg-slate-900 text-neutral-500 dark:text-neutral-400 flex items-center justify-center">
+                <x-heroicon-o-clock class="w-4.5 h-4.5" />
             </span>
             <h3 class="mt-4 text-sm font-bold text-neutral-900 dark:text-white">Riwayat Dokumen</h3>
             <p class="mt-1 text-[11px] text-neutral-400">{{ number_format($totalDocuments) }} dokumen sudah dibuat.</p>
         </a>
 
-        <a href="{{ route('master.documents.templates') }}" class="bg-white dark:bg-slate-800 rounded-md border border-neutral-100 dark:border-slate-700 shadow-sm shadow-black/[0.02] p-5 hover:border-red-300 dark:hover:border-red-800/60 transition-all">
-            <span class="p-2 rounded-xl bg-amber-50 dark:bg-amber-950/50 text-amber-500 dark:text-amber-400 w-9 h-9 flex items-center justify-center">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 9.776c.112-.017.227-.026.344-.026h15.812c.117 0 .232.009.344.026m-16.5 0a2.25 2.25 0 00-1.883 2.542l.857 6a2.25 2.25 0 002.227 1.932H19.05a2.25 2.25 0 002.227-1.932l.857-6a2.25 2.25 0 00-1.883-2.542m-16.5 0V6A2.25 2.25 0 016 3.75h3.879a1.5 1.5 0 011.06.44l2.122 2.12a1.5 1.5 0 001.06.44H18A2.25 2.25 0 0120.25 9v.776"/></svg>
+        <a href="{{ route('master.documents.templates') }}" class="bg-white dark:bg-slate-800 rounded-sm border border-neutral-100 dark:border-slate-700 shadow-sm shadow-black/[0.02] p-5 hover:border-blue-200 dark:hover:border-blue-800/60 transition-all">
+            <span class="w-9 h-9 rounded-sm bg-neutral-100 dark:bg-slate-900 text-neutral-500 dark:text-neutral-400 flex items-center justify-center">
+                <x-heroicon-o-document-duplicate class="w-4.5 h-4.5" />
             </span>
             <h3 class="mt-4 text-sm font-bold text-neutral-900 dark:text-white">Kelola Template</h3>
             <p class="mt-1 text-[11px] text-neutral-400">Atur template Word ber-KOP surat per jenis dokumen.</p>
         </a>
 
-        <a href="{{ route('master.documents.signature') }}" class="bg-white dark:bg-slate-800 rounded-md border border-neutral-100 dark:border-slate-700 shadow-sm shadow-black/[0.02] p-5 hover:border-red-300 dark:hover:border-red-800/60 transition-all">
-            <span class="p-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-500 dark:text-emerald-400 w-9 h-9 flex items-center justify-center">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z"/></svg>
+        <a href="{{ route('master.documents.signature') }}" class="bg-white dark:bg-slate-800 rounded-sm border border-neutral-100 dark:border-slate-700 shadow-sm shadow-black/[0.02] p-5 hover:border-blue-200 dark:hover:border-blue-800/60 transition-all">
+            <span class="w-9 h-9 rounded-sm bg-neutral-100 dark:bg-slate-900 text-neutral-500 dark:text-neutral-400 flex items-center justify-center">
+                <x-heroicon-o-pencil-square class="w-4.5 h-4.5" />
             </span>
             <h3 class="mt-4 text-sm font-bold text-neutral-900 dark:text-white">Tanda Tangan</h3>
-            <p class="mt-1 text-[11px] text-neutral-400">Kelola gambar tanda tangan & jabatan Anda.</p>
+            <p class="mt-1 text-[11px] text-neutral-400">Kelola gambar tanda tangan &amp; jabatan Anda.</p>
         </a>
     </div>
 
     {{-- Panduan Singkat --}}
-    <div class="bg-white dark:bg-slate-800 rounded-md border border-neutral-100 dark:border-slate-700 shadow-sm shadow-black/[0.02] p-5">
-        <h2 class="text-xs font-bold uppercase tracking-wider text-neutral-400 mb-4">Alur Membuat Dokumen Resmi</h2>
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    {{--
+        Header section DISAMAKAN dengan pola "Transaksi Terkini" / "Log
+        Aktivitas" di Dashboard Master Admin (heading text-base font-bold +
+        subjudul + border-b), bukan lagi label kecil huruf kapital.
+    --}}
+    <div class="bg-white dark:bg-slate-800 rounded-sm border border-neutral-100 dark:border-slate-700 shadow-sm shadow-black/[0.02] p-5">
+        <div class="pb-4 border-b border-neutral-100 dark:border-slate-700">
+            <h2 class="text-base font-bold text-neutral-900 dark:text-white">Alur Membuat Dokumen Resmi</h2>
+            <p class="text-xs text-neutral-400 mt-0.5">Empat langkah singkat dari template sampai dokumen siap diarsipkan</p>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
             <div class="flex items-start gap-3">
-                <span class="shrink-0 w-6 h-6 rounded-full bg-neutral-900 dark:bg-slate-700 text-white text-[11px] font-bold flex items-center justify-center">1</span>
+                <span class="shrink-0 w-6 h-6 rounded-sm bg-[#0d3b74] dark:bg-blue-900 text-white text-[11px] font-bold flex items-center justify-center">1</span>
                 <div>
                     <p class="text-xs font-semibold text-neutral-800 dark:text-neutral-200">Siapkan Template</p>
                     <p class="text-[11px] text-neutral-400 mt-0.5">Unggah kop surat (.docx) per jenis dokumen di menu Kelola Template.</p>
                 </div>
             </div>
             <div class="flex items-start gap-3">
-                <span class="shrink-0 w-6 h-6 rounded-full bg-neutral-900 dark:bg-slate-700 text-white text-[11px] font-bold flex items-center justify-center">2</span>
+                <span class="shrink-0 w-6 h-6 rounded-sm bg-[#0d3b74] dark:bg-blue-900 text-white text-[11px] font-bold flex items-center justify-center">2</span>
                 <div>
                     <p class="text-xs font-semibold text-neutral-800 dark:text-neutral-200">Siapkan Tanda Tangan</p>
                     <p class="text-[11px] text-neutral-400 mt-0.5">Tambahkan profil nama, jabatan, dan gambar tanda tangan Anda.</p>
                 </div>
             </div>
             <div class="flex items-start gap-3">
-                <span class="shrink-0 w-6 h-6 rounded-full bg-neutral-900 dark:bg-slate-700 text-white text-[11px] font-bold flex items-center justify-center">3</span>
+                <span class="shrink-0 w-6 h-6 rounded-sm bg-[#0d3b74] dark:bg-blue-900 text-white text-[11px] font-bold flex items-center justify-center">3</span>
                 <div>
                     <p class="text-xs font-semibold text-neutral-800 dark:text-neutral-200">Buat Dokumen</p>
                     <p class="text-[11px] text-neutral-400 mt-0.5">Pilih jenis, template, isi data singkat, lalu pilih penanda tangan.</p>
                 </div>
             </div>
             <div class="flex items-start gap-3">
-                <span class="shrink-0 w-6 h-6 rounded-full bg-neutral-900 dark:bg-slate-700 text-white text-[11px] font-bold flex items-center justify-center">4</span>
+                <span class="shrink-0 w-6 h-6 rounded-sm bg-[#0d3b74] dark:bg-blue-900 text-white text-[11px] font-bold flex items-center justify-center">4</span>
                 <div>
-                    <p class="text-xs font-semibold text-neutral-800 dark:text-neutral-200">Unduh & Arsip</p>
+                    <p class="text-xs font-semibold text-neutral-800 dark:text-neutral-200">Unduh &amp; Arsip</p>
                     <p class="text-[11px] text-neutral-400 mt-0.5">Dokumen otomatis tercatat di Riwayat Dokumen lengkap nomor suratnya.</p>
                 </div>
             </div>
@@ -76,12 +100,23 @@
     </div>
 
     {{-- Dokumen Terbaru --}}
-    <div class="bg-white dark:bg-slate-800 rounded-md border border-neutral-100 dark:border-slate-700 shadow-sm shadow-black/[0.02] overflow-hidden">
-        <div class="p-5 pb-0 flex items-center justify-between">
-            <h2 class="text-xs font-bold uppercase tracking-wider text-neutral-400">Dokumen Terbaru</h2>
-            <a href="{{ route('master.documents.history') }}" class="text-[11px] font-semibold text-blue-900 dark:text-red-400 hover:underline">Lihat semua &rarr;</a>
+    {{--
+        Header & tautan "Lihat Semua" DISAMAKAN persis dengan pola section
+        "Transaksi Terkini" / "Log Aktivitas" di Dashboard Master Admin
+        (heading text-base font-bold + border-b, bukan lagi label kecil
+        huruf kapital) supaya kedua dashboard terasa satu keluarga desain.
+    --}}
+    <div class="bg-white dark:bg-slate-800 rounded-sm border border-neutral-100 dark:border-slate-700 shadow-sm shadow-black/[0.02] p-5">
+        <div class="flex items-center justify-between pb-4 border-b border-neutral-100 dark:border-slate-700">
+            <div>
+                <h2 class="text-base font-bold text-neutral-900 dark:text-white">Dokumen Terbaru</h2>
+                <p class="text-xs text-neutral-400 mt-0.5">Lima dokumen resmi terakhir yang dibuat</p>
+            </div>
+            <a href="{{ route('master.documents.history') }}" class="text-xs font-bold text-[#0d3b74] dark:text-white hover:text-blue-700 dark:hover:text-neutral-300 transition-colors shrink-0">
+                Lihat Semua &rarr;
+            </a>
         </div>
-        <div class="overflow-x-auto mt-3">
+        <div class="overflow-x-auto mt-2 -mx-5">
             <table class="w-full text-sm text-left">
                 <thead class="bg-neutral-50/70 dark:bg-slate-900/50 text-[11px] font-semibold uppercase tracking-wider text-neutral-400 border-y border-neutral-100 dark:border-slate-700">
                     <tr>

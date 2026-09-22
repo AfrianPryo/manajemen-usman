@@ -13,7 +13,16 @@
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
             <h1 class="text-xl font-bold text-neutral-900 dark:text-white tracking-tight">Pembelian Lintas-Unit</h1>
-            <p class="text-xs text-neutral-400 mt-0.5">Pantau dan rekap belanja ke vendor dari seluruh Unit Usaha. Pencatatan pembelian dikelola langsung dari panel masing-masing Unit.</p>
+            <p class="text-xs text-neutral-400 mt-0.5">Pantau, rekap, dan kelola belanja ke vendor dari seluruh Unit Usaha.</p>
+        </div>
+        <div class="flex items-center gap-2.5 shrink-0">
+            <button wire:click="openCreateModal"
+                    class="px-4 py-2 text-xs font-bold text-white bg-blue-900 hover:bg-blue-950 rounded-[3px] transition-all flex items-center gap-2 shadow-sm shadow-blue-900/20 cursor-pointer">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
+                </svg>
+                <span>Catat Pembelian</span>
+            </button>
         </div>
     </div>
 
@@ -150,6 +159,144 @@
     </div>
 
 
+    {{-- Modal Form Catat Pembelian --}}
+    @if($showModal)
+        <div class="fixed inset-0 z-50 flex items-center justify-center bg-neutral-900/60 backdrop-blur-sm p-4 overflow-y-auto">
+            <div class="bg-white dark:bg-slate-800 w-full max-w-2xl rounded-lg border border-neutral-200 dark:border-slate-700 shadow-2xl overflow-hidden my-8 animate-in fade-in zoom-in duration-150">
+
+                {{-- Modal Header --}}
+                <div class="p-5 border-b border-neutral-100 dark:border-slate-700 flex items-center justify-between bg-neutral-50/50 dark:bg-slate-900/50">
+                    <div>
+                        <h3 class="text-base font-bold text-neutral-900 dark:text-white">Catat Pembelian</h3>
+                        <p class="text-xs text-neutral-400">Pilih Unit Usaha, vendor & item -- stok dan transaksi keuangan unit terkait otomatis diperbarui.</p>
+                    </div>
+                    <button wire:click="closeModal" class="text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 text-2xl font-bold leading-none">&times;</button>
+                </div>
+
+                {{-- Modal Body / Form --}}
+                <form wire:submit.prevent="save" class="p-6 space-y-4 text-xs">
+
+                    <div>
+                        <label class="block font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Unit Usaha <span class="text-red-500">*</span></label>
+                        <select wire:model.live="unit_id"
+                                class="w-full px-3 py-2 border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-blue-500 cursor-pointer">
+                            <option value="">-- Pilih Unit Usaha --</option>
+                            @foreach($units as $unit)
+                                <option value="{{ $unit->id }}">{{ $unit->name }}</option>
+                            @endforeach
+                        </select>
+                        @error('unit_id') <span class="text-rose-500 text-[11px] mt-0.5 block">{{ $message }}</span> @enderror
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                            <label class="block font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Vendor / Supplier <span class="text-red-500">*</span></label>
+                            <select wire:model="vendor_id"
+                                    class="w-full px-3 py-2 border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-blue-500 cursor-pointer">
+                                <option value="">-- Pilih Vendor --</option>
+                                @foreach($vendors as $vendor)
+                                    <option value="{{ $vendor->id }}">{{ $vendor->name }}</option>
+                                @endforeach
+                            </select>
+                            @error('vendor_id') <span class="text-rose-500 text-[11px] mt-0.5 block">{{ $message }}</span> @enderror
+                        </div>
+                        <div>
+                            <label class="block font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Metode Pembayaran</label>
+                            <select wire:model="payment_method"
+                                    class="w-full px-3 py-2 border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-blue-500 cursor-pointer">
+                                <option value="cash">Tunai</option>
+                                <option value="transfer">Transfer</option>
+                                <option value="qris">QRIS</option>
+                                <option value="lainnya">Lainnya</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    {{-- Baris Item --}}
+                    <div>
+                        <div class="flex items-center justify-between mb-1.5">
+                            <label class="block font-semibold text-neutral-600 dark:text-neutral-300">Item Pembelian <span class="text-red-500">*</span></label>
+                            <button type="button" wire:click="addItemRow"
+                                    class="text-[11px] font-semibold text-blue-700 hover:text-blue-900 dark:text-blue-400 flex items-center gap-1 cursor-pointer">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+                                Tambah Baris
+                            </button>
+                        </div>
+                        @error('items') <span class="text-rose-500 text-[11px] mb-1.5 block">{{ $message }}</span> @enderror
+                        @if(!$unit_id)
+                            <p class="text-[11px] text-amber-600 dark:text-amber-400 mb-1.5">Pilih Unit Usaha terlebih dahulu untuk memilih Produk dari stok unit tersebut (item bebas non-produk tetap bisa diisi tanpa memilih unit).</p>
+                        @endif
+
+                        <div class="space-y-2.5">
+                            @foreach($items as $index => $row)
+                                <div wire:key="item-row-{{ $index }}" class="border border-neutral-200 dark:border-slate-700 rounded-md p-2.5 space-y-2">
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                        <div>
+                                            <label class="block text-[10px] font-semibold text-neutral-500 mb-0.5">Produk (opsional)</label>
+                                            <select wire:model="items.{{ $index }}.product_id"
+                                                    class="w-full px-2.5 py-1.5 border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 text-[11px] focus:outline-none focus:border-blue-500 cursor-pointer">
+                                                <option value="">-- Item bebas (non-stok) --</option>
+                                                @foreach($products as $product)
+                                                    <option value="{{ $product->id }}">{{ $product->name }} (stok: {{ $product->stock }})</option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label class="block text-[10px] font-semibold text-neutral-500 mb-0.5">Nama Item</label>
+                                            <input type="text" wire:model="items.{{ $index }}.name"
+                                                   class="w-full px-2.5 py-1.5 border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 text-[11px] focus:outline-none focus:border-blue-500"
+                                                   placeholder="Nama item / jasa">
+                                        </div>
+                                    </div>
+                                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 items-end">
+                                        <div>
+                                            <label class="block text-[10px] font-semibold text-neutral-500 mb-0.5">Qty</label>
+                                            <input type="number" step="0.01" min="0.01" wire:model="items.{{ $index }}.qty"
+                                                   class="w-full px-2.5 py-1.5 border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 text-[11px] focus:outline-none focus:border-blue-500">
+                                        </div>
+                                        <div>
+                                            <label class="block text-[10px] font-semibold text-neutral-500 mb-0.5">Harga Satuan (Rp)</label>
+                                            <input type="number" step="0.01" min="0" wire:model="items.{{ $index }}.unit_price"
+                                                   class="w-full px-2.5 py-1.5 border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 text-[11px] focus:outline-none focus:border-blue-500">
+                                        </div>
+                                        <div class="flex justify-end">
+                                            <button type="button" wire:click="removeItemRow({{ $index }})"
+                                                    class="p-1.5 text-rose-500 hover:text-rose-700 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-md transition-all cursor-pointer"
+                                                    title="Hapus Baris">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Catatan</label>
+                        <textarea wire:model="notes" rows="2"
+                                  class="w-full px-3.5 py-2 border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-blue-500"
+                                  placeholder="Catatan tambahan untuk pembelian ini..."></textarea>
+                    </div>
+
+                    {{-- Modal Footer --}}
+                    <div class="pt-4 border-t border-neutral-100 dark:border-slate-700 flex items-center justify-end gap-2.5">
+                        <button type="button" wire:click="closeModal"
+                                class="px-4 py-2 text-xs font-semibold text-neutral-600 dark:text-neutral-300 bg-neutral-100 dark:bg-slate-700 rounded-md hover:bg-neutral-200 dark:hover:bg-slate-600 transition-all cursor-pointer">
+                            Batal
+                        </button>
+                        <button type="submit" wire:loading.attr="disabled"
+                                class="px-5 py-2 text-xs font-bold text-white bg-blue-900 hover:bg-blue-950 rounded-md transition-all flex items-center gap-2 shadow-sm cursor-pointer">
+                            <span wire:loading.remove>Simpan Pembelian</span>
+                            <span wire:loading>Memproses...</span>
+                        </button>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+    @endif
+
     {{-- Modal Detail Pembelian --}}
     @if($showDetailModal && $selectedPurchase)
         <div class="fixed inset-0 z-50 flex items-center justify-center bg-neutral-900/60 backdrop-blur-sm p-4 overflow-y-auto">
@@ -196,7 +343,17 @@
                     </div>
 
                     <div class="pt-3 border-t border-neutral-100 dark:border-slate-700 flex items-center justify-end gap-2.5">
-                        {{-- Read-only: pembatalan pembelian hanya dilakukan dari panel Unit terkait. --}}
+                        @if($selectedPurchase->status === 'completed')
+                            <button type="button"
+                                    x-on:click.prevent="$store.confirmDialog.open({
+                                        message: 'Yakin ingin membatalkan pembelian ini? Stok & transaksi keuangan unit terkait akan disesuaikan otomatis.',
+                                        confirmText: 'Ya, Batalkan',
+                                        onConfirm: () => $wire.cancelPurchase({{ $selectedPurchase->id }})
+                                    })"
+                                    class="px-4 py-2 text-xs font-semibold text-rose-600 bg-rose-50 dark:bg-rose-950/40 rounded-md hover:bg-rose-100 transition-all cursor-pointer">
+                                Batalkan Pembelian
+                            </button>
+                        @endif
                         <button type="button" wire:click="closeDetailModal"
                                 class="px-4 py-2 text-xs font-semibold text-neutral-600 dark:text-neutral-300 bg-neutral-100 dark:bg-slate-700 rounded-md hover:bg-neutral-200 dark:hover:bg-slate-600 transition-all cursor-pointer">
                             Tutup

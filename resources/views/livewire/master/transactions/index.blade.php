@@ -8,83 +8,81 @@
         </div>
     @endif
 
-    {{-- KPI Cards --}}
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div class="bg-white dark:bg-slate-800 rounded-sm border border-neutral-100 dark:border-slate-700 p-5 shadow-sm shadow-black/[0.02]">
-            <div class="flex items-center justify-between">
-                <p class="text-xs font-medium text-neutral-400">Total Pemasukan</p>
-                <span class="p-2 rounded-sm bg-emerald-50 dark:bg-emerald-950/50 text-emerald-500">
-                    <x-heroicon-o-arrow-down class="w-4 h-4" stroke-width="2" />
-                </span>
-            </div>
-            <p class="mt-4 text-2xl font-bold text-neutral-900 dark:text-white tracking-tight">Rp {{ number_format($totalIncome, 0, ',', '.') }}</p>
-            <p class="mt-2 text-[11px] text-neutral-400">Transaksi berstatus selesai</p>
-        </div>
-
-        <div class="bg-white dark:bg-slate-800 rounded-sm border border-neutral-100 dark:border-slate-700 p-5 shadow-sm shadow-black/[0.02]">
-            <div class="flex items-center justify-between">
-                <p class="text-xs font-medium text-neutral-400">Total Pengeluaran</p>
-                <span class="p-2 rounded-sm bg-rose-50 dark:bg-rose-950/50 text-rose-500">
-                    <x-heroicon-o-arrow-up class="w-4 h-4" stroke-width="2" />
-                </span>
-            </div>
-            <p class="mt-4 text-2xl font-bold text-neutral-900 dark:text-white tracking-tight">Rp {{ number_format($totalExpense, 0, ',', '.') }}</p>
-            <p class="mt-2 text-[11px] text-neutral-400">Biaya & operasional keluar</p>
-        </div>
-
-        <div class="bg-white dark:bg-slate-800 rounded-sm border border-neutral-100 dark:border-slate-700 p-5 shadow-sm shadow-black/[0.02]">
-            <div class="flex items-center justify-between">
-                <p class="text-xs font-medium text-neutral-400">Arus Kas Bersih</p>
-                <span class="p-2 rounded-sm bg-blue-50 dark:bg-blue-950/50 text-[#0d3b74] dark:text-blue-400">
-                    <x-heroicon-o-arrow-trending-up class="w-4 h-4" stroke-width="2" />
-                </span>
-            </div>
-            <p class="mt-4 text-2xl font-bold tracking-tight {{ $netBalance >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400' }}">
-                Rp {{ number_format($netBalance, 0, ',', '.') }}
+    {{-- ================= HEADER & QUICK ACTIONS ================= --}}
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 bg-white dark:bg-slate-800 p-4 rounded-sm border border-neutral-100 dark:border-slate-700 shadow-sm shadow-black/[0.02]">
+        <div class="min-w-0">
+            <h1 class="text-sm font-bold tracking-tight text-neutral-900 dark:text-white">Manajemen Transaksi</h1>
+            <p class="text-[11px] text-neutral-400 mt-0.5 truncate">
+                Catat, kelola, dan pantau seluruh transaksi pemasukan & pengeluaran unit usaha.
             </p>
-            <p class="mt-2 text-[11px] text-neutral-400">Selisih masuk - keluar</p>
         </div>
 
-        <div class="bg-white dark:bg-slate-800 rounded-sm border border-neutral-100 dark:border-slate-700 p-5 shadow-sm shadow-black/[0.02]">
-            <div class="flex items-center justify-between">
-                <p class="text-xs font-medium text-neutral-400">Pending / Menunggu</p>
-                <span class="p-2 rounded-sm bg-amber-50 dark:bg-amber-950/50 text-amber-500">
-                    <x-heroicon-o-clock class="w-4 h-4" stroke-width="2" />
-                </span>
-            </div>
-            <p class="mt-4 text-2xl font-bold text-neutral-900 dark:text-white tracking-tight">{{ number_format($pendingCount) }}</p>
-            <p class="mt-2 text-[11px] text-neutral-400">Membutuhkan konfirmasi</p>
-        </div>
-    </div>
-
-    {{-- Action Header --}}
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <div>
+        {{-- Tombol Aksi Cepat: dipaksa satu baris (nowrap), scroll horizontal kalau ruangnya sempit --}}
+        <div class="flex flex-nowrap items-center gap-2 overflow-x-auto shrink-0 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {{-- Tombol Export --}}
-            <button type="button" wire:click="exportData" class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-[#0d3b74] dark:text-sky-300 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 rounded-sm hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-all cursor-pointer">
-                <x-heroicon-o-arrow-down-tray class="w-4 h-4" stroke-width="2" />
+            <button type="button" wire:click="exportData" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-semibold text-[#0d3b74] dark:text-sky-300 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 rounded-sm hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-all cursor-pointer shrink-0 whitespace-nowrap">
+                <x-heroicon-o-arrow-down-tray class="w-3.5 h-3.5" stroke-width="2" />
                 <span>Export Excel</span>
             </button>
-        </div>
 
-        <div class="flex items-center gap-2.5 shrink-0">
             {{-- Tombol Kelola Kategori (modul kategori transaksi, menyatu di menu Transaksi) --}}
-            <button type="button" wire:click="openCategoryModal" class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-neutral-700 dark:text-neutral-200 bg-white dark:bg-slate-800 border border-neutral-200 dark:border-slate-700 rounded-sm hover:bg-neutral-50 dark:hover:bg-slate-700 transition-all cursor-pointer shadow-sm shadow-black/[0.02]">
-                <x-heroicon-o-tag class="w-4 h-4 text-neutral-500 dark:text-neutral-400" />
+            <button type="button" wire:click="openCategoryModal" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-semibold text-neutral-700 dark:text-neutral-200 bg-white dark:bg-slate-800 border border-neutral-200 dark:border-slate-700 rounded-sm hover:bg-neutral-50 dark:hover:bg-slate-700 transition-all cursor-pointer shadow-sm shadow-black/[0.02] shrink-0 whitespace-nowrap">
+                <x-heroicon-o-tag class="w-3.5 h-3.5 text-neutral-500 dark:text-neutral-400" />
                 <span>Kelola Kategori</span>
             </button>
 
             {{-- Tombol Import Excel --}}
-            <button type="button" wire:click="openImportModal" class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-sm hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition-all cursor-pointer">
-                <x-heroicon-o-arrow-up-tray class="w-4 h-4" stroke-width="2" />
+            <button type="button" wire:click="openImportModal" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-sm hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition-all cursor-pointer shrink-0 whitespace-nowrap">
+                <x-heroicon-o-arrow-up-tray class="w-3.5 h-3.5" stroke-width="2" />
                 <span>Import Excel</span>
             </button>
 
             {{-- Tombol Tambah Transaksi --}}
-            <button type="button" wire:click="openCreateModal" class="inline-flex items-center gap-2 px-4 py-2 text-xs font-bold text-white bg-blue-900 hover:bg-blue-950 rounded-sm transition-all shadow-sm shadow-blue-900/20 cursor-pointer">
-                <x-heroicon-o-plus class="w-4 h-4" stroke-width="2.5" />
+            <button type="button" wire:click="openCreateModal" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-[11px] font-bold text-white bg-blue-900 hover:bg-blue-950 rounded-sm transition-all shadow-sm shadow-blue-900/20 cursor-pointer shrink-0 whitespace-nowrap">
+                <x-heroicon-o-plus class="w-3.5 h-3.5" stroke-width="2.5" />
                 <span>Tambah Transaksi</span>
             </button>
+        </div>
+    </div>
+
+    {{-- KPI Cards --}}
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="bg-white dark:bg-slate-800 rounded-none border border-neutral-100 dark:border-slate-700 p-4 flex flex-col justify-between">
+            <div class="flex items-center justify-between">
+                <p class="text-xs text-neutral-400">Total Pemasukan</p>
+                <x-heroicon-o-arrow-down stroke-width="1.5" class="w-4 h-4 text-neutral-300 dark:text-neutral-600" />
+            </div>
+            <p class="mt-2 text-2xl font-bold text-neutral-900 dark:text-white tracking-tight">Rp {{ number_format($totalIncome, 0, ',', '.') }}</p>
+            <p class="mt-1 text-[11px] text-neutral-400">Transaksi berstatus selesai</p>
+        </div>
+
+        <div class="bg-white dark:bg-slate-800 rounded-none border border-neutral-100 dark:border-slate-700 p-4 flex flex-col justify-between">
+            <div class="flex items-center justify-between">
+                <p class="text-xs text-neutral-400">Total Pengeluaran</p>
+                <x-heroicon-o-arrow-up stroke-width="1.5" class="w-4 h-4 text-neutral-300 dark:text-neutral-600" />
+            </div>
+            <p class="mt-2 text-2xl font-bold text-neutral-900 dark:text-white tracking-tight">Rp {{ number_format($totalExpense, 0, ',', '.') }}</p>
+            <p class="mt-1 text-[11px] text-neutral-400">Biaya & operasional keluar</p>
+        </div>
+
+        <div class="bg-white dark:bg-slate-800 rounded-none border border-neutral-100 dark:border-slate-700 p-4 flex flex-col justify-between">
+            <div class="flex items-center justify-between">
+                <p class="text-xs text-neutral-400">Arus Kas Bersih</p>
+                <x-heroicon-o-arrow-trending-up stroke-width="1.5" class="w-4 h-4 text-neutral-300 dark:text-neutral-600" />
+            </div>
+            <p class="mt-2 text-2xl font-bold tracking-tight {{ $netBalance >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400' }}">
+                Rp {{ number_format($netBalance, 0, ',', '.') }}
+            </p>
+            <p class="mt-1 text-[11px] text-neutral-400">Selisih masuk - keluar</p>
+        </div>
+
+        <div class="bg-white dark:bg-slate-800 rounded-none border border-neutral-100 dark:border-slate-700 p-4 flex flex-col justify-between">
+            <div class="flex items-center justify-between">
+                <p class="text-xs text-neutral-400">Pending / Menunggu</p>
+                <x-heroicon-o-clock stroke-width="1.5" class="w-4 h-4 text-neutral-300 dark:text-neutral-600" />
+            </div>
+            <p class="mt-2 text-2xl font-bold text-neutral-900 dark:text-white tracking-tight">{{ number_format($pendingCount) }}</p>
+            <p class="mt-1 text-[11px] text-neutral-400">Membutuhkan konfirmasi</p>
         </div>
     </div>
 

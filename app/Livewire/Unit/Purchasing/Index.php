@@ -30,12 +30,13 @@ use Livewire\WithPagination;
  * SATU FinanceTransaction (expense, kategori "Pembelian") + StockMovement
  * (type 'in') untuk setiap baris yang terhubung ke Produk.
  *
- * Ditulis berdiri sendiri (bukan extends komponen Master, karena memang
- * belum ada modul serupa di sisi Master saat file ini dibuat -- lihat
- * App\Livewire\Master\Purchasing\Index yang HANYA rekap lintas-unit,
- * read-only, tanpa form Tambah) tapi memakai konvensi yang identik dengan
- * modul unit lain: WithPagination, trait ScopedToUnit, pola modal Tambah,
- * dan AuditLog::record() di setiap aksi tulis.
+ * Ditulis berdiri sendiri (bukan extends komponen Master -- keduanya
+ * memang sengaja ditulis terpisah, lihat App\Livewire\Master\Purchasing\Index
+ * yang juga punya form Catat Pembelian & Batalkan sendiri, tapi dengan field
+ * 'unit_id' pilihan Unit Usaha di form karena halamannya lintas-unit) tapi
+ * memakai konvensi yang identik dengan modul unit lain: WithPagination,
+ * trait ScopedToUnit, pola modal Tambah, dan AuditLog::record() di setiap
+ * aksi tulis.
  */
 #[Layout('components.layouts.unit', [
     'category' => 'Unit Usaha',

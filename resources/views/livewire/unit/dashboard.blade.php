@@ -137,60 +137,125 @@
     {{-- ================= TREN OMZET & STOK MENIPIS ================= --}}
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
 
-        {{-- Widget Chart Tren Omzet (ApexCharts + Alpine.js) --}}
+        {{-- Widget Chart Tren Omzet & Arus Kas (ApexCharts + Alpine.js) --}}
         <div class="lg:col-span-2 bg-white dark:bg-slate-800 rounded-sm border border-neutral-100 dark:border-slate-700 p-4 shadow-sm shadow-black/[0.02]">
-            <div class="flex items-center justify-between mb-3">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-3">
                 <div>
-                    <h2 class="text-base font-extrabold text-neutral-900 dark:text-white tracking-tight">Tren Omzet Harian</h2>
-                    <p class="text-xs text-neutral-400 mt-0.5">{{ $periodLabel }}</p>
+                    <h2 class="text-base font-extrabold text-neutral-900 dark:text-white tracking-tight">Tren Omzet</h2>
+                    <p class="text-xs text-neutral-400 mt-0.5">
+                        {{ $periodLabel }} &middot;
+                        {{ match ($chartGranularity) { 'week' => 'diringkas per minggu', 'month' => 'diringkas per bulan', default => 'per hari' } }}
+                        @if ($chartGranularity !== 'day')
+                            &middot; arahkan kursor untuk detail, seret grafik untuk zoom
+                        @endif
+                    </p>
+                </div>
+
+                <div class="flex items-center gap-4 text-xs font-medium text-neutral-500 dark:text-neutral-400">
+                    <div class="flex items-center gap-1.5">
+                        <span class="w-2.5 h-2.5 rounded-full bg-[#0d3b74]"></span><span>Pendapatan</span>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                        <span class="w-2.5 h-2.5 rounded-full bg-sky-400"></span><span>Pengeluaran</span>
+                    </div>
                 </div>
             </div>
 
-            @if (count($revenueTrend['labels']) > 0)
-                <div x-data="{
-                    init() {
-                        let options = {
-                            series: [{ name: 'Omzet', data: @js($revenueTrend['series']) }],
+            {{-- wire:ignore: digambar ApexCharts di browser; data diperbarui reaktif lewat $wire --}}
+            <div
+                wire:ignore
+                x-data="{
+                    renderChart() {
+                        const el          = this.$refs.chart;
+                        const labels      = Array.from($wire.chartLabels || []);
+                        const timestamps  = Array.from($wire.chartTimestamps || []);
+                        const revenue     = Array.from($wire.revenueChartData || []);
+                        const expense     = Array.from($wire.expenseChartData || []);
+                        const granularity = $wire.chartGranularity || 'day';
+
+                        // Instance chart disimpan di properti DOM (BUKAN data Alpine)
+                        // supaya tidak dibungkus Proxy reaktif -> zoom/pan tidak
+                        // memicu render ulang.
+                        if (el._apex) {
+                            el._apex.destroy();
+                            el._apex = null;
+                        }
+
+                        const isDark    = document.documentElement.classList.contains('dark');
+                        const textColor = isDark ? '#94a3b8' : '#94A3B8';
+                        const gridColor = isDark ? 'rgba(255,255,255,0.06)' : '#F1F5F9';
+                        const n         = timestamps.length;
+                        const compact   = (v) => 'Rp ' + new Intl.NumberFormat('id-ID', { notation: 'compact' }).format(v);
+                        const full      = (v) => 'Rp ' + new Intl.NumberFormat('id-ID').format(v);
+
+                        const xFormat = granularity === 'month' ? 'MMM yy' : 'dd MMM';
+
+                        const options = {
+                            series: [
+                                { name: 'Pendapatan',  data: timestamps.map((t, i) => [t, revenue[i]]) },
+                                { name: 'Pengeluaran', data: timestamps.map((t, i) => [t, expense[i]]) },
+                            ],
                             chart: {
                                 type: 'area',
                                 height: 260,
-                                toolbar: { show: false },
                                 fontFamily: 'inherit',
+                                background: 'transparent',
+                                animations: { enabled: n <= 120 },
+                                zoom: { enabled: true, type: 'x', autoScaleYaxis: true },
+                                toolbar: {
+                                    show: n > 1,
+                                    autoSelected: 'zoom',
+                                    tools: { download: false, selection: false, zoom: true, zoomin: true, zoomout: true, pan: true, reset: true }
+                                },
                             },
-                            colors: ['#2563EB'],
+                            colors: ['#0d3b74', '#38BDF8'],
                             stroke: { curve: 'smooth', width: 2 },
                             fill: {
                                 type: 'gradient',
-                                gradient: { shadeIntensity: 1, opacityFrom: 0.35, opacityTo: 0.02, stops: [0, 90, 100] }
+                                gradient: { shadeIntensity: 1, opacityFrom: 0.3, opacityTo: 0.02, stops: [0, 90, 100] }
                             },
+                            markers: { size: n <= 31 ? 3 : 0, strokeWidth: 0, hover: { size: 5 } },
                             dataLabels: { enabled: false },
-                            grid: { borderColor: '#F1F5F9', strokeDashArray: 4 },
+                            legend: { show: false },
+                            grid: { borderColor: gridColor, strokeDashArray: 4, padding: { left: 8, right: 8 } },
+                            noData: { text: 'Belum ada data transaksi pada periode ini.', style: { color: textColor, fontSize: '12px' } },
                             xaxis: {
-                                categories: @js($revenueTrend['labels']),
-                                labels: { style: { colors: '#94A3B8', fontSize: '10px' } },
+                                type: 'datetime',
+                                tickAmount: Math.min(Math.max(n - 1, 1), 8),
+                                labels: {
+                                    rotate: 0,
+                                    hideOverlappingLabels: true,
+                                    datetimeUTC: true,
+                                    style: { colors: textColor, fontSize: '10px' },
+                                    datetimeFormatter: { year: 'yyyy', month: xFormat, day: 'dd MMM', hour: 'dd MMM' }
+                                },
                                 axisBorder: { show: false },
                                 axisTicks: { show: false },
+                                tooltip: { enabled: false },
                             },
                             yaxis: {
-                                labels: {
-                                    style: { colors: '#94A3B8', fontSize: '10px' },
-                                    formatter: function (val) { return 'Rp ' + new Intl.NumberFormat('id-ID', { notation: 'compact' }).format(val); }
-                                }
+                                min: 0,
+                                tickAmount: 5,
+                                labels: { style: { colors: textColor, fontSize: '10px' }, formatter: compact }
                             },
                             tooltip: {
-                                theme: 'light',
-                                y: { formatter: function (val) { return 'Rp ' + new Intl.NumberFormat('id-ID').format(val); } }
+                                theme: isDark ? 'dark' : 'light',
+                                shared: true,
+                                intersect: false,
+                                x: { formatter: (val, opts) => labels[opts?.dataPointIndex] ?? val },
+                                y: { formatter: full }
                             },
                         };
-                        let chart = new ApexCharts(this.$refs.chart, options);
+
+                        const chart = new ApexCharts(el, options);
+                        el._apex = chart;
                         chart.render();
                     }
-                }" class="w-full">
-                    <div x-ref="chart" class="w-full"></div>
-                </div>
-            @else
-                <p class="text-sm text-neutral-400 py-10 text-center">Belum ada data transaksi pemasukan pada periode ini.</p>
-            @endif
+                }"
+                x-effect="renderChart()"
+                class="w-full">
+                <div x-ref="chart" class="w-full"></div>
+            </div>
         </div>
 
         {{-- Widget Stok Menipis --}}

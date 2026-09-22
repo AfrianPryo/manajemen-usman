@@ -266,163 +266,127 @@
     </div>
 
     {{-- ================= SECTION GRAFIK TREN ARUS KAS ================= --}}
-    <div class="bg-white dark:bg-slate-800 rounded-none border border-slate-100 dark:border-slate-700/60 p-5 shadow-sm shadow-black/[0.02] transition-all">
+    <div class="bg-white dark:bg-slate-800 rounded-none border border-neutral-100 dark:border-slate-700 p-4 shadow-sm shadow-black/[0.02]">
 
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-3">
             <div>
-                <h2 class="text-lg font-extrabold text-slate-900 dark:text-white tracking-tight">Statistics</h2>
-                <p class="text-xs text-slate-400 mt-0.5">Grafik Tren Arus Kas Masuk & Keluar</p>
+                <h2 class="text-base font-extrabold text-neutral-900 dark:text-white tracking-tight">Tren Arus Kas</h2>
+                <p class="text-xs text-neutral-400 mt-0.5">
+                    Pendapatan vs pengeluaran &middot;
+                    {{ match ($chartGranularity) { 'week' => 'diringkas per minggu', 'month' => 'diringkas per bulan', default => 'per hari' } }}
+                    @if ($chartGranularity !== 'day')
+                        &middot; arahkan kursor untuk detail, seret grafik untuk zoom
+                    @endif
+                </p>
             </div>
 
-            {{-- Legend saja -- grafik ini sekarang mengikuti filter Unit Usaha &
-                Periode global di bagian atas halaman, tidak punya filter sendiri lagi. --}}
-            <div class="flex items-center gap-4 text-xs font-medium text-slate-500 dark:text-slate-400">
+            <div class="flex items-center gap-4 text-xs font-medium text-neutral-500 dark:text-neutral-400">
                 <div class="flex items-center gap-1.5">
-                    <span class="w-2.5 h-0.5 rounded-full bg-[#0d3b74]"></span>
-                    <span>Pendapatan</span>
+                    <span class="w-2.5 h-2.5 rounded-full bg-[#0d3b74]"></span><span>Pendapatan</span>
                 </div>
                 <div class="flex items-center gap-1.5">
-                    <span class="w-2.5 h-0.5 rounded-full bg-sky-300"></span>
-                    <span>Pengeluaran</span>
+                    <span class="w-2.5 h-2.5 rounded-full bg-sky-400"></span><span>Pengeluaran</span>
                 </div>
             </div>
         </div>
 
-        {{-- Container Chart --}}
-        <div 
-            wire:ignore
-            x-data="{
-                chart: null,
-                renderChart() {
-                    const labels = Array.from($wire.chartLabels || []);
-                    const revenue = Array.from($wire.revenueChartData || []);
-                    const expense = Array.from($wire.expenseChartData || []);
+            {{-- wire:ignore: digambar ApexCharts di browser; data diperbarui reaktif lewat $wire --}}
+            <div
+                wire:ignore
+                x-data="{
+                    renderChart() {
+                        const el          = this.$refs.chart;
+                        const labels      = Array.from($wire.chartLabels || []);
+                        const timestamps  = Array.from($wire.chartTimestamps || []);
+                        const revenue     = Array.from($wire.revenueChartData || []);
+                        const expense     = Array.from($wire.expenseChartData || []);
+                        const granularity = $wire.chartGranularity || 'day';
 
-                    if (!labels.length) return;
-
-                    const ctx = document.getElementById('cashflowChart');
-                    if (!ctx) return;
-
-                    if (this.chart) {
-                        this.chart.destroy();
-                    }
-
-                    const isDark = document.documentElement.classList.contains('dark');
-                    const gridColor = isDark ? 'rgba(255, 255, 255, 0.05)' : '#f1f5f9';
-                    const textColor = isDark ? '#94a3b8' : '#64748b';
-
-                    this.chart = new Chart(ctx, {
-                        type: 'line',
-                        data: {
-                            labels: labels,
-                            datasets: [
-                                {
-                                    label: 'Pendapatan',
-                                    data: revenue,
-                                    borderColor: '#0d3b74',
-                                    backgroundColor: 'rgba(13, 59, 116, 0.06)',
-                                    borderWidth: 2,
-                                    fill: true,
-                                    tension: 0.3,
-                                    pointRadius: 0,
-                                    pointHoverRadius: 4,
-                                    pointHoverBackgroundColor: '#0d3b74',
-                                    pointHoverBorderColor: '#ffffff',
-                                    pointHoverBorderWidth: 2
-                                },
-                                {
-                                    label: 'Pengeluaran',
-                                    data: expense,
-                                    borderColor: '#7dd3fc',
-                                    backgroundColor: 'rgba(125, 211, 252, 0.08)',
-                                    borderWidth: 2,
-                                    fill: true,
-                                    tension: 0.3,
-                                    pointRadius: 0,
-                                    pointHoverRadius: 4,
-                                    pointHoverBackgroundColor: '#38bdf8',
-                                    pointHoverBorderColor: '#ffffff',
-                                    pointHoverBorderWidth: 2
-                                }
-                            ]
-                        },
-                        options: { 
-                            responsive: true, 
-                            maintainAspectRatio: false,
-                            interaction: {
-                                mode: 'index',
-                                intersect: false,
-                            },
-                            plugins: {
-                                legend: { display: false },
-                                tooltip: {
-                                    backgroundColor: isDark ? '#1e293b' : '#ffffff',
-                                    titleColor: textColor,
-                                    bodyColor: isDark ? '#ffffff' : '#0f172a',
-                                    borderColor: isDark ? '#334155' : '#e2e8f0',
-                                    borderWidth: 1,
-                                    titleFont: { family: 'Plus Jakarta Sans', size: 10, weight: '500' },
-                                    bodyFont: { family: 'Plus Jakarta Sans', size: 12, weight: 'bold' },
-                                    padding: { top: 8, bottom: 8, left: 12, right: 12 },
-                                    cornerRadius: 0,
-                                    displayColors: true,
-                                    boxWidth: 6,
-                                    boxHeight: 6,
-                                    usePointStyle: true,
-                                    caretSize: 5,
-                                    callbacks: {
-                                        title: function(context) {
-                                            return context[0].label;
-                                        },
-                                        label: function(context) {
-                                            let label = context.dataset.label || '';
-                                            let val = context.parsed.y !== null ? 'Rp ' + new Intl.NumberFormat('id-ID').format(context.parsed.y) : 'Rp 0';
-                                            return `${label}: ${val}`;
-                                        }
-                                    }
-                                }
-                            },
-                            scales: {
-                                x: {
-                                    grid: { display: false },
-                                    border: { display: false },
-                                    ticks: {
-                                        color: textColor,
-                                        font: { family: 'Plus Jakarta Sans, sans-serif', size: 11, weight: '600' },
-                                        maxRotation: 0,
-                                        autoSkip: true,
-                                        maxTicksLimit: labels.length > 20 ? 10 : labels.length
-                                    }
-                                },
-                                y: {
-                                    grid: { 
-                                        color: gridColor,
-                                        borderDash: [3, 3],
-                                        drawTicks: false
-                                    },
-                                    border: { display: false },
-                                    ticks: {
-                                        color: textColor,
-                                        padding: 10,
-                                        font: { family: 'Plus Jakarta Sans, sans-serif', size: 11 },
-                                        callback: function(value) {
-                                            if (value >= 1000000000) return 'Rp ' + (value / 1000000000).toFixed(1) + 'M';
-                                            if (value >= 1000000) return 'Rp ' + (value / 1000000).toFixed(0) + 'Jt';
-                                            if (value >= 1000) return 'Rp ' + (value / 1000).toFixed(0) + 'rb';
-                                            return 'Rp ' + value;
-                                        }
-                                    }
-                                }
-                            }
+                        // Instance chart disimpan di properti DOM (BUKAN di data Alpine)
+                        // supaya tidak dibungkus Proxy reaktif. Kalau dibungkus, setiap
+                        // zoom/pan/reset memicu x-effect -> chart digambar ulang -> zoom
+                        // langsung hilang, sehingga tombol navigator terlihat 'mati'.
+                        if (el._apex) {
+                            el._apex.destroy();
+                            el._apex = null;
                         }
-                    });
-                }
-            }"
-            x-effect="renderChart()"
-            class="h-80 w-full"
-        >
-            <canvas id="cashflowChart"></canvas>
-        </div>
+
+                        const isDark    = document.documentElement.classList.contains('dark');
+                        const textColor = isDark ? '#94a3b8' : '#94A3B8';
+                        const gridColor = isDark ? 'rgba(255,255,255,0.06)' : '#F1F5F9';
+                        const n         = timestamps.length;
+                        const compact   = (v) => 'Rp ' + new Intl.NumberFormat('id-ID', { notation: 'compact' }).format(v);
+                        const full      = (v) => 'Rp ' + new Intl.NumberFormat('id-ID').format(v);
+
+                        const xFormat = granularity === 'month' ? 'MMM yy' : 'dd MMM';
+
+                        const options = {
+                            series: [
+                                { name: 'Pendapatan',  data: timestamps.map((t, i) => [t, revenue[i]]) },
+                                { name: 'Pengeluaran', data: timestamps.map((t, i) => [t, expense[i]]) },
+                            ],
+                            chart: {
+                                type: 'area',
+                                height: 340,
+                                fontFamily: 'inherit',
+                                background: 'transparent',
+                                animations: { enabled: n <= 120 },
+                                zoom: { enabled: true, type: 'x', autoScaleYaxis: true },
+                                toolbar: {
+                                    show: n > 1,
+                                    autoSelected: 'zoom',
+                                    tools: { download: false, selection: false, zoom: true, zoomin: true, zoomout: true, pan: true, reset: true }
+                                },
+                            },
+                            colors: ['#0d3b74', '#38BDF8'],
+                            stroke: { curve: 'smooth', width: 2 },
+                            fill: {
+                                type: 'gradient',
+                                gradient: { shadeIntensity: 1, opacityFrom: 0.3, opacityTo: 0.02, stops: [0, 90, 100] }
+                            },
+                            markers: { size: n <= 31 ? 3 : 0, strokeWidth: 0, hover: { size: 5 } },
+                            dataLabels: { enabled: false },
+                            legend: { show: false },
+                            grid: { borderColor: gridColor, strokeDashArray: 4, padding: { left: 8, right: 8 } },
+                            noData: { text: 'Belum ada data pada periode ini.', style: { color: textColor, fontSize: '12px' } },
+                            xaxis: {
+                                type: 'datetime',
+                                tickAmount: Math.min(Math.max(n - 1, 1), 8),
+                                labels: {
+                                    rotate: 0,
+                                    hideOverlappingLabels: true,
+                                    datetimeUTC: true,
+                                    style: { colors: textColor, fontSize: '10px' },
+                                    datetimeFormatter: { year: 'yyyy', month: xFormat, day: 'dd MMM', hour: 'dd MMM' }
+                                },
+                                axisBorder: { show: false },
+                                axisTicks: { show: false },
+                                tooltip: { enabled: false },
+                            },
+                            yaxis: {
+                                min: 0,
+                                tickAmount: 5,
+                                labels: { style: { colors: textColor, fontSize: '10px' }, formatter: compact }
+                            },
+                            tooltip: {
+                                theme: isDark ? 'dark' : 'light',
+                                shared: true,
+                                intersect: false,
+                                x: { formatter: (val, opts) => labels[opts?.dataPointIndex] ?? val },
+                                y: { formatter: full }
+                            },
+                        };
+
+                        const chart = new ApexCharts(el, options);
+                        el._apex = chart;
+                        chart.render();
+                    }
+                }"
+                x-effect="renderChart()"
+                x-on:destroy.window="$refs.chart?._apex?.destroy()"
+                class="w-full">
+                <div x-ref="chart" class="w-full"></div>
+            </div>
     </div>
 
     {{-- ================= PERFORMA UNIT USAHA & PRODUK TERLARIS ================= --}}
@@ -514,4 +478,3 @@
 
 {{-- Scripts --}}
 <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>

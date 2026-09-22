@@ -1,47 +1,67 @@
-<div class="p-6 max-w-7xl mx-auto space-y-5">
+<div class="max-w-[1500px] mx-auto space-y-5 px-4 py-4 sm:px-6 font-sans text-neutral-800 dark:text-neutral-100">
     {{-- Header & Action Button --}}
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <div class="flex items-center gap-2.5 shrink-0">
-            <button wire:click="openCreateModal" class="px-4 py-2 text-xs font-bold text-white bg-blue-900 hover:bg-blue-950 rounded-sm transition-all flex items-center gap-2 shadow-sm shadow-blue-900/20 cursor-pointer">
-                <x-heroicon-o-plus stroke-width="2.5" class="w-4 h-4" />
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 bg-white dark:bg-slate-800 p-4 rounded-sm border border-neutral-100 dark:border-slate-700 shadow-sm shadow-black/[0.02]">
+        <div class="shrink-0">
+            <h1 class="text-sm font-bold tracking-tight text-neutral-900 dark:text-white">Manajemen Inventaris Produk</h1>
+            <p class="text-[11px] tracking-tight text-neutral-400 mt-0.5">
+                Kelola data produk, stok, harga, dan kategori pada katalog unit usaha.
+            </p>
+        </div>
+
+        <div class="flex items-center gap-2 overflow-x-auto md:justify-end -mx-1 px-1 md:mx-0 md:px-0">
+            <button wire:click="openCreateModal" class="shrink-0 whitespace-nowrap inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-white bg-blue-900 hover:bg-blue-950 rounded-sm transition-all shadow-sm shadow-blue-900/20 cursor-pointer">
+                <x-heroicon-o-plus stroke-width="2.5" class="w-3.5 h-3.5" />
                 <span>Tambah Produk</span>
             </button>
-            <button wire:click="exportProducts" class="px-3.5 py-2 text-xs font-semibold text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800 rounded-sm hover:bg-sky-100 dark:hover:bg-sky-900/40 transition-all flex items-center gap-1.5 cursor-pointer">
-                <x-heroicon-o-arrow-down-tray class="w-4 h-4" />
+
+            <button type="button"
+                    wire:click="openCategoryModal"
+                    class="shrink-0 whitespace-nowrap inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-neutral-700 dark:text-neutral-200 bg-white dark:bg-slate-800 border border-neutral-200 dark:border-slate-700 rounded-sm hover:bg-neutral-50 dark:hover:bg-slate-700 transition-all cursor-pointer">
+                <x-heroicon-o-tag class="w-3.5 h-3.5 text-neutral-500 dark:text-neutral-400" />
+                <span>Kelola Kategori</span>
+            </button>
+
+            <button wire:click="exportProducts" class="shrink-0 whitespace-nowrap inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800 rounded-sm hover:bg-sky-100 dark:hover:bg-sky-900/40 transition-all cursor-pointer">
+                <x-heroicon-o-arrow-down-tray class="w-3.5 h-3.5" />
                 <span>Export Excel</span>
             </button>
 
-            <button wire:click="openImportModal" class="px-3.5 py-2 text-xs font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-sm hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition-all flex items-center gap-1.5 cursor-pointer">
-                <x-heroicon-o-arrow-up-tray class="w-4 h-4" />
+            <button wire:click="openImportModal" class="shrink-0 whitespace-nowrap inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-sm hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition-all cursor-pointer">
+                <x-heroicon-o-arrow-up-tray class="w-3.5 h-3.5" />
                 <span>Import Excel</span>
             </button>
         </div>
-
-        <button type="button" 
-                wire:click="openCategoryModal" 
-                class="px-3.5 py-2 text-xs font-semibold text-neutral-700 dark:text-neutral-200 bg-white dark:bg-slate-800 border border-neutral-200 dark:border-slate-700 rounded-sm hover:bg-neutral-50 dark:hover:bg-slate-700 transition-all flex items-center gap-1.5 cursor-pointer shadow-sm">
-            <x-heroicon-o-tag class="w-4 h-4 text-neutral-500 dark:text-neutral-400" />
-            <span>Kelola Kategori</span>
-        </button>
     </div>
 
     {{-- Metric / Summary Cards --}}
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div class="bg-white dark:bg-slate-800 rounded-none border border-neutral-100 dark:border-slate-700 p-4">
-            <span class="text-xs text-neutral-400">Total Produk</span>
-            <div class="mt-2 text-2xl font-bold text-neutral-900 dark:text-white tracking-tight">{{ number_format($totalProductsCount ?? 0) }} Item</div>
+        <div class="bg-white dark:bg-slate-800 rounded-none border border-neutral-100 dark:border-slate-700 p-4 flex flex-col justify-between">
+            <div class="flex items-center justify-between">
+                <p class="text-xs text-neutral-400">Total Produk</p>
+                <x-heroicon-o-archive-box stroke-width="1.5" class="w-4 h-4 text-neutral-300 dark:text-neutral-600" />
+            </div>
+            <p class="mt-2 text-sm font-bold text-neutral-900 dark:text-white tracking-tight">{{ number_format($totalProductsCount ?? 0) }} Item</p>
         </div>
-        <div class="bg-white dark:bg-slate-800 rounded-none border border-neutral-100 dark:border-slate-700 p-4">
-            <span class="text-xs text-neutral-400">Total Unit Stok</span>
-            <div class="mt-2 text-2xl font-bold text-neutral-900 dark:text-white tracking-tight font-mono">{{ number_format($totalStockSum ?? 0) }} Pcs</div>
+        <div class="bg-white dark:bg-slate-800 rounded-none border border-neutral-100 dark:border-slate-700 p-4 flex flex-col justify-between">
+            <div class="flex items-center justify-between">
+                <p class="text-xs text-neutral-400">Total Unit Stok</p>
+                <x-heroicon-o-cube stroke-width="1.5" class="w-4 h-4 text-neutral-300 dark:text-neutral-600" />
+            </div>
+            <p class="mt-2 text-sm font-bold text-neutral-900 dark:text-white tracking-tight font-mono">{{ number_format($totalStockSum ?? 0) }} Pcs</p>
         </div>
-        <div class="bg-white dark:bg-slate-800 rounded-none border border-neutral-100 dark:border-slate-700 p-4">
-            <span class="text-xs text-amber-500">Stok Menipis / Habis</span>
-            <div class="mt-2 text-2xl font-bold text-amber-600 dark:text-amber-400 tracking-tight font-mono">{{ number_format($lowStockCount ?? 0) }} Produk</div>
+        <div class="bg-white dark:bg-slate-800 rounded-none border border-neutral-100 dark:border-slate-700 p-4 flex flex-col justify-between">
+            <div class="flex items-center justify-between">
+                <p class="text-xs text-amber-500">Stok Menipis / Habis</p>
+                <x-heroicon-o-exclamation-triangle stroke-width="1.5" class="w-4 h-4 text-amber-300 dark:text-amber-700" />
+            </div>
+            <p class="mt-2 text-sm font-bold text-amber-600 dark:text-amber-400 tracking-tight font-mono">{{ number_format($lowStockCount ?? 0) }} Produk</p>
         </div>
-        <div class="bg-white dark:bg-slate-800 rounded-none border border-neutral-100 dark:border-slate-700 p-4">
-            <span class="text-xs text-emerald-500">Est. Nilai Inventaris</span>
-            <div class="mt-2 text-2xl font-bold text-emerald-600 dark:text-emerald-400 tracking-tight font-mono">Rp {{ number_format($totalInventoryValue ?? 0, 0, ',', '.') }}</div>
+        <div class="bg-white dark:bg-slate-800 rounded-none border border-neutral-100 dark:border-slate-700 p-4 flex flex-col justify-between">
+            <div class="flex items-center justify-between">
+                <p class="text-xs text-emerald-500">Est. Nilai Inventaris</p>
+                <x-heroicon-o-banknotes stroke-width="1.5" class="w-4 h-4 text-emerald-300 dark:text-emerald-700" />
+            </div>
+            <p class="mt-2 text-sm font-bold text-emerald-600 dark:text-emerald-400 tracking-tight font-mono">Rp {{ number_format($totalInventoryValue ?? 0, 0, ',', '.') }}</p>
         </div>
     </div>
 
@@ -50,11 +70,11 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
             <div class="md:col-span-2">
                 <input wire:model.live.debounce.300ms="search" type="text" placeholder="Cari Kode Produk, Nama Produk, atau Deskripsi..."
-                    class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-red-500/10 focus:border-red-400">
+                    class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400">
             </div>
 
             <div>
-                <select wire:model.live="unitFilter" class="w-full px-3.5 py-2 text-xs font-semibold text-neutral-600 dark:text-neutral-300 bg-white dark:bg-slate-900 border border-neutral-200 dark:border-slate-700 rounded-sm focus:outline-none focus:ring-2 focus:ring-red-500/10 focus:border-red-400 cursor-pointer">
+                <select wire:model.live="unitFilter" class="w-full px-3.5 py-2 text-xs font-semibold text-neutral-600 dark:text-neutral-300 bg-white dark:bg-slate-900 border border-neutral-200 dark:border-slate-700 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400 cursor-pointer">
                     {{-- Placeholder "semua unit" hanya relevan kalau ada lebih dari 1 unit
                          untuk dipilih (konteks Master). Saat $units cuma berisi 1 unit
                          (konteks Unit Admin, lihat Unit\Inventory\Index::render()),
@@ -70,7 +90,7 @@
             </div>
 
             <div>
-                <select wire:model.live="stockFilter" class="w-full px-3.5 py-2 text-xs font-semibold text-neutral-600 dark:text-neutral-300 bg-white dark:bg-slate-900 border border-neutral-200 dark:border-slate-700 rounded-sm focus:outline-none focus:ring-2 focus:ring-red-500/10 focus:border-red-400 cursor-pointer">
+                <select wire:model.live="stockFilter" class="w-full px-3.5 py-2 text-xs font-semibold text-neutral-600 dark:text-neutral-300 bg-white dark:bg-slate-900 border border-neutral-200 dark:border-slate-700 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400 cursor-pointer">
                     <option value="">Semua Status Stok</option>
                     <option value="normal">Stok Aman</option>
                     <option value="low">Stok Menipis</option>
@@ -100,7 +120,7 @@
         <div class="mb-3 p-3.5 bg-neutral-900 text-white rounded-sm shadow-md flex flex-col sm:flex-row items-center justify-between gap-3 text-xs animate-in fade-in duration-150">
             {{-- Counter --}}
             <div class="flex items-center gap-2">
-                <span class="font-bold text-red-400">{{ count($selectedRows) }}</span>
+                <span class="font-bold text-blue-400">{{ count($selectedRows) }}</span>
                 <span class="text-neutral-300">item produk dipilih</span>
             </div>
 
@@ -136,14 +156,21 @@
         </div>
     @endif
 
-    {{-- Products Table --}}
-    <div class="bg-white dark:bg-slate-800 rounded-sm border border-neutral-100 dark:border-slate-700 overflow-hidden shadow-sm shadow-black/[0.02]">
+    {{-- ================= DAFTAR PRODUK ================= --}}
+    <section class="space-y-3 pt-1">
+        <div>
+            <h2 class="text-sm font-bold tracking-tight text-neutral-900 dark:text-white">Daftar Produk</h2>
+            <p class="text-[11px] tracking-tight text-neutral-400 mt-0.5">Rincian seluruh produk dalam katalog inventaris unit usaha</p>
+        </div>
+
+        {{-- Products Table --}}
+        <div class="bg-white dark:bg-slate-800 rounded-sm border border-neutral-100 dark:border-slate-700 overflow-hidden shadow-sm shadow-black/[0.02]">
         <div class="overflow-x-auto">
             <table class="w-full text-sm text-left">
                 <thead class="bg-neutral-50/70 dark:bg-slate-900/50 text-[11px] font-semibold uppercase tracking-wider text-neutral-400 border-b border-neutral-100 dark:border-slate-700">
                     <tr>
                         <th class="p-4 w-10 text-center">
-                            <input type="checkbox" wire:model.live="selectAll" class="rounded border-neutral-300 text-blue-900 focus:ring-red-500/20 cursor-pointer">
+                            <input type="checkbox" wire:model.live="selectAll" class="rounded border-neutral-300 text-blue-900 focus:ring-blue-500/20 cursor-pointer">
                         </th>
                         <th class="px-4 py-3.5">Produk & Kode</th>
                         <th class="px-4 py-3.5">Unit Usaha & Kategori</th>
@@ -162,7 +189,7 @@
                         @endphp
                         <tr wire:key="prod-{{ $p->id }}" class="hover:bg-neutral-50/60 dark:hover:bg-slate-700/30 transition-colors">
                             <td class="p-4 text-center">
-                                <input type="checkbox" wire:model.live="selectedRows" value="{{ $p->id }}" class="rounded border-neutral-300 text-blue-900 focus:ring-red-500/20 cursor-pointer">
+                                <input type="checkbox" wire:model.live="selectedRows" value="{{ $p->id }}" class="rounded border-neutral-300 text-blue-900 focus:ring-blue-500/20 cursor-pointer">
                             </td>
                             <td class="px-4 py-3.5">
                                 <div class="font-semibold text-neutral-900 dark:text-white text-xs">
@@ -193,11 +220,11 @@
                             </td>
                             <td class="px-4 py-3.5 whitespace-nowrap text-center">
                                 @if($status === 'out')
-                                    <span class="px-2.5 py-0.5 text-[10px] font-semibold rounded-sm bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 border border-rose-200/60 dark:border-rose-800">Habis</span>
+                                    <span class="px-2.5 py-1 text-[10px] font-bold tracking-wide rounded-sm bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400">Habis</span>
                                 @elseif($status === 'low')
-                                    <span class="px-2.5 py-0.5 text-[10px] font-semibold rounded-sm bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 border border-amber-200/60 dark:border-amber-800">Menipis</span>
+                                    <span class="px-2.5 py-1 text-[10px] font-bold tracking-wide rounded-sm bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400">Menipis</span>
                                 @else
-                                    <span class="px-2.5 py-0.5 text-[10px] font-semibold rounded-sm bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 border border-emerald-200/60 dark:border-emerald-800">Tersedia</span>
+                                    <span class="px-2.5 py-1 text-[10px] font-bold tracking-wide rounded-sm bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400">Tersedia</span>
                                 @endif
                             </td>
                             <td class="px-4 py-3.5 whitespace-nowrap text-center">
@@ -237,7 +264,7 @@
             <div class="flex items-center gap-3 text-xs text-neutral-500 dark:text-neutral-400">
                 <div class="flex items-center gap-2">
                     <span>Tampilkan</span>
-                    <select wire:model.live="perPage" class="py-1 px-2 text-xs bg-white dark:bg-slate-900 border border-neutral-200 dark:border-slate-700 rounded-sm focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 text-neutral-700 dark:text-neutral-300 font-medium cursor-pointer">
+                    <select wire:model.live="perPage" class="py-1 px-2 text-xs bg-white dark:bg-slate-900 border border-neutral-200 dark:border-slate-700 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-neutral-700 dark:text-neutral-300 font-medium cursor-pointer">
                         <option value="10">10</option>
                         <option value="15">15</option>
                         <option value="25">25</option>
@@ -259,7 +286,8 @@
                 {{ $products->links('components.custom-pagination') }}
             </div>
         </div>
-    </div>
+        </div>
+    </section>
 
     {{-- ================= MODAL PRODUK (TAMBAH & EDIT) ================= --}}
     @if($showCreateModal)
@@ -287,7 +315,7 @@
                         <div class="sm:col-span-2">
                             <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Nama Produk <span class="text-red-500">*</span></label>
                             <input type="text" wire:model="form_name" placeholder="Contoh: Kertas A4 80gr"
-                                class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-red-500">
+                                class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-blue-500">
                             @error('form_name') <span class="text-[11px] text-rose-500 mt-0.5 block">{{ $message }}</span> @enderror
                         </div>
 
@@ -299,7 +327,7 @@
                             <input type="text" 
                                 wire:model="form_code" 
                                 placeholder="Scan barcode / ketik kode..." 
-                                class="w-full text-xs rounded-sm border-neutral-300 dark:border-slate-700 dark:bg-slate-900 focus:ring-red-500 focus:border-red-500">
+                                class="w-full text-xs rounded-sm border-neutral-300 dark:border-slate-700 dark:bg-slate-900 focus:ring-blue-500 focus:border-blue-500">
                             
                             <button type="button" 
                                     wire:click="generateProductCode" 
@@ -315,7 +343,7 @@
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Unit Usaha <span class="text-red-500">*</span></label>
-                            <select wire:model.live="form_unit_id" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-red-500">
+                            <select wire:model.live="form_unit_id" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-blue-500">
                                 @if($units->count() > 1)
                                     <option value="">-- Pilih Unit Usaha --</option>
                                 @endif
@@ -331,7 +359,7 @@
                                 <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-300">
                                     Kategori Produk <span class="text-red-500">*</span>
                                 </label>
-                                <button type="button" wire:click="openCategoryModal" class="text-[11px] font-bold text-blue-900 hover:text-blue-950 dark:text-red-400 flex items-center gap-1 cursor-pointer">
+                                <button type="button" wire:click="openCategoryModal" class="text-[11px] font-bold text-blue-900 hover:text-blue-950 dark:text-blue-400 flex items-center gap-1 cursor-pointer">
                                     <x-heroicon-o-plus class="w-3 h-3" stroke-width="2.5" />
                                     <span>Tambah Kategori</span>
                                 </button>
@@ -339,7 +367,7 @@
 
                             <select wire:key="select-prod-category-{{ $form_unit_id }}"
                                     wire:model="form_category_id" 
-                                    class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-red-500">
+                                    class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-blue-500">
                                 <option value="">-- Pilih Kategori --</option>
                                 @foreach($formCategories as $cat)
                                     <option value="{{ $cat->id }}">{{ $cat->name }}</option>
@@ -354,14 +382,14 @@
                         <div>
                             <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Harga Beli / HPP (Rp)</label>
                             <input type="number" wire:model="form_purchase_price" placeholder="0" min="0"
-                                class="w-full px-3.5 py-2 text-xs font-bold border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-red-500">
+                                class="w-full px-3.5 py-2 text-xs font-bold border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-blue-500">
                             @error('form_purchase_price') <span class="text-[11px] text-rose-500 mt-0.5 block">{{ $message }}</span> @enderror
                         </div>
 
                         <div>
                             <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Harga Jual (Rp) <span class="text-red-500">*</span></label>
                             <input type="number" wire:model="form_selling_price" placeholder="0" min="0"
-                                class="w-full px-3.5 py-2 text-xs font-bold border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-red-500">
+                                class="w-full px-3.5 py-2 text-xs font-bold border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-blue-500">
                             @error('form_selling_price') <span class="text-[11px] text-rose-500 mt-0.5 block">{{ $message }}</span> @enderror
                         </div>
                     </div>
@@ -371,21 +399,21 @@
                         <div>
                             <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Jumlah Stok <span class="text-red-500">*</span></label>
                             <input type="number" wire:model="form_stock" placeholder="0" min="0"
-                                class="w-full px-3.5 py-2 text-xs font-semibold border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-red-500">
+                                class="w-full px-3.5 py-2 text-xs font-semibold border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-blue-500">
                             @error('form_stock') <span class="text-[11px] text-rose-500 mt-0.5 block">{{ $message }}</span> @enderror
                         </div>
 
                         <div>
                             <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Batas Minimum Stok</label>
                             <input type="number" wire:model="form_min_stock" placeholder="5" min="0"
-                                class="w-full px-3.5 py-2 text-xs font-semibold border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-red-500">
+                                class="w-full px-3.5 py-2 text-xs font-semibold border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-blue-500">
                             @error('form_min_stock') <span class="text-[11px] text-rose-500 mt-0.5 block">{{ $message }}</span> @enderror
                         </div>
 
                         <div>
                             <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Satuan Unit</label>
                             <input type="text" wire:model="form_unit_type" placeholder="pcs, rim, box, kg..."
-                                class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-red-500">
+                                class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-blue-500">
                             @error('form_unit_type') <span class="text-[11px] text-rose-500 mt-0.5 block">{{ $message }}</span> @enderror
                         </div>
                     </div>
@@ -394,7 +422,7 @@
                     <div>
                         <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Deskripsi Produk</label>
                         <textarea wire:model="form_description" rows="2" placeholder="Masukkan rincian spesifikasi atau catatan barang..."
-                            class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-red-500"></textarea>
+                            class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-blue-500"></textarea>
                         @error('form_description') <span class="text-[11px] text-rose-500 mt-0.5 block">{{ $message }}</span> @enderror
                     </div>
 
@@ -463,8 +491,8 @@
                 {{-- Modal Header --}}
                 <div class="px-5 py-4 border-b border-neutral-100 dark:border-slate-700/80 flex items-center justify-between bg-neutral-50/50 dark:bg-slate-900/40">
                     <div>
-                        <h3 class="text-sm font-bold text-neutral-900 dark:text-white">Kelola Kategori Produk</h3>
-                        <p class="text-[11px] text-neutral-500 dark:text-neutral-400">Tambah, ubah, atau hapus kategori barang dagangan</p>
+                        <h3 class="text-lg font-bold text-neutral-900 dark:text-white">Kelola Kategori Produk</h3>
+                        <p class="text-xs text-neutral-400">Tambah, ubah, atau hapus kategori barang dagangan</p>
                     </div>
                     <button type="button" wire:click="closeCategoryModal" class="p-1 text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 rounded-sm transition-colors">
                         <x-heroicon-o-x-mark class="w-5 h-5" stroke-width="2" />
@@ -489,7 +517,7 @@
                         {{-- Header Form & Status Mode --}}
                         <div class="flex items-center justify-between pb-2 border-b border-neutral-200/60 dark:border-slate-800">
                             <div class="flex items-center gap-2">
-                                <span class="w-2 h-2 rounded-sm {{ $isEditingCategory ? 'bg-amber-500' : 'bg-red-500' }}"></span>
+                                <span class="w-2 h-2 rounded-sm {{ $isEditingCategory ? 'bg-amber-500' : 'bg-blue-900' }}"></span>
                                 <span class="text-xs font-bold text-neutral-800 dark:text-neutral-200">
                                     {{ $isEditingCategory ? 'Edit Kategori' : 'Tambah Kategori Baru' }}
                                 </span>
@@ -510,7 +538,7 @@
                                 <label class="block text-[11px] font-semibold text-neutral-600 dark:text-neutral-300">
                                     Unit Usaha <span class="text-rose-500">*</span>
                                 </label>
-                                <select wire:model="category_unit_id" class="w-full h-9 text-xs rounded-sm border-neutral-300 dark:border-slate-700 dark:bg-slate-800 text-neutral-800 dark:text-white focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all">
+                                <select wire:model="category_unit_id" class="w-full h-9 text-xs rounded-sm border-neutral-300 dark:border-slate-700 dark:bg-slate-800 text-neutral-800 dark:text-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all">
                                     @if($units->count() > 1)
                                         <option value="">-- Pilih Unit --</option>
                                     @endif
@@ -526,7 +554,7 @@
                                 <label class="block text-[11px] font-semibold text-neutral-600 dark:text-neutral-300">
                                     Nama Kategori <span class="text-rose-500">*</span>
                                 </label>
-                                <input type="text" wire:model="category_name" placeholder="Misal: Minuman, Alat Tulis..." class="w-full h-9 text-xs rounded-sm border-neutral-300 dark:border-slate-700 dark:bg-slate-800 px-2 text-neutral-800 dark:text-white focus:ring-2 focus:ring-red-500/20 focus:border-red-500 placeholder:text-neutral-400 dark:placeholder:text-neutral-500 transition-all">
+                                <input type="text" wire:model="category_name" placeholder="Misal: Minuman, Alat Tulis..." class="w-full h-9 text-xs rounded-sm border-neutral-300 dark:border-slate-700 dark:bg-slate-800 px-2 text-neutral-800 dark:text-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 placeholder:text-neutral-400 dark:placeholder:text-neutral-500 transition-all">
                                 @error('category_name') <span class="text-[10px] text-rose-500 block font-medium">{{ $message }}</span> @enderror
                             </div>
 
@@ -534,7 +562,7 @@
                             <div class="sm:col-span-2 space-y-1">
                                 {{-- Spacer transparan untuk menyamakan posisi tombol dengan elemen input di layar desktop --}}
                                 <label class="hidden sm:block text-[11px] opacity-0 select-none">Submit</label>
-                                <button type="submit" wire:loading.attr="disabled" class="w-full h-9 inline-flex items-center justify-center gap-1.5 bg-blue-900 hover:bg-blue-950 active:bg-red-800 text-white text-xs font-semibold rounded-sm transition-all shadow-sm cursor-pointer disabled:opacity-50">
+                                <button type="submit" wire:loading.attr="disabled" class="w-full h-9 inline-flex items-center justify-center gap-1.5 bg-blue-900 hover:bg-blue-950 active:bg-blue-950 text-white text-xs font-semibold rounded-sm transition-all shadow-sm cursor-pointer disabled:opacity-50">
                                     <span wire:loading.remove wire:target="saveCategory">
                                         {{ $isEditingCategory ? 'Update' : 'Simpan' }}
                                     </span>
@@ -687,7 +715,7 @@
                         <label class="block text-[11px] font-semibold text-neutral-600 dark:text-neutral-300 mb-1">
                             Jumlah Unit <span class="text-rose-500">*</span>
                         </label>
-                        <input type="number" wire:model="stock_quantity" min="1" autofocus placeholder="Masukkan jumlah unit..." class="w-full h-9 text-xs rounded-sm border-neutral-300 dark:border-slate-700 dark:bg-slate-900 text-neutral-800 dark:text-white focus:ring-2 px-2 focus:ring-red-500/20 focus:border-red-500 transition-all">
+                        <input type="number" wire:model="stock_quantity" min="1" autofocus placeholder="Masukkan jumlah unit..." class="w-full h-9 text-xs rounded-sm border-neutral-300 dark:border-slate-700 dark:bg-slate-900 text-neutral-800 dark:text-white focus:ring-2 px-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all">
                         @error('stock_quantity') <span class="text-[10px] text-rose-500 block font-medium mt-1">{{ $message }}</span> @enderror
                     </div>
 
@@ -696,7 +724,7 @@
                         <label class="block text-[11px] font-semibold text-neutral-600 dark:text-neutral-300 mb-1">
                             Catatan / Alasan (Opsional)
                         </label>
-                        <textarea wire:model="stock_note" rows="2" placeholder="Misal: Penambahan dari supplier A / Kadaluarsa / Hasil opname bulanan..." class="w-full text-xs rounded-sm border-neutral-300 dark:border-slate-700 dark:bg-slate-900 text-neutral-800 dark:text-white focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all p-2.5"></textarea>
+                        <textarea wire:model="stock_note" rows="2" placeholder="Misal: Penambahan dari supplier A / Kadaluarsa / Hasil opname bulanan..." class="w-full text-xs rounded-sm border-neutral-300 dark:border-slate-700 dark:bg-slate-900 text-neutral-800 dark:text-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all p-2.5"></textarea>
                         @error('stock_note') <span class="text-[10px] text-rose-500 block font-medium mt-1">{{ $message }}</span> @enderror
                     </div>
 
@@ -767,7 +795,7 @@
                         <button type="button" wire:click="closeImportModal" class="w-full sm:w-28 h-9 text-xs font-semibold text-neutral-700 dark:text-neutral-300 bg-white dark:bg-slate-800 border border-neutral-200 dark:border-slate-700 rounded-sm hover:bg-neutral-50 dark:hover:bg-slate-700 transition-colors cursor-pointer">
                             Batal
                         </button>
-                        <button type="submit" wire:loading.attr="disabled" class="w-full sm:w-36 h-9 bg-blue-900 hover:bg-blue-950 active:bg-red-800 text-white text-xs font-semibold rounded-sm transition-all shadow-sm inline-flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 whitespace-nowrap shrink-0">
+                        <button type="submit" wire:loading.attr="disabled" class="w-full sm:w-36 h-9 bg-blue-900 hover:bg-blue-950 active:bg-blue-950 text-white text-xs font-semibold rounded-sm transition-all shadow-sm inline-flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 whitespace-nowrap shrink-0">
                             <span wire:loading.remove wire:target="importProducts">Import Data</span>
                             <span wire:loading wire:target="importProducts" class="inline-flex items-center justify-center gap-1.5 whitespace-nowrap">
                                 <svg class="animate-spin h-3.5 w-3.5 text-white shrink-0" fill="none" viewBox="0 0 24 24">

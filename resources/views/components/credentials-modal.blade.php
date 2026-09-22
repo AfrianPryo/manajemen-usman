@@ -53,12 +53,12 @@
             @if (array_key_exists('wa_sent', $credentials))
                 @if ($credentials['wa_sent'])
                     <div class="flex items-center gap-2 px-3 py-2 rounded-md bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 text-[11px] font-medium">
-                        <span>✅</span>
+                        <span><x-heroicon-s-check-circle class="size-5 fill-current" /></span>
                         <span>Kredensial juga sudah terkirim ke WhatsApp admin.</span>
                     </div>
                 @else
                     <div class="flex items-center gap-2 px-3 py-2 rounded-md bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 text-[11px] font-medium">
-                        <span>⚠️</span>
+                        <span><x-heroicon-s-exclamation-triangle class="size-5 fill-current" /></span>
                         <span>Gagal mengirim ke WhatsApp. Salin manual & sampaikan langsung ke admin.</span>
                     </div>
                 @endif
