@@ -68,6 +68,11 @@ class Index extends Component
     public string $waSenderNumber = '';
     public string $waApiKey = '';
 
+    // 3a-1. Tes Koneksi Fonnte -- hasil tes terakhir (null = belum pernah
+    // dites di sesi form ini). Ditampilkan sebagai banner di bawah tombol
+    // "Tes Koneksi". Lihat testWaConnection() & App\Services\FonnteOtpService::testConnection().
+    public ?array $waTestResult = null;
+
     // 3b. Preferensi Notifikasi per Channel -- kategori WA non-OTP yang
     // boleh dimatikan admin satu per satu, tanpa mematikan OTP (OTP selalu
     // wajib terkirim, tidak ada toggle-nya di sini). Lihat gerbang
@@ -147,6 +152,36 @@ class Index extends Component
         $this->sessionTimeoutUnitMinutes   = (int) Setting::get('session_timeout_unit_minutes', 30);
 
         $this->logRetentionDays = app(LogArchiveService::class)->retentionDays();
+    }
+
+    /**
+     * Reset hasil tes koneksi sebelumnya begitu admin mengubah API Key,
+     * supaya banner hasil tes yang tampil tidak "menyesatkan" (mis. masih
+     * menunjukkan hasil sukses dari token lama padahal token di form sudah
+     * berubah dan belum tentu valid).
+     */
+    public function updatedWaApiKey(): void
+    {
+        $this->waTestResult = null;
+    }
+
+    /**
+     * Tes Koneksi Fonnte -- dipanggil dari tombol "Tes Koneksi" di card
+     * Notifikasi WhatsApp (tab Fitur & Modul). Memakai nilai API Key yang
+     * SEDANG diketik di form (belum tentu sudah disimpan lewat
+     * saveFeatures()), supaya admin bisa memvalidasi token baru sebelum
+     * menyimpannya. Kalau field API Key di form kosong, fallback ke token
+     * yang sudah tersimpan di Setting (lihat FonnteOtpService::testConnection()).
+     *
+     * Tidak mengirim pesan WhatsApp apa pun -- hanya membaca status
+     * perangkat lewat endpoint "Device Profile" Fonnte, jadi aman diklik
+     * berkali-kali dan TIDAK memicu OTP atau rate limit pengiriman OTP.
+     */
+    public function testWaConnection(): void
+    {
+        $this->waTestResult = app(FonnteOtpService::class)->testConnection(
+            trim($this->waApiKey) !== '' ? $this->waApiKey : null
+        );
     }
 
     public function setTab(string $tab): void

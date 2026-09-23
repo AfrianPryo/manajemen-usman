@@ -168,6 +168,78 @@ class FonnteOtpService
     }
 
     /**
+     * Tes apakah koneksi ke API Fonnte sudah berjalan, dengan memanggil
+     * endpoint "Device Profile" Fonnte (GET/POST https://api.fonnte.com/device).
+     * Endpoint ini tidak mengirim pesan apa pun -- murni membaca status
+     * perangkat yang terhubung ke token yang diuji, jadi aman dipanggil
+     * berkali-kali dari tombol "Tes Koneksi" di Pengaturan > Fitur & Modul.
+     *
+     * @param  string|null  $apiKey  token yang mau diuji. Kalau null, pakai
+     *                                token yang sudah tersimpan di Setting
+     *                                ('wa_api_key') -- supaya tombol tes bisa
+     *                                dipakai baik untuk token yang baru saja
+     *                                diketik di form (belum disimpan) maupun
+     *                                token yang sudah aktif dipakai sistem.
+     * @return array{success: bool, connected: bool, message: string, device?: ?string, device_name?: ?string, package?: ?string, quota?: ?string, expired?: ?string}
+     */
+    public function testConnection(?string $apiKey = null): array
+    {
+        $token = trim($apiKey ?? '') !== '' ? trim($apiKey) : Setting::get('wa_api_key');
+
+        if (empty($token)) {
+            return [
+                'success'   => false,
+                'connected' => false,
+                'message'   => 'API Key / Token Fonnte belum diisi.',
+            ];
+        }
+
+        try {
+            $response = Http::withHeaders(['Authorization' => $token])
+                ->timeout(10)
+                ->post('https://api.fonnte.com/device');
+
+            $data = $response->json();
+
+            // Fonnte tetap balas HTTP 200 untuk token invalid, jadi status
+            // sukses/gagalnya API HARUS dibaca dari field 'status' di body,
+            // bukan cuma dari $response->successful().
+            if (! $response->successful() || ! is_array($data) || ! ($data['status'] ?? false)) {
+                return [
+                    'success'   => false,
+                    'connected' => false,
+                    'message'   => $data['reason']
+                        ?? 'API Key tidak valid atau ditolak oleh Fonnte. Periksa kembali token yang dimasukkan.',
+                ];
+            }
+
+            $deviceStatus = $data['device_status'] ?? null; // 'connect' | 'disconnect'
+            $isConnected  = $deviceStatus === 'connect';
+
+            return [
+                'success'     => true,
+                'connected'   => $isConnected,
+                'message'     => $isConnected
+                    ? 'Koneksi ke Fonnte berhasil. Perangkat WhatsApp aktif dan terhubung.'
+                    : 'API Key valid, tapi perangkat WhatsApp belum terhubung (status: disconnect). Silakan pindai ulang QR code di dashboard Fonnte.',
+                'device'      => $data['device'] ?? null,
+                'device_name' => $data['name'] ?? null,
+                'package'     => $data['package'] ?? null,
+                'quota'       => $data['quota'] ?? null,
+                'expired'     => $data['expired'] ?? null,
+            ];
+        } catch (\Throwable $e) {
+            Log::error('FonnteOtpService: exception saat tes koneksi - ' . $e->getMessage());
+
+            return [
+                'success'   => false,
+                'connected' => false,
+                'message'   => 'Gagal menghubungi server Fonnte. Periksa koneksi internet server atau coba lagi nanti.',
+            ];
+        }
+    }
+
+    /**
      * Kirim pesan WhatsApp bebas (bukan OTP) lewat Fonnte, mis. untuk
      * pengumuman manual dari Master\Announcements\Index. Reuse kredensial
      * (wa_api_key) & normalisasi nomor yang sama dengan alur OTP, TANPA

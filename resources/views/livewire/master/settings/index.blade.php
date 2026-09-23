@@ -393,6 +393,71 @@
                                     </div>
                                 </div>
 
+                                {{-- Tes Koneksi Fonnte -- cek apakah API Key yang diisi valid &
+                                     perangkat WhatsApp sudah terhubung, TANPA perlu menyimpan form
+                                     & tanpa mengirim pesan apa pun. Lihat testWaConnection() di
+                                     App\Livewire\Master\Settings\Index &
+                                     App\Services\FonnteOtpService::testConnection(). --}}
+                                <div class="flex flex-wrap items-center gap-3">
+                                    <button
+                                        type="button"
+                                        wire:click="testWaConnection"
+                                        wire:loading.attr="disabled"
+                                        wire:target="testWaConnection"
+                                        class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-blue-900 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/50 border border-blue-200 dark:border-blue-800 rounded-sm hover:bg-blue-100 dark:hover:bg-blue-950 focus:outline-none focus:ring-2 focus:ring-blue-500/20 disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
+                                    >
+                                        <x-heroicon-o-signal wire:loading.remove wire:target="testWaConnection" class="h-3.5 w-3.5" stroke-width="2" />
+                                        <svg wire:loading wire:target="testWaConnection" class="h-3.5 w-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
+                                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+                                        </svg>
+                                        <span wire:loading.remove wire:target="testWaConnection">Tes Koneksi</span>
+                                        <span wire:loading wire:target="testWaConnection">Menguji koneksi...</span>
+                                    </button>
+                                    <p class="text-[11px] text-neutral-400">
+                                        Menguji API Key di atas ke server Fonnte (belum perlu disimpan dulu). Kalau kosong, memakai API Key yang sudah tersimpan.
+                                    </p>
+                                </div>
+
+                                @if ($waTestResult)
+                                    <div
+                                        @class([
+                                            'text-[11px] font-medium px-3 py-2.5 rounded-sm border space-y-1',
+                                            'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200/60 dark:border-emerald-800 text-emerald-700 dark:text-emerald-400' => $waTestResult['success'] && ($waTestResult['connected'] ?? false),
+                                            'bg-amber-50 dark:bg-amber-950/40 border-amber-200/60 dark:border-amber-800 text-amber-700 dark:text-amber-400' => $waTestResult['success'] && ! ($waTestResult['connected'] ?? false),
+                                            'bg-rose-50 dark:bg-rose-950/40 border-rose-200/60 dark:border-rose-800 text-rose-600 dark:text-rose-400' => ! $waTestResult['success'],
+                                        ])
+                                    >
+                                        <div class="flex items-center gap-1.5">
+                                            @if ($waTestResult['success'] && ($waTestResult['connected'] ?? false))
+                                                <x-heroicon-o-check-circle class="h-4 w-4 shrink-0" stroke-width="2" />
+                                            @elseif ($waTestResult['success'])
+                                                <x-heroicon-o-exclamation-triangle class="h-4 w-4 shrink-0" stroke-width="2" />
+                                            @else
+                                                <x-heroicon-o-x-circle class="h-4 w-4 shrink-0" stroke-width="2" />
+                                            @endif
+                                            <span>{{ $waTestResult['message'] }}</span>
+                                        </div>
+
+                                        @if ($waTestResult['success'])
+                                            <ul class="ml-6 pl-0 text-[10.5px] opacity-90 space-y-0.5 list-disc list-inside">
+                                                @if (!empty($waTestResult['device']))
+                                                    <li>Nomor perangkat: {{ $waTestResult['device'] }}</li>
+                                                @endif
+                                                @if (!empty($waTestResult['device_name']))
+                                                    <li>Nama perangkat: {{ $waTestResult['device_name'] }}</li>
+                                                @endif
+                                                @if (!empty($waTestResult['package']))
+                                                    <li>Paket: {{ $waTestResult['package'] }}@if (!empty($waTestResult['quota'])), sisa kuota {{ $waTestResult['quota'] }}@endif</li>
+                                                @endif
+                                                @if (!empty($waTestResult['expired']))
+                                                    <li>Masa aktif hingga: {{ $waTestResult['expired'] }}</li>
+                                                @endif
+                                            </ul>
+                                        @endif
+                                    </div>
+                                @endif
+
                                 {{-- Preferensi Notifikasi per Channel -- kategori WA non-OTP
                                      yang boleh dimatikan satu per satu. OTP TIDAK ada di sini
                                      sama sekali (selalu wajib terkirim, lihat penjelasan di
