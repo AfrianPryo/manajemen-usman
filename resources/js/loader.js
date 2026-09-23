@@ -23,26 +23,42 @@ export function initPageLoader() {
     let modelLoaded = false;
     let isDone = false;
 
+    console.log("[loader-debug] initPageLoader mulai. readyState:", document.readyState, "innerWidth:", window.innerWidth);
+
     const checkWindowLoad = () => {
         if (document.readyState === "complete") {
             windowLoaded = true;
+            console.log("[loader-debug] windowLoaded = true (sudah complete saat init)");
             tryFinish();
         } else {
             window.addEventListener("load", () => {
                 windowLoaded = true;
+                console.log("[loader-debug] windowLoaded = true (event load terpicu)");
                 tryFinish();
             }, { once: true });
         }
     };
 
-    const has3DHero = document.querySelector("#ascii-3d-container") || document.querySelector("#ascii-hero-container");
+    // PENTING: di mobile (< 1024px), app.js SENGAJA tidak memanggil
+    // initAsciiHero() sama sekali (lihat guard isDesktopViewport di
+    // initGlobalScripts), sehingga resolveModelLoaded() di dalam
+    // ascii-3d-hero.js tidak pernah terpanggil dan modelLoadedPromise
+    // tidak akan pernah resolve. Tanpa guard viewport yang SAMA di sini,
+    // loader akan menunggu promise itu SELAMANYA di mobile -> halaman
+    // stuck di loading screen dan #main-content tidak pernah dimunculkan.
+    const isDesktopViewport = window.matchMedia("(min-width: 1024px)").matches;
+    const has3DHero = isDesktopViewport &&
+        (document.querySelector("#ascii-3d-container") || document.querySelector("#ascii-hero-container"));
+    console.log("[loader-debug] isDesktopViewport:", isDesktopViewport, "has3DHero:", !!has3DHero);
     if (has3DHero && modelLoadedPromise) {
         modelLoadedPromise.then(() => {
             modelLoaded = true;
+            console.log("[loader-debug] modelLoaded = true (modelLoadedPromise resolve)");
             tryFinish();
         });
     } else {
         modelLoaded = true;
+        console.log("[loader-debug] modelLoaded = true (langsung, tidak butuh 3D hero)");
     }
 
     checkWindowLoad();
@@ -58,13 +74,16 @@ export function initPageLoader() {
         },
         onComplete: () => {
             countReached = true;
+            console.log("[loader-debug] countReached = true (counter sampai 100)");
             tryFinish();
         },
     });
 
     function tryFinish() {
+        console.log("[loader-debug] tryFinish() dicek ->", { countReached, windowLoaded, modelLoaded, isDone });
         if (countReached && windowLoaded && modelLoaded && !isDone) {
             isDone = true;
+            console.log("[loader-debug] SEMUA SYARAT TERPENUHI -> runOutroSequence() dijalankan");
             runOutroSequence();
         }
     }

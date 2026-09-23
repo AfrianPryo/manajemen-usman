@@ -6,6 +6,8 @@ use App\Livewire\Master\Widgets\UsersTable;
 use App\Models\AuditLog;
 use App\Models\AuthLog;
 use App\Models\FinanceTransaction;
+use App\Models\Setting;
+use App\Models\SignatureProfile;
 use App\Models\Unit;
 use App\Models\User;
 use App\Services\FonnteOtpService;
@@ -101,6 +103,20 @@ class Dashboard extends Component
     // dashboard ini.
     public bool $showOnboarding = false;
 
+    // Langkah tutorial yang sedang aktif (1-4). Dihitung dari data asli
+    // (Unit, Admin, integrasi Fonnte, Tanda Tangan Pejabat) lewat
+    // determineOnboardingStep(), BUKAN disimpan manual -- supaya progres
+    // tutorial selalu akurat walau tombol CTA di dalamnya membawa user
+    // pindah halaman (mis. langkah 3 menuju menu Pengaturan, langkah 4
+    // menuju menu Tanda Tangan) lalu kembali lagi ke dashboard.
+    public int $onboardingStep = 1;
+
+    // Total langkah tutorial setup awal. Dipakai juga oleh
+    // determineOnboardingStep()/completeOnboarding() supaya batas "sudah
+    // tuntas semua langkah" hanya perlu diubah di SATU tempat kalau nanti
+    // ada langkah tambahan lagi.
+    private const ONBOARDING_TOTAL_STEPS = 4;
+
     // ------------------------------------------
     // LIFECYCLE HOOKS FILTER PERIODE
     // ------------------------------------------
@@ -114,7 +130,21 @@ class Dashboard extends Component
     {
         /** @var User|null $user */
         $user = Auth::user();
-        $this->showOnboarding = (bool) ($user && $user->needsOnboarding());
+
+        if ($user && $user->needsOnboarding()) {
+            $this->onboardingStep = $this->determineOnboardingStep();
+
+            // Kalau ternyata keempat syarat (Unit, Admin, Fonnte, Tanda
+            // Tangan Pejabat) sudah terpenuhi semua -- mis. Master Admin
+            // sempat mengerjakannya tapi keluar sebelum menekan "Selesai"
+            // di langkah terakhir -- tandai selesai otomatis, tidak perlu
+            // menampilkan tutorial lagi.
+            if ($this->onboardingStep > self::ONBOARDING_TOTAL_STEPS) {
+                $this->completeOnboarding();
+            } else {
+                $this->showOnboarding = true;
+            }
+        }
 
         if (! request()->has('period')) {
             $this->periodFilter = session(self::SESSION_KEY . '.period', $this->periodFilter);
@@ -280,9 +310,47 @@ class Dashboard extends Component
     }
 
     /**
-     * Menutup tutorial setup awal (baik karena user menekan "Selesai" di
-     * langkah terakhir, maupun "Lewati") & menandai akun ini sudah tidak
-     * perlu melihatnya lagi. Dipanggil dari dashboard.blade.php.
+     * Tentukan langkah tutorial mana yang harusnya aktif berdasarkan data
+     * asli, bukan tebakan/state sementara -- supaya tutorial selalu "sadar"
+     * langkah mana yang benar-benar sudah dikerjakan:
+     *  1. Belum ada Unit Usaha sama sekali
+     *  2. Unit sudah ada, tapi belum ada Admin Unit
+     *  3. Admin sudah ada, tapi integrasi Fonnte (wa_api_key) belum diisi
+     *  4. Fonnte sudah terisi, tapi akun Master Admin ini belum punya
+     *     Profil Tanda Tangan (dipakai untuk menandatangani Dokumen Resmi
+     *     -- lihat App\Models\SignatureProfile & Master\Documents\Generate)
+     *  5. Keempatnya sudah terpenuhi -- tutorial dianggap tuntas
+     */
+    private function determineOnboardingStep(): int
+    {
+        if (Unit::count() === 0) {
+            return 1;
+        }
+
+        if (User::role('unit-admin')->count() === 0) {
+            return 2;
+        }
+
+        if (empty(Setting::get('wa_api_key'))) {
+            return 3;
+        }
+
+        // Khusus milik akun yang sedang login (bukan global), karena
+        // Profil Tanda Tangan memang per-user -- lihat
+        // SignatureSettings::render() yang men-scope query dengan
+        // `where('user_id', Auth::id())`.
+        if (! SignatureProfile::where('user_id', Auth::id())->exists()) {
+            return 4;
+        }
+
+        return self::ONBOARDING_TOTAL_STEPS + 1;
+    }
+
+    /**
+     * Menutup tutorial setup awal secara PERMANEN (baik karena user menekan
+     * "Selesai" di langkah terakhir, maupun "Lewati"/silang) & menandai
+     * akun ini sudah tidak perlu melihatnya lagi. Dipanggil dari
+     * dashboard.blade.php.
      */
     public function completeOnboarding(): void
     {
@@ -297,14 +365,55 @@ class Dashboard extends Component
     }
 
     /**
+     * Sembunyikan SEMENTARA overlay tutorial (tanpa menandai selesai di
+     * database) supaya modal Tambah Unit/Tambah Admin yang dibuka dari
+     * tombol CTA di dalam tutorial tidak tertutup oleh overlay tutorial
+     * itu sendiri (keduanya sama-sama modal layar penuh). Pasangannya
+     * adalah resumeOnboardingIfNeeded(), dipanggil begitu modal itu ditutup.
+     */
+    private function dismissOnboardingOverlay(): void
+    {
+        $this->showOnboarding = false;
+    }
+
+    /**
+     * Dipanggil setiap kali modal Tambah Unit / Tambah Admin ditutup
+     * (disimpan ataupun dibatalkan). Kalau akun ini masih dalam proses
+     * onboarding, tutorial ditampilkan lagi di langkah yang benar-benar
+     * masih tersisa -- inilah yang menutup celah lama: dulu tutorial
+     * langsung dianggap "selesai" begitu langkah pertama dibuka, padahal
+     * langkah 2 & 3 belum dikerjakan sama sekali.
+     */
+    private function resumeOnboardingIfNeeded(): void
+    {
+        /** @var User|null $user */
+        $user = Auth::user();
+
+        if (! $user || ! $user->needsOnboarding()) {
+            return;
+        }
+
+        $this->onboardingStep = $this->determineOnboardingStep();
+
+        if ($this->onboardingStep > self::ONBOARDING_TOTAL_STEPS) {
+            $this->completeOnboarding();
+            return;
+        }
+
+        $this->showOnboarding = true;
+    }
+
+    /**
      * Membuka Modal Tambah Admin Baru
      */
     public function openCreateAdminModal(): void
     {
-        // Kalau dibuka lewat tombol CTA di tutorial setup awal, anggap
-        // tutorial sudah "dipakai" & tidak perlu tampil lagi.
+        // Kalau dibuka lewat tombol CTA di tutorial setup awal, sembunyikan
+        // dulu overlay-nya (bukan menandai selesai) supaya modal ini tidak
+        // tertutup tutorial. Tutorial muncul lagi lewat resumeOnboardingIfNeeded()
+        // begitu modal ini ditutup.
         if ($this->showOnboarding) {
-            $this->completeOnboarding();
+            $this->dismissOnboardingOverlay();
         }
 
         $this->reset(['admin_name', 'nip', 'admin_phone', 'admin_unit_id']);
@@ -322,6 +431,7 @@ class Dashboard extends Component
         $this->showCreateAdminModal = false;
         $this->reset(['admin_name', 'nip', 'admin_phone', 'admin_unit_id']);
         $this->resetValidation();
+        $this->resumeOnboardingIfNeeded();
     }
 
     /**
@@ -429,10 +539,12 @@ class Dashboard extends Component
      */
     public function openCreateUnitModal(): void
     {
-        // Kalau dibuka lewat tombol CTA di tutorial setup awal, anggap
-        // tutorial sudah "dipakai" & tidak perlu tampil lagi.
+        // Kalau dibuka lewat tombol CTA di tutorial setup awal, sembunyikan
+        // dulu overlay-nya (bukan menandai selesai) supaya modal ini tidak
+        // tertutup tutorial. Tutorial muncul lagi lewat resumeOnboardingIfNeeded()
+        // begitu modal ini ditutup.
         if ($this->showOnboarding) {
-            $this->completeOnboarding();
+            $this->dismissOnboardingOverlay();
         }
 
         $this->resetValidation();
@@ -471,6 +583,7 @@ class Dashboard extends Component
     public function closeModal(): void
     {
         $this->showModal = false;
+        $this->resumeOnboardingIfNeeded();
     }
 
     /**

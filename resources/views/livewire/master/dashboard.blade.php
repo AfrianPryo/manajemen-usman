@@ -10,7 +10,7 @@
          Lihat App\Livewire\Master\Dashboard::$showOnboarding / completeOnboarding(). --}}
     @if($showOnboarding)
         <div
-            x-data="{ step: 1, total: 3 }"
+            x-data="{ step: {{ $onboardingStep }}, total: 4 }"
             class="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-neutral-900/60 backdrop-blur-sm"
         >
             <div class="bg-white dark:bg-slate-800 w-full max-w-lg rounded-lg border border-neutral-200 dark:border-slate-700 shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-150">
@@ -23,7 +23,7 @@
                         </div>
                         <div>
                             <h3 class="text-sm font-bold text-neutral-900 dark:text-white">Selamat Datang, Master Admin! 👋</h3>
-                            <p class="text-[11px] text-neutral-400 mt-0.5">Yuk, selesaikan 3 langkah setup awal sebelum mulai.</p>
+                            <p class="text-[11px] text-neutral-400 mt-0.5">Yuk, selesaikan 4 langkah setup awal sebelum mulai.</p>
                         </div>
                     </div>
                     <button type="button" wire:click="completeOnboarding" title="Lewati tutorial"
@@ -38,7 +38,7 @@
                         <x-heroicon-o-building-office class="w-6 h-6" />
                     </div>
                     <div>
-                        <p class="text-[11px] font-bold text-blue-800 dark:text-sky-400 uppercase tracking-wide">Langkah 1 dari 3</p>
+                        <p class="text-[11px] font-bold text-blue-800 dark:text-sky-400 uppercase tracking-wide">Langkah 1 dari 4</p>
                         <h4 class="text-sm font-bold text-neutral-900 dark:text-white mt-1">Tambahkan Unit Usaha Pertama</h4>
                         <p class="text-xs text-neutral-500 dark:text-neutral-400 mt-2 leading-relaxed">
                             Unit Usaha (mis. Kantin, Koperasi, Percetakan) adalah pondasi sistem ini -- transaksi, stok, dan admin unit semuanya menempel ke sebuah Unit Usaha.
@@ -57,7 +57,7 @@
                         <x-heroicon-o-user-plus class="w-6 h-6" />
                     </div>
                     <div>
-                        <p class="text-[11px] font-bold text-blue-800 dark:text-sky-400 uppercase tracking-wide">Langkah 2 dari 3</p>
+                        <p class="text-[11px] font-bold text-blue-800 dark:text-sky-400 uppercase tracking-wide">Langkah 2 dari 4</p>
                         <h4 class="text-sm font-bold text-neutral-900 dark:text-white mt-1">Tambahkan Admin Unit</h4>
                         <p class="text-xs text-neutral-500 dark:text-neutral-400 mt-2 leading-relaxed">
                             Setelah Unit Usaha dibuat, tambahkan Admin Unit yang akan mengelola operasional harian unit tersebut. Kredensial login otomatis dibuat & dikirim ke nomor WhatsApp admin.
@@ -76,7 +76,7 @@
                         <x-heroicon-o-chat-bubble-left-right class="w-6 h-6" />
                     </div>
                     <div>
-                        <p class="text-[11px] font-bold text-blue-800 dark:text-sky-400 uppercase tracking-wide">Langkah 3 dari 3</p>
+                        <p class="text-[11px] font-bold text-blue-800 dark:text-sky-400 uppercase tracking-wide">Langkah 3 dari 4</p>
                         <h4 class="text-sm font-bold text-neutral-900 dark:text-white mt-1">Sambungkan Integrasi Fonnte (WhatsApp)</h4>
                         <p class="text-xs text-neutral-500 dark:text-neutral-400 mt-2 leading-relaxed">
                             Fonnte dipakai untuk mengirim kredensial admin baru, kode OTP, dan notifikasi otomatis lewat WhatsApp. Atur nomor pengirim & API key di menu Pengaturan.
@@ -86,6 +86,25 @@
                        class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-blue-900 dark:text-sky-300 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 rounded-sm hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-all cursor-pointer">
                         <x-heroicon-o-cog-6-tooth class="w-4 h-4" />
                         <span>Buka Pengaturan Integrasi</span>
+                    </a>
+                </div>
+
+                {{-- Langkah 4: Tanda Tangan Pejabat (Profil Tanda Tangan) --}}
+                <div x-show="step === 4" x-cloak class="p-6 space-y-4">
+                    <div class="h-11 w-11 bg-blue-50 dark:bg-blue-950/50 text-blue-900 dark:text-sky-300 rounded-lg flex items-center justify-center">
+                        <x-heroicon-o-pencil-square class="w-6 h-6" />
+                    </div>
+                    <div>
+                        <p class="text-[11px] font-bold text-blue-800 dark:text-sky-400 uppercase tracking-wide">Langkah 4 dari 4</p>
+                        <h4 class="text-sm font-bold text-neutral-900 dark:text-white mt-1">Atur Tanda Tangan Pejabat</h4>
+                        <p class="text-xs text-neutral-500 dark:text-neutral-400 mt-2 leading-relaxed">
+                            Profil Tanda Tangan (nama, jabatan, & gambar tanda tangan) dipakai untuk membubuhkan tanda tangan digital pada Dokumen Resmi yang Anda terbitkan lewat menu Dokumen Resmi.
+                        </p>
+                    </div>
+                    <a href="{{ route('master.documents.signature') }}"
+                       class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-blue-900 dark:text-sky-300 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 rounded-sm hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-all cursor-pointer">
+                        <x-heroicon-o-plus class="w-4 h-4" />
+                        <span>Atur Tanda Tangan Sekarang</span>
                     </a>
                 </div>
 
