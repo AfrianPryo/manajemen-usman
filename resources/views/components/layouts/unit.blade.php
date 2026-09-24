@@ -95,21 +95,24 @@
             @php
                 $appName    = \App\Models\Setting::get('app_name', 'USMAN - Usaha Mandiri Sekolah');
                 $appLogo    = \App\Models\Setting::get('app_logo');
-                $appLogoUrl = $appLogo ? asset('storage/' . $appLogo) : null;
+                $appLogoUrl = $appLogo ? asset('storage/' . $appLogo) : asset('favicon.svg');
             @endphp
             <div class="h-12 flex items-center justify-between px-4 font-bold text-sm text-slate-900 dark:text-white border-b border-slate-100 dark:border-slate-800 shrink-0 tracking-tight">
                 <span class="flex items-center gap-2 overflow-hidden">
-                    {{-- Logo custom (hasil upload di Pengaturan Sistem, lihat Master\Settings\Index)
-                         dibungkus lingkaran putih supaya tetap kontras & jelas terlihat baik di
-                         mode terang maupun gelap, apa pun warna dasar logonya. Fallback inisial
-                         huruf (kalau belum ada logo) tidak dibungkus karena warnanya sudah
-                         menyesuaikan tema lewat dark: variant. --}}
-                    @if ($appLogoUrl)
+                    {{-- Logo custom (hasil upload di Pengaturan Sistem) dibungkus lingkaran
+                         putih supaya tetap kontras & jelas terlihat baik di mode terang
+                         maupun gelap, apa pun warna dasar logonya. Ikon favicon default
+                         tidak dibungkus karena memang sudah didesain untuk kedua tema. --}}
+                    @if ($appLogo)
                         <span class="h-6 w-6 rounded-full bg-white shrink-0 overflow-hidden flex items-center justify-center ring-1 ring-black/5">
                             <img src="{{ $appLogoUrl }}" alt="{{ $appName }}" class="h-full w-full object-contain p-0.5">
                         </span>
                     @else
-                        <span class="h-6 w-6 rounded-full bg-slate-900 dark:bg-slate-700 text-white flex items-center justify-center font-extrabold text-[11px] shadow-xs shrink-0">{{ strtoupper(substr($appName, 0, 1)) }}</span>
+                        <img 
+                            src="{{ $appLogoUrl }}" 
+                            alt="{{ $appName }}" 
+                            class="h-6 w-6 rounded-full object-contain shrink-0"
+                        />
                     @endif
                     <span x-show="!sidebarCollapsed || mobileSidebarOpen"
                           x-transition:enter="transition-opacity duration-150 delay-140"
