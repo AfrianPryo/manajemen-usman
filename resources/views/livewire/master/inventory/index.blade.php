@@ -308,8 +308,9 @@
                 </div>
 
                 {{-- Modal Body / Form --}}
-                <form wire:submit.prevent="saveProduct" class="p-6 space-y-4">
-                    
+                <form wire:submit.prevent="saveProduct" class="p-6">
+                    <x-form-tabs tab1-label="Informasi Dasar" tab2-label="Harga, Stok & Media" cancel="closeCreateModal" compact>
+                    <x-slot:tab1>
                     {{-- Row 1: Nama Produk & Kode --}}
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         <div class="sm:col-span-2">
@@ -377,19 +378,21 @@
                         </div>
                     </div>
 
+                    </x-slot:tab1>
+                    <x-slot:tab2>
                     {{-- Row 3: Harga Beli (HPP) & Harga Jual --}}
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Harga Beli / HPP (Rp)</label>
-                            <input type="number" wire:model="form_purchase_price" placeholder="0" min="0"
-                                class="w-full px-3.5 py-2 text-xs font-bold border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-blue-500">
+                            <input type="text" inputmode="decimal" wire:model="form_purchase_price" oninput="onlyDecimal(event)" placeholder="0"
+                                class="w-full px-3.5 py-2 text-xs font-bold border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400">
                             @error('form_purchase_price') <span class="text-[11px] text-rose-500 mt-0.5 block">{{ $message }}</span> @enderror
                         </div>
 
                         <div>
                             <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Harga Jual (Rp) <span class="text-red-500">*</span></label>
-                            <input type="number" wire:model="form_selling_price" placeholder="0" min="0"
-                                class="w-full px-3.5 py-2 text-xs font-bold border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-blue-500">
+                            <input type="text" inputmode="decimal" wire:model="form_selling_price" oninput="onlyDecimal(event)" placeholder="0"
+                                class="w-full px-3.5 py-2 text-xs font-bold border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400">
                             @error('form_selling_price') <span class="text-[11px] text-rose-500 mt-0.5 block">{{ $message }}</span> @enderror
                         </div>
                     </div>
@@ -398,15 +401,15 @@
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         <div>
                             <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Jumlah Stok <span class="text-red-500">*</span></label>
-                            <input type="number" wire:model="form_stock" placeholder="0" min="0"
-                                class="w-full px-3.5 py-2 text-xs font-semibold border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-blue-500">
+                            <input type="text" inputmode="numeric" wire:model="form_stock" oninput="onlyDigits(event)" placeholder="0"
+                                class="w-full px-3.5 py-2 text-xs font-semibold border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400">
                             @error('form_stock') <span class="text-[11px] text-rose-500 mt-0.5 block">{{ $message }}</span> @enderror
                         </div>
 
                         <div>
                             <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Batas Minimum Stok</label>
-                            <input type="number" wire:model="form_min_stock" placeholder="5" min="0"
-                                class="w-full px-3.5 py-2 text-xs font-semibold border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-blue-500">
+                            <input type="text" inputmode="numeric" wire:model="form_min_stock" oninput="onlyDigits(event)" placeholder="5"
+                                class="w-full px-3.5 py-2 text-xs font-semibold border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400">
                             @error('form_min_stock') <span class="text-[11px] text-rose-500 mt-0.5 block">{{ $message }}</span> @enderror
                         </div>
 
@@ -466,17 +469,14 @@
                             <span class="text-rose-500 text-xs mt-1 block">{{ $message }}</span> 
                         @enderror
                     </div>
-
-                    {{-- Modal Footer --}}
-                    <div class="pt-4 border-t border-neutral-100 dark:border-slate-700 flex items-center justify-end gap-2.5">
-                        <button type="button" wire:click="closeCreateModal" class="px-4 py-2 text-xs font-semibold text-neutral-600 dark:text-neutral-300 bg-neutral-100 dark:bg-slate-700 rounded-sm hover:bg-neutral-200 dark:hover:bg-slate-600 transition-all">
-                            Batal
-                        </button>
+                    </x-slot:tab2>
+                    <x-slot:submit>
                         <button type="submit" wire:loading.attr="disabled" class="px-5 py-2 text-xs font-bold text-white bg-blue-900 hover:bg-blue-950 rounded-sm transition-all flex items-center gap-2 shadow-sm">
                             <span wire:loading.remove>{{ $isEditing ? 'Perbarui Produk' : 'Simpan Produk' }}</span>
                             <span wire:loading>{{ $isEditing ? 'Memperbarui...' : 'Menyimpan...' }}</span>
                         </button>
-                    </div>
+                    </x-slot:submit>
+                    </x-form-tabs>
 
                 </form>
             </div>
@@ -715,7 +715,7 @@
                         <label class="block text-[11px] font-semibold text-neutral-600 dark:text-neutral-300 mb-1">
                             Jumlah Unit <span class="text-rose-500">*</span>
                         </label>
-                        <input type="number" wire:model="stock_quantity" min="1" autofocus placeholder="Masukkan jumlah unit..." class="w-full h-9 text-xs rounded-sm border-neutral-300 dark:border-slate-700 dark:bg-slate-900 text-neutral-800 dark:text-white focus:ring-2 px-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all">
+                        <input type="text" inputmode="numeric" wire:model="stock_quantity" oninput="onlyDigits(event)" autofocus placeholder="Masukkan jumlah unit..." class="w-full h-9 text-xs rounded-sm border-neutral-300 dark:border-slate-700 dark:bg-slate-900 text-neutral-800 dark:text-white focus:ring-2 px-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all">
                         @error('stock_quantity') <span class="text-[10px] text-rose-500 block font-medium mt-1">{{ $message }}</span> @enderror
                     </div>
 

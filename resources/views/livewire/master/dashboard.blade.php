@@ -183,85 +183,88 @@
 
         {{-- Modal Form Tambah Admin --}}
         @if($showCreateAdminModal)
-            <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-neutral-900/50 backdrop-blur-sm">
+            <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-neutral-900/50 backdrop-blur-sm overflow-y-auto">
                 <div class="bg-white dark:bg-slate-800 w-full max-w-lg rounded-sm border border-neutral-200 dark:border-slate-700 shadow-2xl overflow-hidden my-8 animate-in fade-in zoom-in duration-150">
                     <div class="p-5 border-b border-neutral-100 dark:border-slate-700 flex justify-between items-center bg-neutral-50/50 dark:bg-slate-900/50">
                         <h3 class="text-lg font-bold text-neutral-900 dark:text-white">Tambah Admin Baru</h3>
                         <button type="button" wire:click="closeCreateAdminModal" class="text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 text-2xl font-bold leading-none">&times;</button>
                     </div>
 
-                    <form wire:submit.prevent="saveAdmin" class="p-6 space-y-4">
-                        {{-- Nama Lengkap --}}
-                        <div>
-                            <label class="block text-xs font-medium text-neutral-600 dark:text-neutral-300 mb-1">Nama Lengkap</label>
-                            <input type="text" wire:model="admin_name" class="w-full px-3 py-2.5 border rounded-sm text-sm bg-white dark:bg-slate-900 border-neutral-200 dark:border-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400" placeholder="Contoh: Budi Santoso">
-                            @error('admin_name') <span class="text-xs text-red-500">{{ $message }}</span> @enderror
-                        </div>
-
-                        {{-- Status Pegawai --}}
-                        <div>
-                            <label class="block text-xs font-medium text-neutral-600 dark:text-neutral-300 mb-1">Status Pegawai</label>
-                            <select wire:model.live="employee_status" class="w-full px-3 py-2.5 border rounded-sm text-sm bg-white dark:bg-slate-900 border-neutral-200 dark:border-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400">
-                                <option value="nip">Pegawai NIP</option>
-                                <option value="non_nip">Pegawai Non-NIP</option>
-                            </select>
-                            @error('employee_status') <span class="text-xs text-red-500">{{ $message }}</span> @enderror
-                        </div>
-
-                        {{-- NIP (Wajib hanya jika pegawai tetap) --}}
-                        @if($employee_status === 'nip')
+                    <form wire:submit.prevent="saveAdmin" class="p-6">
+                        <x-form-tabs tab1-label="Identitas" tab2-label="Hak Akses" cancel="closeCreateAdminModal">
+                        <x-slot:tab1>
                             <div>
-                                <label class="block text-xs font-medium text-neutral-600 dark:text-neutral-300 mb-1">NIP (18 Digit)</label>
-                                <input type="text" wire:model="nip" maxlength="18" class="w-full px-3 py-2.5 border rounded-sm text-sm bg-white dark:bg-slate-900 border-neutral-200 dark:border-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400" placeholder="199001012023011001">
-                                @error('nip') <span class="text-xs text-red-500">{{ $message }}</span> @enderror
+                                <label class="block text-xs font-medium text-neutral-600 dark:text-neutral-300 mb-1">Nama Lengkap</label>
+                                <input type="text" wire:model="admin_name" class="w-full px-3 py-2.5 border rounded-sm text-sm bg-white dark:bg-slate-900 border-neutral-200 dark:border-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400" placeholder="Contoh: Budi Santoso">
+                                @error('admin_name') <span class="text-xs text-red-500 mt-0.5 block">{{ $message }}</span> @enderror
                             </div>
-                        @endif
 
-                        {{-- Nomor HP / WhatsApp --}}
-                        <div>
-                            <label class="block text-xs font-medium text-neutral-600 dark:text-neutral-300 mb-1">Nomor HP / WhatsApp</label>
-                            <input type="text" wire:model="admin_phone" inputmode="numeric" class="w-full px-3 py-2.5 border rounded-sm text-sm bg-white dark:bg-slate-900 border-neutral-200 dark:border-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400" placeholder="08xxxxxxxxxx">
-                            @error('admin_phone') <span class="text-xs text-red-500">{{ $message }}</span> @enderror
-                        </div>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div class="{{ $employee_status === 'nip' ? '' : 'sm:col-span-2' }}">
+                                    <label class="block text-xs font-medium text-neutral-600 dark:text-neutral-300 mb-1">Status Pegawai</label>
+                                    <select wire:model.live="employee_status" class="w-full px-3 py-2.5 border rounded-sm text-sm bg-white dark:bg-slate-900 border-neutral-200 dark:border-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400 cursor-pointer">
+                                        <option value="nip">Pegawai NIP</option>
+                                        <option value="non_nip">Pegawai Non-NIP</option>
+                                    </select>
+                                    @error('employee_status') <span class="text-xs text-red-500 mt-0.5 block">{{ $message }}</span> @enderror
+                                </div>
 
-                        {{-- Role Admin --}}
-                        <div>
-                            <label class="block text-xs font-medium text-neutral-600 dark:text-neutral-300 mb-1">Role / Peran</label>
-                            <select wire:model.live="role" class="w-full px-3 py-2.5 border rounded-sm text-sm bg-white dark:bg-slate-900 border-neutral-200 dark:border-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400">
-                                <option value="unit-admin">Unit Admin (Pengelola Usaha)</option>
-                                <option value="master-admin">Master Admin (Akses Penuh)</option>
-                            </select>
-                            @error('role') <span class="text-xs text-red-500">{{ $message }}</span> @enderror
-                        </div>
+                                @if($employee_status === 'nip')
+                                    <div>
+                                        <label class="block text-xs font-medium text-neutral-600 dark:text-neutral-300 mb-1">NIP (18 Digit)</label>
+                                        <input type="text" wire:model="nip" maxlength="18" inputmode="numeric" oninput="onlyDigits(event)" class="w-full px-3 py-2.5 border rounded-sm text-sm font-mono bg-white dark:bg-slate-900 border-neutral-200 dark:border-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400" placeholder="199001012023011001">
+                                        @error('nip') <span class="text-xs text-red-500 mt-0.5 block">{{ $message }}</span> @enderror
+                                    </div>
+                                @endif
+                            </div>
 
-                        {{-- Pilih Unit Usaha (Hanya jika unit-admin) --}}
-                        @if($role === 'unit-admin')
                             <div>
-                                <label class="block text-xs font-medium text-neutral-600 dark:text-neutral-300 mb-1">Unit Usaha</label>
-                                <select wire:model="admin_unit_id" class="w-full px-3 py-2.5 border rounded-sm text-sm bg-white dark:bg-slate-900 border-neutral-200 dark:border-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400">
-                                    <option value="">-- Pilih Unit Usaha --</option>
-                                    @foreach($unitOptions as $unit)
-                                        <option value="{{ $unit->id }}">{{ $unit->name }}</option>
-                                    @endforeach
-                                </select>
-                                @error('admin_unit_id') <span class="text-xs text-red-500">{{ $message }}</span> @enderror
+                                <label class="block text-xs font-medium text-neutral-600 dark:text-neutral-300 mb-1">Nomor HP / WhatsApp</label>
+                                <input type="text" wire:model="admin_phone" inputmode="numeric" oninput="onlyDigits(event)" class="w-full px-3 py-2.5 border rounded-sm text-sm font-mono bg-white dark:bg-slate-900 border-neutral-200 dark:border-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400" placeholder="08xxxxxxxxxx">
+                                <p class="text-[11px] text-neutral-400 mt-1">Dipakai sistem untuk mengirim notifikasi &amp; kode OTP (Fonnte) ke akun ini.</p>
+                                @error('admin_phone') <span class="text-xs text-red-500 mt-0.5 block">{{ $message }}</span> @enderror
                             </div>
-                        @endif
+                        </x-slot:tab1>
+                        <x-slot:tab2>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div class="{{ $role === 'unit-admin' ? '' : 'sm:col-span-2' }}">
+                                    <label class="block text-xs font-medium text-neutral-600 dark:text-neutral-300 mb-1">Role / Peran</label>
+                                    <select wire:model.live="role" class="w-full px-3 py-2.5 border rounded-sm text-sm bg-white dark:bg-slate-900 border-neutral-200 dark:border-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400 cursor-pointer">
+                                        <option value="unit-admin">Unit Admin</option>
+                                        <option value="master-admin">Master Admin</option>
+                                    </select>
+                                    <p class="text-[11px] text-neutral-400 mt-1">
+                                        {{ $role === 'master-admin' ? 'Akses penuh ke seluruh unit usaha dan pengaturan sistem.' : 'Mengelola satu unit usaha yang dipilih.' }}
+                                    </p>
+                                    @error('role') <span class="text-xs text-red-500 mt-0.5 block">{{ $message }}</span> @enderror
+                                </div>
 
-                        <div class="p-3 bg-blue-50/60 dark:bg-blue-950/20 rounded-sm text-xs text-blue-950 dark:text-blue-300 space-y-1">
-                            <div>💡 <strong>Username &amp; Password</strong> akan dibuat otomatis oleh sistem.</div>
-                        </div>
+                                @if($role === 'unit-admin')
+                                    <div>
+                                        <label class="block text-xs font-medium text-neutral-600 dark:text-neutral-300 mb-1">Unit Usaha</label>
+                                        <select wire:model="admin_unit_id" class="w-full px-3 py-2.5 border rounded-sm text-sm bg-white dark:bg-slate-900 border-neutral-200 dark:border-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400 cursor-pointer">
+                                            <option value="">-- Pilih Unit Usaha --</option>
+                                            @foreach($unitOptions as $unit)
+                                                <option value="{{ $unit->id }}">{{ $unit->name }}</option>
+                                            @endforeach
+                                        </select>
+                                        @error('admin_unit_id') <span class="text-xs text-red-500 mt-0.5 block">{{ $message }}</span> @enderror
+                                    </div>
+                                @endif
+                            </div>
 
-                        {{-- Actions --}}
-                        <div class="pt-4 flex justify-end gap-2 border-t border-neutral-100 dark:border-slate-700">
-                            <button type="button" wire:click="closeCreateAdminModal" class="px-4 py-2.5 border border-neutral-200 dark:border-slate-700 rounded-sm text-sm font-semibold hover:bg-neutral-50 dark:hover:bg-slate-700 dark:text-white transition-colors">
-                                Batal
-                            </button>
+                            <p class="flex items-start gap-2 text-[11px] leading-relaxed text-neutral-500 dark:text-neutral-400">
+                                <x-heroicon-o-information-circle class="w-4 h-4 shrink-0 text-blue-900 dark:text-blue-400" />
+                                <span><strong class="font-semibold text-neutral-700 dark:text-neutral-200">Username &amp; password</strong> dibuat otomatis oleh sistem setelah disimpan, lalu dikirim ke WhatsApp admin.</span>
+                            </p>
+                        </x-slot:tab2>
+                        <x-slot:submit>
                             <button type="submit" wire:loading.attr="disabled" class="px-4 py-2.5 bg-blue-900 text-white rounded-sm text-sm font-semibold hover:bg-blue-950 transition-colors shadow-sm shadow-blue-900/20">
                                 <span wire:loading.remove wire:target="saveAdmin">Simpan &amp; Generate Kredensial</span>
                                 <span wire:loading wire:target="saveAdmin">Memproses...</span>
                             </button>
-                        </div>
+                        </x-slot:submit>
+                        </x-form-tabs>
                     </form>
                 </div>
             </div>
@@ -274,7 +277,7 @@
 
         {{-- Modal Create / Edit Unit --}}
         @if($showModal)
-            <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-neutral-900/50 backdrop-blur-sm">
+            <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-neutral-900/50 backdrop-blur-sm overflow-y-auto">
                 <div class="bg-white dark:bg-slate-800 w-full max-w-lg rounded-sm border border-neutral-200 dark:border-slate-700 shadow-2xl overflow-hidden my-8 animate-in fade-in zoom-in duration-150">
                     <div class="p-5 border-b border-neutral-100 dark:border-slate-700 flex justify-between items-center bg-neutral-50/50 dark:bg-slate-900/50">
                         <h3 class="text-lg font-bold text-neutral-900 dark:text-white">
@@ -283,7 +286,9 @@
                         <button wire:click="closeModal" class="text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 text-2xl font-bold leading-none">&times;</button>
                     </div>
 
-                    <form wire:submit.prevent="save" class="p-6 space-y-4">
+                    <form wire:submit.prevent="save" class="p-6">
+                        <x-form-tabs tab1-label="Data Unit" tab2-label="Pengelola & Status" cancel="closeModal">
+                        <x-slot:tab1>
                         <div>
                             <label class="block text-xs font-medium text-neutral-600 dark:text-neutral-300 mb-1">Nama Unit Usaha</label>
                             <input type="text" wire:model="name" class="w-full px-3 py-2.5 border rounded-sm text-sm bg-white dark:bg-slate-900 border-neutral-200 dark:border-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400" placeholder="Contoh: Bengkel TO">
@@ -315,6 +320,8 @@
                             </div>
                         </div>
 
+                        </x-slot:tab1>
+                        <x-slot:tab2>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-xs font-medium text-neutral-600 dark:text-neutral-300 mb-1">Nama PIC / Penanggung Jawab</label>
@@ -324,7 +331,7 @@
 
                             <div>
                                 <label class="block text-xs font-medium text-neutral-600 dark:text-neutral-300 mb-1">No. Telepon / HP</label>
-                                <input type="text" wire:model="phone" class="w-full px-3 py-2.5 border rounded-sm text-sm bg-white dark:bg-slate-900 border-neutral-200 dark:border-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400" placeholder="08123456789">
+                                <input type="text" wire:model="phone" inputmode="numeric" oninput="onlyDigits(event)" class="w-full px-3 py-2.5 border rounded-sm text-sm bg-white dark:bg-slate-900 border-neutral-200 dark:border-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400" placeholder="08123456789">
                                 @error('phone') <span class="text-xs text-red-500">{{ $message }}</span> @enderror
                             </div>
                         </div>
@@ -340,15 +347,14 @@
                             <label for="is_active" class="text-xs font-medium text-neutral-600 dark:text-neutral-300">Unit Usaha Aktif / Operasional</label>
                         </div>
 
-                        <div class="pt-4 flex justify-end gap-2 border-t border-neutral-100 dark:border-slate-700">
-                            <button type="button" wire:click="closeModal" class="px-4 py-2.5 border border-neutral-200 dark:border-slate-700 rounded-sm text-sm font-semibold hover:bg-neutral-50 dark:hover:bg-slate-700 dark:text-white transition-colors">
-                                Batal
-                            </button>
+                        </x-slot:tab2>
+                        <x-slot:submit>
                             <button type="submit" wire:loading.attr="disabled" class="px-4 py-2.5 bg-blue-900 text-white rounded-sm text-sm font-semibold hover:bg-blue-950 transition-colors shadow-sm shadow-blue-900/20">
                                 <span wire:loading.remove wire:target="save">Simpan Unit</span>
                                 <span wire:loading wire:target="save">Memproses...</span>
                             </button>
-                        </div>
+                        </x-slot:submit>
+                        </x-form-tabs>
                     </form>
                 </div>
             </div>

@@ -692,7 +692,7 @@ class Dashboard extends Component
             'logout'                         => ['label' => 'Logout', 'class' => 'bg-slate-100 text-slate-600 border-slate-200'],
             'password.changed'               => ['label' => 'Password Diubah', 'class' => 'bg-blue-100 text-blue-700 border-blue-200'],
             'password.reset_by_admin'        => ['label' => 'Reset Password', 'class' => 'bg-amber-100 text-amber-700 border-amber-200'],
-            'dashboard_export'               => ['label' => 'Export Laporan', 'class' => 'bg-indigo-100 text-indigo-700 border-indigo-200'],
+            'dashboard_export'               => ['label' => 'Export Laporan', 'class' => 'bg-violet-100 text-violet-700 border-violet-200'],
             'access.forbidden'               => ['label' => 'Akses Ditolak', 'class' => 'bg-rose-100 text-rose-700 border-rose-200'],
             // Catatan casing: AuditLog::record() menyimpan $event via strtoupper(),
             // jadi key di sini WAJIB uppercase supaya match berhasil (lihat

@@ -310,7 +310,9 @@
                     <button wire:click="closeModal" class="text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 text-2xl font-bold leading-none">&times;</button>
                 </div>
 
-                <form wire:submit.prevent="save" class="p-6 space-y-4 text-xs">
+                <form wire:submit.prevent="save" class="p-6 text-xs">
+                    <x-form-tabs tab1-label="Identitas Aset" tab2-label="Status & Penempatan" cancel="closeModal" compact>
+                    <x-slot:tab1>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                             <label class="block font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Tag / Kode Aset <span class="text-red-500">*</span></label>
@@ -365,9 +367,13 @@
                             <input type="date" wire:model="purchase_date" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-blue-500">
                         </div>
 
+                    </div>
+                    </x-slot:tab1>
+                    <x-slot:tab2>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                             <label class="block font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Harga Beli (Rp)</label>
-                            <input type="number" wire:model="purchase_cost" placeholder="0" class="w-full px-3.5 py-2 text-xs font-bold border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-blue-500">
+                            <input type="text" inputmode="decimal" wire:model="purchase_cost" oninput="onlyDecimal(event)" placeholder="0" class="w-full px-3.5 py-2 text-xs font-bold border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400">
                         </div>
 
                         <div>
@@ -400,19 +406,17 @@
                         </div>
                     </div>
 
-                    <div>
+                    <div class="mt-4">
                         <label class="block font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Catatan Tambahan</label>
                         <textarea wire:model="notes" rows="2" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-blue-500" placeholder="Keterangan garansi, kelengkapan, dll..."></textarea>
                     </div>
-
-                    <div class="pt-4 border-t border-neutral-100 dark:border-slate-700 flex items-center justify-end gap-2.5">
-                        <button type="button" wire:click="closeModal" class="px-4 py-2 text-xs font-semibold text-neutral-600 dark:text-neutral-300 bg-neutral-100 dark:bg-slate-700 rounded-sm hover:bg-neutral-200 dark:hover:bg-slate-600 transition-all cursor-pointer">
-                            Batal
-                        </button>
+                    </x-slot:tab2>
+                    <x-slot:submit>
                         <button type="submit" class="px-5 py-2 text-xs font-bold text-white bg-blue-900 hover:bg-blue-950 rounded-sm transition-all shadow-sm cursor-pointer">
                             {{ $editingId ? 'Simpan Perubahan' : 'Tambah Aset' }}
                         </button>
-                    </div>
+                    </x-slot:submit>
+                    </x-form-tabs>
                 </form>
             </div>
         </div>

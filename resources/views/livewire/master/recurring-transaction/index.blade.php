@@ -236,8 +236,9 @@
                 </div>
 
                 {{-- Modal Body --}}
-                <form wire:submit="save" class="p-6 space-y-4">
-
+                <form wire:submit="save" class="p-6">
+                    <x-form-tabs tab1-label="Detail Transaksi" tab2-label="Jadwal & Otomatisasi" cancel="closeModal">
+                    <x-slot:tab1>
                     {{-- Judul Transaksi --}}
                     <div>
                         <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Judul Transaksi <span class="text-rose-500">*</span></label>
@@ -290,11 +291,13 @@
                         @error('finance_category_id') <span class="text-[11px] text-rose-500 mt-0.5 block">{{ $message }}</span> @enderror
                     </div>
 
+                    </x-slot:tab1>
+                    <x-slot:tab2>
                     {{-- Row: Nominal & Frekuensi --}}
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Nominal (Rp) <span class="text-rose-500">*</span></label>
-                            <input type="number" wire:model="amount" placeholder="0" class="w-full px-3.5 py-2 text-xs font-bold border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400">
+                            <input type="text" inputmode="decimal" wire:model="amount" oninput="onlyDecimal(event)" placeholder="0" class="w-full px-3.5 py-2 text-xs font-bold border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400">
                             @error('amount') <span class="text-[11px] text-rose-500 mt-0.5 block">{{ $message }}</span> @enderror
                         </div>
 
@@ -345,17 +348,14 @@
                         <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Catatan Tambahan</label>
                         <textarea wire:model="notes" rows="2" placeholder="Keterangan tambahan..." class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400"></textarea>
                     </div>
-
-                    {{-- Modal Footer --}}
-                    <div class="pt-4 border-t border-neutral-100 dark:border-slate-700 flex items-center justify-end gap-2.5">
-                        <button type="button" wire:click="closeModal" class="px-4 py-2.5 border border-neutral-200 dark:border-slate-700 rounded-sm text-sm font-semibold hover:bg-neutral-50 dark:hover:bg-slate-700 dark:text-white transition-colors cursor-pointer">
-                            Batal
-                        </button>
+                    </x-slot:tab2>
+                    <x-slot:submit>
                         <button type="submit" wire:loading.attr="disabled" class="px-5 py-2.5 text-sm font-semibold text-white bg-blue-900 hover:bg-blue-950 rounded-sm transition-colors shadow-sm shadow-blue-900/20 cursor-pointer">
                             <span wire:loading.remove>Simpan</span>
                             <span wire:loading>Menyimpan...</span>
                         </button>
-                    </div>
+                    </x-slot:submit>
+                    </x-form-tabs>
                 </form>
             </div>
         </div>

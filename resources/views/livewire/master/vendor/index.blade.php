@@ -122,14 +122,14 @@
                             };
                             $categoryDot = match($vendor->category) {
                                 'perusahaan' => 'bg-blue-500',
-                                'pemerintah' => 'bg-purple-500',
+                                'pemerintah' => 'bg-violet-500',
                                 'individu' => 'bg-emerald-500',
                                 default => 'bg-neutral-400',
                             };
 
                             $typeMap = [
                                 'vendor'   => ['label' => 'Vendor', 'class' => 'bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-400 border-blue-200/60 dark:border-blue-800'],
-                                'supplier' => ['label' => 'Supplier', 'class' => 'bg-purple-50 dark:bg-purple-950/50 text-purple-700 dark:text-purple-400 border-purple-200/60 dark:border-purple-800'],
+                                'supplier' => ['label' => 'Supplier', 'class' => 'bg-violet-50 dark:bg-violet-950/50 text-violet-700 dark:text-violet-400 border-violet-200/60 dark:border-violet-800'],
                                 'both'     => ['label' => 'Vendor & Supplier', 'class' => 'bg-[#0d3b74] text-white border-[#0d3b74]'],
                             ];
                             $typeInfo = $typeMap[$vendor->type] ?? $typeMap['vendor'];
@@ -294,8 +294,9 @@
                 </div>
 
                 {{-- Modal Body / Form --}}
-                <form wire:submit.prevent="save" class="p-6 space-y-4">
-
+                <form wire:submit.prevent="save" class="p-6">
+                    <x-form-tabs tab1-label="Identitas & Kontak" tab2-label="Kontrak & Alamat" cancel="closeModal">
+                    <x-slot:tab1>
                     {{-- Row 1: Nama --}}
                     <div>
                         <label class="block text-xs font-medium text-neutral-600 dark:text-neutral-300 mb-1">Nama Perusahaan / Vendor / Supplier</label>
@@ -358,12 +359,14 @@
                         </div>
                         <div>
                             <label class="block text-xs font-medium text-neutral-600 dark:text-neutral-300 mb-1">No. Telepon / WhatsApp</label>
-                            <input type="text" wire:model="phone"
+                            <input type="text" wire:model="phone" inputmode="numeric" oninput="onlyDigits(event)"
                                    class="w-full px-3 py-2.5 border rounded-sm text-sm bg-white dark:bg-slate-900 border-neutral-200 dark:border-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400"
                                    placeholder="0812...">
                         </div>
                     </div>
 
+                    </x-slot:tab1>
+                    <x-slot:tab2>
                     {{-- Row: Periode Kontrak --}}
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
@@ -395,19 +398,15 @@
                                   class="w-full px-3 py-2.5 border rounded-sm text-sm bg-white dark:bg-slate-900 border-neutral-200 dark:border-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400"
                                   placeholder="Alamat kantor / tempat usaha..."></textarea>
                     </div>
-
-                    {{-- Modal Footer --}}
-                    <div class="pt-4 flex justify-end gap-2 border-t border-neutral-100 dark:border-slate-700">
-                        <button type="button" wire:click="closeModal"
-                                class="px-4 py-2.5 border border-neutral-200 dark:border-slate-700 rounded-sm text-sm font-semibold hover:bg-neutral-50 dark:hover:bg-slate-700 dark:text-white transition-colors cursor-pointer">
-                            Batal
-                        </button>
+                    </x-slot:tab2>
+                    <x-slot:submit>
                         <button type="submit" wire:loading.attr="disabled"
                                 class="px-4 py-2.5 bg-blue-900 text-white rounded-sm text-sm font-semibold hover:bg-blue-950 transition-colors shadow-sm shadow-blue-900/20 cursor-pointer">
                             <span wire:loading.remove>{{ $vendorId ? 'Perbarui Data' : 'Simpan Data' }}</span>
                             <span wire:loading>Memproses...</span>
                         </button>
-                    </div>
+                    </x-slot:submit>
+                    </x-form-tabs>
                 </form>
 
             </div>

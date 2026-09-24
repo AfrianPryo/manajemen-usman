@@ -29,6 +29,13 @@ body::-webkit-scrollbar {
     display: none;
 }
 
+/* x-cloak dipakai di banyak tempat (sidebar, modal, tab form) tapi rule CSS-nya
+   belum pernah didefinisikan -- alhasil elemen sempat "kedip" sebelum Alpine
+   siap. Fix murni CSS, tidak mengubah perilaku apa pun yang sudah berjalan. */
+[x-cloak] {
+    display: none !important;
+}
+
 /* ================= Navbar Text Animation ================= */
 
 .nav-text {

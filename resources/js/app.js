@@ -67,6 +67,38 @@ function initGlobalScripts() {
     }
 }
 
+// ================= Pengaman Input Angka =================
+// Sebagian field di form (No. Telepon, NIP, Harga, Stok, dst) secara alami
+// hanya boleh berisi angka. Atribut HTML seperti type="number" atau
+// inputmode="numeric" saja TIDAK cukup: type="number" masih meloloskan
+// karakter "e", "+", "-", dan keyboard fisik tetap bisa mengetik huruf pada
+// field bertipe text. Dua helper berikut dipasang lewat atribut oninput pada
+// field terkait di Blade, sehingga karakter selain angka (dan satu titik
+// desimal untuk onlyDecimal) langsung dibuang saat event input terjadi --
+// baik dari ketikan, paste, maupun autofill. wire:model Livewire tetap
+// membaca event yang sama setelah nilai dibersihkan, jadi hasil yang
+// tersimpan ke server juga sudah bersih.
+window.onlyDigits = function (event) {
+    const el = event.target;
+    const cleaned = el.value.replace(/[^0-9]/g, '');
+    if (cleaned !== el.value) {
+        el.value = cleaned;
+    }
+};
+
+window.onlyDecimal = function (event) {
+    const el = event.target;
+    let cleaned = el.value.replace(/[^0-9.]/g, '');
+    // Hanya izinkan satu titik desimal; sisanya dibuang.
+    const firstDot = cleaned.indexOf('.');
+    if (firstDot !== -1) {
+        cleaned = cleaned.slice(0, firstDot + 1) + cleaned.slice(firstDot + 1).replace(/\./g, '');
+    }
+    if (cleaned !== el.value) {
+        el.value = cleaned;
+    }
+};
+
 // Inisialisasi saat load pertama kali
 document.addEventListener('DOMContentLoaded', initGlobalScripts);
 

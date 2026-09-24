@@ -4,7 +4,7 @@
     $colors = [
         'indigo' => 'bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400',
         'green'  => 'bg-green-50 dark:bg-emerald-950 text-green-600 dark:text-emerald-400',
-        'red'    => 'bg-red-50 dark:bg-rose-950 text-blue-900 dark:text-rose-400',
+        'red'    => 'bg-red-50 dark:bg-rose-950 text-red-600 dark:text-rose-400',
         'amber'  => 'bg-amber-50 dark:bg-amber-950 text-amber-600 dark:text-amber-400',
     ];
 @endphp

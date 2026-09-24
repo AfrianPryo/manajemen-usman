@@ -51,9 +51,8 @@
         <form wire:submit="saveRetention" class="pt-2 flex flex-col sm:flex-row sm:items-end gap-2">
             <div>
                 <label for="retention_input" class="block text-[11px] font-semibold mb-1">Batas Retensi (hari)</label>
-                <input id="retention_input" type="number"
-                    min="{{ \App\Services\LogArchiveService::MIN_RETENTION_DAYS }}" max="{{ \App\Services\LogArchiveService::MAX_RETENTION_DAYS }}"
-                    wire:model="retentionInput"
+                <input id="retention_input" type="text" inputmode="numeric"
+                    wire:model="retentionInput" oninput="onlyDigits(event)"
                     class="w-40 px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-[3px] bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-red-500">
             </div>
             <button type="submit" wire:loading.attr="disabled" wire:target="saveRetention"

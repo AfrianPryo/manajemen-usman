@@ -226,8 +226,9 @@
                 </div>
 
                 {{-- Modal Body / Form --}}
-                <form wire:submit.prevent="save" class="p-6 space-y-4">
-
+                <form wire:submit.prevent="save" class="p-6">
+                    <x-form-tabs tab1-label="Data Utama" tab2-label="Detail & Catatan" cancel="closeModal">
+                    <x-slot:tab1>
                     <div>
                         <label class="block text-xs font-medium text-neutral-600 dark:text-neutral-300 mb-1">Unit Usaha</label>
                         <select wire:model="unit_id"
@@ -264,7 +265,7 @@
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-xs font-medium text-neutral-600 dark:text-neutral-300 mb-1">No. Telepon / WhatsApp</label>
-                            <input type="text" wire:model="phone"
+                            <input type="text" wire:model="phone" inputmode="numeric" oninput="onlyDigits(event)"
                                    class="w-full px-3 py-2.5 border rounded-sm text-sm bg-white dark:bg-slate-900 border-neutral-200 dark:border-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400"
                                    placeholder="0812...">
                         </div>
@@ -277,6 +278,8 @@
                         </div>
                     </div>
 
+                    </x-slot:tab1>
+                    <x-slot:tab2>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-xs font-medium text-neutral-600 dark:text-neutral-300 mb-1">Jenis Kelamin</label>
@@ -314,19 +317,15 @@
                                class="rounded border-neutral-300 text-blue-900 focus:ring-blue-400 cursor-pointer">
                         <label for="customer_is_active" class="text-xs font-medium text-neutral-600 dark:text-neutral-300 cursor-pointer">Pelanggan Aktif</label>
                     </div>
-
-                    {{-- Modal Footer --}}
-                    <div class="pt-4 flex justify-end gap-2 border-t border-neutral-100 dark:border-slate-700">
-                        <button type="button" wire:click="closeModal"
-                                class="px-4 py-2.5 border border-neutral-200 dark:border-slate-700 rounded-sm text-sm font-semibold hover:bg-neutral-50 dark:hover:bg-slate-700 dark:text-white transition-colors cursor-pointer">
-                            Batal
-                        </button>
+                    </x-slot:tab2>
+                    <x-slot:submit>
                         <button type="submit" wire:loading.attr="disabled"
                                 class="px-4 py-2.5 bg-blue-900 text-white rounded-sm text-sm font-semibold hover:bg-blue-950 transition-colors shadow-sm shadow-blue-900/20 cursor-pointer">
                             <span wire:loading.remove>{{ $isEditing ? 'Perbarui Pelanggan' : 'Simpan Pelanggan' }}</span>
                             <span wire:loading>Memproses...</span>
                         </button>
-                    </div>
+                    </x-slot:submit>
+                    </x-form-tabs>
                 </form>
 
             </div>

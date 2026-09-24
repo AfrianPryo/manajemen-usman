@@ -311,8 +311,9 @@
                 </div>
 
                 {{-- Modal Body / Form --}}
-                <form wire:submit.prevent="saveTransaction" class="p-6 space-y-4">
-
+                <form wire:submit.prevent="saveTransaction" class="p-6">
+                    <x-form-tabs tab1-label="Detail Transaksi" tab2-label="Pembayaran & Bukti" cancel="closeCreateModal">
+                    <x-slot:tab1>
                     {{-- Toggle Type: Income / Expense --}}
                     <div>
                         <label class="block text-xs font-medium text-neutral-500 dark:text-neutral-400 mb-2">TIPE TRANSAKSI</label>
@@ -368,7 +369,7 @@
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-xs font-medium text-neutral-600 dark:text-neutral-300 mb-1">Jumlah Nominal (Rp)</label>
-                            <input type="number" wire:model="form_amount" placeholder="0" min="1"
+                            <input type="text" inputmode="decimal" wire:model="form_amount" oninput="onlyDecimal(event)" placeholder="0"
                                 class="w-full px-3 py-2.5 border rounded-sm text-sm font-semibold bg-white dark:bg-slate-900 border-neutral-200 dark:border-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400">
                             @error('form_amount') <span class="text-xs text-red-500 mt-0.5 block">{{ $message }}</span> @enderror
                         </div>
@@ -381,6 +382,8 @@
                         </div>
                     </div>
 
+                    </x-slot:tab1>
+                    <x-slot:tab2>
                     {{-- Row 3: Ref No, Payment Method, Status --}}
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         <div>
@@ -447,17 +450,14 @@
                             <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span>
                         @enderror
                     </div>
-
-                    {{-- Modal Footer --}}
-                    <div class="pt-4 flex justify-end gap-2 border-t border-neutral-100 dark:border-slate-700">
-                        <button type="button" wire:click="closeCreateModal" class="px-4 py-2.5 border border-neutral-200 dark:border-slate-700 rounded-sm text-sm font-semibold hover:bg-neutral-50 dark:hover:bg-slate-700 dark:text-white transition-colors cursor-pointer">
-                            Batal
-                        </button>
+                    </x-slot:tab2>
+                    <x-slot:submit>
                         <button type="submit" wire:loading.attr="disabled" class="px-4 py-2.5 bg-blue-900 text-white rounded-sm text-sm font-semibold hover:bg-blue-950 transition-colors shadow-sm shadow-blue-900/20 cursor-pointer">
                             <span wire:loading.remove>{{ $isEditing ? 'Perbarui Transaksi' : 'Simpan Transaksi' }}</span>
                             <span wire:loading>{{ $isEditing ? 'Memperbarui...' : 'Menyimpan...' }}</span>
                         </button>
-                    </div>
+                    </x-slot:submit>
+                    </x-form-tabs>
 
                 </form>
             </div>

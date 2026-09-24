@@ -99,8 +99,9 @@
                     <button wire:click="closeModal" class="text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 text-2xl font-bold leading-none">&times;</button>
                 </div>
 
-                <form wire:submit.prevent="send" class="p-6 space-y-4 text-xs">
-
+                <form wire:submit.prevent="send" class="p-6 text-xs">
+                    <x-form-tabs tab1-label="Isi Pengumuman" tab2-label="Penerima & Pengiriman" cancel="closeModal" compact rounded="rounded-md">
+                    <x-slot:tab1>
                     <div>
                         <label class="block font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Judul <span class="text-red-500">*</span></label>
                         <input type="text" wire:model="title"
@@ -127,6 +128,8 @@
                         @error('message') <span class="text-rose-500 text-[11px] mt-0.5 block">{{ $message }}</span> @enderror
                     </div>
 
+                    </x-slot:tab1>
+                    <x-slot:tab2>
                     {{-- Target Penerima --}}
                     <div>
                         <label class="block font-semibold text-neutral-600 dark:text-neutral-300 mb-1.5">Target Penerima <span class="text-red-500">*</span></label>
@@ -182,17 +185,15 @@
                         </label>
                     </div>
 
-                    <div class="pt-4 border-t border-neutral-100 dark:border-slate-700 flex items-center justify-end gap-2.5">
-                        <button type="button" wire:click="closeModal"
-                                class="px-4 py-2 text-xs font-semibold text-neutral-600 dark:text-neutral-300 bg-neutral-100 dark:bg-slate-700 rounded-md hover:bg-neutral-200 dark:hover:bg-slate-600 transition-all cursor-pointer">
-                            Batal
-                        </button>
+                    </x-slot:tab2>
+                    <x-slot:submit>
                         <button type="submit" wire:loading.attr="disabled"
                                 class="px-5 py-2 text-xs font-bold text-white bg-blue-900 hover:bg-blue-950 rounded-md transition-all flex items-center gap-2 shadow-sm cursor-pointer">
                             <span wire:loading.remove>Kirim ke {{ $targetCount }} Admin Unit</span>
                             <span wire:loading>Mengirim...</span>
                         </button>
-                    </div>
+                    </x-slot:submit>
+                    </x-form-tabs>
                 </form>
 
             </div>

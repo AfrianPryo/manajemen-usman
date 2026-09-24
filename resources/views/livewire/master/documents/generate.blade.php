@@ -160,7 +160,7 @@
                     </div>
                     <div>
                         <label for="nip_penerima" class="block text-xs font-medium text-neutral-600 dark:text-neutral-300 mb-1">NIP Penerima</label>
-                        <input type="text" id="nip_penerima" wire:model="nip_penerima"
+                        <input type="text" id="nip_penerima" wire:model="nip_penerima" inputmode="numeric" oninput="onlyDigits(event)"
                             class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400">
                         @error('nip_penerima') <span class="text-[11px] text-rose-500 mt-0.5 block">{{ $message }}</span> @enderror
                     </div>

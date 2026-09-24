@@ -181,8 +181,9 @@
                 </div>
 
                 {{-- Modal Body / Form --}}
-                <form wire:submit.prevent="save" class="p-6 space-y-4 text-xs">
-
+                <form wire:submit.prevent="save" class="p-6 text-xs">
+                    <x-form-tabs tab1-label="Info Pesanan" tab2-label="Jadwal & Catatan" cancel="closeModal" compact rounded="rounded-md">
+                    <x-slot:tab1>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
                             <label class="block font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Nama Pelanggan <span class="text-red-500">*</span></label>
@@ -193,7 +194,7 @@
                         </div>
                         <div>
                             <label class="block font-semibold text-neutral-600 dark:text-neutral-300 mb-1">No. Telepon</label>
-                            <input type="text" wire:model="customer_phone"
+                            <input type="text" wire:model="customer_phone" inputmode="numeric" oninput="onlyDigits(event)"
                                    class="w-full px-3.5 py-2 border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-blue-500"
                                    placeholder="0812...">
                         </div>
@@ -216,13 +217,15 @@
                         </div>
                         <div>
                             <label class="block font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Biaya Jasa (Rp) <span class="text-red-500">*</span></label>
-                            <input type="number" step="0.01" min="0" wire:model="price"
+                            <input type="text" inputmode="decimal" wire:model="price" oninput="onlyDecimal(event)"
                                    class="w-full px-3.5 py-2 border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-blue-500"
                                    placeholder="0">
                             @error('price') <span class="text-rose-500 text-[11px] mt-0.5 block">{{ $message }}</span> @enderror
                         </div>
                     </div>
 
+                    </x-slot:tab1>
+                    <x-slot:tab2>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
                             <label class="block font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Jadwal Pengerjaan</label>
@@ -255,19 +258,15 @@
                                   class="w-full px-3.5 py-2 border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-blue-500"
                                   placeholder="Catatan tambahan untuk tim internal..."></textarea>
                     </div>
-
-                    {{-- Modal Footer --}}
-                    <div class="pt-4 border-t border-neutral-100 dark:border-slate-700 flex items-center justify-end gap-2.5">
-                        <button type="button" wire:click="closeModal"
-                                class="px-4 py-2 text-xs font-semibold text-neutral-600 dark:text-neutral-300 bg-neutral-100 dark:bg-slate-700 rounded-md hover:bg-neutral-200 dark:hover:bg-slate-600 transition-all cursor-pointer">
-                            Batal
-                        </button>
+                    </x-slot:tab2>
+                    <x-slot:submit>
                         <button type="submit" wire:loading.attr="disabled"
                                 class="px-5 py-2 text-xs font-bold text-white bg-blue-900 hover:bg-blue-950 rounded-md transition-all flex items-center gap-2 shadow-sm cursor-pointer">
                             <span wire:loading.remove>{{ $isEditing ? 'Perbarui Pesanan' : 'Simpan Pesanan' }}</span>
                             <span wire:loading>Memproses...</span>
                         </button>
-                    </div>
+                    </x-slot:submit>
+                    </x-form-tabs>
                 </form>
 
             </div>

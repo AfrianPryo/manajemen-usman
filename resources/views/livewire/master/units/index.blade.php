@@ -107,10 +107,10 @@
                     <div class="flex justify-between items-start gap-2">
                         <div>
                             <div class="flex items-center gap-1.5 flex-wrap mb-2">
-                                <span class="inline-block text-[10px] font-bold uppercase px-2 py-0.5 rounded-sm bg-sky-50 dark:bg-sky-950/50 text-sky-600 dark:text-sky-400 border border-sky-200/60 dark:border-sky-800">
+                                <span class="inline-block text-[10px] font-bold uppercase px-2 py-0.5 rounded-sm bg-neutral-100 dark:bg-slate-700/60 text-neutral-600 dark:text-neutral-300 border border-neutral-200 dark:border-slate-600">
                                     {{ $unit->department }}
                                 </span>
-                                <span class="inline-block text-[10px] font-bold uppercase px-2 py-0.5 rounded-sm bg-purple-50 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400 border border-purple-200/60 dark:border-purple-800">
+                                <span class="inline-block text-[10px] font-bold uppercase px-2 py-0.5 rounded-sm bg-neutral-100 dark:bg-slate-700/60 text-neutral-600 dark:text-neutral-300 border border-neutral-200 dark:border-slate-600">
                                     {{ $unit->category }}
                                 </span>
                             </div>
@@ -244,7 +244,9 @@
                 </div>
 
                 {{-- Modal Form --}}
-                <form wire:submit="save" class="p-6 space-y-4">
+                <form wire:submit="save" class="p-6">
+                    <x-form-tabs tab1-label="Data Unit" tab2-label="Pengelola & Status" cancel="closeModal">
+                    <x-slot:tab1>
                     {{-- Nama Unit Usaha --}}
                     <div>
                         <label class="block text-xs font-medium text-neutral-600 dark:text-neutral-300 mb-1">Nama Unit Usaha <span class="text-red-500">*</span></label>
@@ -276,6 +278,8 @@
                         </div>
                     </div>
 
+                    </x-slot:tab1>
+                    <x-slot:tab2>
                     {{-- PIC & No Telepon --}}
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
@@ -286,7 +290,7 @@
 
                         <div>
                             <label class="block text-xs font-medium text-neutral-600 dark:text-neutral-300 mb-1">No. Telepon / HP</label>
-                            <input type="text" wire:model="phone" class="w-full px-3 py-2.5 border rounded-sm text-sm bg-white dark:bg-slate-900 border-neutral-200 dark:border-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400" placeholder="08123456789">
+                            <input type="text" wire:model="phone" inputmode="numeric" oninput="onlyDigits(event)" class="w-full px-3 py-2.5 border rounded-sm text-sm bg-white dark:bg-slate-900 border-neutral-200 dark:border-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400" placeholder="08123456789">
                             @error('phone') <span class="text-xs text-red-500">{{ $message }}</span> @enderror
                         </div>
                     </div>
@@ -304,16 +308,14 @@
                         <label for="is_active" class="text-xs font-medium text-neutral-600 dark:text-neutral-300">Unit Usaha Aktif / Operasional</label>
                     </div>
 
-                    {{-- Modal Footer --}}
-                    <div class="pt-4 flex justify-end gap-2 border-t border-neutral-100 dark:border-slate-700">
-                        <button type="button" wire:click="closeModal" class="px-4 py-2.5 border border-neutral-200 dark:border-slate-700 rounded-sm text-sm font-semibold hover:bg-neutral-50 dark:hover:bg-slate-700 dark:text-white transition-colors">
-                            Batal
-                        </button>
+                    </x-slot:tab2>
+                    <x-slot:submit>
                         <button type="submit" wire:loading.attr="disabled" class="px-4 py-2.5 bg-blue-900 text-white rounded-sm text-sm font-semibold hover:bg-blue-950 transition-colors shadow-sm shadow-blue-900/20">
                             <span wire:loading.remove wire:target="save">Simpan Unit</span>
                             <span wire:loading wire:target="save">Memproses...</span>
                         </button>
-                    </div>
+                    </x-slot:submit>
+                    </x-form-tabs>
                 </form>
             </div>
         </div>
