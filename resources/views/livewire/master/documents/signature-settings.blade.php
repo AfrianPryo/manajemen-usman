@@ -45,11 +45,18 @@
             </div>
         </div>
 
-        <div>
+        <div
+            x-data="{ uploading: false, progress: 0 }"
+            x-on:livewire-upload-start="uploading = true; progress = 0"
+            x-on:livewire-upload-finish="uploading = false"
+            x-on:livewire-upload-cancel="uploading = false"
+            x-on:livewire-upload-error="uploading = false"
+            x-on:livewire-upload-progress="progress = $event.detail.progress"
+        >
             <label class="block text-xs font-medium text-neutral-600 dark:text-neutral-300 mb-1">Gambar Tanda Tangan</label>
             <input type="file" wire:model="signatureImage" accept="image/*" class="w-full text-xs border border-neutral-200 dark:border-slate-700 rounded-sm p-1.5 bg-neutral-50 dark:bg-slate-900 text-neutral-800 dark:text-neutral-200">
             <p class="text-[11px] text-neutral-400 mt-1">Gunakan PNG transparan agar hasil di dokumen lebih rapi. Maks. 1 MB.</p>
-            <div wire:loading wire:target="signatureImage" class="text-[11px] text-amber-600 mt-1">Mengunggah...</div>
+            <x-upload-progress />
             @error('signatureImage') <span class="text-[11px] text-rose-500 mt-0.5 block">{{ $message }}</span> @enderror
             @if ($signatureImage)
                 <img src="{{ $signatureImage->temporaryUrl() }}" class="h-16 mt-2 border border-neutral-200 dark:border-slate-700 rounded-sm p-1 bg-white">
@@ -64,7 +71,7 @@
             @if ($editingId)
                 <button wire:click="$set('editingId', null)" class="px-4 py-2 text-xs font-semibold text-neutral-600 dark:text-neutral-300 bg-neutral-100 dark:bg-slate-700 rounded-sm hover:bg-neutral-200 dark:hover:bg-slate-600 transition-all">Batal</button>
             @endif
-            <button wire:click="save" class="px-5 py-2 text-xs font-bold text-white bg-blue-900 hover:bg-blue-950 rounded-sm transition-all shadow-sm shadow-blue-900/20">Simpan</button>
+            <button wire:click="save" wire:loading.attr="disabled" wire:target="signatureImage,save" class="px-5 py-2 text-xs font-bold text-white bg-blue-900 hover:bg-blue-950 rounded-sm transition-all shadow-sm shadow-blue-900/20 disabled:opacity-50 disabled:cursor-not-allowed">Simpan</button>
         </div>
     </div>
 

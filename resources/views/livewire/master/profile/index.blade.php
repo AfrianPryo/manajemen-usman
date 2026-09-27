@@ -28,10 +28,18 @@
                     {{ strtoupper(substr($name ?: 'U', 0, 1)) }}
                 @endif
             </div>
-            <div class="flex-1">
+            <div
+                class="flex-1"
+                x-data="{ uploading: false, progress: 0 }"
+                x-on:livewire-upload-start="uploading = true; progress = 0"
+                x-on:livewire-upload-finish="uploading = false"
+                x-on:livewire-upload-cancel="uploading = false"
+                x-on:livewire-upload-error="uploading = false"
+                x-on:livewire-upload-progress="progress = $event.detail.progress"
+            >
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Foto Profil</label>
                 <input type="file" wire:model="avatar" accept="image/*" class="w-full text-sm text-gray-600 dark:text-gray-300 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-slate-100 file:text-slate-700 hover:file:bg-slate-200">
-                <div wire:loading wire:target="avatar" class="text-xs text-gray-400 mt-1">Mengunggah...</div>
+                <x-upload-progress />
                 @error('avatar') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
             </div>
         </div>
@@ -54,7 +62,7 @@
             </div>
         </div>
         <div class="flex justify-end pt-4 border-t border-gray-100 dark:border-slate-700">
-            <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700">Update Profil</button>
+            <button type="submit" wire:loading.attr="disabled" wire:target="avatar,updateProfile" class="px-6 py-2 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed">Update Profil</button>
         </div>
     </form>
 

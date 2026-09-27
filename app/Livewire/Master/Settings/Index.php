@@ -4,6 +4,7 @@ namespace App\Livewire\Master\Settings;
 
 use App\Models\AuditLog;
 use App\Models\Setting;
+use App\Models\Unit;
 use App\Models\User;
 use App\Notifications\SystemNotification;
 use App\Services\FonnteOtpService;
@@ -58,14 +59,6 @@ class Index extends Component
     public $logo;
     public ?string $existingLogo = null;
 
-    // 2b. Fitur & Modul — Tampilan Landing Page (halaman depan publik).
-    // Nama & logo aplikasi di atas otomatis dipakai juga di landing page
-    // (lihat resources/views/landing.blade.php). Toggle ini khusus mengatur
-    // apakah daftar Unit Usaha aktif (beserta logonya) ikut ditampilkan di
-    // bagian "Mitra Unit Usaha" pada landing page, karena itu data
-    // operasional yang mungkin tidak semua sekolah ingin publikasikan.
-    public bool $showUnitsOnLanding = true;
-
     // 2b. Fitur & Modul — Akses Fitur & Otomatisasi
     public bool $allowMultiUnitAdmin = true;
     public string $defaultCategory = 'ritel';
@@ -116,6 +109,96 @@ class Index extends Component
     // properti bertipe int; validasi 'integer' di saveFeatures() yang menjaga.
     public $logRetentionDays = LogArchiveService::DEFAULT_RETENTION_DAYS;
 
+    /*
+    |--------------------------------------------------------------------------
+    | 4. LANDING PAGE — konten halaman depan publik (resources/views/landing.blade.php)
+    |--------------------------------------------------------------------------
+    | Nama & logo aplikasi (tab "Fitur & Modul") otomatis dipakai juga di
+    | landing page. Tab ini khusus mengatur judul/deskripsi tiap section
+    | serta show/hide-nya per section, supaya admin tidak perlu sentuh kode
+    | untuk mengubah copy landing page. Teks bawaan (SELAMA admin belum
+    | pernah menyimpan) ada di Setting::LANDING_DEFAULTS -- satu-satunya
+    | sumber supaya form ini & tampilan publik selalu konsisten.
+    |
+    | "Mitra Unit Usaha" (show_units_on_landing) sengaja mempertahankan key
+    | lama dari tab "Fitur & Modul" -- hanya pindah tempat tampil di UI --
+    | supaya nilai yang sudah tersimpan admin sebelumnya tidak hilang.
+    */
+
+    // 4a. Hero (halaman utama) -- judul besar paling atas landing page.
+    // Section ini selalu tampil (tidak ada toggle enabled/disabled) karena
+    // menjadi halaman pembuka; hanya teksnya yang bisa diubah admin.
+    public string $landingHeroTitleTop = '';
+    public string $landingHeroTitleBottom = '';
+    public string $landingHeroScrollText = '';
+
+    public bool $showUnitsOnLanding = true;
+    public string $landingMitraTitle = '';
+    public string $landingMitraDescription = '';
+
+    // "all"      = semua unit usaha berstatus aktif tampil otomatis (perilaku lama).
+    // "selected" = hanya unit dari landingSelectedUnitIds yang tampil, apa pun
+    //              status aktifnya, supaya admin bisa mengatur satu per satu
+    //              unit mana yang ingin ditonjolkan di landing page publik.
+    public string $landingUnitsMode = 'all';
+    public array $landingSelectedUnitIds = [];
+    /** @var array<int, array{id:int,name:string,is_active:bool}> daftar unit untuk pilihan checkbox di form, diisi di mount() */
+    public array $availableUnits = [];
+
+    public bool $landingFiturEnabled = true;
+    public string $landingFiturEyebrow = '';
+    public string $landingFiturTitle = '';
+    /** @var array<int, array{title:string,description:string}> */
+    public array $landingFiturItems = [];
+
+    public bool $landingCaraKerjaEnabled = true;
+    public string $landingCaraKerjaTitle = '';
+    public string $landingCaraKerjaDescription = '';
+    /** @var array<int, array{badge:string,icon:string,title:string,description:string}> */
+    public array $landingCaraKerjaItems = [];
+
+    public bool $landingTentangEnabled = true;
+    public string $landingTentangTitle = '';
+    public string $landingTentangDescription = '';
+    // 4b. Foto section "Tentang" -- kustomisasi foto sisi kiri section ini.
+    // Fallback ke asset bawaan (images/images (1).jpg) SELAMA admin belum
+    // pernah mengunggah foto sendiri. Lihat removeTentangPhoto() & blade.
+    public $landingTentangPhoto;
+    public ?string $existingLandingTentangPhoto = null;
+
+    public bool $landingFaqEnabled = true;
+    public string $landingFaqTitle = '';
+    /** @var array<int, array{question:string,answer:string}> */
+    public array $landingFaqItems = [];
+
+    // Footer selalu tampil (berisi navigasi & kontak inti situs), jadi
+    // sengaja tidak diberi toggle enabled -- hanya judul yang bisa diubah.
+    public string $landingFooterTitle = '';
+
+    // Ikon garis bawaan yang tersedia untuk tiap kartu "Cara Kerja" --
+    // dipetakan ke markup SVG aslinya di resources/views/landing.blade.php
+    // ($__caraKerjaIcons). Dipakai sebagai daftar pilihan <select> ikon di
+    // form supaya admin tidak perlu (dan tidak bisa) menempel markup SVG
+    // bebas dari form.
+    public const CARA_KERJA_ICONS = [
+        'akun'       => 'Orang / Akun',
+        'setup'      => 'Formulir / Setup',
+        'unit'       => 'Bangunan / Unit Usaha',
+        'transaksi'  => 'Nota / Transaksi',
+        'laporan'    => 'Grafik / Laporan',
+        'keamanan'   => 'Perisai / Keamanan',
+        'notifikasi' => 'Lonceng / Notifikasi',
+        'dukungan'   => 'Headset / Dukungan',
+        'waktu'      => 'Jam / Real-time',
+    ];
+
+    // Batas jumlah butir per daftar dinamis landing page, sekadar menjaga
+    // tata letak tetap wajar & form tetap ringan -- bukan batas teknis.
+    private const LANDING_LIST_MIN = 1;
+    private const LANDING_FITUR_MAX = 8;
+    private const LANDING_CARA_KERJA_MAX = 8;
+    private const LANDING_FAQ_MAX = 12;
+
     public function mount(): void
     {
         $user = Auth::user();
@@ -131,7 +214,6 @@ class Index extends Component
         $this->appName          = Setting::get('app_name', 'USMAN - Usaha Mandiri Sekolah');
         $this->existingLogo     = Setting::get('app_logo');
         $this->maintenanceMode  = (bool) Setting::get('maintenance_mode', false);
-        $this->showUnitsOnLanding = (bool) Setting::get('show_units_on_landing', true);
 
         $this->defaultCategory     = Setting::get('default_category', 'ritel');
         $this->allowMultiUnitAdmin = (bool) Setting::get('allow_multi_unit_admin', true);
@@ -161,6 +243,181 @@ class Index extends Component
         $this->sessionTimeoutUnitMinutes   = (int) Setting::get('session_timeout_unit_minutes', 30);
 
         $this->logRetentionDays = app(LogArchiveService::class)->retentionDays();
+
+        // Tab "Landing Page"
+        $defaults = Setting::LANDING_DEFAULTS;
+
+        $this->landingHeroTitleTop    = Setting::get('landing_hero_title_top', $defaults['landing_hero_title_top']);
+        $this->landingHeroTitleBottom = Setting::get('landing_hero_title_bottom', $defaults['landing_hero_title_bottom']);
+        $this->landingHeroScrollText  = Setting::get('landing_hero_scroll_text', $defaults['landing_hero_scroll_text']);
+
+        $this->showUnitsOnLanding     = (bool) Setting::get('show_units_on_landing', true);
+        $this->landingMitraTitle       = Setting::get('landing_mitra_title', $defaults['landing_mitra_title']);
+        $this->landingMitraDescription = Setting::get('landing_mitra_description', $defaults['landing_mitra_description']);
+
+        $this->landingUnitsMode = Setting::get('landing_units_mode', 'all') === 'selected' ? 'selected' : 'all';
+        $storedUnitIds = json_decode(Setting::get('landing_selected_unit_ids', '[]'), true);
+        $this->landingSelectedUnitIds = is_array($storedUnitIds) ? array_values(array_map('intval', $storedUnitIds)) : [];
+        $this->availableUnits = Unit::orderBy('name')->get(['id', 'name', 'is_active'])
+            ->map(fn (Unit $unit) => ['id' => $unit->id, 'name' => $unit->name, 'is_active' => (bool) $unit->is_active])
+            ->all();
+
+        $this->landingFiturEnabled = (bool) Setting::get('landing_fitur_enabled', true);
+        $this->landingFiturEyebrow = Setting::get('landing_fitur_eyebrow', $defaults['landing_fitur_eyebrow']);
+        $this->landingFiturTitle   = Setting::get('landing_fitur_title', $defaults['landing_fitur_title']);
+        $this->landingFiturItems   = Setting::getList('landing_fitur_items');
+
+        $this->landingCaraKerjaEnabled    = (bool) Setting::get('landing_cara_kerja_enabled', true);
+        $this->landingCaraKerjaTitle       = Setting::get('landing_cara_kerja_title', $defaults['landing_cara_kerja_title']);
+        $this->landingCaraKerjaDescription = Setting::get('landing_cara_kerja_description', $defaults['landing_cara_kerja_description']);
+        $this->landingCaraKerjaItems       = Setting::getList('landing_cara_kerja_items');
+
+        $this->landingTentangEnabled    = (bool) Setting::get('landing_tentang_enabled', true);
+        $this->landingTentangTitle       = Setting::get('landing_tentang_title', $defaults['landing_tentang_title']);
+        $this->landingTentangDescription = Setting::get('landing_tentang_description', $defaults['landing_tentang_description']);
+        $this->existingLandingTentangPhoto = Setting::get('landing_tentang_photo');
+
+        $this->landingFaqEnabled = (bool) Setting::get('landing_faq_enabled', true);
+        $this->landingFaqTitle   = Setting::get('landing_faq_title', $defaults['landing_faq_title']);
+        $this->landingFaqItems   = Setting::getList('landing_faq_items');
+
+        $this->landingFooterTitle = Setting::get('landing_footer_title', $defaults['landing_footer_title']);
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | LANDING PAGE — daftar dinamis (Fitur Unggulan, Cara Kerja, FAQ)
+    |--------------------------------------------------------------------------
+    | Tambah/hapus/geser satu butir dalam salah satu daftar landing page.
+    | Ketiga daftar berbentuk array of array dengan bentuk berbeda-beda,
+    | jadi method tambah/hapus ditulis per-daftar (supaya nilai bawaan
+    | tiap butir baru jelas & IDE-friendly), tapi geser urutan dipakaikan
+    | satu helper generik lewat reorderLandingList().
+    */
+    public function addFiturItem(): void
+    {
+        if (! $this->canAccessLandingTab() || count($this->landingFiturItems) >= self::LANDING_FITUR_MAX) {
+            return;
+        }
+
+        $this->landingFiturItems[] = ['title' => '', 'description' => ''];
+    }
+
+    public function removeFiturItem(int $index): void
+    {
+        $this->removeLandingListItem($this->landingFiturItems, $index);
+    }
+
+    public function moveFiturItem(int $index, string $direction): void
+    {
+        $this->reorderLandingList($this->landingFiturItems, $index, $direction);
+    }
+
+    public function addCaraKerjaItem(): void
+    {
+        if (! $this->canAccessLandingTab() || count($this->landingCaraKerjaItems) >= self::LANDING_CARA_KERJA_MAX) {
+            return;
+        }
+
+        $this->landingCaraKerjaItems[] = ['badge' => '', 'icon' => 'unit', 'title' => '', 'description' => ''];
+    }
+
+    public function removeCaraKerjaItem(int $index): void
+    {
+        $this->removeLandingListItem($this->landingCaraKerjaItems, $index);
+    }
+
+    public function moveCaraKerjaItem(int $index, string $direction): void
+    {
+        $this->reorderLandingList($this->landingCaraKerjaItems, $index, $direction);
+    }
+
+    public function addFaqItem(): void
+    {
+        if (! $this->canAccessLandingTab() || count($this->landingFaqItems) >= self::LANDING_FAQ_MAX) {
+            return;
+        }
+
+        $this->landingFaqItems[] = ['question' => '', 'answer' => ''];
+    }
+
+    public function removeFaqItem(int $index): void
+    {
+        $this->removeLandingListItem($this->landingFaqItems, $index);
+    }
+
+    public function moveFaqItem(int $index, string $direction): void
+    {
+        $this->reorderLandingList($this->landingFaqItems, $index, $direction);
+    }
+
+    /**
+     * Pindahkan satu butir ke posisi tertentu (drag-and-drop di UI) --
+     * pelengkap moveFiturItem()/moveCaraKerjaItem()/moveFaqItem() yang
+     * hanya menukar dengan tetangga (dipakai tombol naik/turun).
+     */
+    public function moveFiturItemTo(int $from, int $to): void
+    {
+        $this->moveLandingListItem($this->landingFiturItems, $from, $to);
+    }
+
+    public function moveCaraKerjaItemTo(int $from, int $to): void
+    {
+        $this->moveLandingListItem($this->landingCaraKerjaItems, $from, $to);
+    }
+
+    public function moveFaqItemTo(int $from, int $to): void
+    {
+        $this->moveLandingListItem($this->landingFaqItems, $from, $to);
+    }
+
+    /**
+     * Hapus satu butir dari daftar landing page, minimal menyisakan
+     * LANDING_LIST_MIN butir supaya section terkait tidak pernah tampil
+     * kosong total di publik selama section-nya masih diaktifkan.
+     */
+    private function removeLandingListItem(array &$items, int $index): void
+    {
+        if (! $this->canAccessLandingTab() || count($items) <= self::LANDING_LIST_MIN || ! array_key_exists($index, $items)) {
+            return;
+        }
+
+        unset($items[$index]);
+        $items = array_values($items);
+    }
+
+    /**
+     * Tukar posisi butir ke-$index dengan tetangganya ('up' = ke atas,
+     * selain itu dianggap 'down' = ke bawah). Dipakai untuk mengatur
+     * urutan tampil Fitur Unggulan, Cara Kerja, dan FAQ tanpa drag-and-drop.
+     */
+    private function reorderLandingList(array &$items, int $index, string $direction): void
+    {
+        if (! $this->canAccessLandingTab() || ! array_key_exists($index, $items)) {
+            return;
+        }
+
+        $target = $direction === 'up' ? $index - 1 : $index + 1;
+        if (! array_key_exists($target, $items)) {
+            return;
+        }
+
+        [$items[$index], $items[$target]] = [$items[$target], $items[$index]];
+    }
+
+    /**
+     * Pindahkan satu butir dari posisi $from ke posisi $to (drag-and-drop),
+     * menggeser butir-butir di antaranya -- beda dengan reorderLandingList()
+     * di atas yang hanya menukar dua butir bertetangga (dipakai tombol naik/turun).
+     */
+    private function moveLandingListItem(array &$items, int $from, int $to): void
+    {
+        if (! $this->canAccessLandingTab() || ! array_key_exists($from, $items) || ! array_key_exists($to, $items) || $from === $to) {
+            return;
+        }
+
+        $item = array_splice($items, $from, 1)[0];
+        array_splice($items, $to, 0, [$item]);
     }
 
     /**
@@ -206,6 +463,10 @@ class Index extends Component
             return;
         }
 
+        if ($tab === 'landing' && ! $this->canAccessLandingTab()) {
+            return;
+        }
+
         $this->activeTab = $tab;
     }
 
@@ -220,6 +481,19 @@ class Index extends Component
     public function canAccessFeaturesTab(): bool
     {
         return true;
+    }
+
+    /**
+     * Apakah tab "Landing Page" (konten halaman depan publik) ditampilkan &
+     * boleh dipakai di halaman ini. Sama seperti canAccessFeaturesTab() --
+     * ini pengaturan GLOBAL, bukan per-unit, jadi mengikuti guard yang
+     * sama: Master Admin ya, Admin Unit tidak (lihat override
+     * canAccessFeaturesTab() di App\Livewire\Unit\Profile\Index, yang
+     * otomatis membuat method ini juga bernilai false di sana).
+     */
+    public function canAccessLandingTab(): bool
+    {
+        return $this->canAccessFeaturesTab();
     }
 
     /**
@@ -582,6 +856,33 @@ class Index extends Component
         session()->flash('success', 'Logo aplikasi berhasil dihapus, sidebar kembali memakai ikon default.');
     }
 
+    /**
+     * Hapus foto custom section "Tentang" di landing page, kembali memakai
+     * foto bawaan (images/images (1).jpg) -- lihat resources/views/landing.blade.php
+     * bagian ABOUT SECTION.
+     */
+    public function removeTentangPhoto(): void
+    {
+        if (! $this->canAccessLandingTab()) {
+            abort(403);
+        }
+
+        if ($this->existingLandingTentangPhoto && Storage::disk('public')->exists($this->existingLandingTentangPhoto)) {
+            Storage::disk('public')->delete($this->existingLandingTentangPhoto);
+        }
+
+        Setting::set('landing_tentang_photo', null);
+        $this->existingLandingTentangPhoto = null;
+
+        AuditLog::record(
+            event: 'SETTINGS_UPDATED',
+            identifier: Auth::user()->username ?? null,
+            description: 'Admin master menghapus foto custom section Tentang di landing page (kembali ke default).',
+        );
+
+        session()->flash('success', 'Foto section Tentang berhasil dihapus, kembali memakai foto default.');
+    }
+
     /*
     |--------------------------------------------------------------------------
     | FITUR & MODUL — gabungan Parameter Aplikasi (dulu tab "Preferensi Sistem")
@@ -602,9 +903,6 @@ class Index extends Component
             // Parameter Aplikasi
             'appName' => 'required|string|max:50',
             'logo'    => 'nullable|image|max:2048',
-
-            // Tampilan Landing Page
-            'showUnitsOnLanding' => 'boolean',
 
             // Akses Fitur & Otomatisasi
             'defaultCategory' => 'required|in:ritel,jasa',
@@ -649,7 +947,6 @@ class Index extends Component
             'app_name'                => Setting::get('app_name'),
             'app_logo'                => Setting::get('app_logo'),
             'maintenance_mode'        => (bool) Setting::get('maintenance_mode', false),
-            'show_units_on_landing'  => (bool) Setting::get('show_units_on_landing', true),
             'default_category'       => Setting::get('default_category'),
             'allow_multi_unit_admin' => (bool) Setting::get('allow_multi_unit_admin', true),
             'enable_wa_notifications'=> (bool) Setting::get('enable_wa_notifications', false),
@@ -683,7 +980,6 @@ class Index extends Component
         Setting::set('app_name', $this->appName);
         Setting::set('app_logo', $this->existingLogo);
         Setting::set('maintenance_mode', $this->maintenanceMode);
-        Setting::set('show_units_on_landing', $this->showUnitsOnLanding);
 
         // Akses Fitur & Otomatisasi
         Setting::set('default_category', $this->defaultCategory);
@@ -727,7 +1023,6 @@ class Index extends Component
                 'app_name'                => $this->appName,
                 'app_logo'                => $this->existingLogo,
                 'maintenance_mode'        => $this->maintenanceMode,
-                'show_units_on_landing'  => $this->showUnitsOnLanding,
                 'default_category'        => $this->defaultCategory,
                 'allow_multi_unit_admin'  => $this->allowMultiUnitAdmin,
                 'enable_wa_notifications' => $this->enableWaNotifications,
@@ -749,6 +1044,172 @@ class Index extends Component
         );
 
         session()->flash('success', 'Pengaturan fitur & modul berhasil diperbarui.');
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | LANDING PAGE — simpan judul/deskripsi & show/hide tiap section landing
+    | page publik. Lihat blok properti "4. LANDING PAGE" di atas untuk
+    | penjelasan tiap field & resources/views/landing.blade.php untuk
+    | tempat nilainya dipakai.
+    |--------------------------------------------------------------------------
+    */
+    public function saveLanding(): void
+    {
+        // Guard sisi server, sama seperti saveFeatures(): pengaturan ini
+        // global (bukan per-unit), jadi hanya boleh disimpan lewat tab
+        // yang memang boleh diakses (lihat canAccessLandingTab()).
+        if (! $this->canAccessLandingTab()) {
+            abort(403);
+        }
+
+        $this->validate([
+            // Hero
+            'landingHeroTitleTop'    => 'required|string|max:60',
+            'landingHeroTitleBottom' => 'required|string|max:60',
+            'landingHeroScrollText'  => 'required|string|max:20',
+
+            'showUnitsOnLanding' => 'boolean',
+            'landingMitraTitle'       => 'required|string|max:150',
+            'landingMitraDescription' => 'required|string|max:500',
+
+            'landingUnitsMode'                => 'in:all,selected',
+            'landingSelectedUnitIds'          => 'array',
+            'landingSelectedUnitIds.*'        => 'integer|exists:units,id',
+
+            'landingFiturEnabled' => 'boolean',
+            'landingFiturEyebrow' => 'required|string|max:30',
+            'landingFiturTitle'   => 'required|string|max:150',
+            'landingFiturItems'              => 'array|min:'.self::LANDING_LIST_MIN.'|max:'.self::LANDING_FITUR_MAX,
+            'landingFiturItems.*.title'       => 'required|string|max:100',
+            'landingFiturItems.*.description' => 'required|string|max:400',
+
+            'landingCaraKerjaEnabled'    => 'boolean',
+            'landingCaraKerjaTitle'       => 'required|string|max:100',
+            'landingCaraKerjaDescription' => 'required|string|max:300',
+            'landingCaraKerjaItems'                => 'array|min:'.self::LANDING_LIST_MIN.'|max:'.self::LANDING_CARA_KERJA_MAX,
+            'landingCaraKerjaItems.*.badge'         => 'required|string|max:20',
+            'landingCaraKerjaItems.*.icon'          => ['required', Rule::in(array_keys(self::CARA_KERJA_ICONS))],
+            'landingCaraKerjaItems.*.title'         => 'required|string|max:80',
+            'landingCaraKerjaItems.*.description'   => 'required|string|max:250',
+
+            'landingTentangEnabled'    => 'boolean',
+            'landingTentangTitle'       => 'required|string|max:150',
+            'landingTentangDescription' => 'required|string|max:500',
+            'landingTentangPhoto'       => 'nullable|image|max:2048',
+
+            'landingFaqEnabled' => 'boolean',
+            'landingFaqTitle'   => 'required|string|max:150',
+            'landingFaqItems'            => 'array|min:'.self::LANDING_LIST_MIN.'|max:'.self::LANDING_FAQ_MAX,
+            'landingFaqItems.*.question'  => 'required|string|max:200',
+            'landingFaqItems.*.answer'    => 'required|string|max:800',
+
+            'landingFooterTitle' => 'required|string|max:100',
+        ]);
+
+        $user = Auth::user();
+
+        // Proses ganti foto section "Tentang" (kalau ada file baru
+        // diupload). Foto lama dihapus dari disk supaya tidak menumpuk
+        // file yatim -- pola sama dengan removeLogo()/logo di saveFeatures().
+        if ($this->landingTentangPhoto) {
+            if ($this->existingLandingTentangPhoto && Storage::disk('public')->exists($this->existingLandingTentangPhoto)) {
+                Storage::disk('public')->delete($this->existingLandingTentangPhoto);
+            }
+            $this->existingLandingTentangPhoto = $this->landingTentangPhoto->store('landing', 'public');
+            $this->reset('landingTentangPhoto');
+        }
+
+        // Nilai butir daftar (array) disimpan sebagai JSON string -- pola
+        // yang sama dipakai 'report_routine_sections' di saveFeatures() --
+        // supaya cocok dengan Setting::set() yang men-cast value ke string,
+        // dan bisa dibaca balik lewat Setting::getList() di mount() &
+        // landing.blade.php. Diproses terpisah dari landingSettingsMap()
+        // karena field skalar (string/bool) di sana melewati trim(), yang
+        // akan error kalau dipaksakan ke array.
+        $listSettings = [
+            'landing_fitur_items'      => array_values($this->landingFiturItems),
+            'landing_cara_kerja_items' => array_values($this->landingCaraKerjaItems),
+            'landing_faq_items'        => array_values($this->landingFaqItems),
+        ];
+        $selectedUnitIds = array_values(array_unique(array_map('intval', $this->landingSelectedUnitIds)));
+
+        $oldValues = [];
+        $newValues = [];
+        foreach ($this->landingSettingsMap() as $settingKey => $property) {
+            $oldValues[$settingKey] = Setting::get($settingKey);
+            $newValues[$settingKey] = is_bool($this->{$property}) ? $this->{$property} : trim($this->{$property});
+        }
+
+        $oldValues['landing_units_mode'] = Setting::get('landing_units_mode', 'all');
+        $newValues['landing_units_mode'] = $this->landingUnitsMode;
+
+        $oldValues['landing_selected_unit_ids'] = json_decode(Setting::get('landing_selected_unit_ids', '[]'), true) ?: [];
+        $newValues['landing_selected_unit_ids'] = $selectedUnitIds;
+
+        // Foto Tentang -- disimpan terpisah dari landingSettingsMap() karena
+        // path file bukan properti bertipe string biasa yang bisa di-trim()
+        // (properti $landingTentangPhoto adalah objek upload, sedangkan
+        // yang disimpan ke Setting adalah $existingLandingTentangPhoto).
+        $oldValues['landing_tentang_photo'] = Setting::get('landing_tentang_photo');
+        $newValues['landing_tentang_photo'] = $this->existingLandingTentangPhoto;
+
+        foreach ($listSettings as $settingKey => $items) {
+            $oldValues[$settingKey] = Setting::getList($settingKey);
+            $newValues[$settingKey] = $items;
+        }
+
+        foreach ($newValues as $settingKey => $value) {
+            Setting::set($settingKey, is_array($value) ? json_encode($value) : $value);
+        }
+
+        AuditLog::record(
+            event: 'SETTINGS_UPDATED',
+            identifier: $user->username ?? null,
+            description: 'Admin master memperbarui konten Landing Page.',
+            oldValues: $oldValues,
+            newValues: $newValues,
+        );
+
+        session()->flash('success', 'Konten landing page berhasil diperbarui.');
+    }
+
+    /**
+     * Peta key Setting <-> nama properti Livewire untuk tab "Landing
+     * Page" -- dipakai bersama oleh saveLanding() (simpan + audit log)
+     * supaya kedua sisi tidak perlu ditulis berulang dan gampang keliru
+     * urutannya kalau ada field baru ditambahkan di kemudian hari.
+     *
+     * @return array<string, string>
+     */
+    private function landingSettingsMap(): array
+    {
+        return [
+            'landing_hero_title_top'    => 'landingHeroTitleTop',
+            'landing_hero_title_bottom' => 'landingHeroTitleBottom',
+            'landing_hero_scroll_text'  => 'landingHeroScrollText',
+
+            'show_units_on_landing'          => 'showUnitsOnLanding',
+            'landing_mitra_title'             => 'landingMitraTitle',
+            'landing_mitra_description'       => 'landingMitraDescription',
+
+            'landing_fitur_enabled'           => 'landingFiturEnabled',
+            'landing_fitur_eyebrow'           => 'landingFiturEyebrow',
+            'landing_fitur_title'             => 'landingFiturTitle',
+
+            'landing_cara_kerja_enabled'      => 'landingCaraKerjaEnabled',
+            'landing_cara_kerja_title'        => 'landingCaraKerjaTitle',
+            'landing_cara_kerja_description'  => 'landingCaraKerjaDescription',
+
+            'landing_tentang_enabled'         => 'landingTentangEnabled',
+            'landing_tentang_title'           => 'landingTentangTitle',
+            'landing_tentang_description'     => 'landingTentangDescription',
+
+            'landing_faq_enabled'             => 'landingFaqEnabled',
+            'landing_faq_title'               => 'landingFaqTitle',
+
+            'landing_footer_title'            => 'landingFooterTitle',
+        ];
     }
 
     public function render()

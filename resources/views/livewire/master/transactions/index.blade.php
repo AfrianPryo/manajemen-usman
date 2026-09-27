@@ -426,7 +426,14 @@
                     </div>
 
                     {{-- Bukti Transaksi --}}
-                    <div>
+                    <div
+                        x-data="{ uploading: false, progress: 0 }"
+                        x-on:livewire-upload-start="uploading = true; progress = 0"
+                        x-on:livewire-upload-finish="uploading = false"
+                        x-on:livewire-upload-cancel="uploading = false"
+                        x-on:livewire-upload-error="uploading = false"
+                        x-on:livewire-upload-progress="progress = $event.detail.progress"
+                    >
                         <div class="flex items-center justify-between mb-1">
                             <label class="block text-xs font-medium text-neutral-600 dark:text-neutral-300">
                                 Bukti Transaksi (JPG/PNG/PDF, Max 2MB)
@@ -442,9 +449,7 @@
                             class="w-full text-xs border border-neutral-200 dark:border-slate-700 rounded-sm p-1.5 bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100">
 
                         {{-- Indikator Upload --}}
-                        <div wire:loading wire:target="form_proof_file" class="text-xs text-amber-600 mt-1">
-                            Mengunggah berkas...
-                        </div>
+                        <x-upload-progress label="Mengunggah berkas..." />
 
                         @error('form_proof_file')
                             <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span>
@@ -800,7 +805,15 @@
                             </div>
                         @else
                             {{-- Form Upload jika Belum Ada Bukti --}}
-                            <div class="p-3 border-2 border-dashed border-neutral-200 dark:border-slate-700 rounded-sm bg-neutral-50/50 dark:bg-slate-900/50 text-center">
+                            <div
+                                class="p-3 border-2 border-dashed border-neutral-200 dark:border-slate-700 rounded-sm bg-neutral-50/50 dark:bg-slate-900/50 text-center"
+                                x-data="{ uploading: false, progress: 0 }"
+                                x-on:livewire-upload-start="uploading = true; progress = 0"
+                                x-on:livewire-upload-finish="uploading = false"
+                                x-on:livewire-upload-cancel="uploading = false"
+                                x-on:livewire-upload-error="uploading = false"
+                                x-on:livewire-upload-progress="progress = $event.detail.progress"
+                            >
                                 <input type="file" wire:model="proofFile" id="proofInput" class="hidden">
                                 <label for="proofInput" class="cursor-pointer block">
                                     <x-heroicon-o-arrow-up-tray class="w-6 h-6 mx-auto text-neutral-400 mb-1" stroke-width="2" />
@@ -812,9 +825,7 @@
                                     <p class="text-red-500 text-[10px] mt-1">{{ $message }}</p>
                                 @enderror
 
-                                <div wire:loading wire:target="proofFile" class="text-[#0d3b74] dark:text-blue-400 text-[10px] mt-2">
-                                    Memproses berkas...
-                                </div>
+                                <x-upload-progress label="Memproses berkas..." />
 
                                 @if($proofFile)
                                     <div class="mt-3 pt-2 border-t border-neutral-200 dark:border-slate-700 flex items-center justify-between">
@@ -883,11 +894,18 @@
                         </button>
                     </div>
 
-                    <div>
+                    <div
+                        x-data="{ uploading: false, progress: 0 }"
+                        x-on:livewire-upload-start="uploading = true; progress = 0"
+                        x-on:livewire-upload-finish="uploading = false"
+                        x-on:livewire-upload-cancel="uploading = false"
+                        x-on:livewire-upload-error="uploading = false"
+                        x-on:livewire-upload-progress="progress = $event.detail.progress"
+                    >
                         <label class="block text-xs font-medium text-neutral-600 dark:text-neutral-300 mb-1">Unggah Berkas Excel</label>
                         <input type="file" wire:model="excel_file" accept=".xlsx, .xls" class="w-full text-xs border border-neutral-200 dark:border-slate-700 rounded-sm p-1.5 bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-200">
 
-                        <div wire:loading wire:target="excel_file" class="text-amber-600 text-xs mt-1">Membaca file...</div>
+                        <x-upload-progress label="Membaca file..." />
                         @error('excel_file') <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span> @enderror
                     </div>
 

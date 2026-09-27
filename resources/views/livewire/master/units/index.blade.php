@@ -279,7 +279,14 @@
                                 @error('name') <span class="text-xs text-red-500">{{ $message }}</span> @enderror
                             </div>
 
-                            <div>
+                            <div
+                                x-data="{ uploading: false, progress: 0 }"
+                                x-on:livewire-upload-start="uploading = true; progress = 0"
+                                x-on:livewire-upload-finish="uploading = false"
+                                x-on:livewire-upload-cancel="uploading = false"
+                                x-on:livewire-upload-error="uploading = false"
+                                x-on:livewire-upload-progress="progress = $event.detail.progress"
+                            >
                                 <label class="block text-xs font-medium text-neutral-600 dark:text-neutral-300 mb-1">
                                     Logo <span class="text-neutral-400 font-normal">(opsional)</span>
                                 </label>
@@ -294,8 +301,8 @@
                                         <button type="button" wire:click="clearLogo" title="Hapus logo" class="shrink-0 text-[11px] font-semibold text-rose-500 hover:text-rose-600 cursor-pointer">Hapus</button>
                                     @endif
                                 </div>
-                                <p wire:loading wire:target="logo" class="text-[11px] text-neutral-400 mt-1">Mengunggah...</p>
-                                <p wire:loading.remove wire:target="logo" class="text-[11px] text-neutral-400 mt-1">PNG/JPG, maks. 1MB.</p>
+                                <x-upload-progress label="Mengunggah logo..." />
+                                <p x-show="!uploading" class="text-[11px] text-neutral-400 mt-1">PNG/JPG, maks. 1MB.</p>
                                 @error('logo') <span class="text-xs text-red-500">{{ $message }}</span> @enderror
                             </div>
                         </div>
@@ -356,7 +363,7 @@
 
                     </x-slot:tab2>
                     <x-slot:submit>
-                        <button type="submit" wire:loading.attr="disabled" class="px-4 py-2.5 bg-blue-900 text-white rounded-sm text-sm font-semibold hover:bg-blue-950 transition-colors shadow-sm shadow-blue-900/20">
+                        <button type="submit" wire:loading.attr="disabled" class="px-4 py-2.5 bg-blue-900 text-white rounded-sm text-sm font-semibold hover:bg-blue-950 transition-colors shadow-sm shadow-blue-900/20 disabled:opacity-50 disabled:cursor-not-allowed">
                             <span wire:loading.remove wire:target="save">Simpan Unit</span>
                             <span wire:loading wire:target="save">Memproses...</span>
                         </button>
