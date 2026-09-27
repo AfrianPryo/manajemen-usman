@@ -223,7 +223,11 @@ class RecurringTransactionService
             })
             ->get(['notifiable_id', 'data'])
             ->reduce(function (array $map, $row) {
-                $decoded = json_decode($row->data, true);
+                // $row->data sudah otomatis di-cast ke array oleh model
+                // DatabaseNotification bawaan Laravel, jadi tidak perlu
+                // (dan tidak boleh) di-json_decode() lagi -- lihat catatan
+                // yang sama di SyncsAlertNotifications::idsWithPendingAlerts().
+                $decoded = $row->data;
                 $itemId = $decoded['recurring_transaction_id'] ?? null;
 
                 if ($itemId !== null) {

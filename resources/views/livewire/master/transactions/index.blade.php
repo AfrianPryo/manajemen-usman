@@ -1,11 +1,8 @@
 <div class="w-full max-w-[1500px] mx-auto space-y-5 text-neutral-800 dark:text-neutral-100 px-4 py-4 sm:px-6 font-sans">
 
-    {{-- Flash Notification --}}
+    {{-- Flash Notification (toast) --}}
     @if (session()->has('message'))
-        <div class="p-4 rounded-sm bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 text-sm flex items-center justify-between">
-            <span class="font-medium">{{ session('message') }}</span>
-            <button type="button" onclick="this.parentElement.remove()" class="text-emerald-500 hover:text-emerald-700">&times;</button>
-        </div>
+        <div wire:key="toast-message-{{ md5(session('message')) }}" x-data x-init="$store.toast.push('success', @js(session('message')))"></div>
     @endif
 
     {{-- ================= HEADER & QUICK ACTIONS ================= --}}
@@ -409,7 +406,10 @@
                         </div>
 
                         <div>
-                            <label class="block text-xs font-medium text-neutral-600 dark:text-neutral-300 mb-1">Status</label>
+                            <label class="flex items-center gap-1 text-xs font-medium text-neutral-600 dark:text-neutral-300 mb-1">
+                                Status
+                                <x-help-tip text="Hanya transaksi berstatus 'Selesai' yang dihitung ke Total Pemasukan/Pengeluaran dan Arus Kas. 'Menunggu' dan 'Dibatalkan' tidak ikut dihitung sampai statusnya diubah ke Selesai." />
+                            </label>
                             <select wire:model="form_status" class="w-full px-3 py-2.5 border rounded-sm text-sm bg-white dark:bg-slate-900 border-neutral-200 dark:border-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400 cursor-pointer">
                                 <option value="completed">Selesai (Completed)</option>
                                 <option value="pending">Menunggu (Pending)</option>
@@ -481,16 +481,12 @@
                 </div>
 
                 <div class="p-6 space-y-5">
-                    {{-- Flash Notifications --}}
+                    {{-- Flash Notifications (toast) --}}
                     @if (session()->has('category_success'))
-                        <div class="p-3 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 rounded-sm text-xs">
-                            {{ session('category_success') }}
-                        </div>
+                        <div wire:key="toast-category-success-{{ md5(session('category_success')) }}" x-data x-init="$store.toast.push('success', @js(session('category_success')))"></div>
                     @endif
                     @if (session()->has('category_error'))
-                        <div class="p-3 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-300 rounded-sm text-xs">
-                            {{ session('category_error') }}
-                        </div>
+                        <div wire:key="toast-category-error-{{ md5(session('category_error')) }}" x-data x-init="$store.toast.push('error', @js(session('category_error')))"></div>
                     @endif
 
                     {{-- Form Input / Edit Inline --}}
@@ -519,7 +515,7 @@
                                 <label class="block text-[11px] font-semibold text-neutral-600 dark:text-neutral-300">
                                     Nama Kategori
                                 </label>
-                                <input type="text" wire:model="category_name" placeholder="Misal: Penjualan Produk, Biaya Listrik..." class="w-full h-9 text-xs rounded-sm border border-neutral-200 dark:border-slate-700 dark:bg-slate-900 px-3 text-neutral-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400 placeholder:text-neutral-400 dark:placeholder:text-neutral-500 transition-all">
+                                <input type="text" wire:model="category_name" placeholder="Contoh: Penjualan Produk, Biaya Listrik..." class="w-full h-9 text-xs rounded-sm border border-neutral-200 dark:border-slate-700 dark:bg-slate-900 px-3 text-neutral-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400 placeholder:text-neutral-400 dark:placeholder:text-neutral-500 transition-all">
                                 @error('category_name') <span class="text-[10px] text-red-500 block font-medium">{{ $message }}</span> @enderror
                             </div>
 

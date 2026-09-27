@@ -58,6 +58,14 @@ class Index extends Component
     public $logo;
     public ?string $existingLogo = null;
 
+    // 2b. Fitur & Modul — Tampilan Landing Page (halaman depan publik).
+    // Nama & logo aplikasi di atas otomatis dipakai juga di landing page
+    // (lihat resources/views/landing.blade.php). Toggle ini khusus mengatur
+    // apakah daftar Unit Usaha aktif (beserta logonya) ikut ditampilkan di
+    // bagian "Mitra Unit Usaha" pada landing page, karena itu data
+    // operasional yang mungkin tidak semua sekolah ingin publikasikan.
+    public bool $showUnitsOnLanding = true;
+
     // 2b. Fitur & Modul — Akses Fitur & Otomatisasi
     public bool $allowMultiUnitAdmin = true;
     public string $defaultCategory = 'ritel';
@@ -123,6 +131,7 @@ class Index extends Component
         $this->appName          = Setting::get('app_name', 'USMAN - Usaha Mandiri Sekolah');
         $this->existingLogo     = Setting::get('app_logo');
         $this->maintenanceMode  = (bool) Setting::get('maintenance_mode', false);
+        $this->showUnitsOnLanding = (bool) Setting::get('show_units_on_landing', true);
 
         $this->defaultCategory     = Setting::get('default_category', 'ritel');
         $this->allowMultiUnitAdmin = (bool) Setting::get('allow_multi_unit_admin', true);
@@ -594,6 +603,9 @@ class Index extends Component
             'appName' => 'required|string|max:50',
             'logo'    => 'nullable|image|max:2048',
 
+            // Tampilan Landing Page
+            'showUnitsOnLanding' => 'boolean',
+
             // Akses Fitur & Otomatisasi
             'defaultCategory' => 'required|in:ritel,jasa',
             'waProvider'      => 'nullable|string|in:fonnte,wablas,twilio,lainnya',
@@ -637,6 +649,7 @@ class Index extends Component
             'app_name'                => Setting::get('app_name'),
             'app_logo'                => Setting::get('app_logo'),
             'maintenance_mode'        => (bool) Setting::get('maintenance_mode', false),
+            'show_units_on_landing'  => (bool) Setting::get('show_units_on_landing', true),
             'default_category'       => Setting::get('default_category'),
             'allow_multi_unit_admin' => (bool) Setting::get('allow_multi_unit_admin', true),
             'enable_wa_notifications'=> (bool) Setting::get('enable_wa_notifications', false),
@@ -670,6 +683,7 @@ class Index extends Component
         Setting::set('app_name', $this->appName);
         Setting::set('app_logo', $this->existingLogo);
         Setting::set('maintenance_mode', $this->maintenanceMode);
+        Setting::set('show_units_on_landing', $this->showUnitsOnLanding);
 
         // Akses Fitur & Otomatisasi
         Setting::set('default_category', $this->defaultCategory);
@@ -713,6 +727,7 @@ class Index extends Component
                 'app_name'                => $this->appName,
                 'app_logo'                => $this->existingLogo,
                 'maintenance_mode'        => $this->maintenanceMode,
+                'show_units_on_landing'  => $this->showUnitsOnLanding,
                 'default_category'        => $this->defaultCategory,
                 'allow_multi_unit_admin'  => $this->allowMultiUnitAdmin,
                 'enable_wa_notifications' => $this->enableWaNotifications,

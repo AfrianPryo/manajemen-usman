@@ -82,6 +82,19 @@ body::-webkit-scrollbar {
     line-height: 1;
 }
 
+/* ================= Placeholder Teks Input ================= */
+/* Placeholder dibuat sedikit lebih kecil dari teks input (rasio 'em'
+   terhadap font-size masing-masing input) supaya proporsional &
+   konsisten di semua form -- baik yang pakai text-xs maupun text-sm --
+   tanpa perlu diubah satu per satu di tiap file. Warna placeholder
+   tidak disentuh, jadi tidak bentrok dengan class placeholder:text-*
+   yang sudah ada di sebagian input. !important dipasang supaya tidak
+   tertimpa utility class apa pun. */
+input::placeholder,
+textarea::placeholder {
+    font-size: 0.9em !important;
+}
+
 /* ================= FAQ Accordion ================= */
 
 .faq-icon {

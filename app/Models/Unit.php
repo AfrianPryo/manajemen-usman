@@ -9,6 +9,7 @@ class Unit extends Model
 {
     protected $fillable = [
         'name',
+        'logo',
         'slug',
         'department',
         'category',

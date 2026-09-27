@@ -1,11 +1,8 @@
 <div class="w-full max-w-[1500px] mx-auto space-y-5 text-neutral-800 dark:text-neutral-100 px-4 py-4 sm:px-6 font-sans">
 
-    {{-- Flash Notification --}}
+    {{-- Flash Notification (toast) --}}
     @if (session()->has('message'))
-        <div class="p-4 rounded-sm bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 text-sm flex items-center justify-between">
-            <span class="font-medium">{{ session('message') }}</span>
-            <button type="button" onclick="this.parentElement.remove()" class="text-emerald-500 hover:text-emerald-700">&times;</button>
-        </div>
+        <div wire:key="toast-message-{{ md5(session('message')) }}" x-data x-init="$store.toast.push('success', @js(session('message')))"></div>
     @endif
 
     {{-- Action Header --}}
@@ -103,30 +100,45 @@
         @forelse($units as $unit)
             <div wire:key="unit-card-{{ $unit->id }}" class="bg-white dark:bg-slate-800 rounded-sm border border-neutral-100 dark:border-slate-700 p-5 shadow-sm shadow-black/[0.02] hover:shadow-md transition-all flex flex-col justify-between space-y-4">
                 <div>
-                    {{-- Header Card --}}
-                    <div class="flex justify-between items-start gap-2">
-                        <div>
-                            <div class="flex items-center gap-1.5 flex-wrap mb-2">
-                                <span class="inline-block text-[10px] font-bold uppercase px-2 py-0.5 rounded-sm bg-neutral-100 dark:bg-slate-700/60 text-neutral-600 dark:text-neutral-300 border border-neutral-200 dark:border-slate-600">
-                                    {{ $unit->department }}
-                                </span>
-                                <span class="inline-block text-[10px] font-bold uppercase px-2 py-0.5 rounded-sm bg-neutral-100 dark:bg-slate-700/60 text-neutral-600 dark:text-neutral-300 border border-neutral-200 dark:border-slate-600">
-                                    {{ $unit->category }}
-                                </span>
+                    {{-- Header Card: Identitas Unit + Status --}}
+                    <div class="flex items-center justify-between gap-2.5">
+                        <div class="flex items-center gap-2.5 min-w-0">
+                            {{-- Lambang Unit: logo jika ada, kalau tidak inisial nama (selaras dengan pola avatar admin) --}}
+                            <div class="w-9 h-9 shrink-0 rounded-sm overflow-hidden flex items-center justify-center {{ $unit->logo ? 'bg-white ring-1 ring-black/5 dark:ring-white/10' : 'bg-blue-50 dark:bg-slate-900' }}">
+                                @if ($unit->logo)
+                                    <img src="{{ asset('storage/' . $unit->logo) }}" alt="Logo {{ $unit->name }}" class="w-full h-full object-contain p-1">
+                                @else
+                                    <span class="text-[#0d3b74] dark:text-neutral-300 text-xs font-bold">{{ strtoupper(substr($unit->name, 0, 1)) }}</span>
+                                @endif
                             </div>
-                            <h3 class="text-base font-bold text-neutral-900 dark:text-white tracking-tight">{{ $unit->name }}</h3>
+
+                            <div class="min-w-0">
+                                <h3 class="text-sm font-bold text-neutral-900 dark:text-white tracking-tight truncate">{{ $unit->name }}</h3>
+                                <div class="flex items-center gap-1.5 mt-0.5 text-[11px] text-neutral-400 truncate">
+                                    <span class="text-blue-700 dark:text-blue-400">{{ ucfirst($unit->category) }}</span>
+                                    <span class="text-neutral-300 dark:text-slate-600">&middot;</span>
+                                    <span class="truncate">{{ $unit->department }}</span>
+                                </div>
+                            </div>
                         </div>
 
+                        {{-- Status: toggle switch asli (selaras dengan x-toggle di form edit), klik untuk ubah status --}}
                         <button 
+                            type="button"
                             wire:click="toggleUnitStatus({{ $unit->id }})"
-                            class="px-2.5 py-0.5 rounded-sm text-[10px] font-semibold transition inline-flex items-center gap-1 cursor-pointer {{ $unit->is_active ? 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 border border-emerald-200/60 dark:border-emerald-800' : 'bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 border border-rose-200/60 dark:border-rose-800' }}"
+                            title="{{ $unit->is_active ? 'Klik untuk nonaktifkan' : 'Klik untuk aktifkan' }}"
+                            class="shrink-0 inline-flex items-center gap-2 cursor-pointer"
                         >
-                            <span class="h-1.5 w-1.5 rounded-full {{ $unit->is_active ? 'bg-emerald-500' : 'bg-rose-500' }}"></span>
-                            {{ $unit->is_active ? 'Aktif' : 'Nonaktif' }}
+                            <span class="text-[11px] font-medium {{ $unit->is_active ? 'text-emerald-600 dark:text-emerald-400' : 'text-neutral-400 dark:text-neutral-500' }}">
+                                {{ $unit->is_active ? 'Aktif' : 'Nonaktif' }}
+                            </span>
+                            <span class="relative inline-flex shrink-0 w-9 h-5 rounded-full transition-colors duration-200 {{ $unit->is_active ? 'bg-blue-900 dark:bg-blue-700' : 'bg-neutral-200 dark:bg-slate-600' }}">
+                                <span class="absolute left-0.5 top-0.5 w-4 h-4 bg-white rounded-full shadow-sm shadow-black/10 transition-transform duration-200 ease-out {{ $unit->is_active ? 'translate-x-4' : '' }}"></span>
+                            </span>
                         </button>
                     </div>
 
-                    <p class="text-xs text-neutral-500 dark:text-neutral-400 mt-2 line-clamp-2 leading-relaxed">
+                    <p class="text-xs text-neutral-500 dark:text-neutral-400 mt-2.5 line-clamp-2 leading-relaxed">
                         {{ $unit->description ?? 'Tidak ada deskripsi unit.' }}
                     </p>
 
@@ -247,11 +259,46 @@
                 <form wire:submit="save" class="p-6">
                     <x-form-tabs tab1-label="Data Unit" tab2-label="Pengelola & Status" cancel="closeModal">
                     <x-slot:tab1>
-                    {{-- Nama Unit Usaha --}}
-                    <div>
-                        <label class="block text-xs font-medium text-neutral-600 dark:text-neutral-300 mb-1">Nama Unit Usaha <span class="text-red-500">*</span></label>
-                        <input type="text" wire:model="name" class="w-full px-3 py-2.5 border rounded-sm text-sm bg-white dark:bg-slate-900 border-neutral-200 dark:border-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400" placeholder="Contoh: Bengkel TO">
-                        @error('name') <span class="text-xs text-red-500">{{ $message }}</span> @enderror
+                    {{-- Nama & Logo Unit Usaha --}}
+                    <div class="flex items-start gap-3">
+                        {{-- Lambang Unit: pratinjau logo baru / logo tersimpan / inisial nama --}}
+                        <div class="w-12 h-12 shrink-0 rounded-sm overflow-hidden flex items-center justify-center mt-5 {{ ($logo || $existingLogo) ? 'bg-white ring-1 ring-black/5 dark:ring-white/10' : 'bg-blue-50 dark:bg-slate-900' }}">
+                            @if ($logo)
+                                <img src="{{ $logo->temporaryUrl() }}" alt="Pratinjau logo" class="w-full h-full object-contain p-1">
+                            @elseif ($existingLogo)
+                                <img src="{{ asset('storage/' . $existingLogo) }}" alt="Logo {{ $name }}" class="w-full h-full object-contain p-1">
+                            @else
+                                <span class="text-[#0d3b74] dark:text-neutral-300 text-base font-bold">{{ $name ? strtoupper(substr($name, 0, 1)) : '?' }}</span>
+                            @endif
+                        </div>
+
+                        <div class="flex-1 min-w-0 space-y-3">
+                            <div>
+                                <label class="block text-xs font-medium text-neutral-600 dark:text-neutral-300 mb-1">Nama Unit Usaha <span class="text-red-500">*</span></label>
+                                <input type="text" wire:model="name" class="w-full px-3 py-2.5 border rounded-sm text-sm bg-white dark:bg-slate-900 border-neutral-200 dark:border-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400" placeholder="Contoh: Bengkel TO">
+                                @error('name') <span class="text-xs text-red-500">{{ $message }}</span> @enderror
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-medium text-neutral-600 dark:text-neutral-300 mb-1">
+                                    Logo <span class="text-neutral-400 font-normal">(opsional)</span>
+                                </label>
+                                <div class="flex items-center gap-2">
+                                    <input
+                                        type="file"
+                                        wire:model="logo"
+                                        accept="image/*"
+                                        class="block flex-1 min-w-0 text-xs text-neutral-500 dark:text-neutral-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-sm file:border file:border-neutral-200 dark:file:border-slate-700 file:text-[11px] file:font-semibold file:bg-white dark:file:bg-slate-800 file:text-neutral-600 dark:file:text-neutral-300 hover:file:bg-neutral-50 dark:hover:file:bg-slate-700 cursor-pointer"
+                                    >
+                                    @if ($logo || $existingLogo)
+                                        <button type="button" wire:click="clearLogo" title="Hapus logo" class="shrink-0 text-[11px] font-semibold text-rose-500 hover:text-rose-600 cursor-pointer">Hapus</button>
+                                    @endif
+                                </div>
+                                <p wire:loading wire:target="logo" class="text-[11px] text-neutral-400 mt-1">Mengunggah...</p>
+                                <p wire:loading.remove wire:target="logo" class="text-[11px] text-neutral-400 mt-1">PNG/JPG, maks. 1MB.</p>
+                                @error('logo') <span class="text-xs text-red-500">{{ $message }}</span> @enderror
+                            </div>
+                        </div>
                     </div>
 
                     {{-- Departemen & Kategori --}}
@@ -302,10 +349,9 @@
                         @error('description') <span class="text-xs text-red-500">{{ $message }}</span> @enderror
                     </div>
 
-                    {{-- Status Toggle Checkbox --}}
-                    <div class="flex items-center gap-2 pt-1">
-                        <input type="checkbox" id="is_active" wire:model="is_active" class="rounded border-neutral-300 text-blue-900 focus:ring-blue-400">
-                        <label for="is_active" class="text-xs font-medium text-neutral-600 dark:text-neutral-300">Unit Usaha Aktif / Operasional</label>
+                    {{-- Status Toggle --}}
+                    <div class="pt-1">
+                        <x-toggle wire:model="is_active">Unit Usaha Aktif / Operasional</x-toggle>
                     </div>
 
                     </x-slot:tab2>

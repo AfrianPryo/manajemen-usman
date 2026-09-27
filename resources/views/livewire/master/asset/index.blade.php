@@ -30,12 +30,9 @@
         </div>
     </div>
 
-    {{-- Flash Notification --}}
+    {{-- Flash Notification (toast) --}}
     @if (session()->has('message'))
-        <div class="p-4 rounded-sm bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 text-sm flex items-center justify-between">
-            <span class="font-medium">{{ session('message') }}</span>
-            <button type="button" onclick="this.parentElement.remove()" class="text-emerald-500 hover:text-emerald-700">&times;</button>
-        </div>
+        <div wire:key="toast-message-{{ md5(session('message')) }}" x-data x-init="$store.toast.push('success', @js(session('message')))"></div>
     @endif
 
     {{-- KPI Cards --}}
@@ -322,7 +319,7 @@
 
                         <div>
                             <label class="block font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Nama Aset <span class="text-red-500">*</span></label>
-                            <input type="text" wire:model="name" placeholder="misal: Laptop MacBook Pro" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-blue-500">
+                            <input type="text" wire:model="name" placeholder="Contoh: Laptop MacBook Pro" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-blue-500">
                             @error('name') <span class="text-rose-500 text-[11px] mt-0.5 block">{{ $message }}</span> @enderror
                         </div>
 
@@ -359,7 +356,7 @@
 
                         <div>
                             <label class="block font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Nomor Seri (S/N)</label>
-                            <input type="text" wire:model="serial_number" placeholder="misal: C02XL123456" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-blue-500">
+                            <input type="text" wire:model="serial_number" placeholder="Contoh: C02XL123456" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-blue-500">
                         </div>
 
                         <div>
@@ -397,12 +394,12 @@
 
                         <div>
                             <label class="block font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Penanggung Jawab / User</label>
-                            <input type="text" wire:model="assigned_to" placeholder="misal: Budi Santoso" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-blue-500">
+                            <input type="text" wire:model="assigned_to" placeholder="Contoh: Budi Santoso" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-blue-500">
                         </div>
 
                         <div>
                             <label class="block font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Lokasi Penempatan</label>
-                            <input type="text" wire:model="location" placeholder="misal: Ruang IT Lt. 2" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-blue-500">
+                            <input type="text" wire:model="location" placeholder="Contoh: Ruang IT Lt. 2" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-blue-500">
                         </div>
                     </div>
 

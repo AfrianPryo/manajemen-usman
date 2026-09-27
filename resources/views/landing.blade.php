@@ -1,6 +1,14 @@
 @extends('layouts.landing')
 
-@section('title', 'SIMS - Portal Usaha Mandiri Sekolah')
+@php
+    // Identitas landing page (nama & logo) mengikuti Pengaturan > Fitur &
+    // Modul yang diatur admin master -- lihat app/Livewire/Master/Settings.
+    // Fallback ke identitas bawaan "SIMS" selama admin belum mengatur apa pun.
+    $__brandName = \App\Models\Setting::get('app_name');
+    $__brandLogo = \App\Models\Setting::get('app_logo');
+@endphp
+
+@section('title', ($__brandName ?: 'SIMS') . ' - Portal Usaha Mandiri Sekolah')
 
 @section('content')
 
@@ -9,11 +17,24 @@
     <nav class="fixed inset-x-0 top-0 z-50 transition-colors duration-300">
         <div class="relative max-w-7xl mx-auto px-6 lg:px-6 h-16 flex items-center justify-between">
             <a href="{{ route('landing') }}" class="flex items-center">
-                {{-- Logo untuk mode terang --}}
-                <img src="{{ asset('images/logo-light.svg') }}" alt="SIMS.Usaha" class="h-6 w-auto block dark:hidden mix-blend-difference">
+                @if ($__brandLogo)
+                    {{-- Identitas sekolah (logo & nama diatur admin di menu Pengaturan).
+                         Dibungkus pil solid (bukan efek mix-blend seperti logo bawaan)
+                         supaya logo unggahan admin -- yang belum tentu monokrom --
+                         tetap terbaca jelas di atas latar apa pun saat nav mengambang. --}}
+                    <span class="flex items-center gap-2 pl-1 pr-3 py-1 rounded-full bg-white/95 dark:bg-slate-900/90 shadow-sm shadow-black/10 backdrop-blur">
+                        <span class="h-6 w-6 rounded-full overflow-hidden shrink-0 flex items-center justify-center bg-white">
+                            <img src="{{ asset('storage/' . $__brandLogo) }}" alt="{{ $__brandName ?: 'SIMS' }}" class="h-full w-full object-contain">
+                        </span>
+                        <span class="text-slate-900 dark:text-white text-[13px] font-bold tracking-tight leading-none truncate max-w-[160px]">{{ $__brandName ?: 'SIMS' }}</span>
+                    </span>
+                @else
+                    {{-- Logo untuk mode terang --}}
+                    <img src="{{ asset('images/logo-light.svg') }}" alt="SIMS.Usaha" class="h-6 w-auto block dark:hidden mix-blend-difference">
 
-                {{-- Logo untuk mode gelap --}}
-                <img src="{{ asset('images/logo-dark.svg') }}" alt="SIMS.Usaha" class="h-6 w-auto hidden dark:block mix-blend-difference">
+                    {{-- Logo untuk mode gelap --}}
+                    <img src="{{ asset('images/logo-dark.svg') }}" alt="SIMS.Usaha" class="h-6 w-auto hidden dark:block mix-blend-difference">
+                @endif
             </a>
 
             {{-- Nav Links dengan indikator "rolling" ala cantor8 (desktop) --}}
@@ -247,6 +268,18 @@
     </section>
 
     {{-- ===================== TRUSTED BY SECTION ===================== --}}
+    @php
+        // Bagian ini menampilkan unit usaha AKTIF milik sekolah (bukan logo
+        // mitra eksternal statis), supaya selalu sinkron dengan data yang
+        // dikelola admin di menu Unit Usaha -- tidak ada data ganda yang
+        // harus diperbarui manual di dua tempat. Bisa dimatikan admin lewat
+        // toggle "Tampilkan Unit Usaha di Landing Page" di menu Pengaturan.
+        $__showUnitsSection = (bool) \App\Models\Setting::get('show_units_on_landing', true);
+        $__landingUnits = $__showUnitsSection
+            ? \App\Models\Unit::where('is_active', true)->orderBy('name')->get()
+            : collect();
+    @endphp
+    @if ($__showUnitsSection && $__landingUnits->isNotEmpty())
     <section class="py-32 bg-slate-50 dark:bg-slate-950 transition-colors duration-300">
         <div class="max-w-[100vw]mx-auto px-6 lg:px-8 text-center">
 
@@ -262,57 +295,45 @@
 
             <div class="mt-32 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
 
+                {{-- Tile pertama: identitas sekolah (logo/nama dari Pengaturan) --}}
                 <div data-animate="bento" class="aspect-[16/10] rounded-[3px] bg-blue-800 dark:bg-blue-950 border border-white/10 flex items-center justify-center overflow-hidden">
-                    <img 
-                        src="{{ asset('LogoMitra/LogoSMK.png') }}" 
-                        alt="Logo SMK"
-                        class="w-20 h-20 object-contain opacity-50 hover:opacity-100 transition-opacity duration-300"
-                    >
+                    @if ($__brandLogo)
+                        <img
+                            src="{{ asset('storage/' . $__brandLogo) }}"
+                            alt="Logo {{ $__brandName ?: 'Sekolah' }}"
+                            class="w-20 h-20 object-contain opacity-50 hover:opacity-100 transition-opacity duration-300"
+                        >
+                    @else
+                        <img
+                            src="{{ asset('LogoMitra/LogoSMK.png') }}"
+                            alt="Logo SMK"
+                            class="w-20 h-20 object-contain opacity-50 hover:opacity-100 transition-opacity duration-300"
+                        >
+                    @endif
                 </div>
 
-                <div data-animate="bento" class="aspect-[16/10] rounded-[3px] bg-blue-800 dark:bg-blue-950 border border-white/10 flex items-center justify-center overflow-hidden">
-                    <img 
-                        src="{{ asset('LogoMitra/TEFA.png') }}" 
-                        alt="Logo TEFA"
-                        class="w-20 h-20 object-contain opacity-50 hover:opacity-100 transition-opacity duration-300"
-                    >
-                </div>
-
-                <div data-animate="bento" class="aspect-[16/10] rounded-[3px] bg-blue-800 dark:bg-blue-950 border border-white/10 flex items-center justify-center overflow-hidden">
-                    <img 
-                        src="{{ asset('LogoMitra/TehSiswa.png') }}" 
-                        alt="Logo Teh Siswa"
-                        class="w-20 h-20 object-contain opacity-50 hover:opacity-100 transition-opacity duration-300"
-                    >
-                </div>
-
-                <div data-animate="bento" class="aspect-[16/10] rounded-[3px] bg-blue-800 dark:bg-blue-950 border border-white/10 flex items-center justify-center overflow-hidden">
-                    <img 
-                        src="{{ asset('LogoMitra/ToBengkel.png') }}" 
-                        alt="Logo Bengkel"
-                        class="w-20 h-20 object-contain opacity-50 hover:opacity-100 transition-opacity duration-300"
-                    >
-                </div>
-
-                <div data-animate="bento" class="aspect-[16/10] rounded-[3px] bg-blue-800 dark:bg-blue-950 border border-white/10 flex items-center justify-center overflow-hidden">
-                    <img 
-                        src="{{ asset('LogoMitra/Prnt.png') }}" 
-                        alt="Logo Foto Copy"
-                        class="w-20 h-20 object-contain opacity-50 hover:opacity-100 transition-opacity duration-300"
-                    >
-                </div>
-
-                <div data-animate="bento" class="aspect-[16/10] rounded-[3px] bg-blue-800 dark:bg-blue-950 border border-white/10 flex items-center justify-center overflow-hidden">
-                    <img 
-                        src="{{ asset('LogoMitra/BC.png') }}" 
-                        alt="Logo Business Center"
-                        class="w-20 h-20 object-contain opacity-50 hover:opacity-100 transition-opacity duration-300"
-                    >
-                </div>
+                {{-- Tile berikutnya: setiap Unit Usaha yang sedang aktif --}}
+                @foreach ($__landingUnits as $unit)
+                    <div data-animate="bento" class="aspect-[16/10] rounded-[3px] bg-blue-800 dark:bg-blue-950 border border-white/10 flex items-center justify-center overflow-hidden">
+                        @if ($unit->logo)
+                            <img
+                                src="{{ asset('storage/' . $unit->logo) }}"
+                                alt="Logo {{ $unit->name }}"
+                                class="w-20 h-20 object-contain opacity-50 hover:opacity-100 transition-opacity duration-300"
+                            >
+                        @else
+                            {{-- Fallback: inisial nama unit, selaras dengan kartu Unit Usaha di dashboard --}}
+                            <span class="text-white/60 text-2xl font-bold tracking-tight" title="{{ $unit->name }}">
+                                {{ strtoupper(substr($unit->name, 0, 1)) }}
+                            </span>
+                        @endif
+                    </div>
+                @endforeach
 
             </div>
         </div>
     </section>
+    @endif
 
     {{-- ===================== FITUR UNGGULAN ===================== --}}
     <section class="relative overflow-hidden dark:bg-slate-950 py-24 lg:py-50 px-6 lg:px-8 transition-colors duration-300">

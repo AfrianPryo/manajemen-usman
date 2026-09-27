@@ -186,6 +186,7 @@
                         @php
                             $minStock = $p->min_stock ?? 10;
                             $status = $p->stock <= 0 ? 'out' : ($p->stock <= $minStock ? 'low' : 'normal');
+                            $isRugi = ($p->purchase_price ?? 0) > 0 && $p->purchase_price > $p->selling_price;
                         @endphp
                         <tr wire:key="prod-{{ $p->id }}" class="hover:bg-neutral-50/60 dark:hover:bg-slate-700/30 transition-colors">
                             <td class="p-4 text-center">
@@ -212,6 +213,12 @@
                             </td>
                             <td class="px-4 py-3.5 whitespace-nowrap text-right font-mono font-bold text-xs text-neutral-900 dark:text-white">
                                 Rp {{ number_format($p->selling_price, 0, ',', '.') }}
+                                @if($isRugi)
+                                    <span title="HPP lebih besar dari harga jual (rugi)" class="ml-1 inline-flex items-center gap-0.5 align-middle px-1.5 py-0.5 text-[9px] font-bold tracking-wide rounded-sm bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400">
+                                        <x-heroicon-s-exclamation-triangle class="w-2.5 h-2.5" />
+                                        Rugi
+                                    </span>
+                                @endif
                             </td>
                             <td class="px-4 py-3.5 whitespace-nowrap text-center font-mono font-bold text-xs">
                                 <span class="{{ $status === 'out' ? 'text-rose-600 dark:text-rose-400' : ($status === 'low' ? 'text-amber-600 dark:text-amber-400' : 'text-neutral-800 dark:text-neutral-200') }}">
@@ -380,20 +387,45 @@
 
                     </x-slot:tab1>
                     <x-slot:tab2>
-                    {{-- Row 3: Harga Beli (HPP) & Harga Jual --}}
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Harga Beli / HPP (Rp)</label>
-                            <input type="text" inputmode="decimal" wire:model="form_purchase_price" oninput="onlyDecimal(event)" placeholder="0"
-                                class="w-full px-3.5 py-2 text-xs font-bold border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400">
-                            @error('form_purchase_price') <span class="text-[11px] text-rose-500 mt-0.5 block">{{ $message }}</span> @enderror
+                    {{-- Row 3: Harga Beli (HPP) & Harga Jual
+                         x-data lokal di bawah ini HANYA untuk menghitung status "rugi"
+                         secara instan di browser (tanpa request ke server), murni
+                         tambahan tampilan -- tidak menyentuh wire:model/validasi yang
+                         sudah ada, jadi alur simpan produk tetap persis seperti semula. --}}
+                    <div x-data="{
+                            hpp: {{ (float) ($form_purchase_price ?? 0) }},
+                            jual: {{ (float) ($form_selling_price ?? 0) }},
+                            get isRugi() { return this.hpp > 0 && this.jual > 0 && this.hpp > this.jual }
+                         }">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Harga Beli / HPP (Rp)</label>
+                                <input type="text" inputmode="decimal" wire:model="form_purchase_price" oninput="onlyDecimal(event)" placeholder="0"
+                                    x-on:input="hpp = parseFloat($event.target.value) || 0"
+                                    class="w-full px-3.5 py-2 text-xs font-bold border rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400 transition-colors"
+                                    :class="isRugi ? 'border-amber-400 dark:border-amber-600' : 'border-neutral-200 dark:border-slate-700'">
+                                @error('form_purchase_price') <span class="text-[11px] text-rose-500 mt-0.5 block">{{ $message }}</span> @enderror
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Harga Jual (Rp) <span class="text-red-500">*</span></label>
+                                <input type="text" inputmode="decimal" wire:model="form_selling_price" oninput="onlyDecimal(event)" placeholder="0"
+                                    x-on:input="jual = parseFloat($event.target.value) || 0"
+                                    class="w-full px-3.5 py-2 text-xs font-bold border rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400 transition-colors"
+                                    :class="isRugi ? 'border-amber-400 dark:border-amber-600' : 'border-neutral-200 dark:border-slate-700'">
+                                @error('form_selling_price') <span class="text-[11px] text-rose-500 mt-0.5 block">{{ $message }}</span> @enderror
+                            </div>
                         </div>
 
-                        <div>
-                            <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Harga Jual (Rp) <span class="text-red-500">*</span></label>
-                            <input type="text" inputmode="decimal" wire:model="form_selling_price" oninput="onlyDecimal(event)" placeholder="0"
-                                class="w-full px-3.5 py-2 text-xs font-bold border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400">
-                            @error('form_selling_price') <span class="text-[11px] text-rose-500 mt-0.5 block">{{ $message }}</span> @enderror
+                        {{-- Peringatan (bukan blokir): harga jual masih boleh disimpan
+                             lebih rendah dari HPP, hanya diberi tahu agar tidak terjadi
+                             tanpa disadari (misal salah ketik / lupa update harga jual). --}}
+                        <div x-show="isRugi" x-cloak x-transition
+                             class="mt-2 flex items-start gap-2 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/50 rounded-sm p-2.5">
+                            <x-heroicon-s-exclamation-triangle class="w-4 h-4 shrink-0 mt-0.5 text-amber-500 dark:text-amber-400" />
+                            <p class="text-[11px] leading-relaxed text-amber-800 dark:text-amber-300">
+                                <span class="font-bold">Peringatan:</span> Harga jual lebih rendah dari Harga Beli/HPP, produk ini berpotensi <span class="font-bold">rugi</span> saat terjual. Data tetap bisa disimpan &mdash; pastikan ini memang disengaja (misalnya produk promo/bonus).
+                            </p>
                         </div>
                     </div>
 
@@ -500,16 +532,12 @@
                 </div>
 
                 <div class="p-5 space-y-5">
-                    {{-- Flash Notifications --}}
+                    {{-- Flash Notifications (toast) --}}
                     @if (session()->has('category_success'))
-                        <div class="p-3 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 rounded-sm text-xs">
-                            {{ session('category_success') }}
-                        </div>
+                        <div wire:key="toast-category-success-{{ md5(session('category_success')) }}" x-data x-init="$store.toast.push('success', @js(session('category_success')))"></div>
                     @endif
                     @if (session()->has('category_error'))
-                        <div class="p-3 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-300 rounded-sm text-xs">
-                            {{ session('category_error') }}
-                        </div>
+                        <div wire:key="toast-category-error-{{ md5(session('category_error')) }}" x-data x-init="$store.toast.push('error', @js(session('category_error')))"></div>
                     @endif
 
                     {{-- Form Input / Edit Inline --}}
@@ -554,7 +582,7 @@
                                 <label class="block text-[11px] font-semibold text-neutral-600 dark:text-neutral-300">
                                     Nama Kategori <span class="text-rose-500">*</span>
                                 </label>
-                                <input type="text" wire:model="category_name" placeholder="Misal: Minuman, Alat Tulis..." class="w-full h-9 text-xs rounded-sm border-neutral-300 dark:border-slate-700 dark:bg-slate-800 px-2 text-neutral-800 dark:text-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 placeholder:text-neutral-400 dark:placeholder:text-neutral-500 transition-all">
+                                <input type="text" wire:model="category_name" placeholder="Contoh: Minuman, Alat Tulis..." class="w-full h-9 text-xs rounded-sm border-neutral-300 dark:border-slate-700 dark:bg-slate-800 px-2 text-neutral-800 dark:text-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 placeholder:text-neutral-400 dark:placeholder:text-neutral-500 transition-all">
                                 @error('category_name') <span class="text-[10px] text-rose-500 block font-medium">{{ $message }}</span> @enderror
                             </div>
 
@@ -688,8 +716,9 @@
                 <form wire:submit="saveStock" class="p-5 space-y-4">
                     {{-- Jenis Transaksi --}}
                     <div>
-                        <label class="block text-[11px] font-semibold text-neutral-600 dark:text-neutral-300 mb-1.5">
+                        <label class="flex items-center gap-1 text-[11px] font-semibold text-neutral-600 dark:text-neutral-300 mb-1.5">
                             Aksi Stok <span class="text-rose-500">*</span>
+                            <x-help-tip text="Tambah/Kurangi menyesuaikan stok dari jumlah yang tercatat sekarang. Stock Opname berbeda — dipakai saat menghitung ulang barang secara fisik: masukkan jumlah TOTAL hasil hitung, dan sistem akan menggantikan (bukan menjumlahkan) angka stok yang lama." />
                         </label>
                         <div class="grid grid-cols-3 gap-2">
                             <label class="flex flex-col items-center justify-center py-2 px-1 border rounded-sm cursor-pointer transition-all text-xs font-semibold {{ $stock_type === 'add' ? 'border-emerald-500 bg-emerald-50/70 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 ring-2 ring-emerald-500/20' : 'border-neutral-200 dark:border-slate-700 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-slate-700/50' }}">
@@ -722,9 +751,9 @@
                     {{-- Catatan / Keterangan --}}
                     <div>
                         <label class="block text-[11px] font-semibold text-neutral-600 dark:text-neutral-300 mb-1">
-                            Catatan / Alasan (Opsional)
+                            Catatan / Alasan (opsional)
                         </label>
-                        <textarea wire:model="stock_note" rows="2" placeholder="Misal: Penambahan dari supplier A / Kadaluarsa / Hasil opname bulanan..." class="w-full text-xs rounded-sm border-neutral-300 dark:border-slate-700 dark:bg-slate-900 text-neutral-800 dark:text-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all p-2.5"></textarea>
+                        <textarea wire:model="stock_note" rows="2" placeholder="Contoh: Penambahan dari supplier A / Kadaluarsa / Hasil opname bulanan..." class="w-full text-xs rounded-sm border-neutral-300 dark:border-slate-700 dark:bg-slate-900 text-neutral-800 dark:text-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all p-2.5"></textarea>
                         @error('stock_note') <span class="text-[10px] text-rose-500 block font-medium mt-1">{{ $message }}</span> @enderror
                     </div>
 

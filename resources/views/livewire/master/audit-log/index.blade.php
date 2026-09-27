@@ -2,7 +2,10 @@
     <!-- Header Page -->
     <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-            <h1 class="text-xl font-bold tracking-tight text-neutral-900 dark:text-white">Audit Log Sistem</h1>
+            <h1 class="flex items-center gap-1.5 text-xl font-bold tracking-tight text-neutral-900 dark:text-white">
+                Audit Log Sistem
+                <x-help-tip text="Mencatat perubahan data (tambah/ubah/hapus) beserta siapa pelakunya. Beda dengan 'Monitoring Aktivitas' yang mencatat login/logout, dan 'Arsip Log' yang menyimpan log lama yang sudah lewat batas retensi." />
+            </h1>
             <p class="text-xs text-neutral-400">Riwayat rekam jejak aktivitas dan perubahan data dalam aplikasi.</p>
         </div>
 

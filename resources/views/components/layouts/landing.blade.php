@@ -4,9 +4,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'SIMS - Sistem Manajemen Usaha Mandiri Sekolah')</title>
+    @php
+        // Judul & favicon landing page mengikuti identitas yang diatur admin
+        // master di menu Pengaturan > Fitur & Modul (Setting 'app_name' /
+        // 'app_logo'), sama seperti sidebar dashboard. Fallback ke identitas
+        // bawaan landing page ("SIMS") selama admin belum mengatur apa pun.
+        $__landingAppName = \App\Models\Setting::get('app_name') ?: 'SIMS';
+        $__landingFavicon = \App\Models\Setting::get('app_logo');
+    @endphp
+    <title>@yield('title', $__landingAppName . ' - Portal Usaha Mandiri Sekolah')</title>
     <meta name="description" content="Portal terpadu untuk mengelola seluruh unit usaha mandiri sekolah: TEFA, Bengkel, FotoCopy, Alfamart Mini, Teh Siswa, dan Bank Sekolah.">
-    <link rel="icon" href="{{ asset('favicon.svg') }}" type="image/svg+xml">
+    @if ($__landingFavicon)
+        <link rel="icon" href="{{ asset('storage/' . $__landingFavicon) }}">
+    @else
+        <link rel="icon" href="{{ asset('favicon.svg') }}" type="image/svg+xml">
+    @endif
 
     {{-- Cegah flash tema salah saat reload (dijalankan sebelum CSS/JS lain) --}}
     <script>

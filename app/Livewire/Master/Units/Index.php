@@ -6,9 +6,11 @@ use App\Models\AuditLog;
 use App\Models\Unit;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
+use Livewire\WithFileUploads;
 use Livewire\WithPagination;
 use Livewire\Attributes\Title;
 
@@ -17,6 +19,7 @@ use Livewire\Attributes\Title;
 class Index extends Component
 {
     use WithPagination;
+    use WithFileUploads;
 
     public string $search = '';
     public string $departmentFilter = '';
@@ -36,6 +39,11 @@ class Index extends Component
     public string $description = '';
     public bool $is_active = true;
 
+    // Logo Unit Usaha (opsional)
+    public $logo = null;
+    public ?string $existingLogo = null;
+    public bool $removeLogo = false;
+
     // Auto Reset Page saat filter berubah
     public function updatingSearch(): void { $this->resetPage(); }
     public function updatingDepartmentFilter(): void { $this->resetPage(); }
@@ -44,7 +52,7 @@ class Index extends Component
 
     public function openCreateModal(): void
     {
-        $this->reset(['name', 'pic_name', 'phone', 'description', 'unitId', 'isEditing']);
+        $this->reset(['name', 'pic_name', 'phone', 'description', 'unitId', 'isEditing', 'logo', 'existingLogo', 'removeLogo']);
         $this->department = 'PPLG';
         $this->category = 'ritel';
         $this->is_active = true;
@@ -65,6 +73,9 @@ class Index extends Component
         $this->phone = $unit->phone ?? '';
         $this->description = $unit->description ?? '';
         $this->is_active = (bool) $unit->is_active;
+        $this->logo = null;
+        $this->existingLogo = $unit->logo ?? null;
+        $this->removeLogo = false;
 
         $this->isEditing = true;
         $this->showModal = true;
@@ -73,6 +84,18 @@ class Index extends Component
     public function closeModal(): void
     {
         $this->showModal = false;
+    }
+
+    /**
+     * Tandai logo unit yang sudah tersimpan untuk dihapus saat form disimpan.
+     * Hanya menghapus preview & flag di form; file baru benar-benar
+     * dihapus dari storage pada method save().
+     */
+    public function clearLogo(): void
+    {
+        $this->logo = null;
+        $this->existingLogo = null;
+        $this->removeLogo = true;
     }
 
     public function save(): void
@@ -85,6 +108,7 @@ class Index extends Component
             'phone' => 'nullable|string|max:20',
             'description' => 'nullable|string|max:500',
             'is_active' => 'boolean',
+            'logo' => 'nullable|image|max:1024',
         ];
 
         $this->validate($rules);
@@ -99,6 +123,18 @@ class Index extends Component
             'description' => $this->description ?: null,
             'is_active' => $this->is_active,
         ];
+
+        $previousLogo = $this->isEditing && $this->unitId
+            ? optional(Unit::find($this->unitId))->logo
+            : null;
+
+        if ($this->logo) {
+            // Logo baru diunggah: simpan file baru & tandai yang lama untuk dihapus
+            $data['logo'] = $this->logo->store('unit-logos', 'public');
+        } elseif ($this->removeLogo) {
+            // Admin memilih menghapus logo tanpa menggantinya
+            $data['logo'] = null;
+        }
 
         if ($this->isEditing && $this->unitId) {
             $unit = Unit::findOrFail($this->unitId);
@@ -129,6 +165,11 @@ class Index extends Component
             );
 
             session()->flash('message', 'Unit usaha berhasil ditambahkan.');
+        }
+
+        // Bersihkan file logo lama dari storage jika sudah diganti/dihapus
+        if ($previousLogo && $previousLogo !== ($data['logo'] ?? $previousLogo)) {
+            Storage::disk('public')->delete($previousLogo);
         }
 
         $this->closeModal();
@@ -170,6 +211,7 @@ class Index extends Component
         }
 
         $unitName = $unit->name;
+        $unitLogo = $unit->logo;
         $oldValues = $unit->getAttributes();
 
         // Lepas relasi admin/user berdasarkan jenis relasinya
@@ -190,6 +232,11 @@ class Index extends Component
             $unit->forceDelete();
         } else {
             $unit->delete();
+        }
+
+        // Bersihkan file logo dari storage agar tidak jadi sampah
+        if ($unitLogo) {
+            Storage::disk('public')->delete($unitLogo);
         }
 
         // Audit Log: Hapus Unit Usaha

@@ -1,12 +1,8 @@
 <div class="w-full max-w-[1500px] mx-auto space-y-5 text-neutral-800 dark:text-neutral-100 px-4 py-4 sm:px-6 font-sans">
 
-    {{-- Flash Notification --}}
+    {{-- Flash Notification (toast) --}}
     @if (session()->has('message'))
-        <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 4000)"
-             class="p-4 rounded-sm bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 text-sm flex items-center justify-between">
-            <span class="font-medium">{{ session('message') }}</span>
-            <button @click="show = false" type="button" class="text-emerald-500 hover:text-emerald-700 dark:hover:text-emerald-300">&times;</button>
-        </div>
+        <div wire:key="toast-message-{{ md5(session('message')) }}" x-data x-init="$store.toast.push('success', @js(session('message')))"></div>
     @endif
 
     {{-- Header Section --}}
@@ -312,10 +308,8 @@
                                   placeholder="Preferensi, alergi, riwayat khusus, dsb..."></textarea>
                     </div>
 
-                    <div class="flex items-center gap-2 pt-1">
-                        <input type="checkbox" wire:model="is_active" id="customer_is_active"
-                               class="rounded border-neutral-300 text-blue-900 focus:ring-blue-400 cursor-pointer">
-                        <label for="customer_is_active" class="text-xs font-medium text-neutral-600 dark:text-neutral-300 cursor-pointer">Pelanggan Aktif</label>
+                    <div class="pt-1">
+                        <x-toggle wire:model="is_active">Pelanggan Aktif</x-toggle>
                     </div>
                     </x-slot:tab2>
                     <x-slot:submit>

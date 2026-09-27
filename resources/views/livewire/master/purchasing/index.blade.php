@@ -1,12 +1,8 @@
 <div class="w-full max-w-[1500px] mx-auto space-y-5 text-neutral-800 dark:text-neutral-100 px-4 py-4 sm:px-6 font-sans">
 
-    {{-- Flash Notification --}}
+    {{-- Flash Notification (toast) --}}
     @if (session()->has('message'))
-        <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 4000)"
-             class="p-4 rounded-md bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 text-sm flex items-center justify-between">
-            <span class="font-medium">{{ session('message') }}</span>
-            <button @click="show = false" type="button" class="text-emerald-500 hover:text-emerald-700 dark:hover:text-emerald-300">&times;</button>
-        </div>
+        <div wire:key="toast-message-{{ md5(session('message')) }}" x-data x-init="$store.toast.push('success', @js(session('message')))"></div>
     @endif
 
     {{-- Header Section --}}
@@ -242,7 +238,10 @@
                                 <div wire:key="item-row-{{ $index }}" class="border border-neutral-200 dark:border-slate-700 rounded-md p-2.5 space-y-2">
                                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                         <div>
-                                            <label class="block text-[10px] font-semibold text-neutral-500 mb-0.5">Produk (opsional)</label>
+                                            <label class="flex items-center gap-1 text-[10px] font-semibold text-neutral-500 mb-0.5">
+                                                Produk (opsional)
+                                                <x-help-tip text="Pilih produk kalau pembelian ini akan menambah stok barang tersebut secara otomatis. Kosongkan kalau ini pembelian jasa atau barang yang tidak dicatat di stok." />
+                                            </label>
                                             <select wire:model="items.{{ $index }}.product_id"
                                                     class="w-full px-2.5 py-1.5 border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 text-[11px] focus:outline-none focus:border-blue-500 cursor-pointer">
                                                 <option value="">-- Item bebas (non-stok) --</option>

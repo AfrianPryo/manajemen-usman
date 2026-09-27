@@ -1,12 +1,8 @@
 <div class="w-full max-w-[1100px] mx-auto space-y-5 text-neutral-800 dark:text-neutral-100 px-4 py-4 sm:px-6 font-sans">
 
-    {{-- Flash Notification --}}
+    {{-- Flash Notification (toast) --}}
     @if (session()->has('error'))
-        <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 4000)"
-             class="p-4 rounded-md bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-300 text-sm flex items-center justify-between">
-            <span class="font-medium">{{ session('error') }}</span>
-            <button @click="show = false" type="button" class="text-rose-500 hover:text-rose-700 dark:hover:text-rose-300">&times;</button>
-        </div>
+        <div wire:key="toast-error-{{ md5(session('error')) }}" x-data x-init="$store.toast.push('error', @js(session('error')))"></div>
     @endif
 
     {{-- Header --}}

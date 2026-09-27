@@ -4,16 +4,13 @@
         <p class="text-sm text-gray-500 dark:text-gray-400">Kelola informasi akun Anda.</p>
     </div>
 
+    {{-- Flash Notifications (toast) --}}
     @if (session()->has('success_profile'))
-        <div class="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 px-4 py-3 rounded-lg text-sm">
-            {{ session('success_profile') }}
-        </div>
+        <div wire:key="toast-success-profile-{{ md5(session('success_profile')) }}" x-data x-init="$store.toast.push('success', @js(session('success_profile')))"></div>
     @endif
 
     @if (session()->has('success_password'))
-        <div class="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 px-4 py-3 rounded-lg text-sm">
-            {{ session('success_password') }}
-        </div>
+        <div wire:key="toast-success-password-{{ md5(session('success_password')) }}" x-data x-init="$store.toast.push('success', @js(session('success_password')))"></div>
     @endif
 
     {{-- Edit Profile --}}

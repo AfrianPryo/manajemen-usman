@@ -1,29 +1,31 @@
 <div class="w-full max-w-[1500px] mx-auto space-y-5 text-neutral-800 dark:text-neutral-100 px-4 py-4 sm:px-6 font-sans">
 
-    {{-- Flash Notification --}}
+    {{-- Flash Notification (toast) --}}
     @if (session()->has('success'))
-        <div class="p-4 rounded-md bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 text-sm flex items-center justify-between">
-            <span class="font-medium">{{ session('success') }}</span>
-            <button type="button" onclick="this.parentElement.remove()" class="text-emerald-500 hover:text-emerald-700">&times;</button>
-        </div>
+        <div wire:key="toast-success-{{ md5(session('success')) }}" x-data x-init="$store.toast.push('success', @js(session('success')))"></div>
     @endif
     @if (session()->has('error'))
-        <div class="p-4 rounded-md bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-300 text-sm flex items-center justify-between">
-            <span class="font-medium">{{ session('error') }}</span>
-            <button type="button" onclick="this.parentElement.remove()" class="text-rose-500 hover:text-rose-700">&times;</button>
-        </div>
+        <div wire:key="toast-error-{{ md5(session('error')) }}" x-data x-init="$store.toast.push('error', @js(session('error')))"></div>
     @endif
 
     {{-- Header --}}
     <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-            <h1 class="text-xl font-bold tracking-tight text-neutral-900 dark:text-white">Arsip Log</h1>
+            <h1 class="flex items-center gap-1.5 text-xl font-bold tracking-tight text-neutral-900 dark:text-white">
+                Arsip Log
+                <x-help-tip text="Log login dan audit log yang sudah 'kedaluwarsa' (lewat batas retensi) tidak langsung dihapus, tapi dipindah ke sini dulu sebagai file Excel per bulan, supaya data lama tetap bisa dibuka kapan saja tanpa memperlambat aplikasi." />
+            </h1>
             <p class="text-xs text-neutral-400">File Excel per bulan dari log login & audit log yang sudah melewati batas retensi.</p>
         </div>
 
         <div class="flex items-center gap-2.5 shrink-0">
-            <button wire:click="runArchiveNow"
-                wire:confirm="Jalankan pengarsipan sekarang? Log yang sudah melewati batas retensi akan diekspor ke Excel lalu dihapus dari tabel utama."
+            <button type="button"
+                x-on:click.prevent="$store.confirmDialog.open({
+                    message: 'Jalankan pengarsipan sekarang? Log yang sudah melewati batas retensi akan diekspor ke Excel lalu dihapus dari tabel utama.',
+                    confirmText: 'Ya, Arsipkan',
+                    variant: 'default',
+                    onConfirm: () => $wire.runArchiveNow()
+                })"
                 wire:loading.attr="disabled" wire:target="runArchiveNow"
                 class="px-3.5 py-2 text-xs font-semibold text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800 rounded-[3px] hover:bg-sky-100 dark:hover:bg-sky-900/40 transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-60">
                 <x-heroicon-o-archive-box wire:loading.remove wire:target="runArchiveNow" class="w-4 h-4" />

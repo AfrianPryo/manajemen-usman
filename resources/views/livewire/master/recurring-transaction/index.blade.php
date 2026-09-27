@@ -1,11 +1,8 @@
 <div class="w-full max-w-[1500px] mx-auto space-y-5 text-neutral-800 dark:text-neutral-100 px-4 py-4 sm:px-6 font-sans">
 
-    {{-- Flash Notification --}}
+    {{-- Flash Notification (toast) --}}
     @if (session()->has('message'))
-        <div class="p-4 rounded-sm bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 text-sm flex items-center justify-between">
-            <span class="font-medium">{{ session('message') }}</span>
-            <button type="button" onclick="this.parentElement.remove()" class="text-emerald-500 hover:text-emerald-700">&times;</button>
-        </div>
+        <div wire:key="toast-message-{{ md5(session('message')) }}" x-data x-init="$store.toast.push('success', @js(session('message')))"></div>
     @endif
 
     {{-- ================= HEADER & QUICK ACTIONS ================= --}}
@@ -242,7 +239,7 @@
                     {{-- Judul Transaksi --}}
                     <div>
                         <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Judul Transaksi <span class="text-rose-500">*</span></label>
-                        <input type="text" wire:model="title" placeholder="cth. Biaya Sewa Kantin Bulanan" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400">
+                        <input type="text" wire:model="title" placeholder="Contoh: Biaya Sewa Kantin Bulanan" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400">
                         @error('title') <span class="text-[11px] text-rose-500 mt-0.5 block">{{ $message }}</span> @enderror
                     </div>
 
@@ -315,32 +312,34 @@
                     {{-- Row: Tanggal Mulai & Tanggal Selesai --}}
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Tanggal Mulai <span class="text-rose-500">*</span></label>
+                            <label class="flex items-center gap-1 text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1">
+                                Tanggal Mulai <span class="text-rose-500">*</span>
+                                <x-help-tip text="Transaksi pertama akan dibuat otomatis pada tanggal ini, lalu diulang lagi sesuai Frekuensi Berulang yang dipilih (mis. tiap bulan pada tanggal yang sama)." />
+                            </label>
                             <input type="date" wire:model="start_date" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400">
                             @error('start_date') <span class="text-[11px] text-rose-500 mt-0.5 block">{{ $message }}</span> @enderror
                         </div>
 
                         <div>
-                            <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Tanggal Selesai <span class="text-xs text-neutral-400 font-normal">(Opsional)</span></label>
+                            <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Tanggal Selesai <span class="text-xs text-neutral-400 font-normal">(opsional)</span></label>
                             <input type="date" wire:model="end_date" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400">
                         </div>
                     </div>
 
                     {{-- Card Opsi Otomatisasi (Highlighted) --}}
                     <div class="p-3.5 rounded-sm border border-sky-200/80 bg-sky-50/50 dark:border-sky-900/50 dark:bg-sky-950/20 transition-all">
-                        <div class="flex items-start gap-3">
-                            <input type="checkbox" id="auto_approve" wire:model="auto_approve" class="mt-0.5 rounded-sm border-sky-300 dark:border-sky-700 text-blue-900 focus:ring-blue-500/20 cursor-pointer">
-                            <div class="space-y-1">
-                                <label for="auto_approve" class="text-xs font-bold text-neutral-800 dark:text-neutral-100 cursor-pointer flex items-center gap-1.5">
+                        <x-toggle wire:model="auto_approve">
+                            <span class="space-y-1 block">
+                                <span class="text-xs font-bold text-neutral-800 dark:text-neutral-100 flex items-center gap-1.5">
                                     <span>Otomatiskan ke Laporan Keuangan</span>
                                     <span class="px-1.5 py-0.5 text-[9px] font-bold rounded-sm bg-sky-100 dark:bg-sky-900/60 text-sky-700 dark:text-sky-300">Auto Approve</span>
-                                </label>
-                                <p class="text-[11px] text-neutral-500 dark:text-neutral-400 leading-relaxed">
-                                    <strong class="text-sky-700 dark:text-sky-400">Dicentang:</strong> Transaksi langsung diterbitkan & dicatat ke laporan keuangan saat jatuh tempo.<br>
-                                    <strong class="text-amber-700 dark:text-amber-400">Tidak Dicentang:</strong> Transaksi dibuat sebagai <span class="italic font-medium">Draf</span> dan butuh konfirmasi manual Anda.
-                                </p>
-                            </div>
-                        </div>
+                                </span>
+                                <span class="block text-[11px] text-neutral-500 dark:text-neutral-400 leading-relaxed">
+                                    <strong class="text-sky-700 dark:text-sky-400">Aktif:</strong> Transaksi langsung diterbitkan & dicatat ke laporan keuangan saat jatuh tempo.<br>
+                                    <strong class="text-amber-700 dark:text-amber-400">Nonaktif:</strong> Transaksi dibuat sebagai <span class="italic font-medium">Draf</span> dan butuh konfirmasi manual Anda.
+                                </span>
+                            </span>
+                        </x-toggle>
                     </div>
 
                     {{-- Catatan Tambahan --}}

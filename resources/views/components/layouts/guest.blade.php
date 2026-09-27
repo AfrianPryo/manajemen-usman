@@ -29,6 +29,9 @@
 </head>
 <body class="bg-slate-50 dark:bg-slate-950 font-sans antialiased">
     
+    {{-- Panel popup toast global (pengganti flash message inline) --}}
+    <x-alert />
+
     {{-- Ini akan digantikan oleh isi dari login.blade.php --}}
     {{ $slot }}
 

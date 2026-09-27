@@ -10,12 +10,9 @@
         </div>
     @endif
 
-    {{-- Flash Notification --}}
+    {{-- Flash Notification (toast) --}}
     @if (session()->has('success'))
-        <div class="p-4 rounded-sm bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 text-sm flex items-center justify-between shadow-sm shadow-black/[0.02]">
-            <span class="font-medium">{{ session('success') }}</span>
-            <button type="button" onclick="this.parentElement.remove()" class="text-emerald-500 hover:text-emerald-700">&times;</button>
-        </div>
+        <div wire:key="toast-success-{{ md5(session('success')) }}" x-data x-init="$store.toast.push('success', @js(session('success')))"></div>
     @endif
 
     @if (! $this->isAccountOnlyView())
@@ -307,8 +304,12 @@
                         @error('logo') <p class="text-[11px] text-rose-500 mt-0.5">{{ $message }}</p> @enderror
                         @if ($existingLogo)
                             <button type="button"
-                                    wire:click="removeLogo"
-                                    wire:confirm="Hapus logo aplikasi dan kembali ke ikon default?"
+                                    x-on:click.prevent="$store.confirmDialog.open({
+                                        message: 'Hapus logo aplikasi dan kembali ke ikon default?',
+                                        confirmText: 'Ya, Hapus',
+                                        variant: 'danger',
+                                        onConfirm: () => $wire.removeLogo()
+                                    })"
                                     class="mt-1.5 text-[11px] font-semibold text-rose-500 hover:text-rose-600">
                                 Hapus Logo
                             </button>
@@ -322,6 +323,15 @@
                         <input type="text" wire:model="appName" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400">
                         @error('appName') <p class="text-[11px] text-rose-500 mt-0.5">{{ $message }}</p> @enderror
                     </div>
+                </div>
+
+                {{-- Nama & logo di atas otomatis dipakai juga di landing page (halaman
+                     depan publik). Toggle ini khusus untuk bagian "Mitra Unit Usaha"
+                     di landing page -- lihat resources/views/landing.blade.php --}}
+                <div class="pt-1">
+                    <x-toggle wire:model="showUnitsOnLanding"
+                        label="Tampilkan Unit Usaha di Landing Page"
+                        description='Tampilkan logo unit usaha aktif pada bagian "Mitra Unit Usaha" di halaman depan (landing page) publik.' />
                 </div>
             </div>
 
@@ -341,19 +351,30 @@
                 <div class="space-y-3">
                     <!-- Notifikasi WhatsApp -->
                     <div>
-                        <label class="flex items-center gap-3 cursor-pointer">
-                            <input type="checkbox" wire:model.live="enableWaNotifications" class="w-4 h-4 text-blue-900 rounded border-neutral-300 focus:ring-blue-500/20 cursor-pointer">
-                            <div>
-                                <span class="text-xs font-semibold text-neutral-800 dark:text-neutral-200">Notifikasi WhatsApp</span>
-                                <p class="text-[11px] text-neutral-400">Kirim pemberitahuan penting dan kode OTP keamanan langsung ke WhatsApp.</p>
-                            </div>
-                        </label>
+                        <x-toggle wire:model.live="enableWaNotifications"
+                            label="Notifikasi WhatsApp"
+                            description="Kirim pemberitahuan penting dan kode OTP keamanan langsung ke WhatsApp." />
 
                         @if ($enableWaNotifications)
                             <div class="mt-3 ml-7 pl-4 border-l-2 border-blue-100 dark:border-slate-600 space-y-3">
                                 <div class="bg-blue-50 dark:bg-blue-950/50 border border-blue-200/60 dark:border-blue-800 text-blue-600 dark:text-blue-400 text-[11px] font-medium px-3 py-2 rounded-sm">
                                     Konfigurasi ini juga dipakai untuk kode OTP saat mengubah password atau nomor WhatsApp di tab Profil Admin.
                                 </div>
+
+                                {{-- Panduan singkat cara mendapatkan API Key -- tertutup by default
+                                     (native <details>) supaya form tidak terasa penuh untuk admin yang
+                                     sudah paham, tapi tetap satu klik untuk yang baru pertama kali. --}}
+                                <details class="group text-[11px] text-neutral-500 dark:text-neutral-400">
+                                    <summary class="cursor-pointer select-none font-semibold text-blue-800 dark:text-sky-400 hover:underline inline-flex items-center gap-1 [&::-webkit-details-marker]:hidden marker:content-none">
+                                        <x-heroicon-o-information-circle class="w-3.5 h-3.5 shrink-0" />
+                                        Belum punya API Key? Lihat cara mendapatkannya
+                                    </summary>
+                                    <ol class="mt-2 ml-0.5 space-y-1 list-decimal list-inside">
+                                        <li>Buka <span class="font-medium text-neutral-600 dark:text-neutral-300">fonnte.com</span>, daftar atau masuk, lalu tambah perangkat baru di menu <span class="font-medium text-neutral-600 dark:text-neutral-300">Device</span>.</li>
+                                        <li>Pindai (scan) kode QR yang muncul memakai WhatsApp dari nomor pengirim yang akan diisi di bawah.</li>
+                                        <li>Setelah status perangkat "Connected", salin token yang tertera di halaman Device tersebut, lalu tempel ke kolom <span class="font-medium text-neutral-600 dark:text-neutral-300">API Key / Token Fonnte</span> di bawah.</li>
+                                    </ol>
+                                </details>
 
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
@@ -365,13 +386,19 @@
                                     </div>
 
                                     <div>
-                                        <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Nomor WhatsApp Pengirim</label>
+                                        <label class="flex items-center gap-1 text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1">
+                                            Nomor WhatsApp Pengirim
+                                            <x-help-tip text="Nomor HP yang perangkatnya sudah discan/dihubungkan ke akun Fonnte kamu, bukan sembarang nomor. Dari nomor inilah OTP dan notifikasi akan dikirim." />
+                                        </label>
                                         <input type="text" inputmode="numeric" wire:model="waSenderNumber" oninput="onlyDigits(event)" placeholder="08xxxxxxxxxx" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400">
                                         @error('waSenderNumber') <p class="text-[11px] text-rose-500 mt-0.5">{{ $message }}</p> @enderror
                                     </div>
 
                                     <div class="md:col-span-2" x-data="{ showApiKey: false }">
-                                        <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1">API Key / Token Fonnte</label>
+                                        <label class="flex items-center gap-1 text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1">
+                                            API Key / Token Fonnte
+                                            <x-help-tip text="Token rahasia dari dashboard akun Fonnte kamu (fonnte.com > Device), bukan password WhatsApp. Simpan baik-baik — siapa pun yang memegang token ini bisa mengirim pesan atas nama nomor tersebut." />
+                                        </label>
                                         <div class="relative">
                                             <input
                                                 :type="showApiKey ? 'text' : 'password'"
@@ -470,34 +497,22 @@
                                         jika dimatikan, notifikasi tetap muncul di aplikasi, hanya salinan WhatsApp yang tidak dikirim.
                                     </p>
 
-                                    <label class="flex items-center gap-3 cursor-pointer">
-                                        <input type="checkbox" wire:model="waNotifyCredentials" class="w-4 h-4 text-blue-900 rounded border-neutral-300 focus:ring-blue-500/20 cursor-pointer">
-                                        <div>
-                                            <span class="text-xs font-semibold text-neutral-800 dark:text-neutral-200">Kredensial Akun (Password Baru)</span>
-                                            <p class="text-[11px] text-neutral-400">Username & password saat akun dibuat, direset, atau permintaan reset disetujui. Tetap muncul di popup layar meski dimatikan.</p>
-                                        </div>
-                                    </label>
+                                    <x-toggle wire:model="waNotifyCredentials"
+                                        label="Kredensial Akun (Password Baru)"
+                                        description="Username & password saat akun dibuat, direset, atau permintaan reset disetujui. Tetap muncul di popup layar meski dimatikan." />
 
-                                    <label class="flex items-center gap-3 cursor-pointer">
-                                        <input type="checkbox" wire:model="waNotifyAnnouncements" class="w-4 h-4 text-blue-900 rounded border-neutral-300 focus:ring-blue-500/20 cursor-pointer">
-                                        <div>
-                                            <span class="text-xs font-semibold text-neutral-800 dark:text-neutral-200">Broadcast Pengumuman</span>
-                                            <p class="text-[11px] text-neutral-400">Salinan WhatsApp untuk pengumuman yang dikirim Master Admin ke Admin Unit lewat menu Pengumuman.</p>
-                                        </div>
-                                    </label>
+                                    <x-toggle wire:model="waNotifyAnnouncements"
+                                        label="Broadcast Pengumuman"
+                                        description="Salinan WhatsApp untuk pengumuman yang dikirim Master Admin ke Admin Unit lewat menu Pengumuman." />
                                 </div>
 
                                 {{-- Laporan Rutin Otomatis -- ringkasan aspek penting sistem
                                      dikirim berkala ke seluruh Admin Master aktif via WhatsApp.
                                      Lihat App\Services\RoutineReportService. --}}
                                 <div class="pt-3 mt-1 border-t border-neutral-100 dark:border-slate-600 space-y-2.5">
-                                    <label class="flex items-center gap-3 cursor-pointer">
-                                        <input type="checkbox" wire:model.live="reportRoutineEnabled" class="w-4 h-4 text-blue-900 rounded border-neutral-300 focus:ring-blue-500/20 cursor-pointer">
-                                        <div>
-                                            <span class="text-xs font-semibold text-neutral-800 dark:text-neutral-200">Laporan Rutin Otomatis</span>
-                                            <p class="text-[11px] text-neutral-400">Kirim ringkasan aspek penting sistem (keuangan, unit usaha, admin, stok, dst) secara berkala ke seluruh Admin Master aktif lewat WhatsApp.</p>
-                                        </div>
-                                    </label>
+                                    <x-toggle wire:model.live="reportRoutineEnabled"
+                                        label="Laporan Rutin Otomatis"
+                                        description="Kirim ringkasan aspek penting sistem (keuangan, unit usaha, admin, stok, dst) secara berkala ke seluruh Admin Master aktif lewat WhatsApp." />
 
                                     @if ($reportRoutineEnabled)
                                         <div class="mt-3 ml-7 pl-4 border-l-2 border-blue-100 dark:border-slate-600 space-y-3">
@@ -556,12 +571,9 @@
 
                                             <div>
                                                 <p class="text-[11px] font-bold text-neutral-500 dark:text-neutral-400 uppercase tracking-wide mb-2">Kategori yang Dikirim</p>
-                                                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-2">
+                                                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-2.5">
                                                     @foreach (\App\Services\RoutineReportService::SECTIONS as $sectionKey => $sectionLabel)
-                                                        <label class="flex items-center gap-2.5 cursor-pointer">
-                                                            <input type="checkbox" value="{{ $sectionKey }}" wire:model="reportRoutineSections" class="w-4 h-4 text-blue-900 rounded border-neutral-300 focus:ring-blue-500/20 cursor-pointer">
-                                                            <span class="text-[11px] font-medium text-neutral-700 dark:text-neutral-300">{{ $sectionLabel }}</span>
-                                                        </label>
+                                                        <x-toggle wire:model="reportRoutineSections" value="{{ $sectionKey }}">{{ $sectionLabel }}</x-toggle>
                                                     @endforeach
                                                 </div>
                                                 @error('reportRoutineSections') <p class="text-[11px] text-rose-500 mt-1">{{ $message }}</p> @enderror
@@ -580,13 +592,9 @@
                 <h3 class="text-[11px] font-bold text-neutral-500 dark:text-neutral-400 uppercase tracking-wide">Sesi & Keamanan</h3>
 
                 <div>
-                    <label class="flex items-center gap-3 cursor-pointer">
-                        <input type="checkbox" wire:model.live="sessionTimeoutEnabled" class="w-4 h-4 text-blue-900 rounded border-neutral-300 focus:ring-blue-500/20 cursor-pointer">
-                        <div>
-                            <span class="text-xs font-semibold text-neutral-800 dark:text-neutral-200">Auto-Logout Karena Idle (Session Timeout)</span>
-                            <p class="text-[11px] text-neutral-400">Keluarkan otomatis dari akun kalau tidak ada aktivitas selama durasi tertentu. Berlaku terpisah untuk Admin Master dan Admin Unit.</p>
-                        </div>
-                    </label>
+                    <x-toggle wire:model.live="sessionTimeoutEnabled"
+                        label="Auto-Logout Karena Idle (Session Timeout)"
+                        description="Keluarkan otomatis dari akun kalau tidak ada aktivitas selama durasi tertentu. Berlaku terpisah untuk Admin Master dan Admin Unit." />
 
                     @if ($sessionTimeoutEnabled)
                         <div class="mt-3 ml-7 pl-4 border-l-2 border-blue-100 dark:border-slate-600 space-y-3">

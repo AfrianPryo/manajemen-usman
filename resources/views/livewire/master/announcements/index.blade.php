@@ -1,12 +1,8 @@
 <div class="w-full max-w-[1500px] mx-auto space-y-5 text-neutral-800 dark:text-neutral-100 px-4 py-4 sm:px-6 font-sans">
 
-    {{-- Flash Notification --}}
+    {{-- Flash Notification (toast) --}}
     @if (session()->has('message'))
-        <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 4000)"
-             class="p-4 rounded-md bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 text-sm flex items-center justify-between">
-            <span class="font-medium">{{ session('message') }}</span>
-            <button @click="show = false" type="button" class="text-emerald-500 hover:text-emerald-700 dark:hover:text-emerald-300">&times;</button>
-        </div>
+        <div wire:key="toast-message-{{ md5(session('message')) }}" x-data x-init="$store.toast.push('success', @js(session('message')))"></div>
     @endif
 
     {{-- Header Section --}}
@@ -176,13 +172,9 @@
 
                     {{-- Kirim juga via WhatsApp (Fonnte) --}}
                     <div class="p-3 rounded-md border border-neutral-200 dark:border-slate-700 bg-neutral-50/60 dark:bg-slate-900/40">
-                        <label class="flex items-start gap-2.5 cursor-pointer">
-                            <input type="checkbox" wire:model="sendViaWhatsapp" class="mt-0.5 rounded text-emerald-600 focus:ring-emerald-500">
-                            <span>
-                                <span class="block font-semibold text-neutral-700 dark:text-neutral-200">Kirim juga lewat WhatsApp (Fonnte)</span>
-                                <span class="block text-[11px] text-neutral-400 mt-0.5">Pesan akan dikirim langsung ke nomor HP/WhatsApp yang terdaftar pada masing-masing akun admin. Admin tanpa nomor HP terdaftar akan dilewati.</span>
-                            </span>
-                        </label>
+                        <x-toggle wire:model="sendViaWhatsapp"
+                            label="Kirim juga lewat WhatsApp (Fonnte)"
+                            description="Pesan akan dikirim langsung ke nomor HP/WhatsApp yang terdaftar pada masing-masing akun admin. Admin tanpa nomor HP terdaftar akan dilewati." />
                     </div>
 
                     </x-slot:tab2>

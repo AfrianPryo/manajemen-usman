@@ -3,6 +3,11 @@
     @show-admin-form-modal.window="showAdminModal = true"
     @show-unit-form-modal.window="showUnitModal = true">
 
+    {{-- Flash Notification (toast) --}}
+    @if (session()->has('message'))
+        <div wire:key="toast-message-{{ md5(session('message')) }}" x-data x-init="$store.toast.push('success', @js(session('message')))"></div>
+    @endif
+
     {{-- ================= TUTORIAL SETUP AWAL (LOGIN PERTAMA MASTER ADMIN) =================
          Tampil SEKALI untuk akun Master Admin yang 'onboarding_completed_at'-nya masih
          kosong -- pada praktiknya hanya akun awal hasil MasterAdminSeeder (kredensial
@@ -342,9 +347,8 @@
                             @error('description') <span class="text-xs text-red-500">{{ $message }}</span> @enderror
                         </div>
 
-                        <div class="flex items-center gap-2 pt-1">
-                            <input type="checkbox" id="is_active" wire:model="is_active" class="rounded border-neutral-300 text-blue-900 focus:ring-blue-400">
-                            <label for="is_active" class="text-xs font-medium text-neutral-600 dark:text-neutral-300">Unit Usaha Aktif / Operasional</label>
+                        <div class="pt-1">
+                            <x-toggle wire:model="is_active">Unit Usaha Aktif / Operasional</x-toggle>
                         </div>
 
                         </x-slot:tab2>

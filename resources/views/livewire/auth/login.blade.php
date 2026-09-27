@@ -52,18 +52,12 @@
                 <p class="mt-1.5 text-xs text-neutral-400">Masuk dengan akun Anda untuk melanjutkan.</p>
             </div>
 
-            {{-- Alert Error Session --}}
+            {{-- Alert Error & Status Session (toast) --}}
             @if (session()->has('error'))
-                <div class="mb-6 p-3 text-xs text-rose-600 dark:text-rose-400 border border-rose-100 dark:border-rose-800/50 bg-rose-50 dark:bg-rose-950/30 rounded-sm flex items-center gap-2" role="alert">
-                    <span class="font-medium">{{ session('error') }}</span>
-                </div>
+                <div wire:key="toast-error-{{ md5(session('error')) }}" x-data x-init="$store.toast.push('error', @js(session('error')))"></div>
             @endif
-
-            {{-- Alert Status Session --}}
             @if (session()->has('status'))
-                <div class="mb-6 p-3 text-xs text-emerald-600 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-800/50 bg-emerald-50 dark:bg-emerald-950/30 rounded-sm" role="alert">
-                    <span class="font-medium">{{ session('status') }}</span>
-                </div>
+                <div wire:key="toast-status-{{ md5(session('status')) }}" x-data x-init="$store.toast.push('success', @js(session('status')))"></div>
             @endif
 
             {{-- Validasi Error Global --}}

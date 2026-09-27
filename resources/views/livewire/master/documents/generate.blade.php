@@ -11,7 +11,7 @@
     </div>
 
     @if (session('success'))
-        <div class="p-4 rounded-sm bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 text-sm font-medium">{{ session('success') }}</div>
+        <div wire:key="toast-success-{{ md5(session('success')) }}" x-data x-init="$store.toast.push('success', @js(session('success')))"></div>
     @endif
 
     <form wire:submit.prevent="generate" class="space-y-5">
@@ -34,7 +34,10 @@
                 </div>
 
                 <div>
-                    <label for="templateId" class="block text-xs font-medium text-neutral-600 dark:text-neutral-300 mb-1">Template</label>
+                    <label for="templateId" class="flex items-center gap-1 text-xs font-medium text-neutral-600 dark:text-neutral-300 mb-1">
+                        Template
+                        <x-help-tip text="Format/susunan isi dokumen untuk jenis dokumen yang dipilih. Kalau daftarnya kosong, buat dulu templatenya lewat menu Kelola Template." />
+                    </label>
                     <select id="templateId" wire:model="templateId" @disabled(!$type)
                         class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400 disabled:bg-neutral-50 dark:disabled:bg-slate-900/50 disabled:cursor-not-allowed">
                         <option value="">-- Pilih Template --</option>
@@ -61,7 +64,10 @@
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                    <label for="signatureId" class="block text-xs font-medium text-neutral-600 dark:text-neutral-300 mb-1">Tanda Tangan</label>
+                    <label for="signatureId" class="flex items-center gap-1 text-xs font-medium text-neutral-600 dark:text-neutral-300 mb-1">
+                        Tanda Tangan
+                        <x-help-tip text="Profil pejabat (nama, jabatan, & gambar tanda tangan) yang akan dibubuhkan di dokumen ini. Kelola daftarnya lewat menu Tanda Tangan sebelum membuat dokumen." />
+                    </label>
                     <select id="signatureId" wire:model="signatureId"
                         class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400">
                         <option value="">-- Pilih Profil Tanda Tangan --</option>

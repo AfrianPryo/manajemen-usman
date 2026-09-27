@@ -193,7 +193,14 @@ class NotificationSidebar extends Component
             $notification->markAsRead();
         }
 
-        if ($url && $url !== '#') {
+        // Jaga-jaga terhadap notifikasi LAMA yang sempat tersimpan dengan
+        // url menunjuk ke endpoint internal AJAX Livewire (bug lama di
+        // SyncsAlertNotifications::batchFireAlert(), sudah diperbaiki, tapi
+        // notifikasi yang sudah terlanjur dibuat sebelum perbaikan itu tetap
+        // ada di database). Endpoint tsb hanya menerima POST, jadi redirect
+        // ke situ selalu berakhir "405 Method Not Allowed". Notifikasi tetap
+        // ditandai dibaca di atas, hanya redirect-nya yang dilewati.
+        if ($url && $url !== '#' && !str_contains($url, '/livewire-')) {
             return redirect()->to($url);
         }
     }
