@@ -82,6 +82,12 @@ class Index extends Component
     {
         $this->purchase_date = date('Y-m-d');
 
+        // Deep link dari notifikasi (lihat App\Support\NotificationLink):
+        // ?cari=<kode aset> langsung menyaring daftar ke aset terkait.
+        if (is_string($cari = request()->query('cari')) && $cari !== '') {
+            $this->search = $cari;
+        }
+
         // Sinkronisasi notifikasi aset (rusak / dalam maintenance) saat halaman dibuka
         $this->syncAllAssetNotifications();
     }

@@ -130,18 +130,13 @@ trait SyncsAlertNotifications
                 message: $message,
                 badge: $badge,
                 actionable: false,
-                // PENTING: alert ini sering dipicu di TENGAH request AJAX
-                // Livewire (mis. saat simpan produk/restock via saveProduct()
-                // / saveStock()), bukan cuma saat halaman pertama kali dibuka.
-                // Pada saat itu url()->current() SALAH -- ia mengembalikan
-                // endpoint internal Livewire ("/livewire-xxx/update", yang
-                // cuma menerima POST), bukan halaman yang sedang dilihat
-                // user. Header Referer, sebaliknya, selalu berisi URL
-                // halaman asli tempat request AJAX itu dikirim dari
-                // browser, jadi dipakai duluan di sini. url()->current()
-                // cuma jadi fallback untuk kasus non-AJAX (load halaman
-                // penuh) yang memang sudah benar sejak awal.
-                url: request()->headers->get('referer') ?: url()->current(),
+                // Sengaja TANPA url. Notifikasi ini dikirim ke SEMUA user, jadi
+                // satu url tersimpan (dulu diambil dari Referer si pemicu) pasti
+                // salah untuk sebagian penerima: menunjuk ke halaman umum bukan
+                // itemnya, atau ke halaman Master/unit lain (403). Tujuan detail
+                // kini dihitung per penerima saat diklik dari ID item di
+                // $extraData -- lihat App\Support\NotificationLink.
+                url: null,
                 extraData: $extraData,
             ));
         });

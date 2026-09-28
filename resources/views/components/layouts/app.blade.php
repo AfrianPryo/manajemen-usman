@@ -119,7 +119,7 @@
                     type="button"
                     title="Ciutkan sidebar"
                     class="hidden md:inline-flex shrink-0 p-1 rounded-md text-slate-400 dark:text-slate-500 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus:outline-none">
-                    <x-heroicon-o-chevron-double-left class="w-3.5 h-3.5" />
+                    <x-heroicon-o-chevron-left class="w-3.5 h-3.5" />
                 </button>
 
                 {{-- Tombol Tutup Sidebar (mobile) --}}
@@ -139,7 +139,7 @@
                     type="button"
                     title="Perluas sidebar"
                     class="p-1 rounded-md text-slate-400 dark:text-slate-500 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus:outline-none">
-                    <x-heroicon-o-chevron-double-right class="w-3.5 h-3.5" />
+                    <x-heroicon-o-chevron-right class="w-3.5 h-3.5" />
                 </button>
             </div>
 

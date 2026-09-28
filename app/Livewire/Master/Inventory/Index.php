@@ -90,6 +90,12 @@ class Index extends Component
 
     public function mount(): void
     {
+        // Deep link dari notifikasi (lihat App\Support\NotificationLink):
+        // ?cari=<kode/no. referensi> langsung menyaring daftar ke item terkait.
+        if (is_string($cari = request()->query('cari')) && $cari !== '') {
+            $this->search = $cari;
+        }
+
         // Sinkronisasi notifikasi stok menipis/habis saat halaman dibuka
         $this->syncAllStockNotifications();
     }

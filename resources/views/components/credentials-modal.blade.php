@@ -6,7 +6,7 @@
     jadi komponen bersama supaya bisa dipakai ulang persis sama di manapun
     ada aksi yang menghasilkan kredensial baru untuk ditampilkan -- termasuk
     saat Admin Master menekan "Approve" pada notifikasi permintaan reset
-    password (lihat App\Livewire\NotificationSidebar::approvePasswordResetRequest()
+    password (lihat App\Support\Concerns\HandlesNotificationActions::approvePasswordReset()
     & App\Livewire\Master\Notifications\Index versi halaman penuhnya).
 
     Kontrak data $credentials (array|null), null = modal tidak tampil:
