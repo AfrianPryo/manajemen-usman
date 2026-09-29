@@ -1,36 +1,40 @@
 <div class="max-w-[1500px] mx-auto space-y-5 px-4 py-4 sm:px-6 font-sans text-neutral-800 dark:text-neutral-100">
     <livewire:page-tour tour="inventory.index" />
-    {{-- Header & Action Button --}}
+    {{-- ================= HEADER & QUICK ACTIONS ================= --}}
     <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 bg-white dark:bg-slate-800 p-4 rounded-sm border border-neutral-100 dark:border-slate-700 shadow-sm shadow-black/[0.02]">
-        <div class="shrink-0">
+        <div class="min-w-0">
             <h1 class="text-sm font-bold tracking-tight text-neutral-900 dark:text-white">Manajemen Inventaris Produk</h1>
-            <p class="text-[11px] tracking-tight text-neutral-400 mt-0.5">
+            <p class="text-[11px] tracking-tight text-neutral-400 mt-0.5 truncate">
                 Kelola data produk, stok, harga, dan kategori pada katalog unit usaha.
             </p>
         </div>
 
-        <div class="flex items-center gap-2 overflow-x-auto md:justify-end -mx-1 px-1 md:mx-0 md:px-0">
+        {{-- Tombol Aksi Cepat: dipaksa satu baris (nowrap), scroll horizontal kalau ruangnya sempit --}}
+        <div class="flex flex-nowrap items-center gap-2 overflow-x-auto shrink-0 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             <x-tour-replay tour="inventory.index" />
-            <button wire:click="openCreateModal" class="shrink-0 whitespace-nowrap inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-white bg-blue-900 hover:bg-blue-950 rounded-sm transition-all shadow-sm shadow-blue-900/20 cursor-pointer">
-                <x-heroicon-o-plus stroke-width="2.5" class="w-3.5 h-3.5" />
-                <span>Tambah Produk</span>
+
+            {{-- Tombol Export --}}
+            <button type="button" wire:click="exportProducts" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-semibold text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800 rounded-sm hover:bg-sky-100 dark:hover:bg-sky-900/40 transition-all cursor-pointer shrink-0 whitespace-nowrap">
+                <x-heroicon-o-arrow-down-tray class="w-3.5 h-3.5" stroke-width="2" />
+                <span>Export Excel</span>
             </button>
 
-            <button type="button"
-                    wire:click="openCategoryModal"
-                    class="shrink-0 whitespace-nowrap inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-neutral-700 dark:text-neutral-200 bg-white dark:bg-slate-800 border border-neutral-200 dark:border-slate-700 rounded-sm hover:bg-neutral-50 dark:hover:bg-slate-700 transition-all cursor-pointer">
+            {{-- Tombol Kelola Kategori --}}
+            <button type="button" wire:click="openCategoryModal" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-semibold text-neutral-700 dark:text-neutral-200 bg-white dark:bg-slate-800 border border-neutral-200 dark:border-slate-700 rounded-sm hover:bg-neutral-50 dark:hover:bg-slate-700 transition-all cursor-pointer shadow-sm shadow-black/[0.02] shrink-0 whitespace-nowrap">
                 <x-heroicon-o-tag class="w-3.5 h-3.5 text-neutral-500 dark:text-neutral-400" />
                 <span>Kelola Kategori</span>
             </button>
 
-            <button wire:click="exportProducts" class="shrink-0 whitespace-nowrap inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800 rounded-sm hover:bg-sky-100 dark:hover:bg-sky-900/40 transition-all cursor-pointer">
-                <x-heroicon-o-arrow-down-tray class="w-3.5 h-3.5" />
-                <span>Export Excel</span>
+            {{-- Tombol Import Excel --}}
+            <button type="button" wire:click="openImportModal" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-sm hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition-all cursor-pointer shrink-0 whitespace-nowrap">
+                <x-heroicon-o-arrow-up-tray class="w-3.5 h-3.5" stroke-width="2" />
+                <span>Import Excel</span>
             </button>
 
-            <button wire:click="openImportModal" class="shrink-0 whitespace-nowrap inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-sm hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition-all cursor-pointer">
-                <x-heroicon-o-arrow-up-tray class="w-3.5 h-3.5" />
-                <span>Import Excel</span>
+            {{-- Tombol Tambah Produk --}}
+            <button type="button" wire:click="openCreateModal" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-[11px] font-bold text-white bg-blue-900 hover:bg-blue-950 rounded-sm transition-all shadow-sm shadow-blue-900/20 cursor-pointer shrink-0 whitespace-nowrap">
+                <x-heroicon-o-plus class="w-3.5 h-3.5" stroke-width="2.5" />
+                <span>Tambah Produk</span>
             </button>
         </div>
     </div>

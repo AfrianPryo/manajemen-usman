@@ -60,7 +60,7 @@ class SignatureSettings extends Component
         ];
 
         if ($this->signatureImage) {
-            $data['signature_path'] = $this->signatureImage->store('signatures');
+            $data['signature_path'] = $this->signatureImage->store('signatures', 'local');
         }
 
         if ($this->is_default) {
@@ -104,7 +104,7 @@ class SignatureSettings extends Component
         $oldValues = $profile->toArray();
 
         if ($profile->signature_path) {
-            Storage::delete($profile->signature_path);
+            Storage::disk('local')->delete($profile->signature_path);
         }
 
         $profile->delete();

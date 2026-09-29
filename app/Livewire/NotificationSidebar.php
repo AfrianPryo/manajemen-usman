@@ -36,11 +36,27 @@ class NotificationSidebar extends Component
         /** @var User|null $user */
         $user = Auth::user();
 
+        $limit         = 10;
+        $notifications = $user
+            ? $user->unreadNotifications()->latest()->take($limit)->get()
+            : collect();
+
+        // OPTIMASI: sebelumnya selalu menembak 2 query (list + count()).
+        // Kalau list yang diambil belum penuh (< $limit), jumlah itu SUDAH
+        // sama persis dengan total unread, jadi query count() tidak perlu.
+        // Hanya kalau list penuh (mungkin ada lebih dari $limit unread)
+        // count() tetap dijalankan supaya angka badge tetap akurat.
+        if (! $user) {
+            $unreadCount = 0;
+        } elseif ($notifications->count() < $limit) {
+            $unreadCount = $notifications->count();
+        } else {
+            $unreadCount = $user->unreadNotifications()->count();
+        }
+
         return view('components.notification-sidebar', [
-            'notifications' => $user
-                ? $user->unreadNotifications()->latest()->take(10)->get()
-                : collect(),
-            'unreadCount'   => $user ? $user->unreadNotifications()->count() : 0,
+            'notifications' => $notifications,
+            'unreadCount'   => $unreadCount,
         ]);
     }
 }

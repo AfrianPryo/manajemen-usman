@@ -21,7 +21,12 @@ class AssetsImport implements ToModel, WithHeadingRow, WithValidation, SkipsOnFa
     private array $validStatuses = ['available', 'assigned', 'maintenance', 'retired'];
     private array $validConditions = ['good', 'fair', 'damaged'];
 
-    public function __construct()
+    /**
+     * @param int|null $lockedUnitId Bila diisi (import oleh Unit Admin), semua aset
+     *                               disimpan ke unit ini, dan tag yang sudah dipakai
+     *                               aset unit lain / Pusat ditolak (bukan di-update).
+     */
+    public function __construct(private ?int $lockedUnitId = null)
     {
         // Kategori valid: gabungan dari data eksisting + daftar default (agar fleksibel)
         $existing = Asset::query()->whereNotNull('category')->distinct()->pluck('category')->toArray();
@@ -93,7 +98,7 @@ class AssetsImport implements ToModel, WithHeadingRow, WithValidation, SkipsOnFa
         // Simpan (Update jika tag sudah ada, Create jika baru)
         return Asset::updateOrCreate(
             ['asset_tag' => $tag],
-            [
+            ($this->lockedUnitId ? ['unit_id' => $this->lockedUnitId] : []) + [
                 'name'           => trim((string) ($row['nama_aset'] ?? '')),
                 'category'       => trim((string) ($row['kategori'] ?? '')),
                 'serial_number'  => trim((string) ($row['nomor_seri'] ?? '')) ?: null,
@@ -113,6 +118,19 @@ class AssetsImport implements ToModel, WithHeadingRow, WithValidation, SkipsOnFa
         $fields = 'tag_aset_kosongkan_jika_auto_generate,nama_aset,kategori,nomor_seri,tanggal_pembelian_yyyy_mm_dd,harga_beli,status,kondisi,ditugaskan_kepada,lokasi,catatan';
 
         return [
+            'tag_aset'       => ['nullable', function ($attribute, $value, $fail) {
+                if (! $this->lockedUnitId || trim((string) $value) === '') {
+                    return;
+                }
+
+                $foreign = Asset::where('asset_tag', trim((string) $value))
+                    ->where(fn ($q) => $q->whereNull('unit_id')->orWhere('unit_id', '!=', $this->lockedUnitId))
+                    ->exists();
+
+                if ($foreign) {
+                    $fail('Tag aset sudah dipakai aset lain di luar unit Anda.');
+                }
+            }],
             'nama_aset'      => ['nullable', "required_with:{$fields}", 'string'],
             'kategori'       => ['nullable', "required_with:{$fields}", Rule::in($this->validCategories)],
             'harga_beli'     => ['nullable', 'numeric', 'min:0'],

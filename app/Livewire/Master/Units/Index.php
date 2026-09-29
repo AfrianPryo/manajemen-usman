@@ -210,6 +210,31 @@ class Index extends Component
             return;
         }
 
+        // Keamanan Data: relasi FK ke unit disetel cascadeOnDelete, jadi menghapus
+        // unit akan ikut memusnahkan seluruh riwayat keuangannya. Blokir kalau
+        // unit masih punya data yang bernilai pembukuan/audit.
+        // Daftar ini mengikuti seluruh tabel yang FK-nya cascadeOnDelete ke units
+        // (finance_transactions, purchase_orders, products, customers, service_orders).
+        // Aset, dokumen resmi, & user memakai nullOnDelete sehingga tidak ikut terhapus.
+        $blockers = [];
+        $checks = [
+            'transaksi keuangan' => \App\Models\FinanceTransaction::class,
+            'pembelian'          => \App\Models\PurchaseOrder::class,
+            'produk'             => \App\Models\Product::class,
+            'pelanggan'          => \App\Models\Customer::class,
+            'order jasa'         => \App\Models\ServiceOrder::class,
+        ];
+        foreach ($checks as $label => $model) {
+            if ($model::where('unit_id', $unit->id)->exists()) {
+                $blockers[] = $label;
+            }
+        }
+
+        if ($blockers) {
+            session()->flash('error', 'Unit usaha tidak dapat dihapus karena masih memiliki data ' . implode(', ', $blockers) . '. Biarkan unit dalam status NONAKTIF agar riwayat pembukuan tetap terjaga.');
+            return;
+        }
+
         $unitName = $unit->name;
         $unitLogo = $unit->logo;
         $oldValues = $unit->getAttributes();

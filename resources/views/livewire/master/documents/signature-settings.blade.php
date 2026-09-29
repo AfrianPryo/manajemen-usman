@@ -93,8 +93,8 @@
                     @forelse ($signatures as $sig)
                         <tr wire:key="sig-{{ $sig->id }}" class="hover:bg-neutral-50/60 dark:hover:bg-slate-700/30 transition-colors">
                             <td class="px-4 py-3">
-                                @if ($sig->signature_path)
-                                    <img src="{{ Storage::url($sig->signature_path) }}" class="h-10 bg-white border border-neutral-200 dark:border-slate-700 rounded-sm p-1">
+                                @if ($sig->signature_data_uri)
+                                    <img src="{{ $sig->signature_data_uri }}" class="h-10 bg-white border border-neutral-200 dark:border-slate-700 rounded-sm p-1">
                                 @else
                                     <span class="text-neutral-300">-</span>
                                 @endif

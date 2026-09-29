@@ -212,15 +212,13 @@ class Index extends MasterTransactionsIndex
     }
 
     /**
-     * TODO (belum digarap di iterasi skeleton ini): TransactionsImport
-     * (dipakai importExcel() bawaan induk) membaca unit_id LANGSUNG dari
-     * kolom file Excel yang diupload user, bukan dari $this->form_unit_id.
-     * Ini berarti admin unit yang mengimpor file secara teknis masih bisa
-     * mencantumkan unit_id unit lain di dalam filenya sendiri.
-     * Sebelum menu Import dibuka untuk role unit-admin, TransactionsImport
-     * perlu diberi tahu unit_id yang mengunci (constructor/property),
-     * bukan diasumsikan aman di sini.
+     * Import Excel: TransactionsImport dikunci ke unit ini, sehingga baris yang
+     * mencantumkan unit lain ditolak dan kolom unit kosong diisi unit sendiri.
      */
+    protected function importLockedUnitId(): ?int
+    {
+        return $this->currentUnitId();
+    }
 
     // Query KPI, getTransactionsQuery(), dan exportData() di class induk
     // semuanya sudah memakai $this->unitFilter yang kita kunci di atas, jadi

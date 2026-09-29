@@ -205,6 +205,21 @@ class Index extends Component
     {
         $this->validate();
 
+        // Stok produk disimpan sebagai bilangan bulat. Qty desimal hanya boleh
+        // untuk item bebas (non-produk); untuk produk berstok, tolak pecahan
+        // daripada memotongnya diam-diam lewat (int) sehingga stok & uang selisih.
+        $fractionalError = false;
+        foreach ($this->items as $i => $item) {
+            $q = (float) ($item['qty'] ?? 0);
+            if (! empty($item['product_id']) && $q != floor($q)) {
+                $this->addError("items.$i.qty", 'Jumlah untuk produk berstok harus bilangan bulat.');
+                $fractionalError = true;
+            }
+        }
+        if ($fractionalError) {
+            return;
+        }
+
         $unitId = $this->currentUnitId();
         $vendor = Vendor::findOrFail($this->vendor_id);
 

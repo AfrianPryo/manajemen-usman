@@ -439,9 +439,17 @@ class Dashboard extends Component
             ->where('status', 'completed')
             ->whereBetween('transaction_date', [$start, $end]);
 
-        $totalIncome  = (clone $completedInRange)->where('type', 'income')->sum('amount');
-        $totalExpense = (clone $completedInRange)->where('type', 'expense')->sum('amount');
-        $trxCount     = (clone $completedInRange)->count();
+        // OPTIMASI: sebelumnya 3 query terpisah (income, expense, count) ->
+        // sekarang 1 query dengan conditional aggregate. Hasilnya identik.
+        $currentTotals = (clone $completedInRange)->selectRaw(
+            "COALESCE(SUM(CASE WHEN type = 'income' THEN amount ELSE 0 END), 0) as total_income, "
+            . "COALESCE(SUM(CASE WHEN type = 'expense' THEN amount ELSE 0 END), 0) as total_expense, "
+            . "COUNT(*) as trx_count"
+        )->first();
+
+        $totalIncome  = (float) $currentTotals->total_income;
+        $totalExpense = (float) $currentTotals->total_expense;
+        $trxCount     = (int) $currentTotals->trx_count;
         $avgTrxValue  = $trxCount > 0 ? ($totalIncome + $totalExpense) / $trxCount : 0;
 
         // -------------------------------------------------------------
@@ -458,9 +466,16 @@ class Dashboard extends Component
             ->where('status', 'completed')
             ->whereBetween('transaction_date', [$prevStart, $prevEnd]);
 
-        $prevTotalIncome  = (float) (clone $completedInPrevRange)->where('type', 'income')->sum('amount');
-        $prevTotalExpense = (float) (clone $completedInPrevRange)->where('type', 'expense')->sum('amount');
-        $prevTrxCount     = (clone $completedInPrevRange)->count();
+        // OPTIMASI: 3 query -> 1 query (conditional aggregate), hasil identik.
+        $prevTotals = (clone $completedInPrevRange)->selectRaw(
+            "COALESCE(SUM(CASE WHEN type = 'income' THEN amount ELSE 0 END), 0) as total_income, "
+            . "COALESCE(SUM(CASE WHEN type = 'expense' THEN amount ELSE 0 END), 0) as total_expense, "
+            . "COUNT(*) as trx_count"
+        )->first();
+
+        $prevTotalIncome  = (float) $prevTotals->total_income;
+        $prevTotalExpense = (float) $prevTotals->total_expense;
+        $prevTrxCount     = (int) $prevTotals->trx_count;
 
         $periodComparison = [
             'incomeChangePct'      => $this->percentChange((float) $totalIncome, $prevTotalIncome),
@@ -470,43 +485,41 @@ class Dashboard extends Component
             'previousPeriodLabel'  => $prevStart->translatedFormat('d M Y') . ' - ' . $prevEnd->translatedFormat('d M Y'),
         ];
 
-        // TREN OMZET HARIAN DALAM RENTANG PERIODE (untuk grafik)
-        $dailyTrend = FinanceTransaction::query()
+        // TREN OMZET HARIAN + DATA GRAFIK ARUS KAS (pendapatan vs pengeluaran
+        // per hari, nanti diringkas ke minggu/bulan oleh buildCashflowSeries()).
+        //
+        // OPTIMASI: sebelumnya 3 query terpisah yang sama-sama meng-GROUP BY
+        // tanggal pada rentang & unit yang sama (tren omzet, pendapatan
+        // harian, pengeluaran harian). Sekarang 1 query; kolom
+        // transaction_date bertipe DATE sehingga DATE(transaction_date)
+        // identik dengan nilai kolom aslinya. Kolom *_count dipakai untuk
+        // menjaga perilaku lama: tanggal yang hanya punya pengeluaran TIDAK
+        // muncul di tren omzet, dan sebaliknya.
+        $dailyRows = FinanceTransaction::query()
             ->where('unit_id', $unitId)
-            ->where('type', 'income')
             ->where('status', 'completed')
             ->whereBetween('transaction_date', [$start, $end])
-            ->selectRaw('transaction_date as date, SUM(amount) as total')
-            ->groupBy('transaction_date')
-            ->orderBy('transaction_date')
+            ->selectRaw(
+                "DATE(transaction_date) as date, "
+                . "SUM(CASE WHEN type = 'income' THEN amount ELSE 0 END) as income_total, "
+                . "SUM(CASE WHEN type = 'expense' THEN amount ELSE 0 END) as expense_total, "
+                . "SUM(CASE WHEN type = 'income' THEN 1 ELSE 0 END) as income_count, "
+                . "SUM(CASE WHEN type = 'expense' THEN 1 ELSE 0 END) as expense_count"
+            )
+            ->groupBy('date')
+            ->orderBy('date')
             ->get();
 
+        $incomeDays  = $dailyRows->filter(fn ($row) => (int) $row->income_count > 0)->values();
+        $expenseDays = $dailyRows->filter(fn ($row) => (int) $row->expense_count > 0)->values();
+
         $revenueTrend = [
-            'labels' => $dailyTrend->map(fn ($row) => Carbon::parse($row->date)->translatedFormat('d M'))->all(),
-            'series' => $dailyTrend->map(fn ($row) => (float) $row->total)->all(),
+            'labels' => $incomeDays->map(fn ($row) => Carbon::parse($row->date)->translatedFormat('d M'))->all(),
+            'series' => $incomeDays->map(fn ($row) => (float) $row->income_total)->all(),
         ];
 
-        // -------------------------------------------------------------
-        // DATA GRAFIK TREN ARUS KAS (pendapatan vs pengeluaran per hari,
-        // nanti diringkas ke minggu/bulan oleh buildCashflowSeries()).
-        // -------------------------------------------------------------
-        $dailyRevenues = FinanceTransaction::query()
-            ->where('unit_id', $unitId)
-            ->where('type', 'income')
-            ->where('status', 'completed')
-            ->whereBetween('transaction_date', [$start, $end])
-            ->selectRaw('DATE(transaction_date) as date, SUM(amount) as total')
-            ->groupBy('date')
-            ->pluck('total', 'date');
-
-        $dailyExpenses = FinanceTransaction::query()
-            ->where('unit_id', $unitId)
-            ->where('type', 'expense')
-            ->where('status', 'completed')
-            ->whereBetween('transaction_date', [$start, $end])
-            ->selectRaw('DATE(transaction_date) as date, SUM(amount) as total')
-            ->groupBy('date')
-            ->pluck('total', 'date');
+        $dailyRevenues = $incomeDays->pluck('income_total', 'date');
+        $dailyExpenses = $expenseDays->pluck('expense_total', 'date');
 
         [$cfLabels, $cfTimestamps, $cfRevenue, $cfExpense, $cfGranularity]
             = $this->buildCashflowSeries($start, $end, $dailyRevenues, $dailyExpenses);
@@ -517,13 +530,17 @@ class Dashboard extends Component
         // config/menu.php & routes/web.php). Modulnya sudah ada sejak
         // awal tapi belum pernah ditarik ke dashboard.
         // -------------------------------------------------------------
-        $totalActiveCustomers = Customer::where('unit_id', $unitId)
-            ->where('is_active', true)
-            ->count();
+        // OPTIMASI: 2 query count -> 1 query (conditional aggregate).
+        $customerStats = Customer::where('unit_id', $unitId)
+            ->selectRaw(
+                "COALESCE(SUM(CASE WHEN is_active = ? THEN 1 ELSE 0 END), 0) as active_count, "
+                . "COALESCE(SUM(CASE WHEN created_at BETWEEN ? AND ? THEN 1 ELSE 0 END), 0) as new_count",
+                [true, $start, $end]
+            )
+            ->first();
 
-        $newCustomersInRange = Customer::where('unit_id', $unitId)
-            ->whereBetween('created_at', [$start, $end])
-            ->count();
+        $totalActiveCustomers = (int) $customerStats->active_count;
+        $newCustomersInRange  = (int) $customerStats->new_count;
 
         // -------------------------------------------------------------
         // ASET UNIT USAHA (SAMA UNTUK KEDUA KATEGORI). "Perlu Perhatian"
@@ -531,14 +548,24 @@ class Dashboard extends Component
         // diperbaiki) -- lihat enum yang sama dipakai di
         // App\Livewire\Master\Asset\Index / Unit\Asset\Index.
         // -------------------------------------------------------------
-        $totalAssets = Asset::where('unit_id', $unitId)->count();
+        // OPTIMASI: 2 query count -> 1 query. Nama kolom `condition` adalah
+        // reserved word di MySQL, jadi di-wrap lewat grammar milik driver
+        // (persis seperti yang dilakukan where() secara otomatis).
+        $assetQuery   = Asset::where('unit_id', $unitId);
+        $assetGrammar = $assetQuery->getQuery()->getGrammar();
+        $colCondition = $assetGrammar->wrap('condition');
+        $colStatus    = $assetGrammar->wrap('status');
 
-        $assetsNeedAttention = Asset::where('unit_id', $unitId)
-            ->where(function ($q) {
-                $q->where('condition', 'poor')
-                  ->orWhere('status', 'maintenance');
-            })
-            ->count();
+        $assetStats = $assetQuery
+            ->selectRaw(
+                "COUNT(*) as total_count, "
+                . "COALESCE(SUM(CASE WHEN {$colCondition} = ? OR {$colStatus} = ? THEN 1 ELSE 0 END), 0) as attention_count",
+                ['poor', 'maintenance']
+            )
+            ->first();
+
+        $totalAssets         = (int) $assetStats->total_count;
+        $assetsNeedAttention = (int) $assetStats->attention_count;
 
         // -------------------------------------------------------------
         // RINCIAN PENGELUARAN PER KATEGORI (TOP 5, PERIODE AKTIF)
@@ -595,18 +622,22 @@ class Dashboard extends Component
         // -------------------------------------------------------------
         if ($this->isServiceCategory()) {
             // Hanya scalar yang masuk cache.
+            // OPTIMASI: 4 query count -> 1 query (conditional aggregate).
+            $serviceStats = ServiceOrder::where('unit_id', $unitId)
+                ->selectRaw(
+                    "COUNT(*) as total_count, "
+                    . "COALESCE(SUM(CASE WHEN status = ? THEN 1 ELSE 0 END), 0) as pending_count, "
+                    . "COALESCE(SUM(CASE WHEN status = ? THEN 1 ELSE 0 END), 0) as in_progress_count, "
+                    . "COALESCE(SUM(CASE WHEN status = ? AND updated_at BETWEEN ? AND ? THEN 1 ELSE 0 END), 0) as completed_in_range_count",
+                    ['pending', 'in_progress', 'completed', $start, $end]
+                )
+                ->first();
+
             $serviceData = [
-                'totalServiceOrders'            => ServiceOrder::where('unit_id', $unitId)->count(),
-                'pendingServiceOrders'          => ServiceOrder::where('unit_id', $unitId)
-                    ->where('status', 'pending')
-                    ->count(),
-                'inProgressServiceOrders'       => ServiceOrder::where('unit_id', $unitId)
-                    ->where('status', 'in_progress')
-                    ->count(),
-                'completedServiceOrdersInRange' => ServiceOrder::where('unit_id', $unitId)
-                    ->where('status', 'completed')
-                    ->whereBetween('updated_at', [$start, $end])
-                    ->count(),
+                'totalServiceOrders'            => (int) $serviceStats->total_count,
+                'pendingServiceOrders'          => (int) $serviceStats->pending_count,
+                'inProgressServiceOrders'       => (int) $serviceStats->in_progress_count,
+                'completedServiceOrdersInRange' => (int) $serviceStats->completed_in_range_count,
             ];
 
             return [
@@ -618,11 +649,17 @@ class Dashboard extends Component
 
         // WIDGET DEFAULT UNIT RITEL:
         // Hanya nilai scalar yang masuk cache.
+        // OPTIMASI: 2 query count -> 1 query (conditional aggregate).
+        $productStats = Product::where('unit_id', $unitId)
+            ->selectRaw(
+                "COUNT(*) as total_count, "
+                . "COALESCE(SUM(CASE WHEN stock <= min_stock THEN 1 ELSE 0 END), 0) as low_stock_count"
+            )
+            ->first();
+
         $retailData = [
-            'totalProducts' => Product::where('unit_id', $unitId)->count(),
-            'lowStockCount' => Product::where('unit_id', $unitId)
-                ->whereColumn('stock', '<=', 'min_stock')
-                ->count(),
+            'totalProducts' => (int) $productStats->total_count,
+            'lowStockCount' => (int) $productStats->low_stock_count,
         ];
 
         return [

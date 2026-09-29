@@ -1,4 +1,3 @@
-import { initLandingAnimations } from './landing-animations.js';
 import { initSmoothScroll } from "./smooth-scroll";
 import { initPageLoader } from "./loader.js"; // 👈 Import module loader
 
@@ -28,6 +27,27 @@ window.initAsciiHero = async function (options) {
     return initAsciiHero(options);
 };
 
+// 👇 Lazy-load landing-animations.js (GSAP ScrollTrigger + 8 fungsi animasi
+// landing page, ~860 baris) HANYA di halaman landing. Sebelumnya di-import
+// statis sehingga ikut masuk bundle utama dan dieksekusi di SEMUA halaman
+// (dashboard Master/Unit, login, dsb.) padahal semua elemen targetnya
+// (#nav-pill, #theme-toggle, .faq-item, dst.) hanya ada di landing.blade.php.
+// Penanda halaman landing: <body data-page="landing"> (layouts/landing.blade.php)
+// + fallback ke elemen khas landing, jaga-jaga kalau body diganti saat SPA navigate.
+let landingAnimationsModulePromise = null;
+function loadLandingAnimationsModule() {
+    if (!landingAnimationsModulePromise) {
+        landingAnimationsModulePromise = import("./landing-animations.js");
+    }
+    return landingAnimationsModulePromise;
+}
+
+function isLandingPage() {
+    return !!document.querySelector(
+        '[data-page="landing"], #page-loader, #nav-pill, #theme-toggle, #theme-toggle-mobile'
+    );
+}
+
 function initGlobalScripts() {
     // 1. Inisialisasi Smooth Scroll
     initSmoothScroll();
@@ -38,8 +58,13 @@ function initGlobalScripts() {
         initPageLoader();
     }
 
-    // 3. Inisialisasi Animasi Landing Page (Aman dipanggil karena ada pengecekan DOM di dalamnya)
-    initLandingAnimations();
+    // 3. Inisialisasi Animasi Landing Page -- hanya di halaman landing, modul
+    // di-load dinamis (lihat isLandingPage() di atas).
+    if (isLandingPage()) {
+        loadLandingAnimationsModule().then(({ initLandingAnimations }) => {
+            initLandingAnimations();
+        });
+    }
 
     // 4. Inisialisasi Model 3D ASCII Hero (Khusus Landing Page) — modul
     // di-load secara dinamis, hanya jika container-nya memang ada di halaman

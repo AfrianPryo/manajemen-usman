@@ -150,16 +150,17 @@
                         </div>
                     @endif
 
+                    @php $adminCount = $unit->users->count(); @endphp
                     {{-- Daftar Admin Aktif Bertugas --}}
                     <div class="mt-3 pt-3 border-t border-neutral-100 dark:border-slate-700/60 space-y-2">
                         <div class="flex justify-between items-center">
                             <span class="text-[11px] text-neutral-400 font-medium">Admin Aktif Bertugas:</span>
                             <span class="text-[10px] bg-neutral-100 dark:bg-slate-700 text-neutral-600 dark:text-neutral-300 font-bold px-2 py-0.5 rounded-full">
-                                {{ $unit->users->count() }} orang
+                                {{ $adminCount }} orang
                             </span>
                         </div>
 
-                        @if($unit->users->count() > 0)
+                        @if($adminCount > 0)
                             <div class="flex flex-wrap gap-1.5 pt-1">
                                 @foreach($unit->users as $admin)
                                     <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-sm bg-neutral-50 dark:bg-slate-900 border border-neutral-200/60 dark:border-slate-700 text-neutral-700 dark:text-neutral-300 text-[11px] font-medium">

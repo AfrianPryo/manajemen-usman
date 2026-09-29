@@ -409,6 +409,15 @@ class Index extends Component
         return Excel::download(new AssetTemplateExport, 'Template_Import_Aset.xlsx');
     }
 
+    /**
+     * Unit pengunci untuk import. NULL = Master Admin (bebas lintas unit).
+     * Di-override oleh versi Unit agar import tidak menyentuh aset unit lain.
+     */
+    protected function importLockedUnitId(): ?int
+    {
+        return null;
+    }
+
     public function importExcel(): void
     {
         $this->validate([
@@ -418,7 +427,7 @@ class Index extends Component
         ]);
 
         $fileName = $this->excel_file->getClientOriginalName();
-        $import = new AssetsImport();
+        $import = new AssetsImport($this->importLockedUnitId());
         Excel::import($import, $this->excel_file->getRealPath());
 
         // Cek jika terdapat kegagalan validasi baris dari Excel

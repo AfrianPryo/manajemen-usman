@@ -123,10 +123,60 @@ class Setting extends Model
      */
     public static function get(string $key, mixed $default = null): mixed
     {
-        return Cache::rememberForever("setting_{$key}", function () use ($key, $default) {
+        // OPTIMASI: nilai dibungkus ['v' => ...] sebelum masuk cache. Tanpa
+        // pembungkus, nilai null (mis. 'app_logo' yang belum pernah diupload)
+        // dianggap "tidak ada di cache" oleh Laravel, sehingga TIAP pemanggilan
+        // menembak query ke tabel settings. Dengan pembungkus, null pun
+        // tersimpan. Semantik lain tidak berubah: default (bila baris belum
+        // ada) tetap ikut di-cache seperti sebelumnya.
+        $entry = Cache::rememberForever(static::cacheKey($key), function () use ($key, $default) {
             $item = static::find($key);
-            return $item !== null ? $item->value : $default;
+
+            return ['v' => $item !== null ? $item->value : $default];
         });
+
+        return $entry['v'];
+    }
+
+    /**
+     * Key cache setting. Prefix "setting_v2_" (bukan "setting_" lama) sengaja
+     * dibedakan karena format isinya berubah (dibungkus array): entri lama
+     * yang masih tersisa di cache tidak akan pernah terbaca salah format.
+     */
+    protected static function cacheKey(string $key): string
+    {
+        return "setting_v2_{$key}";
+    }
+
+    /**
+     * Ambil BEBERAPA pengaturan sekaligus dengan satu panggilan cache
+     * (Cache::many) alih-alih satu lookup per key. Semantiknya identik
+     * dengan get(): nilai yang sudah ada di cache dipakai apa adanya, dan
+     * key yang belum ada di cache jatuh ke get() (yang mengisi cache dari
+     * database atau memakai default).
+     *
+     * @param  array<string, mixed>  $defaults  [key => nilai default]
+     * @return array<string, mixed>             [key => nilai]
+     */
+    public static function getMany(array $defaults): array
+    {
+        $cacheKeys = [];
+        foreach (array_keys($defaults) as $key) {
+            $cacheKeys[$key] = static::cacheKey($key);
+        }
+
+        $cached = Cache::many(array_values($cacheKeys));
+
+        $result = [];
+        foreach ($defaults as $key => $default) {
+            $entry = $cached[$cacheKeys[$key]] ?? null;
+
+            $result[$key] = is_array($entry) && array_key_exists('v', $entry)
+                ? $entry['v']
+                : static::get($key, $default);
+        }
+
+        return $result;
     }
 
     /**
@@ -170,6 +220,7 @@ class Setting extends Model
             ['value' => (string) $value]
         );
 
-        Cache::forget("setting_{$key}");
+        Cache::forget(static::cacheKey($key));
+        Cache::forget("setting_{$key}"); // sisa key format lama, jika masih ada
     }
 }

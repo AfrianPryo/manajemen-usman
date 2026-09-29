@@ -81,7 +81,9 @@
             {{-- Logo Header (fixed, TIDAK ikut ter-scroll) --}}
             @php
                 $appName    = \App\Models\Setting::get('app_name', 'USMAN - Usaha Mandiri Sekolah');
-                $appLogo    = \App\Models\Setting::get('app_logo');
+                // Key yang sama sudah dibaca di <head> ($faviconLogo) -> dipakai ulang,
+                // tidak perlu lookup cache kedua kali per render.
+                $appLogo    = $faviconLogo;
                 $appLogoUrl = $appLogo ? asset('storage/' . $appLogo) : asset('favicon.svg');
             @endphp
             <div class="h-12 flex items-center justify-between px-4 font-bold text-sm text-slate-900 dark:text-white border-b border-slate-100 dark:border-slate-800 shrink-0 tracking-tight">
@@ -543,5 +545,7 @@
     @livewireScripts
 </body>
 
-<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+{{-- ApexCharts hanya dimuat oleh halaman yang benar-benar memakai grafik
+(lewat @push('apexcharts') di view masing-masing), bukan di semua halaman. --}}
+@stack('apexcharts')
 </html>

@@ -4,6 +4,7 @@ namespace App\Livewire\Unit\Concerns;
 
 use App\Models\Unit;
 use Illuminate\Support\Facades\Auth;
+use Livewire\Attributes\Locked;
 
 /**
  * AKAR MASALAH yang diperbaiki trait ini:
@@ -93,6 +94,7 @@ trait ScopedToUnit
      * pertama), dan di request-request berikutnya nilai yang sudah
      * tersimpan langsung dipakai.
      */
+    #[Locked]
     public ?int $lockedUnitId = null;
 
     public function bootScopedToUnit(): void

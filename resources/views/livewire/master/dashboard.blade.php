@@ -1,3 +1,6 @@
+@push('apexcharts')
+<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+@endpush
 <div class="w-full max-w-[1500px] mx-auto space-y-5 text-neutral-800 dark:text-neutral-100 px-4 py-4 sm:px-6 font-sans"
     x-data="{ showAdminModal: false, showUnitModal: false }"
     @show-admin-form-modal.window="showAdminModal = true"

@@ -41,10 +41,20 @@ class TransactionsImport implements ToModel, WithHeadingRow, WithValidation, Ski
     /** Header kolom yang berhasil terbaca dari file (untuk pesan error) */
     private array $detectedHeaders = [];
 
-    public function __construct()
+    /**
+     * @param int|null $lockedUnitId Bila diisi (import oleh Unit Admin), HANYA unit
+     *                               ini yang dikenali; baris untuk unit lain gagal
+     *                               validasi, dan kolom unit yang kosong otomatis
+     *                               diisi unit ini.
+     */
+    public function __construct(private ?int $lockedUnitId = null)
     {
         // 1. Cache Unit Usaha: [nama ternormalisasi => id]
-        foreach (Unit::pluck('id', 'name') as $name => $id) {
+        $unitQuery = Unit::query();
+        if ($this->lockedUnitId) {
+            $unitQuery->where('id', $this->lockedUnitId);
+        }
+        foreach ($unitQuery->pluck('id', 'name') as $name => $id) {
             $this->units[$this->normalizeText($name)] = $id;
         }
 
@@ -222,6 +232,10 @@ class TransactionsImport implements ToModel, WithHeadingRow, WithValidation, Ski
         $catRaw  = trim((string) ($data['kategori_transaksi'] ?? ''));
 
         $unitId  = $this->units[$this->normalizeText($unitRaw)] ?? null;
+        if ($this->lockedUnitId && $unitRaw === '') {
+            $unitId  = $this->lockedUnitId;
+            $unitRaw = (string) (array_search($unitId, $this->units, true) ?: '');
+        }
         $type    = $this->normalizeType($data['tipe_incomeexpense'] ?? '');
         $catNorm = $this->normalizeText($catRaw);
         $catId   = ($unitId && $type && $catNorm !== '')

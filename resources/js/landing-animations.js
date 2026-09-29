@@ -4,7 +4,6 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 gsap.registerPlugin(ScrollTrigger);
 
 function initThemeToggle() {
-    console.log("🔧 initThemeToggle() dipanggil");
 
     const toggleBtn = document.getElementById("theme-toggle");
     const toggleBtnMobile = document.getElementById("theme-toggle-mobile");
@@ -13,10 +12,8 @@ function initThemeToggle() {
     const sunIconMobile = document.getElementById("theme-icon-sun-mobile");
     const moonIconMobile = document.getElementById("theme-icon-moon-mobile");
 
-    console.log("🔧 toggleBtn:", toggleBtn, "toggleBtnMobile:", toggleBtnMobile);
 
     if (!toggleBtn && !toggleBtnMobile) {
-        console.log("❌ Tidak ada toggle button ditemukan, keluar dari fungsi");
         return;
     }
 
@@ -37,7 +34,6 @@ function initThemeToggle() {
     applyIcon();
 
     const handleToggleClick = () => {
-        console.log("✅ Tombol theme-toggle diklik!");
         document.documentElement.classList.toggle("dark");
         const isDark = document.documentElement.classList.contains("dark");
         localStorage.setItem("sims-theme", isDark ? "dark" : "light");
@@ -56,7 +52,6 @@ function initThemeToggle() {
     bindOnce(toggleBtn);
     bindOnce(toggleBtnMobile);
 
-    console.log("🔧 Event listener berhasil dipasang");
 }
 
 function initNavIndicator() {
@@ -806,7 +801,6 @@ function initScrollTextReveal() {
 }
 
 export function initLandingAnimations() {
-    console.log("🚀 initLandingAnimations() dipanggil");
 
     initThemeToggle();
     initNavIndicator();

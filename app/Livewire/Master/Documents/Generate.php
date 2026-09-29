@@ -12,6 +12,7 @@ use App\Support\DocumentTypes;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
@@ -83,14 +84,15 @@ class Generate extends Component
         $this->validate([
             'type' => 'required|string',
             'templateId' => 'required|exists:document_templates,id',
-            'signatureId' => 'required|exists:signature_profiles,id',
+            'signatureId' => ['required', Rule::exists('signature_profiles', 'id')->where('user_id', Auth::id())],
         ], [], [
             'templateId' => 'template',
             'signatureId' => 'tanda tangan',
         ]);
 
         $template = DocumentTemplate::findOrFail($this->templateId);
-        $signature = SignatureProfile::findOrFail($this->signatureId);
+        // Hanya boleh memakai tanda tangan milik user yang sedang login (anti-pemalsuan).
+        $signature = SignatureProfile::where('user_id', Auth::id())->findOrFail($this->signatureId);
 
         $params = array_filter([
             'start_date' => $this->start_date,

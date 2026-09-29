@@ -27,17 +27,8 @@ use Livewire\Attributes\Layout;
  * -- Unit Admin tidak bisa membuat/mengubah aset jadi "Pusat" maupun milik
  * unit lain.
  *
- * TODO (sama seperti Products/Transactions Import, belum digarap di
- * iterasi ini): AssetsImport::model() melakukan
- * Asset::updateOrCreate(['asset_tag' => $tag], [...]) TANPA menyertakan
- * unit_id dari konteks yang sedang login -- artinya baris Excel yang
- * diimpor lewat menu ini akan tersimpan sebagai "Pusat / Tanpa Unit", dan
- * kalau tag aset di file kebetulan sama dengan aset unit LAIN yang sudah
- * ada, baris itu akan meng-update aset unit lain tersebut (IDOR lewat
- * import). Sebelum menu Import Excel dibuka untuk role unit-admin,
- * AssetsImport perlu diberi tahu unit_id yang mengunci (lewat constructor,
- * mirip pola yang disarankan di TODO Unit\Transactions\Index) dan
- * query pencarian tag existing-nya perlu ikut di-scope ke unit itu.
+ * Import Excel: AssetsImport dikunci ke unit ini lewat importLockedUnitId()
+ * (aset tersimpan sebagai milik unit ini, tag milik unit lain/Pusat ditolak).
  */
 #[Layout('components.layouts.unit', [
     'category' => 'Unit Usaha',
@@ -46,6 +37,11 @@ use Livewire\Attributes\Layout;
 class Index extends MasterAssetIndex
 {
     use ScopedToUnit;
+
+    protected function importLockedUnitId(): ?int
+    {
+        return $this->currentUnitId();
+    }
 
     public function mount()
     {

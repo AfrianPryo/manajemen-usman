@@ -1,6 +1,9 @@
 import { gsap } from "gsap";
-import { playHeroAnimations } from "./landing-animations.js";
-import { modelLoadedPromise } from "./ascii-3d-hero.js";
+// landing-animations.js & ascii-3d-hero.js (+ Three.js) SENGAJA di-import
+// dinamis di dalam initPageLoader(), bukan statis di sini. Sebelumnya import
+// statis di file ini menyeret Three.js + GLTFLoader + AsciiEffect ke bundle
+// utama (dan membatalkan lazy-load di app.js) untuk SEMUA halaman, padahal
+// initPageLoader() hanya berjalan jika #page-loader ada (landing page).
 
 const COUNT_DURATION = 2.5; 
 const PAUSE_BEFORE_WIPE = 0.4; 
@@ -15,6 +18,10 @@ export function initPageLoader() {
 
     if (!loaderEl || !counterEl || !screenEl || !curtain1El || !curtain2El) return;
 
+    // Pre-load modul animasi hero di awal (jauh sebelum tirai terangkat
+    // ~3 detik kemudian), supaya playHeroAnimations() siap tanpa jeda.
+    const heroAnimationsPromise = import("./landing-animations.js");
+
     // Kunci Scroll
     document.body.style.overflow = "hidden";
 
@@ -23,17 +30,14 @@ export function initPageLoader() {
     let modelLoaded = false;
     let isDone = false;
 
-    console.log("[loader-debug] initPageLoader mulai. readyState:", document.readyState, "innerWidth:", window.innerWidth);
 
     const checkWindowLoad = () => {
         if (document.readyState === "complete") {
             windowLoaded = true;
-            console.log("[loader-debug] windowLoaded = true (sudah complete saat init)");
             tryFinish();
         } else {
             window.addEventListener("load", () => {
                 windowLoaded = true;
-                console.log("[loader-debug] windowLoaded = true (event load terpicu)");
                 tryFinish();
             }, { once: true });
         }
@@ -49,16 +53,22 @@ export function initPageLoader() {
     const isDesktopViewport = window.matchMedia("(min-width: 1024px)").matches;
     const has3DHero = isDesktopViewport &&
         (document.querySelector("#ascii-3d-container") || document.querySelector("#ascii-hero-container"));
-    console.log("[loader-debug] isDesktopViewport:", isDesktopViewport, "has3DHero:", !!has3DHero);
-    if (has3DHero && modelLoadedPromise) {
-        modelLoadedPromise.then(() => {
-            modelLoaded = true;
-            console.log("[loader-debug] modelLoaded = true (modelLoadedPromise resolve)");
-            tryFinish();
-        });
+    if (has3DHero) {
+        // Modul ascii-3d-hero (chunk Three.js) di-load dinamis; instance modul
+        // yang sama dipakai app.js (loadAsciiHeroModule), jadi modelLoadedPromise
+        // tetap di-resolve oleh initAsciiHero() persis seperti sebelumnya.
+        import("./ascii-3d-hero.js")
+            .then(({ modelLoadedPromise }) => modelLoadedPromise)
+            .catch((err) => {
+                // Jika chunk gagal dimuat, jangan tahan loader selamanya.
+                console.warn("[loader] ascii-3d-hero gagal dimuat:", err);
+            })
+            .then(() => {
+                modelLoaded = true;
+                tryFinish();
+            });
     } else {
         modelLoaded = true;
-        console.log("[loader-debug] modelLoaded = true (langsung, tidak butuh 3D hero)");
     }
 
     checkWindowLoad();
@@ -74,16 +84,13 @@ export function initPageLoader() {
         },
         onComplete: () => {
             countReached = true;
-            console.log("[loader-debug] countReached = true (counter sampai 100)");
             tryFinish();
         },
     });
 
     function tryFinish() {
-        console.log("[loader-debug] tryFinish() dicek ->", { countReached, windowLoaded, modelLoaded, isDone });
         if (countReached && windowLoaded && modelLoaded && !isDone) {
             isDone = true;
-            console.log("[loader-debug] SEMUA SYARAT TERPENUHI -> runOutroSequence() dijalankan");
             runOutroSequence();
         }
     }
@@ -134,7 +141,10 @@ export function initPageLoader() {
                 stagger: 0.08,
                 ease: "power4.inOut",
                 onStart: () => {
-                    playHeroAnimations(); // Animasi elemen hero baru berjalan saat tirai terangkat
+                    // Animasi elemen hero baru berjalan saat tirai terangkat
+                    heroAnimationsPromise
+                        .then(({ playHeroAnimations }) => playHeroAnimations())
+                        .catch((err) => console.warn("[loader] playHeroAnimations gagal:", err));
                     if (window.ScrollTrigger) window.ScrollTrigger.refresh();
                 },
             },

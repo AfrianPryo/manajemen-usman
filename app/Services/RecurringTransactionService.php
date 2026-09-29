@@ -117,9 +117,8 @@ class RecurringTransactionService
 
             // Cari ID kategori fallback jika data lama belum terisi
             $categoryId = $locked->finance_category_id
-                ?? $locked->category_id
                 ?? FinanceCategory::where('type', $locked->type)
-                    ->where('unit_id', $locked->unit_id)
+                    ->forUnit($locked->unit_id)
                     ->value('id');
 
             if (! $categoryId) {

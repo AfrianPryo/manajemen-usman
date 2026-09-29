@@ -1,3 +1,6 @@
+@push('apexcharts')
+<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+@endpush
 {{--
     Dashboard Unit -- VARIAN KATEGORI 'JASA' (SERVICES)
 

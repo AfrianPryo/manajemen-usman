@@ -824,10 +824,16 @@ class Dashboard extends Component
         //     kotak "Cari unit...". Akibatnya, begitu Master Admin mengetik
         //     sesuatu di pencarian unit, pilihan Unit Usaha di modal Tambah
         //     Admin ikut menyusut/kosong. Daftar opsi sekarang selalu utuh.
-        $unitOptions = Unit::query()
-            ->select('id', 'name')
-            ->orderBy('name')
-            ->get();
+        //
+        // OPTIMASI: saat kotak pencarian kosong, $units di atas SUDAH berisi
+        // seluruh unit (id, name, urut name) sehingga dipakai ulang tanpa
+        // query kedua. Query terpisah hanya dijalankan saat sedang mencari.
+        $unitOptions = $this->searchUnit === ''
+            ? $units
+            : Unit::query()
+                ->select('id', 'name')
+                ->orderBy('name')
+                ->get();
 
         // with('user'): view menampilkan `$log->user->name`. Tanpa eager load,
         // 6 baris log = 6 query tambahan (N+1 terselubung, audit poin 4).
