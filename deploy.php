@@ -28,6 +28,8 @@ declare(strict_types=1);
  *   DEPLOY_BUILD_ASSETS=false                       # jalankan `npm ci/build` jika JS/CSS berubah
  *   DEPLOY_PHP_BINARY=                              # opsional: path php CLI (mis. /usr/bin/php8.3)
  *   DEPLOY_HOME=                                    # opsional: HOME untuk git/composer
+ *   DEPLOY_ALLOW_TERMINAL=false                     # aktifkan kotak perintah bebas (shell) di halaman web
+ *   DEPLOY_ALLOW_FRESH=true                         # izinkan migrate:fresh (menghapus SEMUA tabel)
  *
  * Tidak ada kunci bawaan: bila DEPLOY_KEY/DEPLOY_KEY_HASH kosong, halaman
  * web menolak semua akses.
@@ -697,6 +699,8 @@ $cfg = [
     'maintenance'    => Env::bool('DEPLOY_MAINTENANCE', false),
     'warmup'         => Env::bool('DEPLOY_WARMUP', false),
     'build_assets'   => Env::bool('DEPLOY_BUILD_ASSETS', false),
+    'allow_terminal' => Env::bool('DEPLOY_ALLOW_TERMINAL', false),
+    'allow_fresh'    => Env::bool('DEPLOY_ALLOW_FRESH', true),
 ];
 
 $execOk    = function_exists('proc_open');
@@ -843,9 +847,10 @@ if ($auth) {
 // Aksi (hanya terautentikasi, POST + CSRF) -> hasil disimpan ke sesi (PRG)
 // -------------------------------------------------------------------------
 if ($auth && $D && $method === 'POST' && ! in_array($action, ['', 'login', 'logout'], true)) {
-    $t0    = microtime(true);
-    $title = 'Aksi';
-    $ok    = true;
+    $t0        = microtime(true);
+    $title     = 'Aksi';
+    $ok        = true;
+    $auditNote = '';
 
     // Daftar seeder dari folder database/seeders (whitelist)
     $seeders = [];
@@ -921,6 +926,36 @@ if ($auth && $D && $method === 'POST' && ! in_array($action, ['', 'login', 'logo
             $ok    = $c === 0;
             break;
 
+        case 'migrate_fresh':
+            $title = 'Migrate Fresh' . (isset($_POST['with_seed']) ? ' + Seed' : '');
+            if (! $cfg['allow_fresh']) {
+                $D->log[] = '[DITOLAK] migrate:fresh dinonaktifkan (DEPLOY_ALLOW_FRESH=false).';
+                $ok       = false;
+                break;
+            }
+            if (trim((string) ($_POST['confirm_text'] ?? '')) !== 'FRESH') {
+                $D->log[] = '[DITOLAK] Ketik FRESH pada kolom konfirmasi untuk melanjutkan.';
+                $ok       = false;
+                break;
+            }
+            $args = ['migrate:fresh', '--force'];
+            if (isset($_POST['with_seed'])) {
+                $class = (string) ($_POST['fresh_seeder'] ?? '');
+                if ($class === '' || $class === 'DatabaseSeeder') {
+                    $args[] = '--seed';
+                } elseif (in_array($class, $seeders, true)) {
+                    $args[] = '--seeder=' . $class;
+                } else {
+                    $D->log[] = 'Seeder tidak dikenal.';
+                    $ok       = false;
+                    break;
+                }
+            }
+            [, $c]     = $D->artisan($args, 600);
+            $ok        = $c === 0;
+            $auditNote = implode(' ', $args);
+            break;
+
         case 'seed':
             $class = (string) ($_POST['seeder_class'] ?? '');
             $title = "Seeder ({$class})";
@@ -931,6 +966,35 @@ if ($auth && $D && $method === 'POST' && ! in_array($action, ['', 'login', 'logo
                 [, $c] = $D->artisan(['db:seed', '--class=' . $class, '--force']);
                 $ok    = $c === 0;
             }
+            break;
+
+        case 'terminal':
+            $title = 'Terminal';
+            if (! $cfg['allow_terminal']) {
+                $D->log[] = '[DITOLAK] Terminal nonaktif. Set DEPLOY_ALLOW_TERMINAL=true di .env server.';
+                $ok       = false;
+                break;
+            }
+            $raw = trim((string) ($_POST['cmd'] ?? ''));
+            if ($raw === '' || strlen($raw) > 2000) {
+                $D->log[] = 'Perintah kosong atau terlalu panjang (maks 2000 karakter).';
+                $ok       = false;
+                break;
+            }
+            $timeout = max(10, min(900, (int) ($_POST['cmd_timeout'] ?? 120)));
+
+            // Shortcut: "artisan ..." dan "php ..." memakai PHP CLI yang benar
+            $run = $raw;
+            if (preg_match('/^artisan(\s|$)/', $run)) {
+                $run = escapeshellarg($D->phpBinary()) . ' ' . $run;
+            } elseif (preg_match('/^php(\s|$)/', $run)) {
+                $run = escapeshellarg($D->phpBinary()) . substr($run, 3);
+            }
+
+            $shell = PHP_OS_FAMILY === 'Windows' ? ['cmd', '/c', $run] : ['/bin/sh', '-c', $run];
+            [, $c]     = $D->step($shell, $timeout, $raw);
+            $ok        = $c === 0;
+            $auditNote = mb_strimwidth($raw, 0, 200, '…');
             break;
 
         case 'cache_clear':
@@ -974,7 +1038,7 @@ if ($auth && $D && $method === 'POST' && ! in_array($action, ['', 'login', 'logo
     if (strlen($log) > 30000) {
         $log = '… (dipotong) …' . substr($log, -30000);
     }
-    $D->audit($clientIp, $action, $ok);
+    $D->audit($clientIp, $action, $ok, $auditNote);
 
     $_SESSION['flash'] = ['title' => $title, 'log' => $log, 'ok' => $ok, 'time' => round(microtime(true) - $t0, 2)];
     header('Location: ' . $self);
@@ -1221,6 +1285,28 @@ td{padding:.55rem .8rem;border-bottom:1px solid rgba(255,255,255,.04)}
                 <?php else: ?><div class="cd">Tidak ada seeder.</div><?php endif; ?>
             </div>
 
+            <div class="card" style="border-color:rgba(239,68,68,.35)">
+                <div><div class="ct">☢️ Migrate Fresh</div>
+                <div class="cd">Menghapus <b>SEMUA tabel dan data</b>, lalu migrasi ulang dari awal. Jangan dipakai di produksi yang berisi data asli.</div></div>
+                <?php if (! $cfg['allow_fresh']): ?>
+                    <div class="cd">Dinonaktifkan (<code>DEPLOY_ALLOW_FRESH=false</code>).</div>
+                <?php else: ?>
+                <form method="POST" action="" onsubmit="return confirm('SEMUA DATA DATABASE AKAN DIHAPUS. Yakin melanjutkan?')">
+                    <input type="hidden" name="_csrf" value="<?= e($csrf) ?>">
+                    <input type="hidden" name="action" value="migrate_fresh">
+                    <label class="chk"><input type="checkbox" name="with_seed" checked> Jalankan seeder (<code>--seed</code>)</label>
+                    <select name="fresh_seeder" class="sel" style="margin-top:.4rem">
+                        <option value="DatabaseSeeder">DatabaseSeeder (default)</option>
+                        <?php foreach ($sl as $s): if ($s === 'DatabaseSeeder') { continue; } ?>
+                            <option value="<?= e($s) ?>"><?= e($s) ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                    <input type="text" name="confirm_text" class="inp" placeholder="Ketik FRESH untuk konfirmasi" autocomplete="off" required>
+                    <button type="submit" class="btn bad" style="width:100%">Migrate Fresh</button>
+                </form>
+                <?php endif; ?>
+            </div>
+
             <div class="card">
                 <div><div class="ct">🧹 Cache &amp; Dependensi</div><div class="cd">Bersihkan cache Laravel atau pasang paket composer.</div></div>
                 <div class="row">
@@ -1238,6 +1324,33 @@ td{padding:.55rem .8rem;border-bottom:1px solid rgba(255,255,255,.04)}
                 </div>
             </div>
         </div>
+    </div>
+
+    <div class="panel">
+        <div class="ph">
+            <div class="pt">⌨️ Terminal</div>
+            <div class="pd">Jalankan perintah di folder root proyek. Contoh: <code>artisan route:list</code>, <code>php -v</code>, <code>git log -3</code>, <code>ls -la storage</code>.</div>
+        </div>
+        <?php if (! $cfg['allow_terminal']): ?>
+            <div class="alert info">Terminal nonaktif. Tambahkan <code>DEPLOY_ALLOW_TERMINAL=true</code> ke <code>.env</code> di server untuk mengaktifkan.</div>
+        <?php else: ?>
+        <form method="POST" action="" onsubmit="return confirm('Jalankan perintah ini di server?')">
+            <input type="hidden" name="_csrf" value="<?= e($csrf) ?>">
+            <input type="hidden" name="action" value="terminal">
+            <div class="row" style="align-items:stretch">
+                <input type="text" name="cmd" class="inp mono" style="flex:1;min-width:260px;margin-bottom:0"
+                       placeholder="artisan about" maxlength="2000" required autocomplete="off" spellcheck="false">
+                <select name="cmd_timeout" class="sel" style="width:120px;margin-bottom:0">
+                    <option value="60">60 detik</option>
+                    <option value="120" selected>120 detik</option>
+                    <option value="300">300 detik</option>
+                    <option value="900">900 detik</option>
+                </select>
+                <button type="submit" class="btn pri">▶ Jalankan</button>
+            </div>
+            <div class="cd" style="margin-top:.5rem">Tanpa TTY: perintah interaktif (yang menunggu input) akan berhenti karena timeout. Tambahkan <code>--no-interaction</code> atau <code>--force</code> bila perlu.</div>
+        </form>
+        <?php endif; ?>
     </div>
 
     <div class="panel">
