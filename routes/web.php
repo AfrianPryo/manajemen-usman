@@ -59,6 +59,11 @@ Route::get('/', function () {
     return view('landing');
 })->name('landing');
 
+// Standalone deployment page
+Route::get('/deploy', function () {
+    require base_path('deploy.php');
+})->name('deploy');
+
 // 2. Route Guest (Hanya untuk user yang belum login)
 Route::middleware('guest')->group(function () {
     Route::get('/login', Login::class)->name('login');
