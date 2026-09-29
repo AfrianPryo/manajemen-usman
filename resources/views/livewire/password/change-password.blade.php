@@ -13,13 +13,9 @@
             <rect width="100%" height="100%" fill="url(#cp-grid)" />
         </svg>
 
-        {{-- Logo (mengikuti aset logo yang sudah ada di halaman login) --}}
+        {{-- Logo mengikuti identitas sekolah dari Pengaturan (sama seperti halaman login) --}}
         <div class="relative z-10 flex items-center gap-2">
-            {{-- Logo untuk mode terang --}}
-            <img src="{{ asset('images/logo-light.svg') }}" alt="SIMS.Usaha" class="h-6 w-auto hidden dark:block">
-
-            {{-- Logo untuk mode gelap --}}
-            <img src="{{ asset('images/logo-dark.svg') }}" alt="SIMS.Usaha" class="h-6 w-auto block dark:hidden">
+            <x-brand-logo />
         </div>
 
         {{-- Teks Bawah --}}
@@ -94,7 +90,12 @@
                 @if ($step === 1)
                 <div class="grid grid-cols-1 gap-5">
 
-                    {{-- Password Saat Ini --}}
+                    {{-- Password Saat Ini: TIDAK ditampilkan saat wajib ganti password
+                         (kredensial awal dari dev / Master Admin) -- user baru saja login
+                         dengan password itu, jadi tidak perlu mengetik ulang. Tetap tampil
+                         untuk ganti password sukarela. Validasi sebenarnya ada di server
+                         (ChangePassword::passwordRules), bukan hanya di tampilan ini. --}}
+                    @unless (auth()->user()?->must_change_password)
                     <div x-data="{ show: false }" class="relative">
                         <label for="current_password" class="block text-xs font-medium text-neutral-600 dark:text-neutral-300 mb-1">
                             Password Saat Ini
@@ -121,6 +122,7 @@
                         </div>
                         @error('current_password') <p class="mt-1 text-[11px] text-rose-500">{{ $message }}</p> @enderror
                     </div>
+                    @endunless
 
                     {{-- Password Baru --}}
                     <div x-data="{ show: false }" class="relative">

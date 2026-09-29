@@ -321,6 +321,7 @@
                                 }
                             @endphp
                             <a href="{{ $settingsUrl }}"
+                               data-tour="settings-link"
                                @click="userMenuOpen = false; mobileSidebarOpen = false"
                                title="{{ $settingsLabel }}"
                                class="flex items-center justify-center w-8 h-8 rounded-lg transition-all {{ $isActive ? 'bg-slate-900 dark:bg-slate-700 text-white shadow-xs' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100' }}">
@@ -380,6 +381,7 @@
                             @endphp
 
                             <a href="{{ $settingsUrl }}"
+                            data-tour="settings-link"
                             @click="userMenuOpen = false; mobileSidebarOpen = false"
                             class="flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs transition-all {{ $isActive ? 'bg-slate-900 dark:bg-slate-700 text-white font-semibold shadow-xs' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100/80 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100 font-medium' }}">
                                 <x-heroicon-o-cog-6-tooth class="w-3.5 h-3.5 {{ $isActive ? 'text-white' : 'text-slate-400 dark:text-slate-500' }}" />
@@ -400,6 +402,7 @@
 
                 {{-- Trigger Button --}}
                 <button @click="userMenuOpen = !userMenuOpen"
+                        data-tour="user-menu"
                         title="{{ auth()->user()->name }}"
                         class="w-full flex items-center justify-between p-1.5 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-left focus:outline-none border border-transparent hover:border-slate-200/60 dark:hover:border-slate-700">
                     <div class="flex items-center gap-2 overflow-hidden">

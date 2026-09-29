@@ -16,11 +16,8 @@
         {{-- Logo --}}
         <div class="relative z-10 flex items-center gap-2">
             <a href="{{ route('landing') }}" class="flex items-center">
-                {{-- Logo untuk mode terang --}}
-                <img src="{{ asset('images/logo-light.svg') }}" alt="SIMS.Usaha" class="h-6 w-auto hidden dark:block">
-
-                {{-- Logo untuk mode gelap --}}
-                <img src="{{ asset('images/logo-dark.svg') }}" alt="SIMS.Usaha" class="h-6 w-auto block dark:hidden">
+                {{-- Logo mengikuti identitas sekolah dari Pengaturan (sama seperti navbar landing) --}}
+                <x-brand-logo />
             </a>
         </div>
 

@@ -134,6 +134,12 @@
             items: [],
             _seq: 0,
             _timers: {},
+            // Pesan yang baru saja ditampilkan (kunci 'tipe|pesan' -> waktu). Satu flash session bisa
+            // dipicu lebih dari satu tempat pada render yang sama (panel ini lewat hydrate(), trigger
+            // di view halaman, dan trigger di panel notifikasi header), sehingga pesan yang sama
+            // muncul 2-3x bersamaan. Pesan identik dalam jendela DEDUPE_MS dianggap satu.
+            _recent: {},
+            DEDUPE_MS: 1500,
             DURATION: 4000,
             TICK: 80,
 
@@ -150,6 +156,20 @@
             push(type, message) {
                 if (!message) {
                     return;
+                }
+
+                const kind = type === 'error' ? 'error' : 'success';
+                const key = kind + '|' + message;
+                const now = Date.now();
+
+                if (this._recent[key] && now - this._recent[key] < this.DEDUPE_MS) {
+                    return;
+                }
+                this._recent[key] = now;
+
+                // Bersihkan catatan lama supaya map tidak menumpuk.
+                for (const k in this._recent) {
+                    if (now - this._recent[k] > this.DEDUPE_MS * 4) delete this._recent[k];
                 }
 
                 const id = ++this._seq;

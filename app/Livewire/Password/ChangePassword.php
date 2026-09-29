@@ -43,17 +43,45 @@ class ChangePassword extends Component
         $this->needsPhoneSetup = (bool) ($user && empty($user->phone));
     }
 
+    /**
+     * True selama akun ini masih WAJIB ganti password (kredensial awal dari
+     * dev / Master Admin). SENGAJA dibaca langsung dari user yang login pada
+     * setiap request, BUKAN disimpan di public property Livewire, karena
+     * public property bisa dimanipulasi dari sisi client.
+     */
+    protected function isForcedChange(): bool
+    {
+        return (bool) Auth::user()?->must_change_password;
+    }
+
     protected function passwordRules(): array
     {
-        return [
-            'current_password' => ['required', 'current_password'],
-            'new_password'     => [
+        $rules = [
+            'new_password' => [
                 'required',
                 'min:8',
                 'confirmed',
                 'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/',
+                // Tanpa kolom "password lama" (mode wajib ganti), pastikan
+                // password baru tidak sama dengan password sementara tadi.
+                function (string $attribute, mixed $value, \Closure $fail) {
+                    $user = Auth::user();
+
+                    if ($user && Hash::check((string) $value, $user->password)) {
+                        $fail('Password baru tidak boleh sama dengan password saat ini.');
+                    }
+                },
             ],
         ];
+
+        // Password lama hanya diminta untuk ganti password SUKARELA. Saat
+        // wajib ganti (login pertama / hasil reset), user baru saja
+        // membuktikan password itu lewat form login, jadi tidak diminta lagi.
+        if (! $this->isForcedChange()) {
+            $rules = ['current_password' => ['required', 'current_password']] + $rules;
+        }
+
+        return $rules;
     }
 
     protected function phoneRules(): array

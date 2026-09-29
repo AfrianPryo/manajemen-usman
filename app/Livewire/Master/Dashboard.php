@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\Renderless;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\Url;
 use Livewire\Component;
@@ -103,12 +104,13 @@ class Dashboard extends Component
     // dashboard ini.
     public bool $showOnboarding = false;
 
-    // Langkah tutorial yang sedang aktif (1-4). Dihitung dari data asli
-    // (Unit, Admin, integrasi Fonnte, Tanda Tangan Pejabat) lewat
-    // determineOnboardingStep(), BUKAN disimpan manual -- supaya progres
-    // tutorial selalu akurat walau tombol CTA di dalamnya membawa user
-    // pindah halaman (mis. langkah 3 menuju menu Pengaturan, langkah 4
-    // menuju menu Tanda Tangan) lalu kembali lagi ke dashboard.
+    // Langkah tutorial yang sedang aktif (1-4). Selalu dimulai dari langkah 1,
+    // TIDAK bergantung pada isi database: Unit Usaha / Admin Unit / Fonnte yang
+    // sudah ada dari seeder tidak membuat langkah dilewati. Progresnya disimpan
+    // di session (lihat determineOnboardingStep() & setOnboardingStep()) supaya
+    // tetap benar walau tombol CTA di dalamnya membawa user pindah halaman
+    // (mis. langkah 3 menuju Pengaturan, langkah 4 menuju Tanda Tangan) lalu
+    // kembali lagi ke dashboard, atau modal Tambah Unit/Admin dibuka lalu ditutup.
     public int $onboardingStep = 1;
 
     // Total langkah tutorial setup awal. Dipakai juga oleh
@@ -116,6 +118,9 @@ class Dashboard extends Component
     // tuntas semua langkah" hanya perlu diubah di SATU tempat kalau nanti
     // ada langkah tambahan lagi.
     private const ONBOARDING_TOTAL_STEPS = 4;
+
+    // Kunci session progres tutorial (step + baseline jumlah Unit/Admin saat tutorial dimulai).
+    private const ONBOARDING_SESSION = 'master_onboarding';
 
     // ------------------------------------------
     // LIFECYCLE HOOKS FILTER PERIODE
@@ -132,18 +137,10 @@ class Dashboard extends Component
         $user = Auth::user();
 
         if ($user && $user->needsOnboarding()) {
+            // Tutorial SELALU tampil sampai user menekan "Selesai"/"Lewati",
+            // walau Unit Usaha, Admin Unit, atau Fonnte sudah terisi dari seeder.
             $this->onboardingStep = $this->determineOnboardingStep();
-
-            // Kalau ternyata keempat syarat (Unit, Admin, Fonnte, Tanda
-            // Tangan Pejabat) sudah terpenuhi semua -- mis. Master Admin
-            // sempat mengerjakannya tapi keluar sebelum menekan "Selesai"
-            // di langkah terakhir -- tandai selesai otomatis, tidak perlu
-            // menampilkan tutorial lagi.
-            if ($this->onboardingStep > self::ONBOARDING_TOTAL_STEPS) {
-                $this->completeOnboarding();
-            } else {
-                $this->showOnboarding = true;
-            }
+            $this->showOnboarding = true;
         }
 
         if (! request()->has('period')) {
@@ -310,40 +307,62 @@ class Dashboard extends Component
     }
 
     /**
-     * Tentukan langkah tutorial mana yang harusnya aktif berdasarkan data
-     * asli, bukan tebakan/state sementara -- supaya tutorial selalu "sadar"
-     * langkah mana yang benar-benar sudah dikerjakan:
-     *  1. Belum ada Unit Usaha sama sekali
-     *  2. Unit sudah ada, tapi belum ada Admin Unit
-     *  3. Admin sudah ada, tapi integrasi Fonnte (wa_api_key) belum diisi
-     *  4. Fonnte sudah terisi, tapi akun Master Admin ini belum punya
-     *     Profil Tanda Tangan (dipakai untuk menandatangani Dokumen Resmi
-     *     -- lihat App\Models\SignatureProfile & Master\Documents\Generate)
-     *  5. Keempatnya sudah terpenuhi -- tutorial dianggap tuntas
+     * Tentukan langkah tutorial yang aktif. Dimulai dari langkah 1 dan TIDAK
+     * membaca "sudah ada/belum" dari database, jadi data awal hasil seeder
+     * tidak membuat langkah terlewat. Progres disimpan di session:
+     *  - naik lewat setOnboardingStep() saat user menekan Lanjut/Kembali,
+     *  - naik otomatis bila selama tutorial user benar-benar MENAMBAH Unit
+     *    Usaha (langkah 1 -> 2) atau Admin Unit (langkah 2 -> 3), dibandingkan
+     *    jumlah pada saat tutorial pertama kali dibuka (baseline di session).
+     * Langkah 3 & 4 (Fonnte, Tanda Tangan) maju lewat tombol Lanjut, dan
+     * tutorial baru tuntas saat user menekan "Selesai" / "Lewati".
      */
     private function determineOnboardingStep(): int
     {
-        if (Unit::count() === 0) {
-            return 1;
+        $base = session(self::ONBOARDING_SESSION . '.base');
+
+        if (! is_array($base)) {
+            $base = [
+                'units'  => Unit::count(),
+                'admins' => User::role('unit-admin')->count(),
+            ];
+            session([self::ONBOARDING_SESSION . '.base' => $base]);
         }
 
-        if (User::role('unit-admin')->count() === 0) {
-            return 2;
+        $step = (int) session(self::ONBOARDING_SESSION . '.step', 1);
+
+        if ($step === 1 && Unit::count() > (int) $base['units']) {
+            $step = 2;
         }
 
-        if (empty(Setting::get('wa_api_key'))) {
-            return 3;
+        if ($step === 2 && User::role('unit-admin')->count() > (int) $base['admins']) {
+            $step = 3;
         }
 
-        // Khusus milik akun yang sedang login (bukan global), karena
-        // Profil Tanda Tangan memang per-user -- lihat
-        // SignatureSettings::render() yang men-scope query dengan
-        // `where('user_id', Auth::id())`.
-        if (! SignatureProfile::where('user_id', Auth::id())->exists()) {
-            return 4;
+        $step = max(1, min($step, self::ONBOARDING_TOTAL_STEPS));
+        session([self::ONBOARDING_SESSION . '.step' => $step]);
+
+        return $step;
+    }
+
+    /**
+     * Dipanggil dari tutorial (tombol Lanjut/Kembali) supaya langkah yang
+     * sedang dilihat user tersimpan. Tanpa ini, setelah pindah halaman lewat
+     * tombol CTA atau membuka modal, tutorial akan kembali ke langkah 1.
+     * Renderless: hanya menyimpan state, tidak me-render ulang dashboard.
+     */
+    #[Renderless]
+    public function setOnboardingStep(int $step): void
+    {
+        /** @var User|null $user */
+        $user = Auth::user();
+
+        if (! $user || ! $user->needsOnboarding()) {
+            return;
         }
 
-        return self::ONBOARDING_TOTAL_STEPS + 1;
+        $this->onboardingStep = max(1, min($step, self::ONBOARDING_TOTAL_STEPS));
+        session([self::ONBOARDING_SESSION . '.step' => $this->onboardingStep]);
     }
 
     /**
@@ -361,6 +380,7 @@ class Dashboard extends Component
             $user->update(['onboarding_completed_at' => now()]);
         }
 
+        session()->forget(self::ONBOARDING_SESSION);
         $this->showOnboarding = false;
     }
 
@@ -394,12 +414,6 @@ class Dashboard extends Component
         }
 
         $this->onboardingStep = $this->determineOnboardingStep();
-
-        if ($this->onboardingStep > self::ONBOARDING_TOTAL_STEPS) {
-            $this->completeOnboarding();
-            return;
-        }
-
         $this->showOnboarding = true;
     }
 

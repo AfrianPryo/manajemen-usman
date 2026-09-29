@@ -1,11 +1,13 @@
 <div class="w-full max-w-3xl mx-auto space-y-5 text-neutral-800 dark:text-neutral-100 px-4 py-4 sm:px-6 font-sans">
+    <livewire:page-tour tour="documents.generate" />
 
     <a href="{{ route('master.documents.index') }}" class="inline-flex items-center gap-1 text-xs font-semibold text-neutral-500 hover:text-[#0d3b74] dark:hover:text-sky-400 transition-colors">
         <x-heroicon-o-arrow-left class="w-3.5 h-3.5" />
         Kembali ke Menu Laporan
     </a>
 
-    <div class="bg-white dark:bg-slate-800 p-5 rounded-sm border border-neutral-100 dark:border-slate-700 shadow-sm shadow-black/[0.02]">
+    <div class="relative pr-20 bg-white dark:bg-slate-800 p-5 rounded-sm border border-neutral-100 dark:border-slate-700 shadow-sm shadow-black/[0.02]">
+        <x-tour-replay tour="documents.generate" class="absolute top-4 right-4" />
         <h1 class="text-md font-bold text-neutral-900 dark:text-white tracking-tight">Buat Dokumen Resmi</h1>
         <p class="text-[12px] tracking-tight text-neutral-400 mt-1">Pilih jenis dokumen, template, dan lengkapi data singkat untuk membuat dokumen resmi baru.</p>
     </div>

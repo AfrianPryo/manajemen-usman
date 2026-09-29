@@ -1,4 +1,5 @@
 <div class="max-w-[1500px] mx-auto space-y-5 px-4 py-4 sm:px-6 font-sans text-neutral-800 dark:text-neutral-100">
+    <livewire:page-tour tour="inventory.index" />
     {{-- Header & Action Button --}}
     <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 bg-white dark:bg-slate-800 p-4 rounded-sm border border-neutral-100 dark:border-slate-700 shadow-sm shadow-black/[0.02]">
         <div class="shrink-0">
@@ -9,6 +10,7 @@
         </div>
 
         <div class="flex items-center gap-2 overflow-x-auto md:justify-end -mx-1 px-1 md:mx-0 md:px-0">
+            <x-tour-replay tour="inventory.index" />
             <button wire:click="openCreateModal" class="shrink-0 whitespace-nowrap inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-white bg-blue-900 hover:bg-blue-950 rounded-sm transition-all shadow-sm shadow-blue-900/20 cursor-pointer">
                 <x-heroicon-o-plus stroke-width="2.5" class="w-3.5 h-3.5" />
                 <span>Tambah Produk</span>
@@ -297,6 +299,11 @@
     </section>
 
     {{-- ================= MODAL PRODUK (TAMBAH & EDIT) ================= --}}
+    {{-- Tutorial form (di luar modal agar posisinya tidak terpengaruh scroll/blur modal) --}}
+    @if($showCreateModal)
+        <livewire:page-tour tour="inventory.form" wire:key="tour-inventory.form" />
+    @endif
+
     @if($showCreateModal)
         <div class="fixed inset-0 z-50 flex items-center justify-center bg-neutral-900/60 backdrop-blur-sm p-4 overflow-y-auto">
             <div class="bg-white dark:bg-slate-800 w-full max-w-2xl rounded-sm border border-neutral-200 dark:border-slate-700 shadow-2xl overflow-hidden my-8 animate-in fade-in zoom-in duration-150">

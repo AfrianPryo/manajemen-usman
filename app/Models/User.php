@@ -26,6 +26,7 @@ class User extends Authenticatable
         'is_active',
         'must_change_password',
         'onboarding_completed_at',
+        'completed_tours',
         'last_login_at',
         'last_login_ip',
         'current_session_id',
@@ -42,6 +43,7 @@ class User extends Authenticatable
         'is_active'               => 'boolean',
         'must_change_password'    => 'boolean',
         'onboarding_completed_at' => 'datetime',
+        'completed_tours'         => 'array',
         'password'                => 'hashed',
     ];
 
@@ -57,6 +59,30 @@ class User extends Authenticatable
     public function needsOnboarding(): bool
     {
         return is_null($this->onboarding_completed_at);
+    }
+
+    /**
+     * Apakah tutorial kontekstual halaman/aksi tertentu (lihat
+     * App\Support\PageTours) sudah pernah diselesaikan atau dilewati akun ini.
+     */
+    public function hasCompletedTour(string $key): bool
+    {
+        return in_array($key, $this->completed_tours ?? [], true);
+    }
+
+    /**
+     * Tandai tutorial kontekstual selesai/dilewati supaya tidak muncul otomatis
+     * lagi (tetap bisa diputar ulang manual lewat tombol "Panduan").
+     */
+    public function markTourCompleted(string $key): void
+    {
+        if ($this->hasCompletedTour($key)) {
+            return;
+        }
+
+        $this->forceFill([
+            'completed_tours' => array_values(array_unique([...($this->completed_tours ?? []), $key])),
+        ])->save();
     }
 
     /**

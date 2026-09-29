@@ -1,4 +1,5 @@
 <div class="w-full max-w-[1500px] mx-auto space-y-5 text-neutral-800 dark:text-neutral-100 px-4 py-4 sm:px-6 font-sans">
+    <livewire:page-tour tour="transactions.index" />
 
     {{-- Flash Notification (toast) --}}
     @if (session()->has('message'))
@@ -23,6 +24,7 @@
             </button>
 
             {{-- Tombol Kelola Kategori (modul kategori transaksi, menyatu di menu Transaksi) --}}
+            <x-tour-replay tour="transactions.index" />
             <button type="button" wire:click="openCategoryModal" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-semibold text-neutral-700 dark:text-neutral-200 bg-white dark:bg-slate-800 border border-neutral-200 dark:border-slate-700 rounded-sm hover:bg-neutral-50 dark:hover:bg-slate-700 transition-all cursor-pointer shadow-sm shadow-black/[0.02] shrink-0 whitespace-nowrap">
                 <x-heroicon-o-tag class="w-3.5 h-3.5 text-neutral-500 dark:text-neutral-400" />
                 <span>Kelola Kategori</span>
@@ -290,6 +292,11 @@
     </div>
 
     {{-- ================= MODAL TRANSAKSI (TAMBAH & EDIT) ================= --}}
+    {{-- Tutorial form (di luar modal agar posisinya tidak terpengaruh scroll/blur modal) --}}
+    @if($showCreateModal)
+        <livewire:page-tour tour="transactions.form" wire:key="tour-transactions.form" />
+    @endif
+
     @if($showCreateModal)
         <div class="fixed inset-0 z-50 flex items-center justify-center bg-neutral-900/50 backdrop-blur-sm p-4 overflow-y-auto">
             <div class="bg-white dark:bg-slate-800 w-full max-w-2xl rounded-sm border border-neutral-200 dark:border-slate-700 shadow-2xl overflow-hidden my-8 animate-in fade-in zoom-in duration-150">

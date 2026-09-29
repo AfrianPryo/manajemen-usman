@@ -1,4 +1,5 @@
 <div class="w-full max-w-[1500px] mx-auto space-y-5 text-neutral-800 dark:text-neutral-100 px-4 py-4 sm:px-6 font-sans">
+    <livewire:page-tour tour="documents.templates" />
 
     <a href="{{ route('master.documents.index') }}" class="inline-flex items-center gap-1 text-xs font-semibold text-neutral-500 hover:text-[#0d3b74] dark:hover:text-sky-400 transition-colors">
         <x-heroicon-o-arrow-left class="w-3.5 h-3.5" />
@@ -15,10 +16,13 @@
             <h1 class="text-md font-bold tracking-tight text-neutral-900 dark:text-white">Template Dokumen Resmi</h1>
             <p class="text-[12px] tracking-tight text-neutral-400 mt-1">Kelola kop surat (.docx) untuk setiap jenis dokumen resmi. Isi surat dibuat otomatis oleh sistem.</p>
         </div>
-        <button wire:click="create" class="px-4 py-2 text-xs font-bold text-white bg-blue-900 hover:bg-blue-950 rounded-sm transition-all flex items-center gap-2 shadow-sm shadow-blue-900/20 shrink-0">
+        <div class="flex items-center gap-2 shrink-0">
+            <x-tour-replay tour="documents.templates" />
+            <button wire:click="create" class="px-4 py-2 text-xs font-bold text-white bg-blue-900 hover:bg-blue-950 rounded-sm transition-all flex items-center gap-2 shadow-sm shadow-blue-900/20 shrink-0">
             <x-heroicon-o-plus stroke-width="2.5" class="w-4 h-4" />
             Tambah Template
         </button>
+        </div>
     </div>
 
     @if (session('success'))
@@ -101,6 +105,11 @@
             </div>
         </div>
     </div>
+
+    {{-- Tutorial form (di luar modal agar posisinya tidak terpengaruh scroll/blur modal) --}}
+    @if($showForm)
+        <livewire:page-tour tour="documents.template-form" wire:key="tour-documents.template-form" />
+    @endif
 
     {{-- Modal Form --}}
     @if ($showForm)

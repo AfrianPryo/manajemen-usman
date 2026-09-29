@@ -1,4 +1,5 @@
 <div class="w-full max-w-[1500px] mx-auto space-y-5 text-neutral-800 dark:text-neutral-100 px-4 py-4 sm:px-6 font-sans">
+    <livewire:page-tour tour="documents.hub" />
 
     {{--
         Heading atas DISAMAKAN dengan pola header "Dashboard Master Admin":
@@ -7,7 +8,8 @@
         -- sebelumnya judul mengambang tanpa kartu, jadi terasa beda keluarga
         dengan dashboard utama.
     --}}
-    <div class="bg-white dark:bg-slate-800 p-5 rounded-sm border border-neutral-100 dark:border-slate-700 shadow-sm shadow-black/[0.02]">
+    <div class="relative pr-20 bg-white dark:bg-slate-800 p-5 rounded-sm border border-neutral-100 dark:border-slate-700 shadow-sm shadow-black/[0.02]">
+        <x-tour-replay tour="documents.hub" class="absolute top-4 right-4" />
         <h1 class="text-md font-bold tracking-tight text-neutral-900 dark:text-white">Dokumen Resmi</h1>
         <p class="text-[12px] tracking-tight text-neutral-400 mt-1">
             Menggabungkan data sistem secara otomatis ke template resmi ber-KOP surat dan bertanda tangan — tanpa risiko salah ketik dari copy-paste manual.
@@ -29,7 +31,7 @@
         Dashboard Master Admin, bukan cuma ganti warna border.
     --}}
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <a href="{{ route('master.documents.generate') }}" class="bg-white dark:bg-slate-800 rounded-sm border border-neutral-100 dark:border-slate-700 shadow-sm shadow-black/[0.02] p-5 hover:border-blue-200 dark:hover:border-blue-800/60 hover:shadow-md transition-all">
+        <a href="{{ route('master.documents.generate') }}" data-tour="docs-card-generate" class="bg-white dark:bg-slate-800 rounded-sm border border-neutral-100 dark:border-slate-700 shadow-sm shadow-black/[0.02] p-5 hover:border-blue-200 dark:hover:border-blue-800/60 hover:shadow-md transition-all">
             <span class="w-9 h-9 rounded-sm bg-blue-50 dark:bg-blue-950/40 text-[#0d3b74] dark:text-blue-400 flex items-center justify-center">
                 <x-heroicon-o-document-plus class="w-4 h-4" />
             </span>
@@ -37,7 +39,7 @@
             <p class="mt-1 text-[11px] text-neutral-400">Generate dokumen resmi baru dari data sistem.</p>
         </a>
 
-        <a href="{{ route('master.documents.history') }}" class="bg-white dark:bg-slate-800 rounded-sm border border-neutral-100 dark:border-slate-700 shadow-sm shadow-black/[0.02] p-5 hover:border-blue-200 dark:hover:border-blue-800/60 hover:shadow-md transition-all">
+        <a href="{{ route('master.documents.history') }}" data-tour="docs-card-history" class="bg-white dark:bg-slate-800 rounded-sm border border-neutral-100 dark:border-slate-700 shadow-sm shadow-black/[0.02] p-5 hover:border-blue-200 dark:hover:border-blue-800/60 hover:shadow-md transition-all">
             <span class="w-9 h-9 rounded-sm bg-neutral-100 dark:bg-slate-900 text-neutral-500 dark:text-neutral-400 flex items-center justify-center">
                 <x-heroicon-o-clock class="w-4 h-4" />
             </span>
@@ -45,7 +47,7 @@
             <p class="mt-1 text-[11px] text-neutral-400">{{ number_format($totalDocuments) }} dokumen sudah dibuat.</p>
         </a>
 
-        <a href="{{ route('master.documents.templates') }}" class="bg-white dark:bg-slate-800 rounded-sm border border-neutral-100 dark:border-slate-700 shadow-sm shadow-black/[0.02] p-5 hover:border-blue-200 dark:hover:border-blue-800/60 hover:shadow-md transition-all">
+        <a href="{{ route('master.documents.templates') }}" data-tour="docs-card-templates" class="bg-white dark:bg-slate-800 rounded-sm border border-neutral-100 dark:border-slate-700 shadow-sm shadow-black/[0.02] p-5 hover:border-blue-200 dark:hover:border-blue-800/60 hover:shadow-md transition-all">
             <span class="w-9 h-9 rounded-sm bg-neutral-100 dark:bg-slate-900 text-neutral-500 dark:text-neutral-400 flex items-center justify-center">
                 <x-heroicon-o-document-duplicate class="w-4 h-4" />
             </span>
@@ -53,7 +55,7 @@
             <p class="mt-1 text-[11px] text-neutral-400">Atur template Word ber-KOP surat per jenis dokumen.</p>
         </a>
 
-        <a href="{{ route('master.documents.signature') }}" class="bg-white dark:bg-slate-800 rounded-sm border border-neutral-100 dark:border-slate-700 shadow-sm shadow-black/[0.02] p-5 hover:border-blue-200 dark:hover:border-blue-800/60 hover:shadow-md transition-all">
+        <a href="{{ route('master.documents.signature') }}" data-tour="docs-card-signature" class="bg-white dark:bg-slate-800 rounded-sm border border-neutral-100 dark:border-slate-700 shadow-sm shadow-black/[0.02] p-5 hover:border-blue-200 dark:hover:border-blue-800/60 hover:shadow-md transition-all">
             <span class="w-9 h-9 rounded-sm bg-neutral-100 dark:bg-slate-900 text-neutral-500 dark:text-neutral-400 flex items-center justify-center">
                 <x-heroicon-o-pencil-square class="w-4 h-4" />
             </span>
@@ -68,7 +70,7 @@
         Aktivitas" di Dashboard Master Admin (heading text-base font-bold +
         subjudul + border-b), bukan lagi label kecil huruf kapital.
     --}}
-    <div class="bg-white dark:bg-slate-800 rounded-sm border border-neutral-100 dark:border-slate-700 shadow-sm shadow-black/[0.02] p-5">
+    <div class="bg-white dark:bg-slate-800 rounded-sm border border-neutral-100 dark:border-slate-700 shadow-sm shadow-black/[0.02] p-5" data-tour="docs-flow">
         <div class="pb-4 border-b border-neutral-100 dark:border-slate-700">
             <h2 class="text-base font-bold text-neutral-900 dark:text-white">Alur Membuat Dokumen Resmi</h2>
             <p class="text-xs text-neutral-400 mt-0.5">Empat langkah singkat dari template sampai dokumen siap diarsipkan</p>

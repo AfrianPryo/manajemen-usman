@@ -1,4 +1,5 @@
 <div class="w-full max-w-[1500px] mx-auto space-y-5 text-neutral-800 dark:text-neutral-100 px-4 py-4 sm:px-6 font-sans">
+    <livewire:page-tour tour="recurring.index" />
 
     {{-- Flash Notification (toast) --}}
     @if (session()->has('message'))
@@ -13,6 +14,7 @@
         </div>
 
         <div class="flex items-center gap-2 shrink-0">
+            <x-tour-replay tour="recurring.index" />
             <button wire:click="openModal" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-[11px] font-bold text-white bg-blue-900 hover:bg-blue-950 rounded-sm transition-all shadow-sm shadow-blue-900/20 cursor-pointer shrink-0 whitespace-nowrap">
                 <x-heroicon-o-plus class="w-3.5 h-3.5" stroke-width="2.5" />
                 <span>Buat Transaksi Berulang</span>
@@ -215,6 +217,11 @@
     </div>
 
     {{-- Modal Form --}}
+    {{-- Tutorial form (di luar modal agar posisinya tidak terpengaruh scroll/blur modal) --}}
+    @if($showModal)
+        <livewire:page-tour tour="recurring.form" wire:key="tour-recurring.form" />
+    @endif
+
     @if($showModal)
         <div class="fixed inset-0 z-50 flex items-center justify-center bg-neutral-900/50 backdrop-blur-sm p-4 overflow-y-auto">
             <div class="bg-white dark:bg-slate-800 w-full max-w-xl rounded-sm border border-neutral-200 dark:border-slate-700 shadow-2xl overflow-hidden my-8 animate-in fade-in zoom-in duration-150">
