@@ -28,6 +28,23 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Fonnte (WhatsApp)
+    |--------------------------------------------------------------------------
+    |
+    | Hanya dipakai oleh Database\Seeders\FonnteSettingsSeeder untuk mengisi
+    | pengaturan Fonnte AWAL ke tabel `settings`. Setelah itu sumber
+    | kebenarannya tetap tabel `settings` (Master > Pengaturan), bukan
+    | file ini.
+    |
+    */
+
+    'fonnte' => [
+        'token'  => env('FONNTE_TOKEN'),
+        'sender' => env('FONNTE_SENDER'),
+    ],
+
     'slack' => [
         'notifications' => [
             'bot_user_oauth_token' => env('SLACK_BOT_USER_OAUTH_TOKEN'),

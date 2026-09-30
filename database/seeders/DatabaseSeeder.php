@@ -11,11 +11,15 @@ class DatabaseSeeder extends Seeder
         // 🟢 Data WAJIB & aman dijalankan di environment manapun (termasuk
         // production): role/permission sistem, akun Master Admin awal
         // "dari dev" (lihat MasterAdminSeeder -- hanya sekali, tidak
-        // menimpa akun yang sudah ada), dan kategori transaksi default.
+        // menimpa akun yang sudah ada), kategori transaksi default, dan
+        // pengaturan Fonnte awal dari .env (lihat FonnteSettingsSeeder --
+        // hanya mengisi yang kosong, tidak menimpa perubahan dari
+        // menu Pengaturan).
         $this->call([
             RoleSeeder::class,
             MasterAdminSeeder::class,
             FinanceCategorySeeder::class,
+            FonnteSettingsSeeder::class,
         ]);
 
         // 🟢 Data DUMMY/CONTOH (5 Unit Usaha contoh + admin unit masing-

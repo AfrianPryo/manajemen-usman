@@ -54,9 +54,9 @@ class FonnteOtpService
      * Generate OTP baru, simpan (di-hash), dan kirim ke nomor WA target.
      *
      * @param int    $userId
-     * @param string $purpose      'password_change' | 'phone_change'
+     * @param string $purpose      'password_change' | 'phone_change' | 'phone_setup'
      * @param string $targetPhone  nomor tujuan pengiriman OTP
-     * @return array{success: bool, message: string}
+     * @return array{success: bool, message: string, reason?: string}
      */
     public function generateAndSend(int $userId, string $purpose, string $targetPhone): array
     {
@@ -103,6 +103,10 @@ class FonnteOtpService
             return [
                 'success' => false,
                 'message' => 'Gagal mengirim OTP via WhatsApp. Periksa konfigurasi Fonnte atau coba lagi nanti.',
+                // Penanda tambahan (opsional) supaya pemanggil bisa membedakan
+                // gagal-kirim karena provider/konfigurasi vs. kena rate limit.
+                // Pemanggil lama yang hanya membaca success & message tidak terpengaruh.
+                'reason'  => 'send_failed',
             ];
         }
 
@@ -359,6 +363,7 @@ class FonnteOtpService
         $label = match ($purpose) {
             'password_change' => 'perubahan password',
             'phone_change'     => 'perubahan nomor WhatsApp',
+            'phone_setup'      => 'verifikasi nomor WhatsApp',
             default            => 'verifikasi akun',
         };
 

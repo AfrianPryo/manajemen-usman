@@ -1,5 +1,6 @@
 import { initSmoothScroll } from "./smooth-scroll";
 import { initPageLoader } from "./loader.js"; // 👈 Import module loader
+import "./phone-input.js"; // 👈 Alpine component untuk <x-phone-input>
 
 // 👇 Lazy-load module ascii-3d-hero.js (dan Three.js di dalamnya) HANYA saat
 // dibutuhkan, alih-alih di-import secara statis di atas. Three.js adalah
