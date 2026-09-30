@@ -28,6 +28,10 @@ declare(strict_types=1);
  *   DEPLOY_BUILD_ASSETS=false                       # jalankan `npm ci/build` jika JS/CSS berubah
  *   DEPLOY_PHP_BINARY=                              # opsional: path php CLI (mis. /usr/bin/php8.3)
  *   DEPLOY_HOME=                                    # opsional: HOME untuk git/composer
+ *   DEPLOY_NPM_BINARY=                              # opsional: path npm (default: cari otomatis, termasuk storage/framework/node)
+ *   DEPLOY_NODE_VERSION=22                          # versi mayor Node untuk tombol "Pasang Node Lokal"
+ *   DEPLOY_ALLOW_TERMINAL=false                     # aktifkan kotak perintah bebas (shell) di halaman web
+ *   DEPLOY_ALLOW_FRESH=true                         # izinkan migrate:fresh (menghapus SEMUA tabel)
  *
  * Tidak ada kunci bawaan: bila DEPLOY_KEY/DEPLOY_KEY_HASH kosong, halaman
  * web menolak semua akses.
@@ -159,13 +163,66 @@ final class Deployer
         return $c ? [$c] : null;
     }
 
+    /** Folder Node lokal hasil "Pasang Node Lokal". */
+    public function localNodeDir(): string
+    {
+        return $this->root . '/storage/framework/node';
+    }
+
+    /** Path node: lokal bila ada, selain itu `node` dari PATH. */
+    public function nodeBinary(): string
+    {
+        foreach ($this->nodeBinDirs() as $d) {
+            if (is_file($d . '/node')) {
+                return $d . '/node';
+            }
+        }
+        return 'node';
+    }
+
+    public function npmBinary(): ?string
+    {
+        $o = Env::get('DEPLOY_NPM_BINARY');
+        if ($o !== '' && is_executable($o)) {
+            return $o;
+        }
+        $local = $this->localNodeDir() . '/bin/npm';
+        if (is_file($local)) {
+            return $local;
+        }
+        return $this->findBinary('npm');
+    }
+
+    /** Folder bin yang harus didahulukan di PATH agar `node`/`npm` yang benar dipakai. */
+    private function nodeBinDirs(): array
+    {
+        $dirs = [];
+        $o = Env::get('DEPLOY_NPM_BINARY');
+        if ($o !== '' && is_file($o)) {
+            $dirs[] = dirname($o);
+        }
+        $local = $this->localNodeDir() . '/bin';
+        if (is_file($local . '/node')) {
+            $dirs[] = $local;
+        }
+        return array_values(array_unique($dirs));
+    }
+
     // ---- eksekusi --------------------------------------------------------
     /** @return array{0:string,1:int} [output, exitCode] */
     public function exec(array $cmd, int $timeout = 300): array
     {
         $env = getenv() ?: [];
         $env['GIT_TERMINAL_PROMPT'] = '0'; // jangan menggantung menunggu password
-        if (empty($env['GIT_SSH_COMMAND'])) {
+
+        $sshKey = Env::get('DEPLOY_SSH_KEY');
+
+        if ($sshKey !== '' && is_file($sshKey)) {
+            $env['GIT_SSH_COMMAND'] =
+                'ssh -i ' . escapeshellarg($sshKey) .
+                ' -o IdentitiesOnly=yes' .
+                ' -o BatchMode=yes';
+        } elseif (empty($env['GIT_SSH_COMMAND'])) {
             $env['GIT_SSH_COMMAND'] = 'ssh -o BatchMode=yes';
         }
         if (empty($env['HOME'])) {
@@ -176,6 +233,10 @@ final class Deployer
         if (empty($env['COMPOSER_HOME'])) {
             $env['COMPOSER_HOME'] = $env['HOME'] . '/.composer';
         }
+        if ($dirs = $this->nodeBinDirs()) {
+            $env['PATH'] = implode(PATH_SEPARATOR, $dirs) . PATH_SEPARATOR . ($env['PATH'] ?? '/usr/local/bin:/usr/bin:/bin');
+        }
+        $env['CI'] = '1'; // npm/vite: tanpa prompt interaktif
 
         $proc = @proc_open(
             $cmd,
@@ -497,19 +558,7 @@ final class Deployer
         $frontendRe = '#^(package(-lock)?\.json|vite\.config\.[jt]s|tailwind\.config\.[jt]s|postcss\.config\.[jt]s|resources/(js|css)/)#';
         if ($has($frontendRe)) {
             if ($this->cfg['build_assets']) {
-                $npm = $this->findBinary('npm');
-                if ($npm) {
-                    $c = 0;
-                    if ($has('#^package(-lock)?\.json$#')) {
-                        [, $c] = $this->step([$npm, 'ci', '--no-audit', '--no-fund'], 900);
-                    }
-                    if ($c === 0) {
-                        [, $c] = $this->step([$npm, 'run', 'build'], 900);
-                    }
-                    $ok = $ok && $c === 0;
-                } else {
-                    $this->log[] = '[PERINGATAN] JS/CSS berubah tetapi npm tidak ditemukan di server.';
-                }
+                $ok = $this->buildAssets($has('#^package(-lock)?\.json$#')) && $ok;
             } else {
                 $this->log[] = '[INFO] Ada perubahan JS/CSS. Pastikan folder public/build ikut di-commit, atau set DEPLOY_BUILD_ASSETS=true di .env.';
             }
@@ -527,6 +576,88 @@ final class Deployer
         $this->artisan(['queue:restart']); // worker (jika ada) memuat kode baru
 
         return $ok;
+    }
+
+    /** Versi mayor Node yang aktif (0 bila tidak ada). */
+    public function nodeMajor(): int
+    {
+        [$v, $c] = $this->exec([$this->nodeBinary(), '-v'], 20);
+        return ($c === 0 && preg_match('/^v(\d+)\./', trim($v), $m)) ? (int) $m[1] : 0;
+    }
+
+    /** npm ci (opsional) + npm run build. */
+    public function buildAssets(bool $install = true): bool
+    {
+        $npm = $this->npmBinary();
+        if (! $npm) {
+            $this->log[] = '[GAGAL] npm tidak ditemukan. Gunakan tombol "Pasang Node Lokal", atau set DEPLOY_NPM_BINARY di .env.';
+            return false;
+        }
+        $major = $this->nodeMajor();
+        if ($major === 0) {
+            $this->log[] = '[GAGAL] node tidak bisa dijalankan.';
+            return false;
+        }
+        if ($major < 18) {
+            $this->log[] = "[GAGAL] Node v{$major} terlalu lama untuk Vite modern (butuh 18+). Gunakan tombol \"Pasang Node Lokal\".";
+            return false;
+        }
+        $this->step([$this->nodeBinary(), '-v']);
+        $this->step([$npm, '-v']);
+
+        if ($install) {
+            $hasLock = is_file($this->root . '/package-lock.json');
+            [, $c] = $this->step([$npm, $hasLock ? 'ci' : 'install', '--no-audit', '--no-fund'], 900);
+            if ($c !== 0) {
+                return false;
+            }
+        } elseif (! is_dir($this->root . '/node_modules')) {
+            $this->log[] = '[GAGAL] folder node_modules belum ada. Centang "npm ci dulu" pada build.';
+            return false;
+        }
+        [, $c] = $this->step([$npm, 'run', 'build'], 900);
+        if ($c === 0) {
+            $this->log[] = '✔ Build aset selesai (public/build diperbarui).';
+        } elseif ($c === 137 || $c === 9) {
+            $this->log[] = '[PETUNJUK] Proses dimatikan sistem (kemungkinan kehabisan RAM). Tambah swap/RAM, atau build di lokal lalu commit public/build.';
+        }
+        return $c === 0;
+    }
+
+    /** Unduh Node.js LTS (biner resmi) ke storage/framework/node tanpa akses root. */
+    public function installNode(): bool
+    {
+        if (PHP_OS_FAMILY !== 'Linux') {
+            $this->log[] = '[GAGAL] Pemasangan otomatis hanya untuk Linux.';
+            return false;
+        }
+        $m    = php_uname('m');
+        $arch = ['x86_64' => 'x64', 'amd64' => 'x64', 'aarch64' => 'arm64', 'arm64' => 'arm64'][$m] ?? null;
+        if (! $arch) {
+            $this->log[] = "[GAGAL] Arsitektur '{$m}' tidak didukung.";
+            return false;
+        }
+        $ver  = $this->cfg['node_version'];
+        $base = "https://nodejs.org/dist/latest-v{$ver}.x";
+        $dir  = $this->localNodeDir();
+        $sh   = 'set -e; '
+            . 'command -v curl >/dev/null || { echo "curl tidak ada"; exit 3; }; '
+            . 'command -v xz >/dev/null || { echo "xz tidak ada (paket xz-utils)"; exit 3; }; '
+            . 'F=$(curl -fsSL ' . escapeshellarg($base . '/SHASUMS256.txt')
+            . ' | grep -o ' . escapeshellarg("node-v[0-9.]*-linux-{$arch}\.tar\.xz") . ' | head -1); '
+            . '[ -n "$F" ] || { echo "berkas Node tidak ditemukan"; exit 4; }; '
+            . 'echo "Mengunduh $F"; '
+            . 'rm -rf ' . escapeshellarg($dir . '.tmp') . '; mkdir -p ' . escapeshellarg($dir . '.tmp') . '; '
+            . 'curl -fsSL ' . escapeshellarg($base . '/') . '"$F" | tar -xJ -C ' . escapeshellarg($dir . '.tmp') . ' --strip-components=1; '
+            . 'rm -rf ' . escapeshellarg($dir) . '; mv ' . escapeshellarg($dir . '.tmp') . ' ' . escapeshellarg($dir);
+        [, $c] = $this->step(['/bin/sh', '-c', $sh], 600, "Pasang Node {$ver} LTS ke storage/framework/node");
+        if ($c !== 0) {
+            return false;
+        }
+        $this->step([$dir . '/bin/node', '-v']);
+        $this->step([$dir . '/bin/node', $dir . '/lib/node_modules/npm/bin/npm-cli.js', '-v']);
+        $this->log[] = '✔ Node lokal terpasang. Deployer otomatis memakainya untuk npm (tidak perlu ubah .env).';
+        return true;
     }
 
     /** Mundurkan kode ke revisi tertentu (git reset --hard). */
@@ -611,6 +742,7 @@ final class Deployer
             'linked'  => is_link($this->root . '/public/storage') || is_dir($this->root . '/public/storage'),
             'disk'    => $free !== false ? round($free / 1073741824, 2) : null,
             'composer' => $this->composerCmd() !== null,
+            'npm'      => $this->npmBinary() !== null,
         ];
     }
 }
@@ -689,6 +821,9 @@ $cfg = [
     'maintenance'    => Env::bool('DEPLOY_MAINTENANCE', false),
     'warmup'         => Env::bool('DEPLOY_WARMUP', false),
     'build_assets'   => Env::bool('DEPLOY_BUILD_ASSETS', false),
+    'node_version'   => preg_match('/^\d{2}$/', Env::get('DEPLOY_NODE_VERSION', '22')) ? Env::get('DEPLOY_NODE_VERSION', '22') : '22',
+    'allow_terminal' => Env::bool('DEPLOY_ALLOW_TERMINAL', false),
+    'allow_fresh'    => Env::bool('DEPLOY_ALLOW_FRESH', true),
 ];
 
 $execOk    = function_exists('proc_open');
@@ -835,9 +970,10 @@ if ($auth) {
 // Aksi (hanya terautentikasi, POST + CSRF) -> hasil disimpan ke sesi (PRG)
 // -------------------------------------------------------------------------
 if ($auth && $D && $method === 'POST' && ! in_array($action, ['', 'login', 'logout'], true)) {
-    $t0    = microtime(true);
-    $title = 'Aksi';
-    $ok    = true;
+    $t0        = microtime(true);
+    $title     = 'Aksi';
+    $ok        = true;
+    $auditNote = '';
 
     // Daftar seeder dari folder database/seeders (whitelist)
     $seeders = [];
@@ -894,6 +1030,27 @@ if ($auth && $D && $method === 'POST' && ! in_array($action, ['', 'login', 'logo
             }
             break;
 
+        case 'npm_build':
+            $title = 'Build Aset (npm run build)';
+            $ok    = $D->buildAssets(isset($_POST['npm_install']));
+            break;
+
+        case 'node_install':
+            $title = 'Pasang Node Lokal';
+            $ok    = $D->installNode();
+            break;
+
+        case 'node_status':
+            $title = 'Status Node & npm';
+            $npm   = $D->npmBinary();
+            $D->step([$D->nodeBinary(), '-v']);
+            $D->log[] = 'npm: ' . ($npm ?: '(tidak ditemukan)');
+            if ($npm) {
+                $D->step([$npm, '-v']);
+            }
+            $ok = $npm !== null && $D->nodeMajor() >= 18;
+            break;
+
         case 'migrate':
             $title = 'Database Migrate';
             [, $c] = $D->artisan(['migrate', '--force']);
@@ -913,6 +1070,36 @@ if ($auth && $D && $method === 'POST' && ! in_array($action, ['', 'login', 'logo
             $ok    = $c === 0;
             break;
 
+        case 'migrate_fresh':
+            $title = 'Migrate Fresh' . (isset($_POST['with_seed']) ? ' + Seed' : '');
+            if (! $cfg['allow_fresh']) {
+                $D->log[] = '[DITOLAK] migrate:fresh dinonaktifkan (DEPLOY_ALLOW_FRESH=false).';
+                $ok       = false;
+                break;
+            }
+            if (trim((string) ($_POST['confirm_text'] ?? '')) !== 'FRESH') {
+                $D->log[] = '[DITOLAK] Ketik FRESH pada kolom konfirmasi untuk melanjutkan.';
+                $ok       = false;
+                break;
+            }
+            $args = ['migrate:fresh', '--force'];
+            if (isset($_POST['with_seed'])) {
+                $class = (string) ($_POST['fresh_seeder'] ?? '');
+                if ($class === '' || $class === 'DatabaseSeeder') {
+                    $args[] = '--seed';
+                } elseif (in_array($class, $seeders, true)) {
+                    $args[] = '--seeder=' . $class;
+                } else {
+                    $D->log[] = 'Seeder tidak dikenal.';
+                    $ok       = false;
+                    break;
+                }
+            }
+            [, $c]     = $D->artisan($args, 600);
+            $ok        = $c === 0;
+            $auditNote = implode(' ', $args);
+            break;
+
         case 'seed':
             $class = (string) ($_POST['seeder_class'] ?? '');
             $title = "Seeder ({$class})";
@@ -923,6 +1110,35 @@ if ($auth && $D && $method === 'POST' && ! in_array($action, ['', 'login', 'logo
                 [, $c] = $D->artisan(['db:seed', '--class=' . $class, '--force']);
                 $ok    = $c === 0;
             }
+            break;
+
+        case 'terminal':
+            $title = 'Terminal';
+            if (! $cfg['allow_terminal']) {
+                $D->log[] = '[DITOLAK] Terminal nonaktif. Set DEPLOY_ALLOW_TERMINAL=true di .env server.';
+                $ok       = false;
+                break;
+            }
+            $raw = trim((string) ($_POST['cmd'] ?? ''));
+            if ($raw === '' || strlen($raw) > 2000) {
+                $D->log[] = 'Perintah kosong atau terlalu panjang (maks 2000 karakter).';
+                $ok       = false;
+                break;
+            }
+            $timeout = max(10, min(900, (int) ($_POST['cmd_timeout'] ?? 120)));
+
+            // Shortcut: "artisan ..." dan "php ..." memakai PHP CLI yang benar
+            $run = $raw;
+            if (preg_match('/^artisan(\s|$)/', $run)) {
+                $run = escapeshellarg($D->phpBinary()) . ' ' . $run;
+            } elseif (preg_match('/^php(\s|$)/', $run)) {
+                $run = escapeshellarg($D->phpBinary()) . substr($run, 3);
+            }
+
+            $shell = PHP_OS_FAMILY === 'Windows' ? ['cmd', '/c', $run] : ['/bin/sh', '-c', $run];
+            [, $c]     = $D->step($shell, $timeout, $raw);
+            $ok        = $c === 0;
+            $auditNote = mb_strimwidth($raw, 0, 200, '…');
             break;
 
         case 'cache_clear':
@@ -966,7 +1182,7 @@ if ($auth && $D && $method === 'POST' && ! in_array($action, ['', 'login', 'logo
     if (strlen($log) > 30000) {
         $log = '… (dipotong) …' . substr($log, -30000);
     }
-    $D->audit($clientIp, $action, $ok);
+    $D->audit($clientIp, $action, $ok, $auditNote);
 
     $_SESSION['flash'] = ['title' => $title, 'log' => $log, 'ok' => $ok, 'time' => round(microtime(true) - $t0, 2)];
     header('Location: ' . $self);
@@ -1103,7 +1319,7 @@ td{padding:.55rem .8rem;border-bottom:1px solid rgba(255,255,255,.04)}
     <div class="grid3">
         <div class="tel">
             <div class="tl"><span>Versi di server</span><span class="badge b-info"><?= e($cfg['remote'] . '/' . $T['branch']) ?></span></div>
-            <div class="tv mono">#<?= e($T['head'][0] ?? 'N/A') ?> <span style="font-weight:400;color:var(--mut);font-size:.78rem"><?= e(mb_strimwidth((string) ($T['head'][3] ?? ''), 0, 34, '…')) ?></span></div>
+            <div class="tv mono">#<?= e($T['head'][0] ?? 'N/A') ?> <span style="font-weight:400;color:var(--mut);font-size:.78rem"><?= e(mb_strimwidth((string) ($T['head'][3] ?? ''), 0, 34, '')) ?></span></div>
             <div class="ts"><?= e(($T['head'][1] ?? '-') . ' • ' . ($T['head'][2] ?? '-')) ?></div>
         </div>
         <div class="tel <?= $T['dirty'] ? 'warn' : 'ok' ?>">
@@ -1115,7 +1331,7 @@ td{padding:.55rem .8rem;border-bottom:1px solid rgba(255,255,255,.04)}
         <div class="tel">
             <div class="tl"><span>Server</span><span class="badge <?= $T['linked'] ? 'b-ok' : 'b-warn' ?>"><?= $T['linked'] ? 'storage link ok' : 'storage link belum' ?></span></div>
             <div class="tv" style="font-size:.85rem"><?= $T['disk'] !== null ? e((string) $T['disk']) . ' GB ruang kosong' : 'Penyimpanan aktif' ?></div>
-            <div class="ts">PHP CLI: <span class="mono"><?= e(basename($D->phpBinary())) ?></span> • composer: <?= $T['composer'] ? 'ada' : 'tidak ada' ?></div>
+            <div class="ts">PHP CLI: <span class="mono"><?= e(basename($D->phpBinary())) ?></span> • composer: <?= $T['composer'] ? 'ada' : 'tidak ada' ?> • npm: <?= $T['npm'] ? 'ada' : 'tidak ada' ?></div>
         </div>
     </div>
 
@@ -1131,7 +1347,7 @@ td{padding:.55rem .8rem;border-bottom:1px solid rgba(255,255,255,.04)}
 
     <div class="panel">
         <div class="ph">
-            <div class="pt">🚀 Update Server dari GitHub</div>
+            <div class="pt"> Update Server dari GitHub</div>
             <div class="pd">Setelah <code>git push</code> dari komputer lokal, klik Deploy (atau biarkan webhook melakukannya otomatis).</div>
         </div>
         <div class="row" style="align-items:flex-start;gap:1.5rem">
@@ -1188,7 +1404,7 @@ td{padding:.55rem .8rem;border-bottom:1px solid rgba(255,255,255,.04)}
             </div>
 
             <div class="card">
-                <div><div class="ct">🗄️ Database</div><div class="cd">Migrasi &amp; status.</div></div>
+                <div><div class="ct">️ Database</div><div class="cd">Migrasi &amp; status.</div></div>
                 <div class="row">
                     <?= post_form('migrate', 'Migrate', 'pri', '', '', 'flex:1') ?>
                     <?= post_form('migrate_status', 'Status', '', '', '', 'flex:1') ?>
@@ -1213,6 +1429,28 @@ td{padding:.55rem .8rem;border-bottom:1px solid rgba(255,255,255,.04)}
                 <?php else: ?><div class="cd">Tidak ada seeder.</div><?php endif; ?>
             </div>
 
+            <div class="card" style="border-color:rgba(239,68,68,.35)">
+                <div><div class="ct">☢️ Migrate Fresh</div>
+                <div class="cd">Menghapus <b>SEMUA tabel dan data</b>, lalu migrasi ulang dari awal. Jangan dipakai di produksi yang berisi data asli.</div></div>
+                <?php if (! $cfg['allow_fresh']): ?>
+                    <div class="cd">Dinonaktifkan (<code>DEPLOY_ALLOW_FRESH=false</code>).</div>
+                <?php else: ?>
+                <form method="POST" action="" onsubmit="return confirm('SEMUA DATA DATABASE AKAN DIHAPUS. Yakin melanjutkan?')">
+                    <input type="hidden" name="_csrf" value="<?= e($csrf) ?>">
+                    <input type="hidden" name="action" value="migrate_fresh">
+                    <label class="chk"><input type="checkbox" name="with_seed" checked> Jalankan seeder (<code>--seed</code>)</label>
+                    <select name="fresh_seeder" class="sel" style="margin-top:.4rem">
+                        <option value="DatabaseSeeder">DatabaseSeeder (default)</option>
+                        <?php foreach ($sl as $s): if ($s === 'DatabaseSeeder') { continue; } ?>
+                            <option value="<?= e($s) ?>"><?= e($s) ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                    <input type="text" name="confirm_text" class="inp" placeholder="Ketik FRESH untuk konfirmasi" autocomplete="off" required>
+                    <button type="submit" class="btn bad" style="width:100%">Migrate Fresh</button>
+                </form>
+                <?php endif; ?>
+            </div>
+
             <div class="card">
                 <div><div class="ct">🧹 Cache &amp; Dependensi</div><div class="cd">Bersihkan cache Laravel atau pasang paket composer.</div></div>
                 <div class="row">
@@ -1223,6 +1461,21 @@ td{padding:.55rem .8rem;border-bottom:1px solid rgba(255,255,255,.04)}
             </div>
 
             <div class="card">
+                <div><div class="ct">📦 Node &amp; Build Aset</div>
+                <div class="cd">Jalankan <code>npm run build</code> di server. Node &lt; 18 tidak cukup: pasang Node lokal (tanpa root) ke <code>storage/framework/node</code>.</div></div>
+                <form method="POST" action="" onsubmit="return confirm('Jalankan build aset di server? (bisa memakan waktu beberapa menit)')">
+                    <input type="hidden" name="_csrf" value="<?= e($csrf) ?>">
+                    <input type="hidden" name="action" value="npm_build">
+                    <label class="chk"><input type="checkbox" name="npm_install" checked> <code>npm ci</code> dulu (pasang dependensi)</label>
+                    <button type="submit" class="btn pri" style="width:100%;margin-top:.5rem">▶ npm run build</button>
+                </form>
+                <div class="row">
+                    <?= post_form('node_status', 'Cek Node/npm', '', '', '', 'flex:1') ?>
+                    <?= post_form('node_install', 'Pasang Node Lokal', 'warn', '', 'Unduh Node.js ' . $cfg['node_version'] . ' LTS dari nodejs.org ke storage/framework/node?', 'flex:1') ?>
+                </div>
+            </div>
+
+            <div class="card">
                 <div><div class="ct">🔗 Storage &amp; Maintenance</div><div class="cd">Symlink storage publik &amp; mode perbaikan.</div></div>
                 <div class="row">
                     <?= post_form('storage_link', 'Fix Storage Link', '', '', '', 'flex:1') ?>
@@ -1230,6 +1483,33 @@ td{padding:.55rem .8rem;border-bottom:1px solid rgba(255,255,255,.04)}
                 </div>
             </div>
         </div>
+    </div>
+
+    <div class="panel">
+        <div class="ph">
+            <div class="pt">⌨️ Terminal</div>
+            <div class="pd">Jalankan perintah di folder root proyek. Contoh: <code>artisan route:list</code>, <code>php -v</code>, <code>git log -3</code>, <code>ls -la storage</code>.</div>
+        </div>
+        <?php if (! $cfg['allow_terminal']): ?>
+            <div class="alert info">Terminal nonaktif. Tambahkan <code>DEPLOY_ALLOW_TERMINAL=true</code> ke <code>.env</code> di server untuk mengaktifkan.</div>
+        <?php else: ?>
+        <form method="POST" action="" onsubmit="return confirm('Jalankan perintah ini di server?')">
+            <input type="hidden" name="_csrf" value="<?= e($csrf) ?>">
+            <input type="hidden" name="action" value="terminal">
+            <div class="row" style="align-items:stretch">
+                <input type="text" name="cmd" class="inp mono" style="flex:1;min-width:260px;margin-bottom:0"
+                       placeholder="artisan about" maxlength="2000" required autocomplete="off" spellcheck="false">
+                <select name="cmd_timeout" class="sel" style="width:120px;margin-bottom:0">
+                    <option value="60">60 detik</option>
+                    <option value="120" selected>120 detik</option>
+                    <option value="300">300 detik</option>
+                    <option value="900">900 detik</option>
+                </select>
+                <button type="submit" class="btn pri">▶ Jalankan</button>
+            </div>
+            <div class="cd" style="margin-top:.5rem">Tanpa TTY: perintah interaktif (yang menunggu input) akan berhenti karena timeout. Tambahkan <code>--no-interaction</code> atau <code>--force</code> bila perlu.</div>
+        </form>
+        <?php endif; ?>
     </div>
 
     <div class="panel">
