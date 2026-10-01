@@ -48,17 +48,51 @@ class User extends Authenticatable
     ];
 
     /**
-     * Apakah akun ini masih perlu melihat tur/tutorial setup awal (mis. di
-     * Dashboard Master Admin): menambahkan Unit Usaha pertama, Admin
-     * pertama, integrasi Fonnte, dll. Hanya bernilai true untuk akun yang
-     * 'onboarding_completed_at'-nya masih kosong -- pada praktiknya ini
-     * hanya akun Master Admin awal hasil MasterAdminSeeder (kredensial
-     * "dari dev"), karena akun lain dibuat dengan kolom ini otomatis
-     * ter-isi (lihat migrasi 2026_09_22_000002).
+     * Kunci tutorial setup awal Dashboard Master Admin di users.completed_tours
+     * (satu tempat penyimpanan dengan tutorial kontekstual di App\Support\PageTours).
+     */
+    public const DASHBOARD_TOUR = 'dashboard.setup';
+
+    /**
+     * Penanda bahwa tutorial setup awal Dashboard SUDAH PERNAH tampil otomatis
+     * untuk akun ini (disimpan di users.completed_tours yang sama). Berbeda dari
+     * DASHBOARD_TOUR yang baru terisi saat user menekan "Selesai"/"Lewati":
+     * penanda ini terisi begitu tutorial pertama kali muncul, sehingga tutorial
+     * tidak muncul lagi di login berikutnya walau tab ditutup di tengah jalan.
+     */
+    public const DASHBOARD_TOUR_SHOWN = 'dashboard.setup.shown';
+
+    /**
+     * Apakah akun ini masih perlu melihat tur/tutorial setup awal Dashboard
+     * (menambahkan Unit Usaha pertama, Admin pertama, integrasi Fonnte, dll).
+     *
+     * Ditentukan SEMATA-MATA oleh apakah akun ini sudah pernah menyelesaikan/
+     * melewati tutorial itu (kunci DASHBOARD_TOUR di completed_tours) -- sama
+     * seperti tutorial per-menu. Sengaja TIDAK lagi memakai
+     * 'onboarding_completed_at': kolom itu bisa sudah terisi sejak akun dibuat
+     * (default migrasi / backfill / seeder), sehingga tutorial tidak pernah
+     * tampil untuk akun hasil seeder. Isi database lain (Unit, Admin, Fonnte)
+     * juga tidak ikut dipertimbangkan.
      */
     public function needsOnboarding(): bool
     {
-        return is_null($this->onboarding_completed_at);
+        return ! $this->hasCompletedTour(self::DASHBOARD_TOUR);
+    }
+
+    /**
+     * Tandai tutorial setup awal Dashboard selesai/dilewati. 'onboarding_completed_at'
+     * tetap diisi (bila masih kosong) demi kompatibilitas dengan kode lama yang
+     * mungkin masih membacanya.
+     */
+    public function markOnboardingCompleted(): void
+    {
+        $tours = $this->completed_tours ?? [];
+        $tours[] = self::DASHBOARD_TOUR;
+
+        $this->forceFill([
+            'completed_tours'         => array_values(array_unique($tours)),
+            'onboarding_completed_at' => $this->onboarding_completed_at ?? now(),
+        ])->save();
     }
 
     /**

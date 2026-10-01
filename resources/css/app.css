@@ -140,3 +140,22 @@ textarea::placeholder {
 [data-reveal-text].reveal-ready {
     visibility: visible;
 }
+
+/* ================= Error State Field Form ================= */
+/* Satu tampilan error state untuk semua form: border merah + cincin tipis saat
+   fokus. Dipicu atribut aria-invalid="true" yang dipasang oleh server (Blade),
+   resources/js/form-validation.js (error validasi Livewire), dan <x-form-tabs>
+   (pemeriksaan kolom wajib di sisi client). Checkbox/radio/file tidak
+   disentuh karena tampilannya bukan kotak berborder. */
+input[aria-invalid="true"]:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="hidden"]),
+select[aria-invalid="true"],
+textarea[aria-invalid="true"] {
+    border-color: #fb7185 !important; /* rose-400 */
+}
+
+input[aria-invalid="true"]:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="hidden"]):focus,
+select[aria-invalid="true"]:focus,
+textarea[aria-invalid="true"]:focus {
+    border-color: #f43f5e !important; /* rose-500 */
+    box-shadow: 0 0 0 3px rgb(244 63 94 / 0.12) !important;
+}

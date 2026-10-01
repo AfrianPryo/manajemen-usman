@@ -12,14 +12,14 @@
                     wire:click="approve('{{ $id }}')"
                     wire:loading.attr="disabled"
                     wire:target="approve,reject,open"
-                    class="px-2.5 py-1 text-[10px] font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-[3px] transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
+                    class="px-2.5 py-1 text-[10px] font-bold text-white bg-blue-900 hover:bg-blue-950 rounded-sm transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
                 Approve
             </button>
             <button type="button"
                     wire:click="reject('{{ $id }}')"
                     wire:loading.attr="disabled"
                     wire:target="approve,reject,open"
-                    class="px-2.5 py-1 text-[10px] font-bold text-rose-600 dark:text-rose-400 bg-white dark:bg-slate-900 border border-neutral-200 dark:border-slate-700 hover:bg-rose-50 dark:hover:bg-rose-950/30 rounded-[3px] transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
+                    class="px-2.5 py-1 text-[10px] font-bold text-rose-600 dark:text-rose-400 bg-white dark:bg-slate-900 border border-neutral-200 dark:border-slate-700 hover:bg-rose-50 dark:hover:bg-rose-950/30 rounded-sm transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
                 Reject
             </button>
         @elseif ($actionable)
@@ -28,7 +28,7 @@
 
         @if ($hasTarget)
             <button type="button"
-                    wire:click="open('{{ $id }}')"
+                    wire:click="$wire.open('{{ $id }}')"
                     wire:loading.attr="disabled"
                     wire:target="approve,reject,open"
                     class="ml-auto text-[11px] font-semibold text-blue-700 dark:text-blue-400 hover:underline transition-colors cursor-pointer disabled:opacity-50">

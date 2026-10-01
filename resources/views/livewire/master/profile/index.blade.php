@@ -14,7 +14,7 @@
     @endif
 
     {{-- Edit Profile --}}
-    <form wire:submit="updateProfile" class="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 p-6 space-y-4">
+    <form novalidate wire:submit="updateProfile" class="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 p-6 space-y-4">
         <h2 class="font-semibold text-gray-900 dark:text-white border-b border-gray-100 dark:border-slate-700 pb-3">Informasi Profil</h2>
 
         {{-- Foto Profil --}}
@@ -38,27 +38,27 @@
                 x-on:livewire-upload-progress="progress = $event.detail.progress"
             >
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Foto Profil</label>
-                <input type="file" wire:model="avatar" accept="image/*" class="w-full text-sm text-gray-600 dark:text-gray-300 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-slate-100 file:text-slate-700 hover:file:bg-slate-200">
+                <input type="file" wire:model="avatar" accept="image/*" class="@error('avatar') !border-rose-400 !focus:border-rose-500 !focus:ring-rose-500/10 @enderror w-full text-sm text-gray-600 dark:text-gray-300 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-slate-100 file:text-slate-700 hover:file:bg-slate-200" aria-invalid="@error('avatar') true @else false @enderror">
                 <x-upload-progress />
-                @error('avatar') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
+                @error('avatar') <x-form-error :message="$message" :field="'avatar'" /> @enderror
             </div>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nama Lengkap</label>
-                <input type="text" wire:model="name" class="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-900 text-sm">
-                @error('name') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nama Lengkap <span class="text-red-500">*</span></label>
+                <input type="text" wire:model="name" class="@error('name') !border-rose-400 !focus:border-rose-500 !focus:ring-rose-500/10 @enderror w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-900 text-sm" aria-invalid="@error('name') true @else false @enderror">
+                @error('name') <x-form-error :message="$message" :field="'name'" /> @enderror
             </div>
             <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email</label>
-                <input type="email" wire:model="email" class="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-900 text-sm">
-                @error('email') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email <span class="text-red-500">*</span></label>
+                <input type="email" wire:model="email" class="@error('email') !border-rose-400 !focus:border-rose-500 !focus:ring-rose-500/10 @enderror w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-900 text-sm" aria-invalid="@error('email') true @else false @enderror">
+                @error('email') <x-form-error :message="$message" :field="'email'" /> @enderror
             </div>
             <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">No. HP</label>
-                <input type="text" wire:model="phone" inputmode="numeric" oninput="onlyDigits(event)" class="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-900 text-sm">
-                @error('phone') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
+                <input type="text" wire:model="phone" inputmode="numeric" oninput="onlyDigits(event)" class="@error('phone') !border-rose-400 !focus:border-rose-500 !focus:ring-rose-500/10 @enderror w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-900 text-sm" aria-invalid="@error('phone') true @else false @enderror">
+                @error('phone') <x-form-error :message="$message" :field="'phone'" /> @enderror
             </div>
         </div>
         <div class="flex justify-end pt-4 border-t border-gray-100 dark:border-slate-700">
@@ -76,22 +76,22 @@
             <h2 class="font-semibold text-gray-900 dark:text-white border-b border-gray-100 dark:border-slate-700 pb-3">Ganti Password</h2>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Password Lama</label>
-                    <input type="password" wire:model="current_password" class="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-900 text-sm">
-                    @error('current_password') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Password Lama <span class="text-red-500">*</span></label>
+                    <input type="password" wire:model="current_password" class="@error('current_password') !border-rose-400 !focus:border-rose-500 !focus:ring-rose-500/10 @enderror w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-900 text-sm" aria-invalid="@error('current_password') true @else false @enderror">
+                    @error('current_password') <x-form-error :message="$message" :field="'current_password'" /> @enderror
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Password Baru</label>
-                    <input type="password" wire:model="new_password" class="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-900 text-sm">
-                    @error('new_password') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Password Baru <span class="text-red-500">*</span></label>
+                    <input type="password" wire:model="new_password" class="@error('new_password') !border-rose-400 !focus:border-rose-500 !focus:ring-rose-500/10 @enderror w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-900 text-sm" aria-invalid="@error('new_password') true @else false @enderror">
+                    @error('new_password') <x-form-error :message="$message" :field="'new_password'" /> @enderror
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Konfirmasi</label>
-                    <input type="password" wire:model="new_password_confirmation" class="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-900 text-sm">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Konfirmasi <span class="text-red-500">*</span></label>
+                    <input type="password" wire:model="new_password_confirmation" class="@error('new_password_confirmation') !border-rose-400 !focus:border-rose-500 !focus:ring-rose-500/10 @enderror w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-900 text-sm" aria-invalid="@error('new_password_confirmation') true @else false @enderror">
                 </div>
             </div>
             <div class="flex justify-end pt-4 border-t border-gray-100 dark:border-slate-700">
-                <button type="submit" class="px-6 py-2 bg-amber-600 text-white rounded-lg text-sm font-semibold hover:bg-amber-700">Ganti Password</button>
+                <button type="submit" class="px-6 py-2 bg-blue-900 text-white rounded-lg text-sm font-semibold hover:bg-blue-950">Ganti Password</button>
             </div>
         </form>
     @else

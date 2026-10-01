@@ -264,7 +264,7 @@
                             </td>
                             <td class="px-4 py-3.5 align-top text-center whitespace-nowrap">
                                 <button wire:click="exportStockReport" wire:loading.attr="disabled"
-                                    class="px-3.5 py-1.5 text-xs font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-sm hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition-all inline-flex items-center gap-1.5 cursor-pointer">
+                                    class="px-3.5 py-1.5 text-xs font-semibold text-[#0d3b74] dark:text-sky-300 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 rounded-sm hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-all inline-flex items-center gap-1.5 cursor-pointer">
                                     <x-heroicon-o-arrow-down-tray class="w-3.5 h-3.5" />
                                     <span>Stok</span>
                                 </button>
@@ -322,7 +322,7 @@
                             </td>
                             <td class="px-4 py-3.5 align-top text-center whitespace-nowrap">
                                 <button wire:click="exportFinanceReport" wire:loading.attr="disabled"
-                                    class="px-3.5 py-1.5 text-xs font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-sm hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition-all inline-flex items-center gap-1.5 cursor-pointer">
+                                    class="px-3.5 py-1.5 text-xs font-semibold text-[#0d3b74] dark:text-sky-300 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 rounded-sm hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-all inline-flex items-center gap-1.5 cursor-pointer">
                                     <x-heroicon-o-arrow-down-tray class="w-3.5 h-3.5" />
                                     <span>Keuangan</span>
                                 </button>

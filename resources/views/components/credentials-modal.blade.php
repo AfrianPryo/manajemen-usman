@@ -36,14 +36,14 @@
         x-data="{ copied: false }"
         class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-neutral-900/60 backdrop-blur-sm"
     >
-        <div class="bg-white dark:bg-slate-800 rounded-lg max-w-sm w-full border border-neutral-200 dark:border-slate-700 shadow-2xl p-6 space-y-4 animate-in fade-in zoom-in duration-150">
+        <div class="bg-white dark:bg-slate-800 rounded-sm max-w-sm w-full border border-neutral-200 dark:border-slate-700 shadow-2xl p-6 space-y-4 animate-in fade-in zoom-in duration-150">
 
             <div class="text-center space-y-1">
-                <div class="h-10 w-10 bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 rounded-full flex items-center justify-center mx-auto text-lg">
-                    🔑
+                <div class="h-10 w-10 bg-blue-50 dark:bg-blue-950/50 text-blue-900 dark:text-blue-400 rounded-sm flex items-center justify-center mx-auto">
+                    <x-heroicon-o-key class="size-5" />
                 </div>
                 <h3 class="text-sm font-bold text-neutral-900 dark:text-white">
-                    {{ $credentials['title'] ?? 'Informasi Akun' }}
+                    {{ trim(preg_replace('/^[^\p{L}\p{N}]+/u', '', $credentials['title'] ?? 'Informasi Akun')) }}
                 </h3>
                 <p class="text-[11px] text-neutral-400 dark:text-neutral-500">
                     Harap salin kredensial berikut sebelum menutup.
@@ -52,32 +52,32 @@
 
             @if (array_key_exists('wa_sent', $credentials))
                 @if ($credentials['wa_sent'])
-                    <div class="flex items-center gap-2 px-3 py-2 rounded-md bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 text-[11px] font-medium">
+                    <div class="flex items-center gap-2 px-3 py-2 rounded-sm bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 text-[11px] font-medium">
                         <span><x-heroicon-s-check-circle class="size-5 fill-current" /></span>
                         <span>Kredensial juga sudah terkirim ke WhatsApp admin.</span>
                     </div>
                 @else
-                    <div class="flex items-center gap-2 px-3 py-2 rounded-md bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 text-[11px] font-medium">
+                    <div class="flex items-center gap-2 px-3 py-2 rounded-sm bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 text-[11px] font-medium">
                         <span><x-heroicon-s-exclamation-triangle class="size-5 fill-current" /></span>
                         <span>Gagal mengirim ke WhatsApp. Salin manual & sampaikan langsung ke admin.</span>
                     </div>
                 @endif
             @endif
 
-            <div class="p-3.5 bg-neutral-50 dark:bg-slate-900 rounded-md border border-neutral-200 dark:border-slate-700 text-xs space-y-2 font-mono">
+            <div class="p-3.5 bg-neutral-50 dark:bg-slate-900 rounded-sm border border-neutral-200 dark:border-slate-700 text-xs space-y-2 font-mono">
                 <div class="flex justify-between items-center">
                     <span class="text-neutral-400 dark:text-neutral-500 font-sans">Nama:</span>
                     <span class="font-semibold text-neutral-800 dark:text-white font-sans">{{ $credentials['name'] }}</span>
                 </div>
                 <div class="flex justify-between items-center">
                     <span class="text-neutral-400 dark:text-neutral-500 font-sans">Username:</span>
-                    <span class="text-neutral-900 dark:text-slate-100 font-bold px-1.5 py-0.5 rounded bg-neutral-200/60 dark:bg-slate-800">
+                    <span class="text-neutral-900 dark:text-slate-100 font-bold px-1.5 py-0.5 rounded-sm bg-neutral-200/60 dark:bg-slate-800">
                         {{ $credentials['username'] }}
                     </span>
                 </div>
                 <div class="flex justify-between items-center">
                     <span class="text-neutral-400 dark:text-neutral-500 font-sans">Password:</span>
-                    <span class="text-amber-600 dark:text-amber-400 font-bold px-1.5 py-0.5 rounded bg-amber-50 dark:bg-amber-950">
+                    <span class="text-blue-900 dark:text-blue-300 font-bold px-1.5 py-0.5 rounded-sm bg-blue-50 dark:bg-blue-950/50">
                         {{ $credentials['password'] }}
                     </span>
                 </div>
@@ -90,8 +90,8 @@
                     copied = true;
                     setTimeout(() => { $wire.set('createdCredentials', null) }, 1000);
                 "
-                :class="copied ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-blue-900 hover:bg-blue-950'"
-                class="w-full py-2.5 text-white font-bold text-xs rounded-md transition shadow-sm flex items-center justify-center gap-2 cursor-pointer"
+                :class="copied ? 'bg-blue-700 hover:bg-blue-700' : 'bg-blue-900 hover:bg-blue-950'"
+                class="w-full py-2.5 text-white font-bold text-xs rounded-sm transition shadow-sm shadow-blue-900/20 flex items-center justify-center gap-2 cursor-pointer"
             >
                 <template x-if="!copied">
                     <span>Salin Kredensial & Tutup</span>

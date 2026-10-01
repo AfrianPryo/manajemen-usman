@@ -101,15 +101,15 @@
                     <div>
                         <label class="block font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Judul <span class="text-red-500">*</span></label>
                         <input type="text" wire:model="title"
-                               class="w-full px-3.5 py-2 border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-blue-500"
-                               placeholder="Contoh: Libur Nasional 17 Agustus">
-                        @error('title') <span class="text-rose-500 text-[11px] mt-0.5 block">{{ $message }}</span> @enderror
+                               class="@error('title') !border-rose-400 !focus:border-rose-500 !focus:ring-rose-500/10 @enderror w-full px-3.5 py-2 border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-blue-500"
+                               placeholder="Contoh: Libur Nasional 17 Agustus" aria-invalid="@error('title') true @else false @enderror" aria-required="true">
+                        @error('title') <x-form-error :message="$message" :field="'title'" /> @enderror
                     </div>
 
                     <div>
-                        <label class="block font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Label</label>
+                        <label class="block font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Label <span class="text-red-500">*</span></label>
                         <select wire:model="badge"
-                                class="w-full px-3 py-2 border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-blue-500 cursor-pointer">
+                                class="@error('badge') !border-rose-400 !focus:border-rose-500 !focus:ring-rose-500/10 @enderror w-full px-3 py-2 border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-blue-500 cursor-pointer" aria-invalid="@error('badge') true @else false @enderror" aria-required="true">
                             <option value="Pengumuman">Pengumuman</option>
                             <option value="Penting">Penting</option>
                             <option value="Pengingat">Pengingat</option>
@@ -119,9 +119,9 @@
                     <div>
                         <label class="block font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Pesan <span class="text-red-500">*</span></label>
                         <textarea wire:model="message" rows="5"
-                                  class="w-full px-3.5 py-2 border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-blue-500"
-                                  placeholder="Isi pengumuman untuk seluruh admin unit..."></textarea>
-                        @error('message') <span class="text-rose-500 text-[11px] mt-0.5 block">{{ $message }}</span> @enderror
+                                  class="@error('message') !border-rose-400 !focus:border-rose-500 !focus:ring-rose-500/10 @enderror w-full px-3.5 py-2 border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-blue-500"
+                                  placeholder="Isi pengumuman untuk seluruh admin unit..." aria-invalid="@error('message') true @else false @enderror" aria-required="true"></textarea>
+                        @error('message') <x-form-error :message="$message" :field="'message'" /> @enderror
                     </div>
 
                     </x-slot:tab1>
@@ -131,15 +131,15 @@
                         <label class="block font-semibold text-neutral-600 dark:text-neutral-300 mb-1.5">Target Penerima <span class="text-red-500">*</span></label>
                         <div class="grid grid-cols-2 gap-2">
                             <label class="flex items-center gap-2 px-3 py-2 border rounded-md cursor-pointer transition-all {{ $recipientType === 'all' ? 'border-blue-500 bg-blue-50/60 dark:bg-blue-950/30' : 'border-neutral-200 dark:border-slate-700' }}">
-                                <input type="radio" wire:model.live="recipientType" value="all" class="text-blue-600 focus:ring-blue-500">
+                                <input type="radio" wire:model.live="recipientType" value="all" class="@error('recipientType') !border-rose-400 !focus:border-rose-500 !focus:ring-rose-500/10 @enderror text-blue-600 focus:ring-blue-500" aria-invalid="@error('recipientType') true @else false @enderror" aria-required="true">
                                 <span class="font-medium text-neutral-700 dark:text-neutral-200">Semua Admin Unit</span>
                             </label>
                             <label class="flex items-center gap-2 px-3 py-2 border rounded-md cursor-pointer transition-all {{ $recipientType === 'specific' ? 'border-blue-500 bg-blue-50/60 dark:bg-blue-950/30' : 'border-neutral-200 dark:border-slate-700' }}">
-                                <input type="radio" wire:model.live="recipientType" value="specific" class="text-blue-600 focus:ring-blue-500">
+                                <input type="radio" wire:model.live="recipientType" value="specific" class="text-blue-600 focus:ring-blue-500" aria-required="true">
                                 <span class="font-medium text-neutral-700 dark:text-neutral-200">Admin Tertentu</span>
                             </label>
                         </div>
-                        @error('recipientType') <span class="text-rose-500 text-[11px] mt-0.5 block">{{ $message }}</span> @enderror
+                        @error('recipientType') <x-form-error :message="$message" :field="'recipientType'" /> @enderror
                     </div>
 
                     {{-- Daftar Pilihan Admin (hanya tampil kalau target = specific) --}}
@@ -150,7 +150,7 @@
                                 @forelse($activeUnitAdmins as $admin)
                                     <label class="flex items-center justify-between gap-3 px-3 py-2 hover:bg-neutral-50 dark:hover:bg-slate-700/40 cursor-pointer">
                                         <span class="flex items-center gap-2 min-w-0">
-                                            <input type="checkbox" wire:model="selectedUserIds" value="{{ $admin->id }}" class="rounded text-blue-600 focus:ring-blue-500 shrink-0">
+                                            <input type="checkbox" wire:model="selectedUserIds" value="{{ $admin->id }}" aria-invalid="@error('selectedUserIds') true @else false @enderror" class="rounded text-blue-600 focus:ring-blue-500 shrink-0">
                                             <span class="min-w-0">
                                                 <span class="block font-medium text-neutral-800 dark:text-neutral-100 truncate">{{ $admin->name }}</span>
                                                 <span class="block text-[10px] text-neutral-400">{{ $admin->unit->name ?? '-' }}</span>
@@ -166,7 +166,7 @@
                                     <p class="px-3 py-4 text-center text-neutral-400">Tidak ada admin unit aktif.</p>
                                 @endforelse
                             </div>
-                            @error('selectedUserIds') <span class="text-rose-500 text-[11px] mt-0.5 block">{{ $message }}</span> @enderror
+                            @error('selectedUserIds') <x-form-error :message="$message" :field="'selectedUserIds'" /> @enderror
                         </div>
                     @endif
 

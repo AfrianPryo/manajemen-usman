@@ -17,13 +17,13 @@
             </button>
 
             {{-- Tombol Export --}}
-            <button wire:click="exportData" class="shrink-0 whitespace-nowrap inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800 rounded-sm hover:bg-sky-100 dark:hover:bg-sky-900/40 transition-all cursor-pointer">
+            <button wire:click="exportData" class="shrink-0 whitespace-nowrap inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-[#0d3b74] dark:text-sky-300 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 rounded-sm hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-all cursor-pointer">
                 <x-heroicon-o-arrow-down-tray class="w-3.5 h-3.5" />
                 <span>Export Excel</span>
             </button>
 
             {{-- Tombol Import --}}
-            <button wire:click="openImportModal" class="shrink-0 whitespace-nowrap inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-sm hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition-all cursor-pointer">
+            <button wire:click="openImportModal" class="shrink-0 whitespace-nowrap inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-[#0d3b74] dark:text-sky-300 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 rounded-sm hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-all cursor-pointer">
                 <x-heroicon-o-arrow-up-tray class="w-3.5 h-3.5" />
                 <span>Import Excel</span>
             </button>
@@ -91,6 +91,9 @@
                  terkunci ke nama unit sendiri sebagai satu-satunya opsi --
                  pola yang sama dipakai di modul Inventaris & Transaksi. --}}
             <div>
+                @if(! empty($lockedUnitId) && $units->count() === 1)
+                    <x-locked-field :value="$units->first()->name" class="px-3.5 py-2 text-xs font-semibold" />
+                @else
                 <select wire:model.live="unitFilter" class="w-full px-3.5 py-2 text-xs font-semibold text-neutral-600 dark:text-neutral-300 bg-white dark:bg-slate-900 border border-neutral-200 dark:border-slate-700 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400 cursor-pointer">
                     @if($units->count() > 1)
                         <option value="">Semua Unit Usaha</option>
@@ -99,6 +102,7 @@
                         <option value="{{ $u->id }}">{{ $u->name }}</option>
                     @endforeach
                 </select>
+                @endif
             </div>
             <div>
                 <select wire:model.live="statusFilter" class="w-full px-3.5 py-2 text-xs font-semibold text-neutral-600 dark:text-neutral-300 bg-white dark:bg-slate-900 border border-neutral-200 dark:border-slate-700 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400 cursor-pointer">
@@ -128,10 +132,10 @@
                 <span class="font-bold text-blue-400">{{ count($selectedRows) }}</span> aset dipilih
             </div>
             <div class="flex items-center gap-2">
-                <button wire:click="bulkUpdateStatus('available')" class="px-3 py-1 bg-emerald-600 hover:bg-emerald-500 rounded-sm font-semibold transition-colors cursor-pointer">
+                <button wire:click="bulkUpdateStatus('available')" class="px-3 py-1 bg-blue-500 hover:bg-blue-400 rounded-sm font-semibold transition-colors cursor-pointer">
                     Set Tersedia
                 </button>
-                <button wire:click="bulkUpdateStatus('maintenance')" class="px-3 py-1 bg-amber-600 hover:bg-amber-500 rounded-sm font-semibold transition-colors cursor-pointer">
+                <button wire:click="bulkUpdateStatus('maintenance')" class="px-3 py-1 bg-white/10 hover:bg-white/20 ring-1 ring-inset ring-white/15 rounded-sm font-semibold transition-colors cursor-pointer">
                     Set Perbaikan
                 </button>
                 <button type="button" x-on:click.prevent="$store.confirmDialog.open({
@@ -313,25 +317,25 @@
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                             <label class="block font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Tag / Kode Aset <span class="text-red-500">*</span></label>
-                            <input type="text" wire:model="asset_tag" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-blue-500">
-                            @error('asset_tag') <span class="text-rose-500 text-[11px] mt-0.5 block">{{ $message }}</span> @enderror
+                            <input type="text" wire:model="asset_tag" class="@error('asset_tag') !border-rose-400 !focus:border-rose-500 !focus:ring-rose-500/10 @enderror w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-blue-500" aria-invalid="@error('asset_tag') true @else false @enderror" aria-required="true">
+                            @error('asset_tag') <x-form-error :message="$message" :field="'asset_tag'" /> @enderror
                         </div>
 
                         <div>
                             <label class="block font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Nama Aset <span class="text-red-500">*</span></label>
-                            <input type="text" wire:model="name" placeholder="Contoh: Laptop MacBook Pro" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-blue-500">
-                            @error('name') <span class="text-rose-500 text-[11px] mt-0.5 block">{{ $message }}</span> @enderror
+                            <input type="text" wire:model="name" placeholder="Contoh: Laptop MacBook Pro" class="@error('name') !border-rose-400 !focus:border-rose-500 !focus:ring-rose-500/10 @enderror w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-blue-500" aria-invalid="@error('name') true @else false @enderror" aria-required="true">
+                            @error('name') <x-form-error :message="$message" :field="'name'" /> @enderror
                         </div>
 
                         <div>
                             <label class="block font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Kategori <span class="text-red-500">*</span></label>
-                            <select wire:model="category" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-blue-500">
+                            <select wire:model="category" class="@error('category') !border-rose-400 !focus:border-rose-500 !focus:ring-rose-500/10 @enderror w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-blue-500" aria-invalid="@error('category') true @else false @enderror" aria-required="true">
                                 <option value="Elektronik">Elektronik</option>
                                 <option value="Kendaraan">Kendaraan</option>
                                 <option value="Mebel & Perabot">Mebel & Perabot</option>
                                 <option value="Mesin & Peralatan">Mesin & Peralatan</option>
                             </select>
-                            @error('category') <span class="text-rose-500 text-[11px] mt-0.5 block">{{ $message }}</span> @enderror
+                            @error('category') <x-form-error :message="$message" :field="'category'" /> @enderror
                         </div>
 
                         {{-- Unit Usaha. Nullable secara sengaja -- aset milik
@@ -342,8 +346,11 @@
                              otomatis terkunci ke unit sendiri (lihat
                              Unit\Asset\Index::lockUnitScope()). --}}
                         <div>
-                            <label class="block font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Unit Usaha</label>
-                            <select wire:model="unit_id" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-blue-500">
+                            <label class="block font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Unit Usaha <span class="text-red-500">*</span></label>
+                            @if(! empty($lockedUnitId) && $units->count() === 1)
+                                <x-locked-field :value="$units->first()->name" class="px-3.5 py-2 text-xs font-medium" />
+                            @else
+                            <select wire:model="unit_id" class="@error('unit_id') !border-rose-400 !focus:border-rose-500 !focus:ring-rose-500/10 @enderror w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-blue-500" aria-invalid="@error('unit_id') true @else false @enderror">
                                 @if($units->count() > 1)
                                     <option value="">-- Aset Pusat (Tanpa Unit) --</option>
                                 @endif
@@ -351,17 +358,18 @@
                                     <option value="{{ $u->id }}">{{ $u->name }}</option>
                                 @endforeach
                             </select>
-                            @error('unit_id') <span class="text-rose-500 text-[11px] mt-0.5 block">{{ $message }}</span> @enderror
+                            @endif
+                            @error('unit_id') <x-form-error :message="$message" :field="'unit_id'" /> @enderror
                         </div>
 
                         <div>
                             <label class="block font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Nomor Seri (S/N)</label>
-                            <input type="text" wire:model="serial_number" placeholder="Contoh: C02XL123456" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-blue-500">
+                            <input type="text" wire:model="serial_number" placeholder="Contoh: C02XL123456" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-blue-500 @error('serial_number') !border-rose-400 !focus:border-rose-500 !focus:ring-rose-500/10 @enderror" aria-invalid="@error('serial_number') true @else false @enderror">
                         </div>
 
                         <div>
                             <label class="block font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Tanggal Pembelian</label>
-                            <input type="date" wire:model="purchase_date" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-blue-500">
+                            <input type="date" wire:model="purchase_date" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-blue-500 @error('purchase_date') !border-rose-400 !focus:border-rose-500 !focus:ring-rose-500/10 @enderror" aria-invalid="@error('purchase_date') true @else false @enderror">
                         </div>
 
                     </div>
@@ -370,12 +378,12 @@
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                             <label class="block font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Harga Beli (Rp)</label>
-                            <input type="text" inputmode="decimal" wire:model="purchase_cost" oninput="onlyDecimal(event)" placeholder="0" class="w-full px-3.5 py-2 text-xs font-bold border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400">
+                            <input type="text" inputmode="decimal" wire:model="purchase_cost" oninput="onlyDecimal(event)" placeholder="0" class="w-full px-3.5 py-2 text-xs font-bold border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400 @error('purchase_cost') !border-rose-400 !focus:border-rose-500 !focus:ring-rose-500/10 @enderror" aria-invalid="@error('purchase_cost') true @else false @enderror">
                         </div>
 
                         <div>
                             <label class="block font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Status Aset <span class="text-red-500">*</span></label>
-                            <select wire:model="status" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-blue-500">
+                            <select wire:model="status" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-blue-500 @error('status') !border-rose-400 !focus:border-rose-500 !focus:ring-rose-500/10 @enderror" aria-invalid="@error('status') true @else false @enderror" aria-required="true">
                                 <option value="available">Tersedia</option>
                                 <option value="assigned">Digunakan</option>
                                 <option value="maintenance">Perbaikan</option>
@@ -385,7 +393,7 @@
 
                         <div>
                             <label class="block font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Kondisi <span class="text-red-500">*</span></label>
-                            <select wire:model="condition" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-blue-500">
+                            <select wire:model="condition" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-blue-500 @error('condition') !border-rose-400 !focus:border-rose-500 !focus:ring-rose-500/10 @enderror" aria-invalid="@error('condition') true @else false @enderror" aria-required="true">
                                 <option value="good">Bagus</option>
                                 <option value="fair">Cukup</option>
                                 <option value="damaged">Rusak</option>
@@ -394,18 +402,18 @@
 
                         <div>
                             <label class="block font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Penanggung Jawab / User</label>
-                            <input type="text" wire:model="assigned_to" placeholder="Contoh: Budi Santoso" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-blue-500">
+                            <input type="text" wire:model="assigned_to" placeholder="Contoh: Budi Santoso" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-blue-500 @error('assigned_to') !border-rose-400 !focus:border-rose-500 !focus:ring-rose-500/10 @enderror" aria-invalid="@error('assigned_to') true @else false @enderror">
                         </div>
 
                         <div>
                             <label class="block font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Lokasi Penempatan</label>
-                            <input type="text" wire:model="location" placeholder="Contoh: Ruang IT Lt. 2" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-blue-500">
+                            <input type="text" wire:model="location" placeholder="Contoh: Ruang IT Lt. 2" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-blue-500 @error('location') !border-rose-400 !focus:border-rose-500 !focus:ring-rose-500/10 @enderror" aria-invalid="@error('location') true @else false @enderror">
                         </div>
                     </div>
 
                     <div class="mt-4">
                         <label class="block font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Catatan Tambahan</label>
-                        <textarea wire:model="notes" rows="2" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-blue-500" placeholder="Keterangan garansi, kelengkapan, dll..."></textarea>
+                        <textarea wire:model="notes" rows="2" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-blue-500 @error('notes') !border-rose-400 !focus:border-rose-500 !focus:ring-rose-500/10 @enderror" placeholder="Keterangan garansi, kelengkapan, dll..." aria-invalid="@error('notes') true @else false @enderror"></textarea>
                     </div>
                     </x-slot:tab2>
                     <x-slot:submit>
@@ -441,7 +449,7 @@
                     </div>
 
                     <div>
-                        <button type="button" wire:click="downloadTemplate" class="w-full py-2 px-3 text-xs font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-sm hover:bg-emerald-100 transition flex items-center justify-center gap-2">
+                        <button type="button" wire:click="downloadTemplate" class="w-full py-2 px-3 text-xs font-semibold text-[#0d3b74] dark:text-sky-300 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 rounded-sm hover:bg-blue-100 dark:hover:bg-blue-900/40 transition flex items-center justify-center gap-2">
                             <x-heroicon-o-arrow-down-tray class="w-4 h-4" />
                             Unduh Template (.XLSX)
                         </button>
@@ -455,11 +463,11 @@
                         x-on:livewire-upload-error="uploading = false"
                         x-on:livewire-upload-progress="progress = $event.detail.progress"
                     >
-                        <label class="block font-medium text-neutral-700 dark:text-neutral-300 mb-1">Unggah Berkas Excel</label>
-                        <input type="file" wire:model="excel_file" accept=".xlsx, .xls" class="w-full text-xs border border-neutral-200 dark:border-slate-700 rounded-sm p-1.5 bg-neutral-50 dark:bg-slate-900 text-neutral-800 dark:text-neutral-200">
+                        <label class="block font-medium text-neutral-700 dark:text-neutral-300 mb-1">Unggah Berkas Excel <span class="text-red-500">*</span></label>
+                        <input type="file" wire:model="excel_file" accept=".xlsx, .xls" class="@error('excel_file') !border-rose-400 !focus:border-rose-500 !focus:ring-rose-500/10 @enderror w-full text-xs border border-neutral-200 dark:border-slate-700 rounded-sm p-1.5 bg-neutral-50 dark:bg-slate-900 text-neutral-800 dark:text-neutral-200" aria-invalid="@error('excel_file') true @else false @enderror">
 
                         <x-upload-progress label="Membaca file..." />
-                        @error('excel_file') <span class="text-rose-500 text-xs mt-1 block">{{ $message }}</span> @enderror
+                        @error('excel_file') <x-form-error :message="$message" :field="'excel_file'" /> @enderror
                     </div>
 
                     <div class="pt-2 flex items-center justify-end gap-2 border-t border-neutral-100 dark:border-slate-700">

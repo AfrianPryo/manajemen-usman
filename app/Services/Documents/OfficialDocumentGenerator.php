@@ -86,6 +86,85 @@ class OfficialDocumentGenerator
 
         $disk = Storage::disk('local');
 
+        $relativePath = $this->writeDocumentFile($template, $params, $signature, $documentNumber, $data, $rows, $renderer);
+
+        try {
+            return OfficialDocument::create(array_merge(
+                $this->documentAttributes($template, $params, $signature, $data, $rows, $relativePath),
+                [
+                    'document_template_id' => $template->id,
+                    'type' => $template->type,
+                    'document_number' => $documentNumber,
+                    'generated_by' => $generatedByUserId,
+                ]
+            ));
+        } catch (UniqueConstraintViolationException $e) {
+            // Buang file .docx yang sudah terlanjur dibuat untuk percobaan yang gagal ini
+            $disk->delete($relativePath);
+
+            if ($attempt >= 3) {
+                throw $e;
+            }
+
+            // Nomor bentrok (sequence tidak sinkron) - coba lagi dari awal dengan nomor berikutnya
+            return $this->generate($template, $params, $signature, $generatedByUserId, $attempt + 1);
+        }
+    }
+
+    /**
+     * Perbarui dokumen yang SUDAH ada (dipakai saat satu sesi Buat Dokumen menekan
+     * tombol lagi): isi file, tanda tangan, dan metadata ditimpa, tetapi barisnya di
+     * riwayat TETAP SATU -- nomor surat dipertahankan dan sequence penomoran tidak
+     * bertambah. File lama dihapus setelah yang baru berhasil tersimpan.
+     */
+    public function regenerate(
+        OfficialDocument $document,
+        DocumentTemplate $template,
+        array $params,
+        SignatureProfile $signature
+    ): OfficialDocument {
+        $provider = $this->resolveProvider($template->type);
+        $renderer = $this->resolveRenderer($template->type);
+
+        $data = $provider->build($params);
+        $rows = $data['rows'] ?? [];
+        unset($data['rows']);
+
+        $disk = Storage::disk('local');
+        $oldPath = $document->file_path;
+
+        $relativePath = $this->writeDocumentFile($template, $params, $signature, $document->document_number, $data, $rows, $renderer);
+
+        try {
+            $document->update($this->documentAttributes($template, $params, $signature, $data, $rows, $relativePath));
+        } catch (\Throwable $e) {
+            $disk->delete($relativePath);
+
+            throw $e;
+        }
+
+        if ($oldPath && $oldPath !== $relativePath) {
+            $disk->delete($oldPath);
+        }
+
+        return $document->refresh();
+    }
+
+    /**
+     * Susun .docx (kop surat + kepala + isi + tanda tangan) lalu simpan ke disk.
+     * Mengembalikan path relatif file yang baru ditulis.
+     */
+    protected function writeDocumentFile(
+        DocumentTemplate $template,
+        array $params,
+        SignatureProfile $signature,
+        string $documentNumber,
+        array $data,
+        array $rows,
+        DocumentBodyRendererInterface $renderer
+    ): string {
+        $disk = Storage::disk('local');
+
         // Muat kop surat sebagai dokumen dasar. Header/footer & page setup-nya sudah
         // ada di dalamnya; kita tinggal menambahkan konten ke body section pertama.
         $phpWord = IOFactory::load($disk->path($template->file_path));
@@ -103,36 +182,35 @@ class OfficialDocumentGenerator
         $disk->makeDirectory($outputDir);
         IOFactory::createWriter($phpWord, 'Word2007')->save($disk->path($relativePath));
 
-        try {
-            return OfficialDocument::create([
-                'document_template_id' => $template->id,
-                'type' => $template->type,
-                'document_number' => $documentNumber,
-                'title' => $params['title'] ?? $template->name,
-                'subject' => $params['subject'] ?? null,
-                'recipient' => $params['recipient'] ?? null,
-                'unit_id' => $params['unit_id'] ?? null,
-                'period_start' => $params['start_date'] ?? null,
-                'period_end' => $params['end_date'] ?? null,
-                'data_snapshot' => array_merge($data, ['rows' => $rows]),
-                'file_path' => $relativePath,
-                'signed_by_name' => $signature->name,
-                'signed_by_position' => $signature->position,
-                'signature_path' => $signature->signature_path,
-                'generated_by' => $generatedByUserId,
-                'generated_at' => now(),
-            ]);
-        } catch (UniqueConstraintViolationException $e) {
-            // Buang file .docx yang sudah terlanjur dibuat untuk percobaan yang gagal ini
-            $disk->delete($relativePath);
+        return $relativePath;
+    }
 
-            if ($attempt >= 3) {
-                throw $e;
-            }
-
-            // Nomor bentrok (sequence tidak sinkron) - coba lagi dari awal dengan nomor berikutnya
-            return $this->generate($template, $params, $signature, $generatedByUserId, $attempt + 1);
-        }
+    /**
+     * Kolom record yang berubah setiap kali dokumen dibuat ATAU diperbarui.
+     * generated_at ikut disegarkan supaya riwayat menampilkan waktu terbaru.
+     */
+    protected function documentAttributes(
+        DocumentTemplate $template,
+        array $params,
+        SignatureProfile $signature,
+        array $data,
+        array $rows,
+        string $relativePath
+    ): array {
+        return [
+            'title' => $params['title'] ?? $template->name,
+            'subject' => $params['subject'] ?? null,
+            'recipient' => $params['recipient'] ?? null,
+            'unit_id' => $params['unit_id'] ?? null,
+            'period_start' => $params['start_date'] ?? null,
+            'period_end' => $params['end_date'] ?? null,
+            'data_snapshot' => array_merge($data, ['rows' => $rows]),
+            'file_path' => $relativePath,
+            'signed_by_name' => $signature->name,
+            'signed_by_position' => $signature->position,
+            'signature_path' => $signature->signature_path,
+            'generated_at' => now(),
+        ];
     }
 
     /**

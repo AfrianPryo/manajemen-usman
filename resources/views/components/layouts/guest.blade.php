@@ -4,9 +4,21 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <link rel="icon" href="{{ asset('favicon.svg') }}" type="image/svg+xml">
 
-    <title>{{ $title ?? 'Login' }} - SIMS.Usaha</title>
+    {{-- Judul & ikon tab mengikuti identitas yang diatur Master Admin di Pengaturan
+         (Setting 'app_name' / 'app_logo'), sama seperti layout dashboard & landing.
+         Fallback ke identitas bawaan selama admin belum mengatur apa pun. --}}
+    @php
+        $__guestAppName = \App\Models\Setting::get('app_name') ?: 'SIMS.Usaha';
+        $__guestFavicon = \App\Models\Setting::get('app_logo');
+    @endphp
+    @if ($__guestFavicon)
+        <link rel="icon" href="{{ asset('storage/' . $__guestFavicon) }}">
+    @else
+        <link rel="icon" href="{{ asset('favicon.svg') }}" type="image/svg+xml">
+    @endif
+
+    <title>{{ $title ?? 'Login' }} - {{ $__guestAppName }}</title>
 
     <script>
         // Samakan dengan preferensi tema yang dipilih user di dashboard

@@ -20,7 +20,7 @@
                 </div>
                 <div class="flex items-center gap-2">
                     <button wire:click="bulkExport" wire:loading.attr="disabled" wire:target="bulkExport"
-                        class="px-3.5 py-1.5 bg-sky-600 hover:bg-sky-500 rounded font-semibold transition-colors flex items-center gap-1.5 disabled:opacity-60">
+                        class="px-3.5 py-1.5 bg-blue-500 hover:bg-blue-400 rounded font-semibold transition-colors flex items-center gap-1.5 disabled:opacity-60">
                         <x-heroicon-o-arrow-down-tray wire:loading.remove wire:target="bulkExport" class="w-3.5 h-3.5" />
                         <span wire:loading.remove wire:target="bulkExport">Export Terpilih (.zip)</span>
                         <span wire:loading wire:target="bulkExport">Memproses...</span>
@@ -73,7 +73,7 @@
                             </td>
                             <td class="px-4 py-3.5 align-top text-center whitespace-nowrap">
                                 <button wire:click="exportTransactions" wire:loading.attr="disabled"
-                                    class="px-3.5 py-1.5 text-xs font-semibold text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800 rounded-full hover:bg-sky-100 dark:hover:bg-sky-900/40 transition-all inline-flex items-center gap-1.5 cursor-pointer">
+                                    class="px-3.5 py-1.5 text-xs font-semibold text-[#0d3b74] dark:text-sky-300 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 rounded-sm hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-all inline-flex items-center gap-1.5 cursor-pointer">
                                     <x-heroicon-o-arrow-down-tray class="w-3.5 h-3.5" />
                                     <span>.xlsx</span>
                                 </button>
@@ -138,7 +138,7 @@
                             </td>
                             <td class="px-4 py-3.5 align-top text-center whitespace-nowrap">
                                 <button wire:click="exportProducts" wire:loading.attr="disabled"
-                                    class="px-3.5 py-1.5 text-xs font-semibold text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800 rounded-full hover:bg-sky-100 dark:hover:bg-sky-900/40 transition-all inline-flex items-center gap-1.5 cursor-pointer">
+                                    class="px-3.5 py-1.5 text-xs font-semibold text-[#0d3b74] dark:text-sky-300 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 rounded-sm hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-all inline-flex items-center gap-1.5 cursor-pointer">
                                     <x-heroicon-o-arrow-down-tray class="w-3.5 h-3.5" />
                                     <span>.xlsx</span>
                                 </button>
@@ -193,7 +193,7 @@
                             </td>
                             <td class="px-4 py-3.5 align-top text-center whitespace-nowrap">
                                 <button wire:click="exportAssets" wire:loading.attr="disabled"
-                                    class="px-3.5 py-1.5 text-xs font-semibold text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800 rounded-full hover:bg-sky-100 dark:hover:bg-sky-900/40 transition-all inline-flex items-center gap-1.5 cursor-pointer">
+                                    class="px-3.5 py-1.5 text-xs font-semibold text-[#0d3b74] dark:text-sky-300 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 rounded-sm hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-all inline-flex items-center gap-1.5 cursor-pointer">
                                     <x-heroicon-o-arrow-down-tray class="w-3.5 h-3.5" />
                                     <span>.xlsx</span>
                                 </button>
@@ -249,7 +249,7 @@
                             </td>
                             <td class="px-4 py-3.5 align-top text-center whitespace-nowrap">
                                 <button wire:click="exportStockReport" wire:loading.attr="disabled"
-                                    class="px-3.5 py-1.5 text-xs font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-full hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition-all inline-flex items-center gap-1.5 cursor-pointer">
+                                    class="px-3.5 py-1.5 text-xs font-semibold text-[#0d3b74] dark:text-sky-300 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 rounded-sm hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-all inline-flex items-center gap-1.5 cursor-pointer">
                                     <x-heroicon-o-arrow-down-tray class="w-3.5 h-3.5" />
                                     <span>Stok</span>
                                 </button>
@@ -300,7 +300,7 @@
                             </td>
                             <td class="px-4 py-3.5 align-top text-center whitespace-nowrap">
                                 <button wire:click="exportFinanceReport" wire:loading.attr="disabled"
-                                    class="px-3.5 py-1.5 text-xs font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-full hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition-all inline-flex items-center gap-1.5 cursor-pointer">
+                                    class="px-3.5 py-1.5 text-xs font-semibold text-[#0d3b74] dark:text-sky-300 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 rounded-sm hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-all inline-flex items-center gap-1.5 cursor-pointer">
                                     <x-heroicon-o-arrow-down-tray class="w-3.5 h-3.5" />
                                     <span>Keuangan</span>
                                 </button>

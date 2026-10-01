@@ -52,10 +52,10 @@
         {{-- Ubah batas retensi (setting yang sama dengan Pengaturan > Fitur & Modul) --}}
         <form wire:submit="saveRetention" class="pt-2 flex flex-col sm:flex-row sm:items-end gap-2">
             <div>
-                <label for="retention_input" class="block text-[11px] font-semibold mb-1">Batas Retensi (hari)</label>
+                <label for="retention_input" class="block text-[11px] font-semibold mb-1">Batas Retensi (hari) <span class="text-red-500">*</span></label>
                 <input id="retention_input" type="text" inputmode="numeric"
                     wire:model="retentionInput" oninput="onlyDigits(event)"
-                    class="w-40 px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-[3px] bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-red-500">
+                    class="@error('retentionInput') !border-rose-400 !focus:border-rose-500 !focus:ring-rose-500/10 @enderror w-40 px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-[3px] bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-red-500" aria-invalid="@error('retentionInput') true @else false @enderror" aria-required="true">
             </div>
             <button type="submit" wire:loading.attr="disabled" wire:target="saveRetention"
                 class="px-4 py-2 text-xs font-bold text-white bg-blue-900 hover:bg-blue-950 rounded-[3px] transition-all disabled:opacity-60 cursor-pointer">
@@ -64,7 +64,7 @@
             </button>
             <span class="text-[11px] opacity-80">Minimal {{ \App\Services\LogArchiveService::MIN_RETENTION_DAYS }}, maksimal {{ number_format(\App\Services\LogArchiveService::MAX_RETENTION_DAYS, 0, ',', '.') }} hari.</span>
         </form>
-        @error('retentionInput') <p class="text-[11px] text-rose-500 font-semibold">{{ $message }}</p> @enderror
+        @error('retentionInput') <x-form-error :message="$message" :field="'retentionInput'" /> @enderror
     </div>
 
     {{-- Ringkasan --}}

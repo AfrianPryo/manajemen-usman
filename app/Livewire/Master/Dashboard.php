@@ -95,10 +95,10 @@ class Dashboard extends Component
     // ------------------------------------------
     // TUTORIAL SETUP AWAL (LOGIN PERTAMA MASTER ADMIN)
     // ------------------------------------------
-    // Tampil SEKALI, hanya untuk akun yang 'onboarding_completed_at'-nya
-    // masih NULL -- pada praktiknya hanya Master Admin awal hasil
-    // MasterAdminSeeder (kredensial "dari dev"), karena akun lain sudah
-    // otomatis dianggap "selesai" (lihat migrasi & User::needsOnboarding()).
+    // Tampil SEKALI per akun: saat akun itu pertama kali membuka dashboard, sampai
+    // ia menekan "Selesai"/"Lewati" (tercatat di users.completed_tours, kunci
+    // User::DASHBOARD_TOUR). Tidak bergantung pada isi database: akun/Unit/Admin/
+    // Fonnte hasil seeder tidak membuat tutorial dilewati (lihat User::needsOnboarding()).
     // Muncul setelah alur wajib ganti password + setup nomor WA selesai,
     // karena tutorial ini baru bisa tampil begitu user sampai di halaman
     // dashboard ini.
@@ -120,7 +120,7 @@ class Dashboard extends Component
     private const ONBOARDING_TOTAL_STEPS = 4;
 
     // Kunci session progres tutorial (step + baseline jumlah Unit/Admin saat tutorial dimulai).
-    private const ONBOARDING_SESSION = 'master_onboarding';
+    public const ONBOARDING_SESSION = 'master_onboarding';
 
     // ------------------------------------------
     // LIFECYCLE HOOKS FILTER PERIODE
@@ -136,9 +136,10 @@ class Dashboard extends Component
         /** @var User|null $user */
         $user = Auth::user();
 
-        if ($user && $user->needsOnboarding()) {
-            // Tutorial SELALU tampil sampai user menekan "Selesai"/"Lewati",
-            // walau Unit Usaha, Admin Unit, atau Fonnte sudah terisi dari seeder.
+        if ($user && $user->needsOnboarding() && $this->shouldAutoShowOnboarding($user)) {
+            // Tampil otomatis HANYA pada login pertama (atau dilanjutkan selama
+            // sesi login yang sama), walau Unit Usaha, Admin Unit, atau Fonnte
+            // sudah terisi dari seeder.
             $this->onboardingStep = $this->determineOnboardingStep();
             $this->showOnboarding = true;
         }
@@ -307,6 +308,30 @@ class Dashboard extends Component
     }
 
     /**
+     * Apakah tutorial setup awal boleh tampil OTOMATIS sekarang.
+     *  - Sedang berjalan di sesi login ini (user pindah halaman lewat tombol CTA
+     *    lalu kembali ke dashboard) -> dilanjutkan.
+     *  - Belum pernah tampil otomatis untuk akun ini -> tampil sekarang, dan
+     *    langsung dicatat di database sehingga TIDAK tampil lagi di login
+     *    berikutnya (walau user menutup tab sebelum menekan Selesai/Lewati).
+     *  - Selain itu -> tidak tampil otomatis.
+     */
+    private function shouldAutoShowOnboarding(User $user): bool
+    {
+        if (session()->has(self::ONBOARDING_SESSION)) {
+            return true;
+        }
+
+        if (! $user->hasCompletedTour(User::DASHBOARD_TOUR_SHOWN)) {
+            $user->markTourCompleted(User::DASHBOARD_TOUR_SHOWN);
+
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
      * Tentukan langkah tutorial yang aktif. Dimulai dari langkah 1 dan TIDAK
      * membaca "sudah ada/belum" dari database, jadi data awal hasil seeder
      * tidak membuat langkah terlewat. Progres disimpan di session:
@@ -377,7 +402,7 @@ class Dashboard extends Component
         $user = Auth::user();
 
         if ($user && $user->needsOnboarding()) {
-            $user->update(['onboarding_completed_at' => now()]);
+            $user->markOnboardingCompleted();
         }
 
         session()->forget(self::ONBOARDING_SESSION);

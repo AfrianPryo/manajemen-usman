@@ -130,14 +130,14 @@
                 {{-- Modal Body --}}
                 <div class="p-6 space-y-4">
                     <div>
-                        <label class="block text-xs font-medium text-neutral-600 dark:text-neutral-300 mb-1">Jenis Dokumen</label>
-                        <select wire:model.live="type" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400">
+                        <label class="block text-xs font-medium text-neutral-600 dark:text-neutral-300 mb-1">Jenis Dokumen <span class="text-red-500">*</span></label>
+                        <select wire:model.live="type" class="@error('type') !border-rose-400 !focus:border-rose-500 !focus:ring-rose-500/10 @enderror w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400" aria-invalid="@error('type') true @else false @enderror">
                             <option value="">-- Pilih jenis dokumen --</option>
                             @foreach ($this->types() as $key => $label)
                                 <option value="{{ $key }}">{{ $label }}</option>
                             @endforeach
                         </select>
-                        @error('type') <span class="text-[11px] text-rose-500 mt-0.5 block">{{ $message }}</span> @enderror
+                        @error('type') <x-form-error :message="$message" :field="'type'" /> @enderror
                     </div>
 
                     @if ($type)
@@ -162,14 +162,14 @@
                     @endif
 
                     <div>
-                        <label class="block text-xs font-medium text-neutral-600 dark:text-neutral-300 mb-1">Nama Template</label>
-                        <input type="text" wire:model="name" placeholder="Contoh: Laporan Keuangan Bulanan - Format A" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400">
-                        @error('name') <span class="text-[11px] text-rose-500 mt-0.5 block">{{ $message }}</span> @enderror
+                        <label class="block text-xs font-medium text-neutral-600 dark:text-neutral-300 mb-1">Nama Template <span class="text-red-500">*</span></label>
+                        <input type="text" wire:model="name" placeholder="Contoh: Laporan Keuangan Bulanan - Format A" class="@error('name') !border-rose-400 !focus:border-rose-500 !focus:ring-rose-500/10 @enderror w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400" aria-invalid="@error('name') true @else false @enderror">
+                        @error('name') <x-form-error :message="$message" :field="'name'" /> @enderror
                     </div>
 
                     <div>
                         <label class="block text-xs font-medium text-neutral-600 dark:text-neutral-300 mb-1">Deskripsi (opsional)</label>
-                        <textarea wire:model="description" rows="2" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400"></textarea>
+                        <textarea wire:model="description" rows="2" class="@error('description') !border-rose-400 !focus:border-rose-500 !focus:ring-rose-500/10 @enderror w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400" aria-invalid="@error('description') true @else false @enderror"></textarea>
                     </div>
 
                     <div
@@ -181,9 +181,9 @@
                         x-on:livewire-upload-progress="progress = $event.detail.progress"
                     >
                         <label class="block text-xs font-medium text-neutral-600 dark:text-neutral-300 mb-1">File Kop Surat (.docx)</label>
-                        <input type="file" wire:model="templateFile" accept=".docx" class="w-full text-xs border border-neutral-200 dark:border-slate-700 rounded-sm p-1.5 bg-neutral-50 dark:bg-slate-900 text-neutral-800 dark:text-neutral-200">
+                        <input type="file" wire:model="templateFile" accept=".docx" class="@error('templateFile') !border-rose-400 !focus:border-rose-500 !focus:ring-rose-500/10 @enderror w-full text-xs border border-neutral-200 dark:border-slate-700 rounded-sm p-1.5 bg-neutral-50 dark:bg-slate-900 text-neutral-800 dark:text-neutral-200" aria-invalid="@error('templateFile') true @else false @enderror">
                         <x-upload-progress />
-                        @error('templateFile') <span class="text-[11px] text-rose-500 mt-0.5 block">{{ $message }}</span> @enderror
+                        @error('templateFile') <x-form-error :message="$message" :field="'templateFile'" /> @enderror
                         <p class="text-[11px] text-neutral-400 mt-1">Cukup header/footer (logo, alamat) + page setup. Body dikosongkan, isi surat dibuat otomatis oleh sistem.</p>
                         @if ($editingId)
                             <p class="text-[11px] text-neutral-400 mt-1">Kosongkan jika tidak ingin mengganti file kop surat.</p>
@@ -195,16 +195,16 @@
                             <label class="flex items-center gap-1 text-xs font-medium text-neutral-600 dark:text-neutral-300 mb-1">
                                 Format Nomor Surat
                                 <x-help-tip text="Susun sendiri urutan teks & token di bawah, sesuai format nomor surat yang biasa dipakai. Contoh isian: {nomor}/UND/{bulan_romawi}/{tahun} akan menghasilkan nomor seperti 005/UND/VII/2026 saat dokumen dibuat." />
-                            </label>
-                            <input type="text" wire:model="numbering_format" class="w-full px-3.5 py-2 text-xs font-mono font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400">
+                             <span class="text-red-500">*</span></label>
+                            <input type="text" wire:model="numbering_format" class="@error('numbering_format') !border-rose-400 !focus:border-rose-500 !focus:ring-rose-500/10 @enderror w-full px-3.5 py-2 text-xs font-mono font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400" aria-invalid="@error('numbering_format') true @else false @enderror">
                             <p class="text-[11px] text-neutral-400 mt-1">Token: {nomor} (3 digit: 001), {nomor_polos} (tanpa 0 di depan: 1), {bulan}, {bulan_romawi}, {tahun}</p>
                         </div>
                         <div>
                             <label class="flex items-center gap-1 text-xs font-medium text-neutral-600 dark:text-neutral-300 mb-1">
                                 Reset Nomor
                                 <x-help-tip align="right" text="Menentukan kapan nomor urut ({nomor} / {nomor_polos}) kembali ke 1. 'Setiap Tahun' berarti nomor lanjut terus selama setahun lalu kembali ke 1 di Januari; 'Setiap Bulan' kembali ke 1 tiap awal bulan; 'Tidak Pernah' berarti nomor urut terus naik tanpa henti." />
-                            </label>
-                            <select wire:model="numbering_reset" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400">
+                             <span class="text-red-500">*</span></label>
+                            <select wire:model="numbering_reset" class="@error('numbering_reset') !border-rose-400 !focus:border-rose-500 !focus:ring-rose-500/10 @enderror w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400" aria-invalid="@error('numbering_reset') true @else false @enderror">
                                 <option value="yearly">Setiap Tahun</option>
                                 <option value="monthly">Setiap Bulan</option>
                                 <option value="never">Tidak Pernah</option>

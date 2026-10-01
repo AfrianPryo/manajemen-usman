@@ -59,8 +59,8 @@ class Index extends Component
             'website' => 'nullable|string|max:255',
             'address' => 'nullable|string',
             'id_number' => 'nullable|string|max:100',
-            'contract_start_date' => 'nullable|date',
-            'contract_end_date' => 'nullable|date|after_or_equal:contract_start_date',
+            'contract_start_date' => 'required|date',
+            'contract_end_date' => 'required|date|after_or_equal:contract_start_date',
         ];
     }
 

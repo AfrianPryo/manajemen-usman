@@ -14,7 +14,7 @@
             <x-tour-replay tour="inventory.index" />
 
             {{-- Tombol Export --}}
-            <button type="button" wire:click="exportProducts" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-semibold text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800 rounded-sm hover:bg-sky-100 dark:hover:bg-sky-900/40 transition-all cursor-pointer shrink-0 whitespace-nowrap">
+            <button type="button" wire:click="exportProducts" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-semibold text-[#0d3b74] dark:text-sky-300 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 rounded-sm hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-all cursor-pointer shrink-0 whitespace-nowrap">
                 <x-heroicon-o-arrow-down-tray class="w-3.5 h-3.5" stroke-width="2" />
                 <span>Export Excel</span>
             </button>
@@ -26,7 +26,7 @@
             </button>
 
             {{-- Tombol Import Excel --}}
-            <button type="button" wire:click="openImportModal" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-sm hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition-all cursor-pointer shrink-0 whitespace-nowrap">
+            <button type="button" wire:click="openImportModal" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-semibold text-[#0d3b74] dark:text-sky-300 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 rounded-sm hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-all cursor-pointer shrink-0 whitespace-nowrap">
                 <x-heroicon-o-arrow-up-tray class="w-3.5 h-3.5" stroke-width="2" />
                 <span>Import Excel</span>
             </button>
@@ -80,6 +80,9 @@
             </div>
 
             <div>
+                @if(! empty($lockedUnitId) && $units->count() === 1)
+                    <x-locked-field :value="$units->first()->name" class="px-3.5 py-2 text-xs font-semibold" />
+                @else
                 <select wire:model.live="unitFilter" class="w-full px-3.5 py-2 text-xs font-semibold text-neutral-600 dark:text-neutral-300 bg-white dark:bg-slate-900 border border-neutral-200 dark:border-slate-700 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400 cursor-pointer">
                     {{-- Placeholder "semua unit" hanya relevan kalau ada lebih dari 1 unit
                          untuk dipilih (konteks Master). Saat $units cuma berisi 1 unit
@@ -93,6 +96,7 @@
                         <option value="{{ $u->id }}">{{ $u->name }}</option>
                     @endforeach
                 </select>
+                @endif
             </div>
 
             <div>
@@ -334,8 +338,8 @@
                         <div class="sm:col-span-2">
                             <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Nama Produk <span class="text-red-500">*</span></label>
                             <input type="text" wire:model="form_name" placeholder="Contoh: Kertas A4 80gr"
-                                class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-blue-500">
-                            @error('form_name') <span class="text-[11px] text-rose-500 mt-0.5 block">{{ $message }}</span> @enderror
+                                class="@error('form_name') !border-rose-400 !focus:border-rose-500 !focus:ring-rose-500/10 @enderror w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-blue-500" aria-invalid="@error('form_name') true @else false @enderror" aria-required="true">
+                            @error('form_name') <x-form-error :message="$message" :field="'form_name'" /> @enderror
                         </div>
 
                     <div>
@@ -346,7 +350,7 @@
                             <input type="text" 
                                 wire:model="form_code" 
                                 placeholder="Scan barcode / ketik kode..." 
-                                class="w-full text-xs rounded-sm border-neutral-300 dark:border-slate-700 dark:bg-slate-900 focus:ring-blue-500 focus:border-blue-500">
+                                class="@error('form_code') !border-rose-400 !focus:border-rose-500 !focus:ring-rose-500/10 @enderror w-full text-xs rounded-sm border-neutral-300 dark:border-slate-700 dark:bg-slate-900 focus:ring-blue-500 focus:border-blue-500" aria-invalid="@error('form_code') true @else false @enderror" aria-required="true">
                             
                             <button type="button" 
                                     wire:click="generateProductCode" 
@@ -354,7 +358,7 @@
                                 Generate Kode
                             </button>
                         </div>
-                        @error('form_code') <span class="text-xs text-rose-500 mt-1">{{ $message }}</span> @enderror
+                        @error('form_code') <x-form-error :message="$message" :field="'form_code'" /> @enderror
                     </div>
                     </div>
 
@@ -362,7 +366,10 @@
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Unit Usaha <span class="text-red-500">*</span></label>
-                            <select wire:model.live="form_unit_id" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-blue-500">
+                            @if(! empty($lockedUnitId) && $units->count() === 1)
+                                <x-locked-field :value="$units->first()->name" class="px-3.5 py-2 text-xs font-medium" />
+                            @else
+                            <select wire:model.live="form_unit_id" class="@error('form_unit_id') !border-rose-400 !focus:border-rose-500 !focus:ring-rose-500/10 @enderror w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-blue-500" aria-invalid="@error('form_unit_id') true @else false @enderror" aria-required="true">
                                 @if($units->count() > 1)
                                     <option value="">-- Pilih Unit Usaha --</option>
                                 @endif
@@ -370,7 +377,8 @@
                                     <option value="{{ $u->id }}">{{ $u->name }}</option>
                                 @endforeach
                             </select>
-                            @error('form_unit_id') <span class="text-[11px] text-rose-500 mt-0.5 block">{{ $message }}</span> @enderror
+                            @endif
+                            @error('form_unit_id') <x-form-error :message="$message" :field="'form_unit_id'" /> @enderror
                         </div>
                         
                         <div>
@@ -386,13 +394,13 @@
 
                             <select wire:key="select-prod-category-{{ $form_unit_id }}"
                                     wire:model="form_category_id" 
-                                    class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-blue-500">
+                                    class="@error('form_category_id') !border-rose-400 !focus:border-rose-500 !focus:ring-rose-500/10 @enderror w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-blue-500" aria-invalid="@error('form_category_id') true @else false @enderror" aria-required="true">
                                 <option value="">-- Pilih Kategori --</option>
                                 @foreach($formCategories as $cat)
                                     <option value="{{ $cat->id }}">{{ $cat->name }}</option>
                                 @endforeach
                             </select>
-                            @error('form_category_id') <span class="text-[11px] text-rose-500 mt-0.5 block">{{ $message }}</span> @enderror
+                            @error('form_category_id') <x-form-error :message="$message" :field="'form_category_id'" /> @enderror
                         </div>
                     </div>
 
@@ -413,18 +421,18 @@
                                 <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Harga Beli / HPP (Rp)</label>
                                 <input type="text" inputmode="decimal" wire:model="form_purchase_price" oninput="onlyDecimal(event)" placeholder="0"
                                     x-on:input="hpp = parseFloat($event.target.value) || 0"
-                                    class="w-full px-3.5 py-2 text-xs font-bold border rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400 transition-colors"
-                                    :class="isRugi ? 'border-amber-400 dark:border-amber-600' : 'border-neutral-200 dark:border-slate-700'">
-                                @error('form_purchase_price') <span class="text-[11px] text-rose-500 mt-0.5 block">{{ $message }}</span> @enderror
+                                    class="@error('form_purchase_price') !border-rose-400 !focus:border-rose-500 !focus:ring-rose-500/10 @enderror w-full px-3.5 py-2 text-xs font-bold border rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400 transition-colors"
+                                    :class="isRugi ? 'border-amber-400 dark:border-amber-600' : 'border-neutral-200 dark:border-slate-700'" aria-invalid="@error('form_purchase_price') true @else false @enderror">
+                                @error('form_purchase_price') <x-form-error :message="$message" :field="'form_purchase_price'" /> @enderror
                             </div>
 
                             <div>
                                 <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Harga Jual (Rp) <span class="text-red-500">*</span></label>
                                 <input type="text" inputmode="decimal" wire:model="form_selling_price" oninput="onlyDecimal(event)" placeholder="0"
                                     x-on:input="jual = parseFloat($event.target.value) || 0"
-                                    class="w-full px-3.5 py-2 text-xs font-bold border rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400 transition-colors"
-                                    :class="isRugi ? 'border-amber-400 dark:border-amber-600' : 'border-neutral-200 dark:border-slate-700'">
-                                @error('form_selling_price') <span class="text-[11px] text-rose-500 mt-0.5 block">{{ $message }}</span> @enderror
+                                    class="@error('form_selling_price') !border-rose-400 !focus:border-rose-500 !focus:ring-rose-500/10 @enderror w-full px-3.5 py-2 text-xs font-bold border rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400 transition-colors"
+                                    :class="isRugi ? 'border-amber-400 dark:border-amber-600' : 'border-neutral-200 dark:border-slate-700'" aria-invalid="@error('form_selling_price') true @else false @enderror" aria-required="true">
+                                @error('form_selling_price') <x-form-error :message="$message" :field="'form_selling_price'" /> @enderror
                             </div>
                         </div>
 
@@ -445,22 +453,22 @@
                         <div>
                             <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Jumlah Stok <span class="text-red-500">*</span></label>
                             <input type="text" inputmode="numeric" wire:model="form_stock" oninput="onlyDigits(event)" placeholder="0"
-                                class="w-full px-3.5 py-2 text-xs font-semibold border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400">
-                            @error('form_stock') <span class="text-[11px] text-rose-500 mt-0.5 block">{{ $message }}</span> @enderror
+                                class="@error('form_stock') !border-rose-400 !focus:border-rose-500 !focus:ring-rose-500/10 @enderror w-full px-3.5 py-2 text-xs font-semibold border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400" aria-invalid="@error('form_stock') true @else false @enderror" aria-required="true">
+                            @error('form_stock') <x-form-error :message="$message" :field="'form_stock'" /> @enderror
                         </div>
 
                         <div>
                             <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Batas Minimum Stok</label>
                             <input type="text" inputmode="numeric" wire:model="form_min_stock" oninput="onlyDigits(event)" placeholder="5"
-                                class="w-full px-3.5 py-2 text-xs font-semibold border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400">
-                            @error('form_min_stock') <span class="text-[11px] text-rose-500 mt-0.5 block">{{ $message }}</span> @enderror
+                                class="@error('form_min_stock') !border-rose-400 !focus:border-rose-500 !focus:ring-rose-500/10 @enderror w-full px-3.5 py-2 text-xs font-semibold border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400" aria-invalid="@error('form_min_stock') true @else false @enderror">
+                            @error('form_min_stock') <x-form-error :message="$message" :field="'form_min_stock'" /> @enderror
                         </div>
 
                         <div>
                             <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Satuan Unit</label>
                             <input type="text" wire:model="form_unit_type" placeholder="pcs, rim, box, kg..."
-                                class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-blue-500">
-                            @error('form_unit_type') <span class="text-[11px] text-rose-500 mt-0.5 block">{{ $message }}</span> @enderror
+                                class="@error('form_unit_type') !border-rose-400 !focus:border-rose-500 !focus:ring-rose-500/10 @enderror w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-blue-500" aria-invalid="@error('form_unit_type') true @else false @enderror">
+                            @error('form_unit_type') <x-form-error :message="$message" :field="'form_unit_type'" /> @enderror
                         </div>
                     </div>
 
@@ -468,8 +476,8 @@
                     <div>
                         <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Deskripsi Produk</label>
                         <textarea wire:model="form_description" rows="2" placeholder="Masukkan rincian spesifikasi atau catatan barang..."
-                            class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-blue-500"></textarea>
-                        @error('form_description') <span class="text-[11px] text-rose-500 mt-0.5 block">{{ $message }}</span> @enderror
+                            class="@error('form_description') !border-rose-400 !focus:border-rose-500 !focus:ring-rose-500/10 @enderror w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-blue-500" aria-invalid="@error('form_description') true @else false @enderror"></textarea>
+                        @error('form_description') <x-form-error :message="$message" :field="'form_description'" /> @enderror
                     </div>
 
                     {{-- Gambar Produk --}}
@@ -509,12 +517,12 @@
                         <input type="file" 
                             wire:model="form_image" 
                             accept="image/png, image/jpeg, image/jpg"
-                            class="w-full text-xs border border-neutral-200 dark:border-slate-700 rounded-sm p-1 bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100">
+                            class="@error('form_image') !border-rose-400 !focus:border-rose-500 !focus:ring-rose-500/10 @enderror w-full text-xs border border-neutral-200 dark:border-slate-700 rounded-sm p-1 bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100" aria-invalid="@error('form_image') true @else false @enderror">
                         
                         <x-upload-progress label="Mengunggah gambar..." />
 
                         @error('form_image') 
-                            <span class="text-rose-500 text-xs mt-1 block">{{ $message }}</span> 
+                            <x-form-error :message="$message" :field="'form_image'" /> 
                         @enderror
                     </div>
                     </x-slot:tab2>
@@ -534,20 +542,20 @@
     {{-- ================= MODAL KELOLA KATEGORI ================= --}}
     @if($showCategoryModal)
         <div class="fixed inset-0 z-50 overflow-y-auto bg-neutral-950/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-150">
-            <div class="bg-white dark:bg-slate-800 w-full max-w-2xl rounded-sm shadow-2xl border border-neutral-200 dark:border-slate-700 overflow-hidden">
-                
+            <div class="bg-white dark:bg-slate-800 w-full max-w-4xl rounded-sm shadow-2xl border border-neutral-200 dark:border-slate-700 overflow-hidden">
+
                 {{-- Modal Header --}}
-                <div class="px-5 py-4 border-b border-neutral-100 dark:border-slate-700/80 flex items-center justify-between bg-neutral-50/50 dark:bg-slate-900/40">
-                    <div>
-                        <h3 class="text-lg font-bold text-neutral-900 dark:text-white">Kelola Kategori Produk</h3>
-                        <p class="text-xs text-neutral-400">Tambah, ubah, atau hapus kategori barang dagangan</p>
+                <div class="px-5 py-3 border-b border-neutral-100 dark:border-slate-700/80 flex items-center justify-between gap-3 bg-neutral-50/50 dark:bg-slate-900/40">
+                    <div class="flex items-baseline gap-2 min-w-0">
+                        <h3 class="text-sm font-bold text-neutral-900 dark:text-white">Kelola Kategori Produk</h3>
+                        <p class="hidden sm:block text-[11px] text-neutral-400 truncate">Kategori barang dagangan</p>
                     </div>
-                    <button type="button" wire:click="closeCategoryModal" class="p-1 text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 rounded-sm transition-colors">
+                    <button type="button" wire:click="closeCategoryModal" class="p-1 text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 rounded-sm transition-colors cursor-pointer" aria-label="Tutup">
                         <x-heroicon-o-x-mark class="w-5 h-5" stroke-width="2" />
                     </button>
                 </div>
 
-                <div class="p-5 space-y-5">
+                <div class="p-4">
                     {{-- Flash Notifications (toast) --}}
                     @if (session()->has('category_success'))
                         <div wire:key="toast-category-success-{{ md5(session('category_success')) }}" x-data x-init="$store.toast.push('success', @js(session('category_success')))"></div>
@@ -556,152 +564,131 @@
                         <div wire:key="toast-category-error-{{ md5(session('category_error')) }}" x-data x-init="$store.toast.push('error', @js(session('category_error')))"></div>
                     @endif
 
-                    {{-- Form Input / Edit Inline --}}
-                    <form wire:submit="saveCategory" class="p-4 bg-neutral-50/80 dark:bg-slate-900/60 border border-neutral-200/80 dark:border-slate-700/80 rounded-sm space-y-4">
-                        {{-- Header Form & Status Mode --}}
-                        <div class="flex items-center justify-between pb-2 border-b border-neutral-200/60 dark:border-slate-800">
-                            <div class="flex items-center gap-2">
-                                <span class="w-2 h-2 rounded-sm {{ $isEditingCategory ? 'bg-amber-500' : 'bg-blue-900' }}"></span>
-                                <span class="text-xs font-bold text-neutral-800 dark:text-neutral-200">
-                                    {{ $isEditingCategory ? 'Edit Kategori' : 'Tambah Kategori Baru' }}
+                    {{-- Layar lebar: form di kiri, tabel di kanan (sejajar, tidak bertumpuk) --}}
+                    <div class="grid grid-cols-1 lg:grid-cols-[18rem_minmax(0,1fr)] gap-4 items-start">
+
+                        {{-- Form Input / Edit --}}
+                        <form wire:submit="saveCategory" class="p-3 bg-neutral-50/80 dark:bg-slate-900/60 border border-neutral-200/80 dark:border-slate-700/80 rounded-sm space-y-3">
+                            <div class="flex items-center justify-between">
+                                <span class="flex items-center gap-2 text-xs font-bold text-neutral-800 dark:text-neutral-200">
+                                    <span class="w-2 h-2 rounded-sm {{ $isEditingCategory ? 'bg-amber-500' : 'bg-blue-900' }}"></span>
+                                    {{ $isEditingCategory ? 'Edit Kategori' : 'Tambah Kategori' }}
                                 </span>
+
+                                @if($isEditingCategory)
+                                    <button type="button" wire:click="resetCategoryForm" class="inline-flex items-center gap-1 text-[11px] font-medium text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200 px-2 py-0.5 rounded-sm hover:bg-neutral-200/60 dark:hover:bg-slate-800 transition-colors cursor-pointer">
+                                        <x-heroicon-o-x-mark class="w-3 h-3" stroke-width="2" />
+                                        Batal
+                                    </button>
+                                @endif
                             </div>
 
-                            @if($isEditingCategory)
-                                <button type="button" wire:click="resetCategoryForm" class="inline-flex items-center gap-1 text-[11px] font-medium text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200 px-2 py-0.5 rounded-sm hover:bg-neutral-200/60 dark:hover:bg-slate-800 transition-colors">
-                                <x-heroicon-o-x-mark class="w-3 h-3" stroke-width="2" />
-                                    Batal Edit
-                                </button>
-                            @endif
-                        </div>
-
-                        {{-- Body Grid Input --}}
-                        <div class="grid grid-cols-1 sm:grid-cols-12 gap-3 items-start">
-                            {{-- Dropdown Unit Usaha --}}
-                            <div class="sm:col-span-5 space-y-1">
-                                <label class="block text-[11px] font-semibold text-neutral-600 dark:text-neutral-300">
-                                    Unit Usaha <span class="text-rose-500">*</span>
-                                </label>
-                                <select wire:model="category_unit_id" class="w-full h-9 text-xs rounded-sm border-neutral-300 dark:border-slate-700 dark:bg-slate-800 text-neutral-800 dark:text-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all">
-                                    @if($units->count() > 1)
-                                        <option value="">-- Pilih Unit --</option>
-                                    @endif
-                                    @foreach($units as $unit)
-                                        <option value="{{ $unit->id }}">{{ $unit->name }}</option>
-                                    @endforeach
-                                </select>
-                                @error('category_unit_id') <span class="text-[10px] text-rose-500 block font-medium">{{ $message }}</span> @enderror
+                            {{-- Unit Usaha (read-only kalau scope satu unit) --}}
+                            <div class="space-y-1">
+                                <label class="block text-[11px] font-semibold text-neutral-600 dark:text-neutral-300">Unit Usaha <span class="text-rose-500">*</span></label>
+                                @if(! empty($lockedUnitId) && $units->count() === 1)
+                                    <x-locked-field :value="$units->first()->name" class="h-9 px-3 text-xs" />
+                                @else
+                                    <select wire:model="category_unit_id" class="@error('category_unit_id') !border-rose-400 !focus:border-rose-500 !focus:ring-rose-500/10 @enderror w-full h-9 text-xs rounded-sm border-neutral-300 dark:border-slate-700 dark:bg-slate-800 text-neutral-800 dark:text-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" aria-invalid="@error('category_unit_id') true @else false @enderror">
+                                        @if($units->count() > 1)
+                                            <option value="">-- Pilih Unit --</option>
+                                        @endif
+                                        @foreach($units as $unit)
+                                            <option value="{{ $unit->id }}">{{ $unit->name }}</option>
+                                        @endforeach
+                                    </select>
+                                @endif
+                                @error('category_unit_id') <x-form-error :message="$message" :field="'category_unit_id'" /> @enderror
                             </div>
 
-                            {{-- Input Nama Kategori --}}
-                            <div class="sm:col-span-5 space-y-1">
-                                <label class="block text-[11px] font-semibold text-neutral-600 dark:text-neutral-300">
-                                    Nama Kategori <span class="text-rose-500">*</span>
-                                </label>
-                                <input type="text" wire:model="category_name" placeholder="Contoh: Minuman, Alat Tulis..." class="w-full h-9 text-xs rounded-sm border-neutral-300 dark:border-slate-700 dark:bg-slate-800 px-2 text-neutral-800 dark:text-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 placeholder:text-neutral-400 dark:placeholder:text-neutral-500 transition-all">
-                                @error('category_name') <span class="text-[10px] text-rose-500 block font-medium">{{ $message }}</span> @enderror
+                            {{-- Nama Kategori --}}
+                            <div class="space-y-1">
+                                <label class="block text-[11px] font-semibold text-neutral-600 dark:text-neutral-300">Nama Kategori <span class="text-rose-500">*</span></label>
+                                <input type="text" wire:model="category_name" placeholder="Contoh: Minuman, Alat Tulis" class="@error('category_name') !border-rose-400 !focus:border-rose-500 !focus:ring-rose-500/10 @enderror w-full h-9 text-xs rounded-sm border-neutral-300 dark:border-slate-700 dark:bg-slate-800 px-3 text-neutral-800 dark:text-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 placeholder:text-neutral-400 dark:placeholder:text-neutral-500 transition-all" aria-invalid="@error('category_name') true @else false @enderror">
+                                @error('category_name') <x-form-error :message="$message" :field="'category_name'" /> @enderror
                             </div>
 
                             {{-- Tombol Submit --}}
-                            <div class="sm:col-span-2 space-y-1">
-                                {{-- Spacer transparan untuk menyamakan posisi tombol dengan elemen input di layar desktop --}}
-                                <label class="hidden sm:block text-[11px] opacity-0 select-none">Submit</label>
-                                <button type="submit" wire:loading.attr="disabled" class="w-full h-9 inline-flex items-center justify-center gap-1.5 bg-blue-900 hover:bg-blue-950 active:bg-blue-950 text-white text-xs font-semibold rounded-sm transition-all shadow-sm cursor-pointer disabled:opacity-50">
-                                    <span wire:loading.remove wire:target="saveCategory">
-                                        {{ $isEditingCategory ? 'Update' : 'Simpan' }}
-                                    </span>
-                                    <span wire:loading wire:target="saveCategory" class="inline-flex items-center gap-1.5">
-                                        <svg class="animate-spin h-3.5 w-3.5 text-white" fill="none" viewBox="0 0 24 24">
-                                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                        </svg>
-                                    </span>
-                                </button>
-                            </div>
-                        </div>
-                    </form>
+                            <button type="submit" wire:loading.attr="disabled" class="w-full h-9 inline-flex items-center justify-center gap-1.5 bg-blue-900 hover:bg-blue-950 active:bg-blue-950 text-white text-xs font-semibold rounded-sm transition-all shadow-sm shadow-blue-900/20 cursor-pointer disabled:opacity-50">
+                                <span wire:loading.remove wire:target="saveCategory">
+                                    {{ $isEditingCategory ? 'Update' : 'Simpan' }}
+                                </span>
+                                <span wire:loading wire:target="saveCategory" class="inline-flex items-center gap-1.5">
+                                    <svg class="animate-spin h-3.5 w-3.5 text-white" fill="none" viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                </span>
+                            </button>
+                        </form>
 
-                    {{-- Tabel List Kategori --}}
-                    <div class="border border-neutral-200 dark:border-slate-700 rounded-sm overflow-hidden">
-                        <div class="max-h-60 overflow-y-auto">
-                            <table class="w-full text-left text-xs">
-                                <thead class="bg-neutral-100 dark:bg-slate-900/80 text-neutral-500 dark:text-neutral-400 uppercase tracking-wider font-semibold sticky top-0">
-                                    <tr>
-                                        <th class="px-4 py-2.5">Kategori</th>
-                                        <th class="px-4 py-2.5">Unit Usaha</th>
-                                        <th class="px-4 py-2.5 text-center">Total Produk</th>
-                                        <th class="px-4 py-2.5 text-center">Aksi</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="divide-y divide-neutral-100 dark:divide-slate-700">
-                                    {{--
-                                        PERBAIKAN: sebelumnya baris ini query LANGSUNG di blade
-                                        (\App\Models\Category::with('unit')->withCount('products')->latest()->get())
-                                        tanpa filter apa pun -- jadi tabel ini SELALU menampilkan
-                                        kategori dari SEMUA unit usaha, walau halaman ini dibuka
-                                        oleh admin unit (mis. TEFA) yang seharusnya cuma boleh
-                                        melihat kategori miliknya sendiri. Variabel `$categories`
-                                        dari komponen sudah benar (dikirim ter-scope oleh
-                                        Unit\Inventory\Index::render() untuk admin unit, dan berisi
-                                        SEMUA kategori untuk Master Admin), tapi tabel di modal ini
-                                        tidak memakainya sama sekali -- jadi filternya percuma.
-
-                                        Fix: pakai `$units` (variabel yang SUDAH konsisten di-scope
-                                        di seluruh halaman ini -- 1 unit untuk admin unit/Master
-                                        Admin yang sedang memantau, SEMUA unit untuk Master Admin
-                                        di halamannya sendiri) untuk membatasi query ini juga,
-                                        supaya satu sumber kebenaran yang sama dipakai di semua
-                                        tempat pada halaman ini.
-                                    --}}
-                                    @php
-                                        $categoriesTableData = \App\Models\Category::with('unit')
-                                            ->withCount('products')
-                                            ->whereIn('unit_id', $units->pluck('id'))
-                                            ->latest()
-                                            ->get();
-                                    @endphp
-                                    @forelse($categoriesTableData as $cat)
-                                        <tr class="hover:bg-neutral-50/60 dark:hover:bg-slate-700/30 transition-colors">
-                                            <td class="px-4 py-2.5 font-semibold text-neutral-800 dark:text-neutral-200">
-                                                {{ $cat->name }}
-                                            </td>
-                                            <td class="px-4 py-2.5 text-neutral-500 dark:text-neutral-400">
-                                                {{ $cat->unit->name ?? '-' }}
-                                            </td>
-                                            <td class="px-4 py-2.5 text-center">
-                                                <span class="px-2 py-0.5 text-[10px] font-mono rounded-sm bg-neutral-100 dark:bg-slate-700 text-neutral-600 dark:text-neutral-300">
-                                                    {{ $cat->products_count }} item
-                                                </span>
-                                            </td>
-                                            <td class="px-4 py-2.5 text-center">
-                                                <div class="flex items-center justify-center gap-1">
-                                                    <button type="button" wire:click="editCategory({{ $cat->id }})" class="p-1 text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950/40 rounded-sm transition-colors" title="Edit">
-                                                        <x-heroicon-o-pencil-square class="w-4 h-4" stroke-width="2" />
-                                                    </button>
-                                                    <button type="button" x-on:click.prevent="$store.confirmDialog.open({
-                                                            message: 'Apakah Anda yakin ingin menghapus kategori \'{{ $cat->name }}\'?',
-                                                            confirmText: 'Ya, Hapus',
-                                                            onConfirm: () => $wire.deleteCategory({{ $cat->id }})
-                                                        })" class="p-1 text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-sm transition-colors" title="Hapus">
-                                                        <x-heroicon-o-trash class="w-4 h-4" stroke-width="2" />
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    @empty
+                        {{-- Tabel List Kategori (tinggi dibatasi ke tinggi layar, baru scroll kalau memang banyak) --}}
+                        <div class="border border-neutral-200 dark:border-slate-700 rounded-sm overflow-hidden min-w-0">
+                            <div class="max-h-72 lg:max-h-[calc(100vh-12rem)] overflow-y-auto">
+                                <table class="w-full text-left text-xs">
+                                    <thead class="bg-neutral-50 dark:bg-slate-900 text-neutral-400 uppercase tracking-wider text-[10px] font-semibold sticky top-0 border-b border-neutral-100 dark:border-slate-700">
                                         <tr>
-                                            <td colspan="4" class="px-4 py-6 text-center text-neutral-400 text-xs">Belum ada kategori terdaftar.</td>
+                                            <th class="px-3 py-2">Kategori</th>
+                                            <th class="px-3 py-2">Unit Usaha</th>
+                                            <th class="px-3 py-2 text-center" title="Jumlah produk dalam kategori ini">Produk</th>
+                                            <th class="px-3 py-2 text-center">Aksi</th>
                                         </tr>
-                                    @endforelse
-                                </tbody>
-                            </table>
+                                    </thead>
+                                    <tbody class="divide-y divide-neutral-100 dark:divide-slate-700">
+                                        {{--
+                                            Sumber data dibatasi lewat `$units` (variabel yang sudah konsisten
+                                            di-scope di seluruh halaman ini: 1 unit untuk Admin Unit / Master
+                                            yang sedang memantau, semua unit untuk Master di halamannya
+                                            sendiri), supaya admin unit tidak melihat kategori unit lain.
+                                        --}}
+                                        @php
+                                            $categoriesTableData = \App\Models\Category::with('unit')
+                                                ->withCount('products')
+                                                ->whereIn('unit_id', $units->pluck('id'))
+                                                ->latest()
+                                                ->get();
+                                        @endphp
+                                        @forelse($categoriesTableData as $cat)
+                                            <tr class="hover:bg-neutral-50/60 dark:hover:bg-slate-700/30 transition-colors">
+                                                <td class="px-3 py-1.5 font-semibold text-neutral-800 dark:text-neutral-200">
+                                                    <span class="block max-w-[11rem] truncate" title="{{ $cat->name }}">{{ $cat->name }}</span>
+                                                </td>
+                                                <td class="px-3 py-1.5 text-neutral-500 dark:text-neutral-400">
+                                                    <span class="block max-w-[9rem] truncate" title="{{ $cat->unit->name ?? '-' }}">{{ $cat->unit->name ?? '-' }}</span>
+                                                </td>
+                                                <td class="px-3 py-1.5 text-center font-mono text-[11px] text-neutral-500 dark:text-neutral-400">
+                                                    {{ $cat->products_count }}
+                                                </td>
+                                                <td class="px-3 py-1.5 text-center whitespace-nowrap">
+                                                    <div class="flex items-center justify-center gap-0.5">
+                                                        <button type="button" wire:click="editCategory({{ $cat->id }})" class="p-1 text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950/40 rounded-sm transition-colors cursor-pointer" title="Edit">
+                                                            <x-heroicon-o-pencil-square class="w-4 h-4" stroke-width="2" />
+                                                        </button>
+                                                        <button type="button" x-on:click.prevent="$store.confirmDialog.open({
+                                                                message: 'Apakah Anda yakin ingin menghapus kategori \'{{ $cat->name }}\'?',
+                                                                confirmText: 'Ya, Hapus',
+                                                                onConfirm: () => $wire.deleteCategory({{ $cat->id }})
+                                                            })" class="p-1 text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-sm transition-colors cursor-pointer" title="Hapus">
+                                                            <x-heroicon-o-trash class="w-4 h-4" stroke-width="2" />
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        @empty
+                                            <tr>
+                                                <td colspan="4" class="px-4 py-6 text-center text-neutral-400 text-xs">Belum ada kategori terdaftar.</td>
+                                            </tr>
+                                        @endforelse
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 </div>
 
                 {{-- Footer --}}
-                <div class="px-5 py-3 bg-neutral-50/50 dark:bg-slate-900/40 border-t border-neutral-100 dark:border-slate-700 flex justify-end">
-                    <button type="button" wire:click="closeCategoryModal" class="px-4 py-1.5 text-xs font-semibold text-neutral-700 dark:text-neutral-300 bg-white dark:bg-slate-800 border border-neutral-200 dark:border-slate-700 rounded-sm hover:bg-neutral-50 dark:hover:bg-slate-700 transition-colors">
+                <div class="px-4 py-2.5 bg-neutral-50/50 dark:bg-slate-900/40 border-t border-neutral-100 dark:border-slate-700 flex justify-end">
+                    <button type="button" wire:click="closeCategoryModal" class="px-4 py-1.5 text-xs font-semibold text-neutral-700 dark:text-neutral-300 bg-white dark:bg-slate-800 border border-neutral-200 dark:border-slate-700 rounded-sm hover:bg-neutral-50 dark:hover:bg-slate-700 transition-colors cursor-pointer">
                         Tutup
                     </button>
                 </div>
@@ -737,8 +724,8 @@
                             <x-help-tip text="Tambah/Kurangi menyesuaikan stok dari jumlah yang tercatat sekarang. Stock Opname berbeda — dipakai saat menghitung ulang barang secara fisik: masukkan jumlah TOTAL hasil hitung, dan sistem akan menggantikan (bukan menjumlahkan) angka stok yang lama." />
                         </label>
                         <div class="grid grid-cols-3 gap-2">
-                            <label class="flex flex-col items-center justify-center py-2 px-1 border rounded-sm cursor-pointer transition-all text-xs font-semibold {{ $stock_type === 'add' ? 'border-emerald-500 bg-emerald-50/70 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 ring-2 ring-emerald-500/20' : 'border-neutral-200 dark:border-slate-700 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-slate-700/50' }}">
-                                <input type="radio" wire:model.live="stock_type" value="add" class="sr-only">
+                            <label class="flex flex-col items-center justify-center py-2 px-1 border rounded-sm cursor-pointer transition-all text-xs font-semibold {{ $stock_type === 'add' ? 'border-blue-500 bg-blue-50/70 text-blue-800 dark:bg-blue-950/40 dark:text-blue-300 ring-2 ring-blue-500/20' : 'border-neutral-200 dark:border-slate-700 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-slate-700/50' }}">
+                                <input type="radio" wire:model.live="stock_type" value="add" class="@error('stock_type') !border-rose-400 !focus:border-rose-500 !focus:ring-rose-500/10 @enderror sr-only" aria-invalid="@error('stock_type') true @else false @enderror">
                                 <span>+ Tambah</span>
                                 <span class="text-[9px] font-normal opacity-75">Restock</span>
                             </label>
@@ -747,7 +734,7 @@
                                 <span>- Kurangi</span>
                                 <span class="text-[9px] font-normal opacity-75">Laku</span>
                             </label>
-                            <label class="flex flex-col items-center justify-center py-2 px-1 border rounded-sm cursor-pointer transition-all text-xs font-semibold {{ $stock_type === 'set' ? 'border-amber-500 bg-amber-50/70 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300 ring-2 ring-amber-500/20' : 'border-neutral-200 dark:border-slate-700 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-slate-700/50' }}">
+                            <label class="flex flex-col items-center justify-center py-2 px-1 border rounded-sm cursor-pointer transition-all text-xs font-semibold {{ $stock_type === 'set' ? 'border-sky-500 bg-sky-50/70 text-sky-700 dark:bg-sky-950/40 dark:text-sky-300 ring-2 ring-sky-500/20' : 'border-neutral-200 dark:border-slate-700 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-slate-700/50' }}">
                                 <input type="radio" wire:model.live="stock_type" value="set" class="sr-only">
                                 <span>= Stock Opname</span>
                                 <span class="text-[9px] font-normal opacity-75">Set Total</span>
@@ -760,8 +747,8 @@
                         <label class="block text-[11px] font-semibold text-neutral-600 dark:text-neutral-300 mb-1">
                             Jumlah Unit <span class="text-rose-500">*</span>
                         </label>
-                        <input type="text" inputmode="numeric" wire:model="stock_quantity" oninput="onlyDigits(event)" autofocus placeholder="Masukkan jumlah unit..." class="w-full h-9 text-xs rounded-sm border-neutral-300 dark:border-slate-700 dark:bg-slate-900 text-neutral-800 dark:text-white focus:ring-2 px-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all">
-                        @error('stock_quantity') <span class="text-[10px] text-rose-500 block font-medium mt-1">{{ $message }}</span> @enderror
+                        <input type="text" inputmode="numeric" wire:model="stock_quantity" oninput="onlyDigits(event)" autofocus placeholder="Masukkan jumlah unit..." class="@error('stock_quantity') !border-rose-400 !focus:border-rose-500 !focus:ring-rose-500/10 @enderror w-full h-9 text-xs rounded-sm border-neutral-300 dark:border-slate-700 dark:bg-slate-900 text-neutral-800 dark:text-white focus:ring-2 px-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" aria-invalid="@error('stock_quantity') true @else false @enderror">
+                        @error('stock_quantity') <x-form-error :message="$message" :field="'stock_quantity'" /> @enderror
                     </div>
 
                     {{-- Catatan / Keterangan --}}
@@ -769,8 +756,8 @@
                         <label class="block text-[11px] font-semibold text-neutral-600 dark:text-neutral-300 mb-1">
                             Catatan / Alasan (opsional)
                         </label>
-                        <textarea wire:model="stock_note" rows="2" placeholder="Contoh: Penambahan dari supplier A / Kadaluarsa / Hasil opname bulanan..." class="w-full text-xs rounded-sm border-neutral-300 dark:border-slate-700 dark:bg-slate-900 text-neutral-800 dark:text-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all p-2.5"></textarea>
-                        @error('stock_note') <span class="text-[10px] text-rose-500 block font-medium mt-1">{{ $message }}</span> @enderror
+                        <textarea wire:model="stock_note" rows="2" placeholder="Contoh: Penambahan dari supplier A / Kadaluarsa / Hasil opname bulanan..." class="@error('stock_note') !border-rose-400 !focus:border-rose-500 !focus:ring-rose-500/10 @enderror w-full text-xs rounded-sm border-neutral-300 dark:border-slate-700 dark:bg-slate-900 text-neutral-800 dark:text-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all p-2.5" aria-invalid="@error('stock_note') true @else false @enderror"></textarea>
+                        @error('stock_note') <x-form-error :message="$message" :field="'stock_note'" /> @enderror
                     </div>
 
                     {{-- Footer Action --}}
@@ -820,7 +807,7 @@
 
                     {{-- Unduh Template --}}
                     <div>
-                        <button type="button" wire:click="downloadTemplate" class="w-full py-2.5 px-3 text-xs font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 rounded-sm hover:bg-emerald-100 dark:hover:bg-emerald-900/50 transition-all flex items-center justify-center gap-2 cursor-pointer">
+                        <button type="button" wire:click="downloadTemplate" class="w-full py-2.5 px-3 text-xs font-semibold text-[#0d3b74] dark:text-sky-300 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800/60 rounded-sm hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-all flex items-center justify-center gap-2 cursor-pointer">
                             <x-heroicon-o-arrow-down-tray class="w-4 h-4 shrink-0" stroke-width="2" />
                             <span>Unduh Template Produk (.CSV)</span>
                         </button>
@@ -836,11 +823,11 @@
                         x-on:livewire-upload-error="uploading = false"
                         x-on:livewire-upload-progress="progress = $event.detail.progress"
                     >
-                        <label class="block font-semibold text-neutral-600 dark:text-neutral-300">Unggah Berkas CSV / Excel</label>
-                        <input type="file" wire:model="importFile" accept=".csv, .xlsx, .xls" class="block w-full text-xs text-neutral-600 dark:text-neutral-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-sm file:border-0 file:text-xs file:font-semibold file:bg-neutral-100 dark:file:bg-slate-700 file:text-neutral-700 dark:file:text-neutral-200 hover:file:bg-neutral-200 dark:hover:file:bg-slate-600 transition-all border border-neutral-300 dark:border-slate-700 rounded-sm dark:bg-slate-900 p-1">
+                        <label class="block font-semibold text-neutral-600 dark:text-neutral-300">Unggah Berkas CSV / Excel <span class="text-red-500">*</span></label>
+                        <input type="file" wire:model="importFile" accept=".csv, .xlsx, .xls" class="@error('importFile') !border-rose-400 !focus:border-rose-500 !focus:ring-rose-500/10 @enderror block w-full text-xs text-neutral-600 dark:text-neutral-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-sm file:border-0 file:text-xs file:font-semibold file:bg-neutral-100 dark:file:bg-slate-700 file:text-neutral-700 dark:file:text-neutral-200 hover:file:bg-neutral-200 dark:hover:file:bg-slate-600 transition-all border border-neutral-300 dark:border-slate-700 rounded-sm dark:bg-slate-900 p-1" aria-invalid="@error('importFile') true @else false @enderror">
 
                         <x-upload-progress label="Membaca file..." />
-                        @error('importFile') <span class="text-rose-500 text-[10px] font-medium mt-1 block">{{ $message }}</span> @enderror
+                        @error('importFile') <x-form-error :message="$message" :field="'importFile'" /> @enderror
                     </div>
 
                     {{-- Tombol Aksi --}}

@@ -34,6 +34,14 @@ class PageTour extends Component
         $this->autoStart = PageTours::has($tour)
             && $user
             && ! $user->hasCompletedTour($tour);
+
+        // Tampil otomatis SEKALI saja: dicatat begitu pertama kali muncul, bukan
+        // menunggu user menekan Selesai/Lewati -- kalau tab ditutup di tengah
+        // jalan, tutorial tidak muncul lagi di kunjungan berikutnya. Putar ulang
+        // manual lewat tombol "Panduan" tetap bisa kapan saja.
+        if ($this->autoStart) {
+            $user->markTourCompleted($tour);
+        }
     }
 
     public function complete(): void

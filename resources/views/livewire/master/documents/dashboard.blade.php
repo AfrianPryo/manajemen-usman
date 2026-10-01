@@ -16,7 +16,50 @@
         </p>
     </div>
 
-    {{-- Quick Action Cards --}}
+    {{-- Panduan Singkat --}}
+    {{--
+        Header section DISAMAKAN dengan pola "Transaksi Terkini" / "Log
+        Aktivitas" di Dashboard Master Admin (heading text-base font-bold +
+        subjudul + border-b), bukan lagi label kecil huruf kapital.
+    --}}
+    <div class="bg-white dark:bg-slate-800 rounded-sm border border-neutral-100 dark:border-slate-700 shadow-sm shadow-black/[0.02] p-5" data-tour="docs-flow">
+        <div class="pb-4 border-b border-neutral-100 dark:border-slate-700">
+            <h2 class="text-base font-bold text-neutral-900 dark:text-white">Alur Membuat Dokumen Resmi</h2>
+            <p class="text-xs text-neutral-400 mt-0.5">Empat langkah singkat dari template sampai dokumen siap diarsipkan</p>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
+            <div class="flex items-start gap-3">
+                <span class="shrink-0 w-6 h-6 rounded-sm bg-[#0d3b74] dark:bg-blue-900 text-white text-[11px] font-bold flex items-center justify-center">1</span>
+                <div>
+                    <p class="text-xs font-semibold text-neutral-800 dark:text-neutral-200">Siapkan Template</p>
+                    <p class="text-[11px] text-neutral-400 mt-0.5">Unggah kop surat (.docx) per jenis dokumen di menu Kelola Template.</p>
+                </div>
+            </div>
+            <div class="flex items-start gap-3">
+                <span class="shrink-0 w-6 h-6 rounded-sm bg-[#0d3b74] dark:bg-blue-900 text-white text-[11px] font-bold flex items-center justify-center">2</span>
+                <div>
+                    <p class="text-xs font-semibold text-neutral-800 dark:text-neutral-200">Siapkan Tanda Tangan</p>
+                    <p class="text-[11px] text-neutral-400 mt-0.5">Tambahkan profil nama, jabatan, dan gambar tanda tangan Anda.</p>
+                </div>
+            </div>
+            <div class="flex items-start gap-3">
+                <span class="shrink-0 w-6 h-6 rounded-sm bg-[#0d3b74] dark:bg-blue-900 text-white text-[11px] font-bold flex items-center justify-center">3</span>
+                <div>
+                    <p class="text-xs font-semibold text-neutral-800 dark:text-neutral-200">Buat Dokumen</p>
+                    <p class="text-[11px] text-neutral-400 mt-0.5">Pilih jenis, template, isi data singkat, lalu pilih penanda tangan.</p>
+                </div>
+            </div>
+            <div class="flex items-start gap-3">
+                <span class="shrink-0 w-6 h-6 rounded-sm bg-[#0d3b74] dark:bg-blue-900 text-white text-[11px] font-bold flex items-center justify-center">4</span>
+                <div>
+                    <p class="text-xs font-semibold text-neutral-800 dark:text-neutral-200">Unduh &amp; Arsip</p>
+                    <p class="text-[11px] text-neutral-400 mt-0.5">Dokumen otomatis tercatat di Riwayat Dokumen lengkap nomor suratnya.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+        {{-- Quick Action Cards --}}
     {{--
         Warna badge ikon DISAMAKAN dengan aksen dashboard utama (biru #0d3b74
         untuk aksi utama, netral untuk aksi sekunder) -- sebelumnya tiap kartu
@@ -62,49 +105,6 @@
             <h3 class="mt-4 text-sm font-bold text-neutral-900 dark:text-white">Tanda Tangan</h3>
             <p class="mt-1 text-[11px] text-neutral-400">Kelola gambar tanda tangan &amp; jabatan Anda.</p>
         </a>
-    </div>
-
-    {{-- Panduan Singkat --}}
-    {{--
-        Header section DISAMAKAN dengan pola "Transaksi Terkini" / "Log
-        Aktivitas" di Dashboard Master Admin (heading text-base font-bold +
-        subjudul + border-b), bukan lagi label kecil huruf kapital.
-    --}}
-    <div class="bg-white dark:bg-slate-800 rounded-sm border border-neutral-100 dark:border-slate-700 shadow-sm shadow-black/[0.02] p-5" data-tour="docs-flow">
-        <div class="pb-4 border-b border-neutral-100 dark:border-slate-700">
-            <h2 class="text-base font-bold text-neutral-900 dark:text-white">Alur Membuat Dokumen Resmi</h2>
-            <p class="text-xs text-neutral-400 mt-0.5">Empat langkah singkat dari template sampai dokumen siap diarsipkan</p>
-        </div>
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
-            <div class="flex items-start gap-3">
-                <span class="shrink-0 w-6 h-6 rounded-sm bg-[#0d3b74] dark:bg-blue-900 text-white text-[11px] font-bold flex items-center justify-center">1</span>
-                <div>
-                    <p class="text-xs font-semibold text-neutral-800 dark:text-neutral-200">Siapkan Template</p>
-                    <p class="text-[11px] text-neutral-400 mt-0.5">Unggah kop surat (.docx) per jenis dokumen di menu Kelola Template.</p>
-                </div>
-            </div>
-            <div class="flex items-start gap-3">
-                <span class="shrink-0 w-6 h-6 rounded-sm bg-[#0d3b74] dark:bg-blue-900 text-white text-[11px] font-bold flex items-center justify-center">2</span>
-                <div>
-                    <p class="text-xs font-semibold text-neutral-800 dark:text-neutral-200">Siapkan Tanda Tangan</p>
-                    <p class="text-[11px] text-neutral-400 mt-0.5">Tambahkan profil nama, jabatan, dan gambar tanda tangan Anda.</p>
-                </div>
-            </div>
-            <div class="flex items-start gap-3">
-                <span class="shrink-0 w-6 h-6 rounded-sm bg-[#0d3b74] dark:bg-blue-900 text-white text-[11px] font-bold flex items-center justify-center">3</span>
-                <div>
-                    <p class="text-xs font-semibold text-neutral-800 dark:text-neutral-200">Buat Dokumen</p>
-                    <p class="text-[11px] text-neutral-400 mt-0.5">Pilih jenis, template, isi data singkat, lalu pilih penanda tangan.</p>
-                </div>
-            </div>
-            <div class="flex items-start gap-3">
-                <span class="shrink-0 w-6 h-6 rounded-sm bg-[#0d3b74] dark:bg-blue-900 text-white text-[11px] font-bold flex items-center justify-center">4</span>
-                <div>
-                    <p class="text-xs font-semibold text-neutral-800 dark:text-neutral-200">Unduh &amp; Arsip</p>
-                    <p class="text-[11px] text-neutral-400 mt-0.5">Dokumen otomatis tercatat di Riwayat Dokumen lengkap nomor suratnya.</p>
-                </div>
-            </div>
-        </div>
     </div>
 
     {{-- Dokumen Terbaru --}}

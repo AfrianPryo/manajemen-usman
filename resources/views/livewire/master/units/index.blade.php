@@ -276,8 +276,8 @@
                         <div class="flex-1 min-w-0 space-y-3">
                             <div>
                                 <label class="block text-xs font-medium text-neutral-600 dark:text-neutral-300 mb-1">Nama Unit Usaha <span class="text-red-500">*</span></label>
-                                <input type="text" wire:model="name" class="w-full px-3 py-2.5 border rounded-sm text-sm bg-white dark:bg-slate-900 border-neutral-200 dark:border-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400" placeholder="Contoh: Bengkel TO">
-                                @error('name') <span class="text-xs text-red-500">{{ $message }}</span> @enderror
+                                <input type="text" wire:model="name" class="@error('name') !border-rose-400 !focus:border-rose-500 !focus:ring-rose-500/10 @enderror w-full px-3 py-2.5 border rounded-sm text-sm bg-white dark:bg-slate-900 border-neutral-200 dark:border-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400" placeholder="Contoh: Bengkel TO" aria-required="true" aria-invalid="@error('name') true @else false @enderror">
+                                @error('name') <x-form-error :message="$message" :field="'name'" /> @enderror
                             </div>
 
                             <div
@@ -296,15 +296,15 @@
                                         type="file"
                                         wire:model="logo"
                                         accept="image/*"
-                                        class="block flex-1 min-w-0 text-xs text-neutral-500 dark:text-neutral-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-sm file:border file:border-neutral-200 dark:file:border-slate-700 file:text-[11px] file:font-semibold file:bg-white dark:file:bg-slate-800 file:text-neutral-600 dark:file:text-neutral-300 hover:file:bg-neutral-50 dark:hover:file:bg-slate-700 cursor-pointer"
-                                    >
+                                        class="@error('logo') !border-rose-400 !focus:border-rose-500 !focus:ring-rose-500/10 @enderror block flex-1 min-w-0 text-xs text-neutral-500 dark:text-neutral-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-sm file:border file:border-neutral-200 dark:file:border-slate-700 file:text-[11px] file:font-semibold file:bg-white dark:file:bg-slate-800 file:text-neutral-600 dark:file:text-neutral-300 hover:file:bg-neutral-50 dark:hover:file:bg-slate-700 cursor-pointer"
+                                     aria-invalid="@error('logo') true @else false @enderror">
                                     @if ($logo || $existingLogo)
                                         <button type="button" wire:click="clearLogo" title="Hapus logo" class="shrink-0 text-[11px] font-semibold text-rose-500 hover:text-rose-600 cursor-pointer">Hapus</button>
                                     @endif
                                 </div>
                                 <x-upload-progress label="Mengunggah logo..." />
                                 <p x-show="!uploading" class="text-[11px] text-neutral-400 mt-1">PNG/JPG, maks. 1MB.</p>
-                                @error('logo') <span class="text-xs text-red-500">{{ $message }}</span> @enderror
+                                @error('logo') <x-form-error :message="$message" :field="'logo'" /> @enderror
                             </div>
                         </div>
                     </div>
@@ -313,23 +313,23 @@
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-xs font-medium text-neutral-600 dark:text-neutral-300 mb-1">Departemen / Jurusan <span class="text-red-500">*</span></label>
-                            <select wire:model="department" class="w-full px-3 py-2.5 border rounded-sm text-sm bg-white dark:bg-slate-900 border-neutral-200 dark:border-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400">
+                            <select wire:model="department" class="@error('department') !border-rose-400 !focus:border-rose-500 !focus:ring-rose-500/10 @enderror w-full px-3 py-2.5 border rounded-sm text-sm bg-white dark:bg-slate-900 border-neutral-200 dark:border-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400" aria-required="true" aria-invalid="@error('department') true @else false @enderror">
                                 <option value="PPLG">PPLG</option>
                                 <option value="TO">TO</option>
                                 <option value="MPLB">MPLB</option>
                                 <option value="PM">PM</option>
                                 <option value="Akuntansi">Akuntansi</option>
                             </select>
-                            @error('department') <span class="text-xs text-red-500">{{ $message }}</span> @enderror
+                            @error('department') <x-form-error :message="$message" :field="'department'" /> @enderror
                         </div>
 
                         <div>
                             <label class="block text-xs font-medium text-neutral-600 dark:text-neutral-300 mb-1">Kategori Usaha <span class="text-red-500">*</span></label>
-                            <select wire:model="category" class="w-full px-3 py-2.5 border rounded-sm text-sm bg-white dark:bg-slate-900 border-neutral-200 dark:border-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400">
+                            <select wire:model="category" class="@error('category') !border-rose-400 !focus:border-rose-500 !focus:ring-rose-500/10 @enderror w-full px-3 py-2.5 border rounded-sm text-sm bg-white dark:bg-slate-900 border-neutral-200 dark:border-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400" aria-required="true" aria-invalid="@error('category') true @else false @enderror">
                                 <option value="ritel">Ritel</option>
                                 <option value="jasa">Jasa</option>
                             </select>
-                            @error('category') <span class="text-xs text-red-500">{{ $message }}</span> @enderror
+                            @error('category') <x-form-error :message="$message" :field="'category'" /> @enderror
                         </div>
                     </div>
 
@@ -339,27 +339,27 @@
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-xs font-medium text-neutral-600 dark:text-neutral-300 mb-1">Nama PIC / Penanggung Jawab</label>
-                            <input type="text" wire:model="pic_name" class="w-full px-3 py-2.5 border rounded-sm text-sm bg-white dark:bg-slate-900 border-neutral-200 dark:border-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400" placeholder="Nama PIC">
-                            @error('pic_name') <span class="text-xs text-red-500">{{ $message }}</span> @enderror
+                            <input type="text" wire:model="pic_name" class="@error('pic_name') !border-rose-400 !focus:border-rose-500 !focus:ring-rose-500/10 @enderror w-full px-3 py-2.5 border rounded-sm text-sm bg-white dark:bg-slate-900 border-neutral-200 dark:border-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400" placeholder="Nama PIC" aria-invalid="@error('pic_name') true @else false @enderror">
+                            @error('pic_name') <x-form-error :message="$message" :field="'pic_name'" /> @enderror
                         </div>
 
                         <div>
                             <label class="block text-xs font-medium text-neutral-600 dark:text-neutral-300 mb-1">No. Telepon / HP</label>
-                            <input type="text" wire:model="phone" inputmode="numeric" oninput="onlyDigits(event)" class="w-full px-3 py-2.5 border rounded-sm text-sm bg-white dark:bg-slate-900 border-neutral-200 dark:border-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400" placeholder="08123456789">
-                            @error('phone') <span class="text-xs text-red-500">{{ $message }}</span> @enderror
+                            <input type="text" wire:model="phone" inputmode="numeric" oninput="onlyDigits(event)" class="@error('phone') !border-rose-400 !focus:border-rose-500 !focus:ring-rose-500/10 @enderror w-full px-3 py-2.5 border rounded-sm text-sm bg-white dark:bg-slate-900 border-neutral-200 dark:border-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400" placeholder="08123456789" aria-invalid="@error('phone') true @else false @enderror">
+                            @error('phone') <x-form-error :message="$message" :field="'phone'" /> @enderror
                         </div>
                     </div>
 
                     {{-- Deskripsi --}}
                     <div>
                         <label class="block text-xs font-medium text-neutral-600 dark:text-neutral-300 mb-1">Deskripsi Singkat</label>
-                        <textarea wire:model="description" rows="3" class="w-full px-3 py-2.5 border rounded-sm text-sm bg-white dark:bg-slate-900 border-neutral-200 dark:border-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400" placeholder="Keterangan operasional..."></textarea>
-                        @error('description') <span class="text-xs text-red-500">{{ $message }}</span> @enderror
+                        <textarea wire:model="description" rows="3" class="@error('description') !border-rose-400 !focus:border-rose-500 !focus:ring-rose-500/10 @enderror w-full px-3 py-2.5 border rounded-sm text-sm bg-white dark:bg-slate-900 border-neutral-200 dark:border-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400" placeholder="Keterangan operasional..." aria-invalid="@error('description') true @else false @enderror"></textarea>
+                        @error('description') <x-form-error :message="$message" :field="'description'" /> @enderror
                     </div>
 
                     {{-- Status Toggle --}}
                     <div class="pt-1">
-                        <x-toggle wire:model="is_active">Unit Usaha Aktif / Operasional</x-toggle>
+                        <x-toggle wire:model="is_active" aria-invalid="@error('is_active') true @else false @enderror">Unit Usaha Aktif / Operasional</x-toggle>
                     </div>
 
                     </x-slot:tab2>

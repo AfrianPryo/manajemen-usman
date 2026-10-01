@@ -415,7 +415,7 @@
                             Lanjut
                         </button>
                         <button type="button" x-show="step === steps.length" x-cloak @click="finish()"
-                                class="px-3 py-1 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-sm transition-all cursor-pointer">
+                                class="px-3 py-1 text-xs font-bold text-white bg-blue-900 hover:bg-blue-950 rounded-sm transition-all cursor-pointer">
                             Selesai
                         </button>
                     </div>

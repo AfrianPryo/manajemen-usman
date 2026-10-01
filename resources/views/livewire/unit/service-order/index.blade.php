@@ -184,39 +184,39 @@
                         <div>
                             <label class="block font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Nama Pelanggan <span class="text-red-500">*</span></label>
                             <input type="text" wire:model="customer_name"
-                                   class="w-full px-3.5 py-2 border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-blue-500"
-                                   placeholder="Nama pelanggan">
-                            @error('customer_name') <span class="text-rose-500 text-[11px] mt-0.5 block">{{ $message }}</span> @enderror
+                                   class="@error('customer_name') !border-rose-400 !focus:border-rose-500 !focus:ring-rose-500/10 @enderror w-full px-3.5 py-2 border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-blue-500"
+                                   placeholder="Nama pelanggan" aria-invalid="@error('customer_name') true @else false @enderror" aria-required="true">
+                            @error('customer_name') <x-form-error :message="$message" :field="'customer_name'" /> @enderror
                         </div>
                         <div>
                             <label class="block font-semibold text-neutral-600 dark:text-neutral-300 mb-1">No. Telepon</label>
                             <input type="text" wire:model="customer_phone" inputmode="numeric" oninput="onlyDigits(event)"
-                                   class="w-full px-3.5 py-2 border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-blue-500"
-                                   placeholder="0812...">
+                                   class="@error('customer_phone') !border-rose-400 !focus:border-rose-500 !focus:ring-rose-500/10 @enderror w-full px-3.5 py-2 border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-blue-500"
+                                   placeholder="0812..." aria-invalid="@error('customer_phone') true @else false @enderror">
                         </div>
                     </div>
 
                     <div>
                         <label class="block font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Nama Layanan <span class="text-red-500">*</span></label>
                         <input type="text" wire:model="service_name"
-                               class="w-full px-3.5 py-2 border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-blue-500"
-                               placeholder="Contoh: Servis AC, Cukur Rambut, Reparasi Elektronik">
-                        @error('service_name') <span class="text-rose-500 text-[11px] mt-0.5 block">{{ $message }}</span> @enderror
+                               class="@error('service_name') !border-rose-400 !focus:border-rose-500 !focus:ring-rose-500/10 @enderror w-full px-3.5 py-2 border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-blue-500"
+                               placeholder="Contoh: Servis AC, Cukur Rambut, Reparasi Elektronik" aria-invalid="@error('service_name') true @else false @enderror" aria-required="true">
+                        @error('service_name') <x-form-error :message="$message" :field="'service_name'" /> @enderror
                     </div>
 
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
                             <label class="block font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Petugas / Teknisi</label>
                             <input type="text" wire:model="assigned_to"
-                                   class="w-full px-3.5 py-2 border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-blue-500"
-                                   placeholder="Nama petugas yang menangani">
+                                   class="@error('assigned_to') !border-rose-400 !focus:border-rose-500 !focus:ring-rose-500/10 @enderror w-full px-3.5 py-2 border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-blue-500"
+                                   placeholder="Nama petugas yang menangani" aria-invalid="@error('assigned_to') true @else false @enderror">
                         </div>
                         <div>
                             <label class="block font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Biaya Jasa (Rp) <span class="text-red-500">*</span></label>
                             <input type="text" inputmode="decimal" wire:model="price" oninput="onlyDecimal(event)"
-                                   class="w-full px-3.5 py-2 border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-blue-500"
-                                   placeholder="0">
-                            @error('price') <span class="text-rose-500 text-[11px] mt-0.5 block">{{ $message }}</span> @enderror
+                                   class="@error('price') !border-rose-400 !focus:border-rose-500 !focus:ring-rose-500/10 @enderror w-full px-3.5 py-2 border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-blue-500"
+                                   placeholder="0" aria-invalid="@error('price') true @else false @enderror" aria-required="true">
+                            @error('price') <x-form-error :message="$message" :field="'price'" /> @enderror
                         </div>
                     </div>
 
@@ -226,13 +226,13 @@
                         <div>
                             <label class="block font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Jadwal Pengerjaan</label>
                             <input type="datetime-local" wire:model="scheduled_at"
-                                class="w-full px-3.5 py-2 border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-blue-500">
-                            @error('scheduled_at') <span class="text-rose-500 text-[11px] mt-0.5 block">{{ $message }}</span> @enderror
+                                class="@error('scheduled_at') !border-rose-400 !focus:border-rose-500 !focus:ring-rose-500/10 @enderror w-full px-3.5 py-2 border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-blue-500" aria-invalid="@error('scheduled_at') true @else false @enderror">
+                            @error('scheduled_at') <x-form-error :message="$message" :field="'scheduled_at'" /> @enderror
                         </div>
                         <div>
-                            <label class="block font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Status</label>
+                            <label class="block font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Status <span class="text-red-500">*</span></label>
                             <select wire:model="status"
-                                    class="w-full px-3 py-2 border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-blue-500 cursor-pointer">
+                                    class="@error('status') !border-rose-400 !focus:border-rose-500 !focus:ring-rose-500/10 @enderror w-full px-3 py-2 border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-blue-500 cursor-pointer" aria-invalid="@error('status') true @else false @enderror">
                                 <option value="pending">Menunggu</option>
                                 <option value="in_progress">Dikerjakan</option>
                                 <option value="completed">Selesai</option>
@@ -244,15 +244,15 @@
                     <div>
                         <label class="block font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Deskripsi</label>
                         <textarea wire:model="description" rows="2"
-                                  class="w-full px-3.5 py-2 border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-blue-500"
-                                  placeholder="Detail permintaan pelanggan..."></textarea>
+                                  class="@error('description') !border-rose-400 !focus:border-rose-500 !focus:ring-rose-500/10 @enderror w-full px-3.5 py-2 border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-blue-500"
+                                  placeholder="Detail permintaan pelanggan..." aria-invalid="@error('description') true @else false @enderror"></textarea>
                     </div>
 
                     <div>
                         <label class="block font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Catatan Internal</label>
                         <textarea wire:model="notes" rows="2"
-                                  class="w-full px-3.5 py-2 border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-blue-500"
-                                  placeholder="Catatan tambahan untuk tim internal..."></textarea>
+                                  class="@error('notes') !border-rose-400 !focus:border-rose-500 !focus:ring-rose-500/10 @enderror w-full px-3.5 py-2 border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-blue-500"
+                                  placeholder="Catatan tambahan untuk tim internal..." aria-invalid="@error('notes') true @else false @enderror"></textarea>
                     </div>
                     </x-slot:tab2>
                     <x-slot:submit>

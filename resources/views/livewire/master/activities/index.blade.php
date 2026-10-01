@@ -284,7 +284,7 @@
                             <label class="block font-medium text-neutral-600 dark:text-neutral-300 mb-1.5">Tipe <span class="text-rose-500">*</span></label>
                             <div class="grid grid-cols-2 gap-2">
                                 <label class="flex items-center gap-2 px-3 py-2 border rounded-sm cursor-pointer transition-all {{ $blockType === 'ip' ? 'border-rose-500 bg-rose-50/60 dark:bg-rose-950/30' : 'border-neutral-200 dark:border-slate-700' }}">
-                                    <input type="radio" wire:model.live="blockType" value="ip" class="text-rose-600 focus:ring-rose-500">
+                                    <input type="radio" wire:model.live="blockType" value="ip" class="@error('blockType') !border-rose-400 !focus:border-rose-500 !focus:ring-rose-500/10 @enderror text-rose-600 focus:ring-rose-500" aria-invalid="@error('blockType') true @else false @enderror" aria-required="true">
                                     <span class="font-medium text-neutral-700 dark:text-neutral-200">Alamat IP</span>
                                 </label>
                                 <label class="flex items-center gap-2 px-3 py-2 border rounded-sm cursor-pointer transition-all {{ $blockType === 'device' ? 'border-rose-500 bg-rose-50/60 dark:bg-rose-950/30' : 'border-neutral-200 dark:border-slate-700' }}">
@@ -292,7 +292,7 @@
                                     <span class="font-medium text-neutral-700 dark:text-neutral-200">Perangkat (User-Agent)</span>
                                 </label>
                             </div>
-                            @error('blockType') <span class="text-rose-500 text-[11px] mt-0.5 block">{{ $message }}</span> @enderror
+                            @error('blockType') <x-form-error :message="$message" :field="'blockType'" /> @enderror
                         </div>
 
                         {{-- Nilai --}}
@@ -301,9 +301,9 @@
                                 {{ $blockType === 'device' ? 'String User-Agent Perangkat' : 'Alamat IP' }} <span class="text-rose-500">*</span>
                             </label>
                             <input type="text" wire:model="blockValue"
-                                   class="w-full px-3.5 py-2 border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 font-mono focus:outline-none focus:ring-2 focus:ring-rose-500/10 focus:border-rose-400"
-                                   placeholder="{{ $blockType === 'device' ? 'Mozilla/5.0 (...)' : 'Contoh: 103.10.20.30' }}">
-                            @error('blockValue') <span class="text-rose-500 text-[11px] mt-0.5 block">{{ $message }}</span> @enderror
+                                   class="@error('blockValue') !border-rose-400 !focus:border-rose-500 !focus:ring-rose-500/10 @enderror w-full px-3.5 py-2 border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 font-mono focus:outline-none focus:ring-2 focus:ring-rose-500/10 focus:border-rose-400"
+                                   placeholder="{{ $blockType === 'device' ? 'Mozilla/5.0 (...)' : 'Contoh: 103.10.20.30' }}" aria-invalid="@error('blockValue') true @else false @enderror" aria-required="true">
+                            @error('blockValue') <x-form-error :message="$message" :field="'blockValue'" /> @enderror
                         </div>
 
                         {{-- Alasan --}}
@@ -312,7 +312,7 @@
                             <input type="text" wire:model="blockReason"
                                    class="w-full px-3.5 py-2 border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-rose-500/10 focus:border-rose-400"
                                    placeholder="Contoh: Percobaan login mencurigakan berulang">
-                            @error('blockReason') <span class="text-rose-500 text-[11px] mt-0.5 block">{{ $message }}</span> @enderror
+                            @error('blockReason') <x-form-error :message="$message" :field="'blockReason'" /> @enderror
                         </div>
 
                         <div class="pt-4 border-t border-neutral-100 dark:border-slate-700 flex items-center justify-end gap-2.5">

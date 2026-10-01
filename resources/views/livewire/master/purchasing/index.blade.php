@@ -183,31 +183,31 @@
                     <div>
                         <label class="block font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Unit Usaha <span class="text-red-500">*</span></label>
                         <select wire:model.live="unit_id"
-                                class="w-full px-3 py-2 border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-blue-500 cursor-pointer">
+                                class="@error('unit_id') !border-rose-400 !focus:border-rose-500 !focus:ring-rose-500/10 @enderror w-full px-3 py-2 border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-blue-500 cursor-pointer" aria-invalid="@error('unit_id') true @else false @enderror" aria-required="true">
                             <option value="">-- Pilih Unit Usaha --</option>
                             @foreach($units as $unit)
                                 <option value="{{ $unit->id }}">{{ $unit->name }}</option>
                             @endforeach
                         </select>
-                        @error('unit_id') <span class="text-rose-500 text-[11px] mt-0.5 block">{{ $message }}</span> @enderror
+                        @error('unit_id') <x-form-error :message="$message" :field="'unit_id'" /> @enderror
                     </div>
 
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
                             <label class="block font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Vendor / Supplier <span class="text-red-500">*</span></label>
                             <select wire:model="vendor_id"
-                                    class="w-full px-3 py-2 border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-blue-500 cursor-pointer">
+                                    class="@error('vendor_id') !border-rose-400 !focus:border-rose-500 !focus:ring-rose-500/10 @enderror w-full px-3 py-2 border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-blue-500 cursor-pointer" aria-invalid="@error('vendor_id') true @else false @enderror" aria-required="true">
                                 <option value="">-- Pilih Vendor --</option>
                                 @foreach($vendors as $vendor)
                                     <option value="{{ $vendor->id }}">{{ $vendor->name }}</option>
                                 @endforeach
                             </select>
-                            @error('vendor_id') <span class="text-rose-500 text-[11px] mt-0.5 block">{{ $message }}</span> @enderror
+                            @error('vendor_id') <x-form-error :message="$message" :field="'vendor_id'" /> @enderror
                         </div>
                         <div>
-                            <label class="block font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Metode Pembayaran</label>
+                            <label class="block font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Metode Pembayaran <span class="text-red-500">*</span></label>
                             <select wire:model="payment_method"
-                                    class="w-full px-3 py-2 border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-blue-500 cursor-pointer">
+                                    class="@error('payment_method') !border-rose-400 !focus:border-rose-500 !focus:ring-rose-500/10 @enderror w-full px-3 py-2 border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-blue-500 cursor-pointer" aria-invalid="@error('payment_method') true @else false @enderror" aria-required="true">
                                 <option value="cash">Tunai</option>
                                 <option value="transfer">Transfer</option>
                                 <option value="qris">QRIS</option>
@@ -219,8 +219,8 @@
                     <div>
                         <label class="block font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Catatan</label>
                         <textarea wire:model="notes" rows="2"
-                                  class="w-full px-3.5 py-2 border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-blue-500"
-                                  placeholder="Catatan tambahan untuk pembelian ini..."></textarea>
+                                  class="@error('notes') !border-rose-400 !focus:border-rose-500 !focus:ring-rose-500/10 @enderror w-full px-3.5 py-2 border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-blue-500"
+                                  placeholder="Catatan tambahan untuk pembelian ini..." aria-invalid="@error('notes') true @else false @enderror"></textarea>
                     </div>
 
                     </x-slot:tab1>
@@ -235,7 +235,7 @@
                                 Tambah Baris
                             </button>
                         </div>
-                        @error('items') <span class="text-rose-500 text-[11px] mb-1.5 block">{{ $message }}</span> @enderror
+                        @error('items') <x-form-error :message="$message" :field="'items'" class="mb-1.5" /> @enderror
                         @if(!$unit_id)
                             <p class="text-[11px] text-amber-600 dark:text-amber-400 mb-1.5">Pilih Unit Usaha terlebih dahulu untuk memilih Produk dari stok unit tersebut (item bebas non-produk tetap bisa diisi tanpa memilih unit).</p>
                         @endif
@@ -250,30 +250,34 @@
                                                 <x-help-tip text="Pilih produk kalau pembelian ini akan menambah stok barang tersebut secara otomatis. Kosongkan kalau ini pembelian jasa atau barang yang tidak dicatat di stok." />
                                             </label>
                                             <select wire:model="items.{{ $index }}.product_id"
-                                                    class="w-full px-2.5 py-1.5 border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 text-[11px] focus:outline-none focus:border-blue-500 cursor-pointer">
+                                                    class="w-full px-2.5 py-1.5 border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 text-[11px] focus:outline-none focus:border-blue-500 cursor-pointer @error("items.{$index}.product_id") !border-rose-400 !focus:border-rose-500 !focus:ring-rose-500/10 @enderror" aria-invalid="@error("items.{$index}.product_id") true @else false @enderror">
                                                 <option value="">-- Item bebas (non-stok) --</option>
                                                 @foreach($products as $product)
                                                     <option value="{{ $product->id }}">{{ $product->name }} (stok: {{ $product->stock }})</option>
                                                 @endforeach
                                             </select>
+                                            <x-form-error :field="'items.' . $index . '.product_id'" />
                                         </div>
                                         <div>
                                             <label class="block text-[10px] font-semibold text-neutral-500 mb-0.5">Nama Item</label>
                                             <input type="text" wire:model="items.{{ $index }}.name"
-                                                   class="w-full px-2.5 py-1.5 border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 text-[11px] focus:outline-none focus:border-blue-500"
-                                                   placeholder="Nama item / jasa">
+                                                   class="w-full px-2.5 py-1.5 border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 text-[11px] focus:outline-none focus:border-blue-500 @error("items.{$index}.name") !border-rose-400 !focus:border-rose-500 !focus:ring-rose-500/10 @enderror"
+                                                   placeholder="Nama item / jasa" aria-invalid="@error("items.{$index}.name") true @else false @enderror">
+                                            <x-form-error :field="'items.' . $index . '.name'" />
                                         </div>
                                     </div>
                                     <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 items-end">
                                         <div>
                                             <label class="block text-[10px] font-semibold text-neutral-500 mb-0.5">Qty</label>
                                             <input type="text" inputmode="decimal" wire:model="items.{{ $index }}.qty" oninput="onlyDecimal(event)"
-                                                   class="w-full px-2.5 py-1.5 border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 text-[11px] focus:outline-none focus:border-blue-500">
+                                                   class="w-full px-2.5 py-1.5 border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 text-[11px] focus:outline-none focus:border-blue-500 @error("items.{$index}.qty") !border-rose-400 !focus:border-rose-500 !focus:ring-rose-500/10 @enderror" aria-invalid="@error("items.{$index}.qty") true @else false @enderror">
+                                            <x-form-error :field="'items.' . $index . '.qty'" />
                                         </div>
                                         <div>
                                             <label class="block text-[10px] font-semibold text-neutral-500 mb-0.5">Harga Satuan (Rp)</label>
                                             <input type="text" inputmode="decimal" wire:model="items.{{ $index }}.unit_price" oninput="onlyDecimal(event)"
-                                                   class="w-full px-2.5 py-1.5 border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 text-[11px] focus:outline-none focus:border-blue-500">
+                                                   class="w-full px-2.5 py-1.5 border border-neutral-200 dark:border-slate-700 rounded-md bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 text-[11px] focus:outline-none focus:border-blue-500 @error("items.{$index}.unit_price") !border-rose-400 !focus:border-rose-500 !focus:ring-rose-500/10 @enderror" aria-invalid="@error("items.{$index}.unit_price") true @else false @enderror">
+                                            <x-form-error :field="'items.' . $index . '.unit_price'" />
                                         </div>
                                         <div class="flex justify-end">
                                             <button type="button" wire:click="removeItemRow({{ $index }})"

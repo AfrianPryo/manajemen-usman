@@ -218,61 +218,61 @@
                     <x-form-tabs tab1-label="Identitas" tab2-label="Hak Akses" cancel="closeCreateModal">
                     <x-slot:tab1>
                         <div>
-                            <label class="block text-xs font-medium text-neutral-600 dark:text-neutral-300 mb-1">Nama Lengkap</label>
-                            <input type="text" wire:model="name" class="w-full px-3 py-2.5 border rounded-sm text-sm bg-white dark:bg-slate-900 border-neutral-200 dark:border-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400" placeholder="Contoh: Budi Santoso">
-                            @error('name') <span class="text-xs text-red-500 mt-0.5 block">{{ $message }}</span> @enderror
+                            <label class="block text-xs font-medium text-neutral-600 dark:text-neutral-300 mb-1">Nama Lengkap <span class="text-red-500">*</span></label>
+                            <input type="text" wire:model="name" class="@error('name') !border-rose-400 !focus:border-rose-500 !focus:ring-rose-500/10 @enderror w-full px-3 py-2.5 border rounded-sm text-sm bg-white dark:bg-slate-900 border-neutral-200 dark:border-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400" placeholder="Contoh: Budi Santoso" aria-required="true" aria-invalid="@error('name') true @else false @enderror">
+                            @error('name') <x-form-error :message="$message" :field="'name'" /> @enderror
                         </div>
 
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div class="{{ $employee_status === 'nip' ? '' : 'sm:col-span-2' }}">
-                                <label class="block text-xs font-medium text-neutral-600 dark:text-neutral-300 mb-1">Status Pegawai</label>
-                                <select wire:model.live="employee_status" class="w-full px-3 py-2.5 border rounded-sm text-sm bg-white dark:bg-slate-900 border-neutral-200 dark:border-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400 cursor-pointer">
+                                <label class="block text-xs font-medium text-neutral-600 dark:text-neutral-300 mb-1">Status Pegawai <span class="text-red-500">*</span></label>
+                                <select wire:model.live="employee_status" class="@error('employee_status') !border-rose-400 !focus:border-rose-500 !focus:ring-rose-500/10 @enderror w-full px-3 py-2.5 border rounded-sm text-sm bg-white dark:bg-slate-900 border-neutral-200 dark:border-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400 cursor-pointer" aria-required="true" aria-invalid="@error('employee_status') true @else false @enderror">
                                     <option value="nip">Pegawai NIP</option>
                                     <option value="non_nip">Pegawai Non-NIP</option>
                                 </select>
-                                @error('employee_status') <span class="text-xs text-red-500 mt-0.5 block">{{ $message }}</span> @enderror
+                                @error('employee_status') <x-form-error :message="$message" :field="'employee_status'" /> @enderror
                             </div>
 
                             @if($employee_status === 'nip')
                                 <div>
-                                    <label class="block text-xs font-medium text-neutral-600 dark:text-neutral-300 mb-1">NIP (18 Digit)</label>
-                                    <input type="text" wire:model="nip" maxlength="18" inputmode="numeric" oninput="onlyDigits(event)" class="w-full px-3 py-2.5 border rounded-sm text-sm font-mono bg-white dark:bg-slate-900 border-neutral-200 dark:border-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400" placeholder="199001012023011001">
-                                    @error('nip') <span class="text-xs text-red-500 mt-0.5 block">{{ $message }}</span> @enderror
+                                    <label class="block text-xs font-medium text-neutral-600 dark:text-neutral-300 mb-1">NIP (18 Digit) <span class="text-red-500">*</span></label>
+                                    <input type="text" wire:model="nip" maxlength="18" inputmode="numeric" oninput="onlyDigits(event)" class="@error('nip') !border-rose-400 !focus:border-rose-500 !focus:ring-rose-500/10 @enderror w-full px-3 py-2.5 border rounded-sm text-sm font-mono bg-white dark:bg-slate-900 border-neutral-200 dark:border-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400" placeholder="199001012023011001" aria-required="true" aria-invalid="@error('nip') true @else false @enderror">
+                                    @error('nip') <x-form-error :message="$message" :field="'nip'" /> @enderror
                                 </div>
                             @endif
                         </div>
 
                         <div>
-                            <label class="block text-xs font-medium text-neutral-600 dark:text-neutral-300 mb-1">Nomor HP / WhatsApp</label>
-                            <input type="text" wire:model="phone" inputmode="numeric" oninput="onlyDigits(event)" class="w-full px-3 py-2.5 border rounded-sm text-sm font-mono bg-white dark:bg-slate-900 border-neutral-200 dark:border-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400" placeholder="08xxxxxxxxxx">
+                            <label class="block text-xs font-medium text-neutral-600 dark:text-neutral-300 mb-1">Nomor HP / WhatsApp <span class="text-red-500">*</span></label>
+                            <input type="text" wire:model="phone" inputmode="numeric" oninput="onlyDigits(event)" class="@error('phone') !border-rose-400 !focus:border-rose-500 !focus:ring-rose-500/10 @enderror w-full px-3 py-2.5 border rounded-sm text-sm font-mono bg-white dark:bg-slate-900 border-neutral-200 dark:border-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400" placeholder="08xxxxxxxxxx" aria-required="true" aria-invalid="@error('phone') true @else false @enderror">
                             <p class="text-[11px] text-neutral-400 mt-1">Dipakai sistem untuk mengirim notifikasi &amp; kode OTP (Fonnte) ke akun ini.</p>
-                            @error('phone') <span class="text-xs text-red-500 mt-0.5 block">{{ $message }}</span> @enderror
+                            @error('phone') <x-form-error :message="$message" :field="'phone'" /> @enderror
                         </div>
                     </x-slot:tab1>
                     <x-slot:tab2>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div class="{{ $role === 'unit-admin' ? '' : 'sm:col-span-2' }}">
-                                <label class="block text-xs font-medium text-neutral-600 dark:text-neutral-300 mb-1">Role / Peran</label>
-                                <select wire:model.live="role" class="w-full px-3 py-2.5 border rounded-sm text-sm bg-white dark:bg-slate-900 border-neutral-200 dark:border-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400 cursor-pointer">
+                                <label class="block text-xs font-medium text-neutral-600 dark:text-neutral-300 mb-1">Role / Peran <span class="text-red-500">*</span></label>
+                                <select wire:model.live="role" class="@error('role') !border-rose-400 !focus:border-rose-500 !focus:ring-rose-500/10 @enderror w-full px-3 py-2.5 border rounded-sm text-sm bg-white dark:bg-slate-900 border-neutral-200 dark:border-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400 cursor-pointer" aria-required="true" aria-invalid="@error('role') true @else false @enderror">
                                     <option value="unit-admin">Unit Admin</option>
                                     <option value="master-admin">Master Admin</option>
                                 </select>
                                 <p class="text-[11px] text-neutral-400 mt-1">
                                     {{ $role === 'master-admin' ? 'Akses penuh ke seluruh unit usaha dan pengaturan sistem.' : 'Mengelola satu unit usaha yang dipilih.' }}
                                 </p>
-                                @error('role') <span class="text-xs text-red-500 mt-0.5 block">{{ $message }}</span> @enderror
+                                @error('role') <x-form-error :message="$message" :field="'role'" /> @enderror
                             </div>
 
                             @if($role === 'unit-admin')
                                 <div>
-                                    <label class="block text-xs font-medium text-neutral-600 dark:text-neutral-300 mb-1">Unit Usaha</label>
-                                    <select wire:model="unit_id" class="w-full px-3 py-2.5 border rounded-sm text-sm bg-white dark:bg-slate-900 border-neutral-200 dark:border-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400 cursor-pointer">
+                                    <label class="block text-xs font-medium text-neutral-600 dark:text-neutral-300 mb-1">Unit Usaha <span class="text-red-500">*</span></label>
+                                    <select wire:model="unit_id" class="@error('unit_id') !border-rose-400 !focus:border-rose-500 !focus:ring-rose-500/10 @enderror w-full px-3 py-2.5 border rounded-sm text-sm bg-white dark:bg-slate-900 border-neutral-200 dark:border-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400 cursor-pointer" aria-required="true" aria-invalid="@error('unit_id') true @else false @enderror">
                                         <option value="">-- Pilih Unit Usaha --</option>
                                         @foreach($units as $unit)
                                             <option value="{{ $unit->id }}">{{ $unit->name }}</option>
                                         @endforeach
                                     </select>
-                                    @error('unit_id') <span class="text-xs text-red-500 mt-0.5 block">{{ $message }}</span> @enderror
+                                    @error('unit_id') <x-form-error :message="$message" :field="'unit_id'" /> @enderror
                                 </div>
                             @endif
                         </div>

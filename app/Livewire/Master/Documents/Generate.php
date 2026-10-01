@@ -5,15 +5,20 @@ namespace App\Livewire\Master\Documents;
 use App\Models\Asset;
 use App\Models\AuditLog;
 use App\Models\DocumentTemplate;
+use App\Models\OfficialDocument;
 use App\Models\SignatureProfile;
 use App\Models\Unit;
 use App\Services\Documents\OfficialDocumentGenerator;
 use App\Support\DocumentTypes;
+use Illuminate\Contracts\Cache\LockTimeoutException;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\Locked;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
@@ -47,7 +52,37 @@ class Generate extends Component
     public ?string $pihak_kedua_nama = null;
     public ?string $pihak_kedua_jabatan = null;
 
+    /**
+     * Satu "sesi" = satu kali membuka halaman ini (klik kartu Buat Dokumen) dan
+     * menghasilkan SATU dokumen di riwayat. Menekan Buat Dokumen / Unduh berulang
+     * kali dalam sesi yang sama hanya memperbarui dokumen itu, tidak membuat baris
+     * baru. Sesi baru dimulai lagi saat halaman dibuka ulang atau saat jenis
+     * dokumen / template diganti (itu dokumen yang berbeda).
+     *
+     * #[Locked]: nilai ini tidak boleh diubah dari browser (mis. lewat devtools)
+     * supaya user tidak bisa menunjuk dokumen milik orang lain.
+     */
+    #[Locked]
     public ?int $lastGeneratedId = null;
+
+    #[Locked]
+    public string $sessionKey = '';
+
+    public function mount(): void
+    {
+        $this->startNewSession();
+    }
+
+    protected function startNewSession(): void
+    {
+        $this->sessionKey = (string) Str::uuid();
+        $this->lastGeneratedId = null;
+    }
+
+    protected function sessionCacheKey(): string
+    {
+        return 'official-doc-session:' . Auth::id() . ':' . $this->sessionKey;
+    }
 
     public function types(): array
     {
@@ -57,7 +92,12 @@ class Generate extends Component
     public function updatedType(): void
     {
         $this->templateId = null;
-        $this->lastGeneratedId = null;
+        $this->startNewSession();
+    }
+
+    public function updatedTemplateId(): void
+    {
+        $this->startNewSession();
     }
 
     protected function templatesForType(): Collection
@@ -113,19 +153,66 @@ class Generate extends Component
             'pihak_kedua_jabatan' => $this->pihak_kedua_jabatan,
         ], fn ($v) => $v !== null && $v !== '' && $v !== []);
 
-        $document = $generator->generate($template, $params, $signature, Auth::id());
+        // Kunci per sesi: klik beruntun (double-click / spam / Enter berulang) diproses
+        // satu per satu, sehingga tidak ada dua request yang sama-sama membuat baris baru.
+        $lock = Cache::lock('official-doc-generate:' . Auth::id() . ':' . $this->sessionKey, 30);
 
-        $this->lastGeneratedId = $document->id;
+        try {
+            $lock->block(10);
+        } catch (LockTimeoutException $e) {
+            return;
+        }
+
+        try {
+            $existing = $this->findSessionDocument($template);
+
+            if ($existing) {
+                $document = $generator->regenerate($existing, $template, $params, $signature);
+                $isUpdate = true;
+            } else {
+                $document = $generator->generate($template, $params, $signature, Auth::id());
+                $isUpdate = false;
+            }
+
+            $this->lastGeneratedId = $document->id;
+            Cache::put($this->sessionCacheKey(), $document->id, now()->addHours(6));
+        } finally {
+            $lock->release();
+        }
 
         AuditLog::record(
-            'DOCUMENT_GENERATE',
+            $isUpdate ? 'DOCUMENT_UPDATE' : 'DOCUMENT_GENERATE',
             $document->document_number,
-            "Dokumen resmi '{$document->document_number}' ({$this->type}) dibuat dari template '{$template->name}'.",
+            $isUpdate
+                ? "Dokumen resmi '{$document->document_number}' ({$this->type}) diperbarui dari template '{$template->name}' pada sesi yang sama."
+                : "Dokumen resmi '{$document->document_number}' ({$this->type}) dibuat dari template '{$template->name}'.",
             null,
             $document->toArray()
         );
 
-        session()->flash('success', "Dokumen resmi nomor {$document->document_number} berhasil dibuat.");
+        session()->flash('success', $isUpdate
+            // Jam disertakan agar toast tetap muncul tiap kali diperbarui (kunci toast di
+            // view dibuat dari isi pesan; pesan yang persis sama tidak akan ditampilkan ulang).
+            ? "Dokumen resmi nomor {$document->document_number} berhasil diperbarui pukul " . now()->format('H:i:s') . '.'
+            : "Dokumen resmi nomor {$document->document_number} berhasil dibuat.");
+    }
+
+    /**
+     * Dokumen yang sudah dibuat pada sesi ini (bila masih ada, milik user ini, dan
+     * memakai template yang sama). Cache dipakai sebagai cadangan untuk request yang
+     * datang bersamaan dan belum sempat menerima lastGeneratedId terbaru.
+     */
+    protected function findSessionDocument(DocumentTemplate $template): ?OfficialDocument
+    {
+        $id = $this->lastGeneratedId ?? Cache::get($this->sessionCacheKey());
+
+        if (!$id) {
+            return null;
+        }
+
+        return OfficialDocument::where('generated_by', Auth::id())
+            ->where('document_template_id', $template->id)
+            ->find($id);
     }
 
     public function download()
@@ -134,7 +221,12 @@ class Generate extends Component
             return;
         }
 
-        $document = \App\Models\OfficialDocument::findOrFail($this->lastGeneratedId);
+        // Redam spam tombol Unduh: klik ulang dalam beberapa detik diabaikan.
+        if (!Cache::add('official-doc-download:' . Auth::id() . ':' . $this->lastGeneratedId, 1, 5)) {
+            return;
+        }
+
+        $document = OfficialDocument::where('generated_by', Auth::id())->findOrFail($this->lastGeneratedId);
 
         $safeFilename = str_replace(['/', '\\'], '-', $document->document_number) . '.docx';
 

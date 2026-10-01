@@ -3,7 +3,9 @@
 namespace App\Providers;
 
 use App\Models\Setting;
+use App\Support\ValidationMessages;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
@@ -17,6 +19,25 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        // Pesan validasi/error bawaan framework (lang/id/validation.php) tampil
+        // dalam bahasa Indonesia, apa pun nilai APP_LOCALE di .env.
+        $this->app->setLocale('id');
+
+        // Pesan error validasi form yang seragam & profesional (Bahasa
+        // Indonesia) beserta label field yang ramah pengguna. Dipasang sebagai
+        // nilai DEFAULT: pesan/atribut yang ditulis eksplisit di komponen
+        // tetap menang (array_merge menaruh milik komponen terakhir), dan rule
+        // yang tidak tercantum tetap memakai lang/id/validation.php.
+        Validator::resolver(function ($translator, $data, $rules, $messages, $attributes) {
+            return new \Illuminate\Validation\Validator(
+                $translator,
+                $data,
+                $rules,
+                array_merge(ValidationMessages::messages(), $messages),
+                array_merge(ValidationMessages::attributes(), $attributes)
+            );
+        });
+
         if ($this->settingsTableExists()) {
             // OPTIMASI: 4 lookup cache terpisah -> 1 panggilan Cache::many
             // lewat Setting::getMany() (nilai & default tetap sama persis).

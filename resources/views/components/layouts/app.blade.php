@@ -49,13 +49,129 @@
     @livewireStyles
 </head>
 <body class="bg-gray-100 dark:bg-slate-950 font-sans antialiased">
-    <div class="flex h-screen overflow-hidden font-sans"
-         x-data="{
-            sidebarCollapsed: localStorage.getItem('sidebarCollapsed') === 'true',
-            mobileSidebarOpen: false
-         }"
-         x-init="$watch('sidebarCollapsed', value => localStorage.setItem('sidebarCollapsed', value))"
-         @keydown.escape.window="mobileSidebarOpen = false">
+    @php
+        $appName    = \App\Models\Setting::get('app_name', 'USMAN - Usaha Mandiri Sekolah');
+        // Key yang sama sudah dibaca di <head> ($faviconLogo) -> dipakai ulang,
+        // tidak perlu lookup cache kedua kali per render.
+        $appLogo    = $faviconLogo;
+        $appLogoUrl = $appLogo ? asset('storage/' . $appLogo) : asset('favicon.svg');
+        // Foto profil admin master (diatur di Pengaturan Sistem > Profil Admin)
+        $sidebarPhotoPath = auth()->user()->profile_photo_path ?? null;
+        $sidebarPhotoUrl  = $sidebarPhotoPath ? asset('storage/' . $sidebarPhotoPath) : null;
+        $sidebarInitial   = strtoupper(substr(auth()->user()->name ?? 'U', 0, 1));
+        // Status aktif sidebar yang paham sub-halaman. Menu bertipe "section"
+        // (route berakhiran .index, mis. master.documents.index) tetap menyala
+        // saat user berada di sub-halamannya (generate, history, templates, dst.).
+        // Kalau route yang sedang dibuka punya entri menu sendiri, entri itu
+        // yang menang -- supaya tidak ada dua menu menyala bersamaan.
+        $sidebarMenuRoutes = collect(config('menu'))
+            ->flatMap(fn ($m) => isset($m['children']) ? collect($m['children'])->pluck('route') : [$m['route'] ?? null])
+            ->filter()->values()->all();
+        $sidebarCurrentRoute = request()->route()?->getName();
+        $sidebarIsActive = function (string $route) use ($sidebarMenuRoutes, $sidebarCurrentRoute): bool {
+            if (request()->routeIs($route.'*')) {
+                return true;
+            }
+            if (! str_ends_with($route, '.index') || in_array($sidebarCurrentRoute, $sidebarMenuRoutes, true)) {
+                return false;
+            }
+            return request()->routeIs(\Illuminate\Support\Str::beforeLast($route, '.index').'.*');
+        };
+        // Unit-admin tidak punya akses ke Pengaturan Sistem (route
+        // ini di-guard middleware role:master-admin), jadi untuk
+        // role itu link ini diarahkan ke Profil Saya miliknya
+        // sendiri (unit.profile.index) supaya tidak berujung 403.
+        $isUnitAdmin = auth()->user()?->hasRole('unit-admin');
+
+        if ($isUnitAdmin) {
+            $settingsLabel = 'Profil Saya';
+            $hasSettingsRoute = Route::has('unit.profile.index');
+            $settingsUrl = $hasSettingsRoute
+                ? route('unit.profile.index', ['unit' => auth()->user()->unit?->slug])
+                : '#';
+            $settingsActive = request()->routeIs('unit.profile.*');
+        } else {
+            $settingsLabel = 'Pengaturan Sistem';
+            $hasSettingsRoute = Route::has('master.settings.index');
+            $settingsUrl = $hasSettingsRoute ? route('master.settings.index') : '#';
+            $settingsActive = request()->routeIs('master.settings.*');
+        }
+        // ---- Status menu aktif & persist sidebar ------------------------------------
+        // Sidebar di-persist (x-persist) lintas wire:navigate, jadi HTML-nya hanya
+        // dipakai saat load pertama / reload penuh. Setelah itu daftar menu aktif
+        // diambil dari #sidebar-state (dirender di <main>, selalu baru tiap halaman).
+        $sidebarActive = [];   // diisi di loop menu: nama route yang menyala
+
+        $navLinkOn  = 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white font-semibold shadow-2xs';
+        $navLinkOff = 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100';
+        $navIconOn  = 'text-slate-900 dark:text-white';
+        $navIconOff = 'text-slate-400 dark:text-slate-500';
+
+        // Kunci persist. Berubah (=> sidebar dibangun ulang dengan data baru) hanya kalau
+        // identitas/tampilan sidebar berubah: user, unit yang dibuka, nama/logo aplikasi,
+        // atau nama/foto profil -- jadi hasil edit di halaman Pengaturan/Profil tetap muncul.
+        $sidebarKey = 'master-' . auth()->id() . '-' . substr(md5(implode('|', [$appName, $appLogo, $sidebarPhotoPath,
+                auth()->user()->name, auth()->user()->email])), 0, 8);
+    @endphp
+
+    {{-- Sidebar di-persist lintas wire:navigate (lihat x-persist di bawah): elemen DOM-nya
+         DIPINDAHKAN ke halaman baru, bukan dibuat ulang. Karena itu state-nya self-contained
+         (tidak bergantung x-data milik parent yang ikut diganti), dan komunikasi dengan
+         header memakai event window (sidebar-open). Fungsi ini identik di layout Master &
+         Unit, jadi cukup dieksekusi sekali (data-navigate-once). --}}
+    <script data-navigate-once>
+        function usmanSidebar() {
+            return {
+                sidebarCollapsed: localStorage.getItem('sidebarCollapsed') === 'true',
+                mobileSidebarOpen: false,
+                settingsOn: document.getElementById('sidebar-state')?.dataset.settings === '1',
+
+                init() {
+                    this.$watch('sidebarCollapsed', v => localStorage.setItem('sidebarCollapsed', v));
+                },
+
+                // Dipanggil setiap selesai navigasi. Daftar menu aktif dihitung server
+                // (logika route-name yang sama seperti sebelumnya) & dititipkan di
+                // #sidebar-state pada halaman baru; di sini hanya menukar class link yang
+                // statusnya berubah -- tanpa fetch, tanpa render ulang.
+                syncActive() {
+                    const state = document.getElementById('sidebar-state');
+                    if (!state || !this.$refs.nav) return;
+
+                    const active = JSON.parse(state.dataset.active || '[]');
+                    this.settingsOn = state.dataset.settings === '1';
+
+                    const nav = this.$refs.nav;
+                    const cls = key => nav.dataset[key].split(' ');
+                    const swap = (el, on, onKey, offKey) => {
+                        el.classList.remove(...cls(on ? offKey : onKey));
+                        el.classList.add(...cls(on ? onKey : offKey));
+                    };
+
+                    nav.querySelectorAll('a[data-nav]').forEach(a => {
+                        const on = active.includes(a.dataset.nav);
+                        if ((a.dataset.on === '1') === on) return;
+                        a.dataset.on = on ? '1' : '0';
+                        swap(a, on, 'linkOn', 'linkOff');
+                        const icon = a.querySelector('[data-nav-icon]');
+                        if (icon) swap(icon, on, 'iconOn', 'iconOff');
+                    });
+                },
+            };
+        }
+    </script>
+
+    {{-- x-data kosong: tetap jadi scope Alpine untuk header (hamburger) & isi halaman ($slot).
+         State sidebar sendiri ada di wrapper x-persist di bawah. --}}
+    <div class="flex h-screen overflow-hidden font-sans" x-data>
+        {{-- x-persist: elemen ini dipertahankan antar halaman (tidak ter-refresh). "contents" =
+             wrapper tidak mempengaruhi layout flex; aside & backdrop tetap anak langsung flex. --}}
+        <div x-persist="sidebar-{{ $sidebarKey }}"
+             class="contents"
+             x-data="usmanSidebar()"
+             @keydown.escape.window="mobileSidebarOpen = false"
+             x-on:sidebar-open.window="mobileSidebarOpen = true"
+             x-on:livewire:navigated.window="syncActive()">
 
         {{-- Backdrop (mobile only) --}}
         <div x-show="mobileSidebarOpen"
@@ -79,13 +195,6 @@
             style="transition: width 280ms cubic-bezier(0.4, 0, 0.2, 1), transform 280ms cubic-bezier(0.4, 0, 0.2, 1); will-change: width, transform;"
             class="fixed inset-y-0 left-0 z-50 w-64 md:relative md:z-auto bg-white dark:bg-slate-900 border-r border-slate-200/70 dark:border-slate-800 text-slate-700 dark:text-slate-300 flex-shrink-0 flex flex-col justify-between select-none overflow-hidden">
             {{-- Logo Header (fixed, TIDAK ikut ter-scroll) --}}
-            @php
-                $appName    = \App\Models\Setting::get('app_name', 'USMAN - Usaha Mandiri Sekolah');
-                // Key yang sama sudah dibaca di <head> ($faviconLogo) -> dipakai ulang,
-                // tidak perlu lookup cache kedua kali per render.
-                $appLogo    = $faviconLogo;
-                $appLogoUrl = $appLogo ? asset('storage/' . $appLogo) : asset('favicon.svg');
-            @endphp
             <div class="h-12 flex items-center justify-between px-4 font-bold text-sm text-slate-900 dark:text-white border-b border-slate-100 dark:border-slate-800 shrink-0 tracking-tight">
                 <span class="flex items-center gap-2 overflow-hidden">
                     {{-- Logo custom (hasil upload di Pengaturan Sistem) dibungkus lingkaran
@@ -146,9 +255,15 @@
             </div>
 
             {{-- Area menu yang bisa discroll (logo & footer tetap diam) --}}
-            <div class="no-scrollbar flex-1 overflow-y-auto overflow-x-hidden">
+            <div wire:navigate:scroll
+                x-init="$nextTick(() => { $el.scrollTop = Number(sessionStorage.getItem('masterSidebarScrollTop') || 0) })"
+                @scroll="sessionStorage.setItem('masterSidebarScrollTop', $el.scrollTop)"
+                class="no-scrollbar flex-1 overflow-y-auto overflow-x-hidden">
                 {{-- Navigation Menu Utama --}}
-                <nav class="py-4 px-2.5 space-y-0.5" @click="mobileSidebarOpen = false">
+                <nav class="py-4 px-2.5 space-y-0.5" @click="mobileSidebarOpen = false"
+                     x-ref="nav"
+                     data-link-on="{{ $navLinkOn }}" data-link-off="{{ $navLinkOff }}"
+                     data-icon-on="{{ $navIconOn }}" data-icon-off="{{ $navIconOff }}">
                     @foreach(config('menu') as $item)
                         @php
                             $label = strtolower($item['label'] ?? '');
@@ -191,7 +306,8 @@
                                             @foreach($filteredChildren as $child)
                                                 @continue(!is_null($child['roles']) && !auth()->user()?->hasAnyRole($child['roles']))
                                                 @php
-                                                    $childActive = request()->routeIs($child['route'].'*');
+                                                    $childActive = $sidebarIsActive($child['route']);
+                                                    if ($childActive) { $sidebarActive[] = $child['route']; }
                                                     // Route 'unit.*' butuh parameter {unit:slug} — sisipkan
                                                     // otomatis dari unit milik user login. Tanpa ini, route()
                                                     // akan lempar MissingRouteParametersException.
@@ -199,12 +315,13 @@
                                                         ? ['unit' => auth()->user()?->unit?->slug]
                                                         : [];
                                                 @endphp
-                                                <a href="{{ route($child['route'], $childRouteParams) }}"
+                                                <a wire:navigate href="{{ route($child['route'], $childRouteParams) }}"
+                                                   data-nav="{{ $child['route'] }}" data-on="{{ $childActive ? 1 : 0 }}"
                                                    title="{{ $child['label'] }}"
-                                                   class="flex items-center justify-between px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors duration-150 {{ $childActive ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white font-semibold shadow-2xs' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100' }}">
+                                                   class="flex items-center justify-between px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors duration-150 {{ $childActive ? $navLinkOn : $navLinkOff }}">
                                                     <div class="flex items-center gap-2 overflow-hidden">
                                                         @if(isset($child['icon']))
-                                                            <span class="w-5 h-5 flex items-center justify-center shrink-0 {{ $childActive ? 'text-slate-900 dark:text-white' : 'text-slate-400 dark:text-slate-500' }}">
+                                                            <span data-nav-icon class="w-5 h-5 flex items-center justify-center shrink-0 {{ $childActive ? $navIconOn : $navIconOff }}">
                                                                 <x-dynamic-component :component="'heroicon-o-'.$child['icon']" class="w-4 h-4" />
                                                             </span>
                                                         @endif
@@ -225,17 +342,19 @@
                             @else
                                 {{-- Single Menu Item --}}
                                 @php
-                                    $itemActive = request()->routeIs($item['route'].'*');
+                                    $itemActive = $sidebarIsActive($item['route']);
+                                    if ($itemActive) { $sidebarActive[] = $item['route']; }
                                     $itemRouteParams = str_starts_with($item['route'], 'unit.')
                                         ? ['unit' => auth()->user()?->unit?->slug]
                                         : [];
                                 @endphp
-                                <a href="{{ route($item['route'], $itemRouteParams) }}"
+                                <a wire:navigate href="{{ route($item['route'], $itemRouteParams) }}"
+                                   data-nav="{{ $item['route'] }}" data-on="{{ $itemActive ? 1 : 0 }}"
                                    title="{{ $item['label'] }}"
-                                   class="flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors duration-150 {{ $itemActive ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white font-semibold shadow-2xs' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100' }}">
+                                   class="flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors duration-150 {{ $itemActive ? $navLinkOn : $navLinkOff }}">
                                     <div class="flex items-center gap-2 overflow-hidden">
                                         @if(isset($item['icon']))
-                                            <span class="w-5 h-5 flex items-center justify-center shrink-0 {{ $itemActive ? 'text-slate-900 dark:text-white' : 'text-slate-400 dark:text-slate-500' }}">
+                                            <span data-nav-icon class="w-5 h-5 flex items-center justify-center shrink-0 {{ $itemActive ? $navIconOn : $navIconOff }}">
                                                 <x-dynamic-component :component="'heroicon-o-'.$item['icon']" class="w-4 h-4" />
                                             </span>
                                         @endif
@@ -266,12 +385,6 @@
             </div>
 
             {{-- Bottom User Profile & Pop-up Menu Pengaturan --}}
-            @php
-                // Foto profil admin master (diatur di Pengaturan Sistem > Profil Admin)
-                $sidebarPhotoPath = auth()->user()->profile_photo_path ?? null;
-                $sidebarPhotoUrl  = $sidebarPhotoPath ? asset('storage/' . $sidebarPhotoPath) : null;
-                $sidebarInitial   = strtoupper(substr(auth()->user()->name ?? 'U', 0, 1));
-            @endphp
             <div class="p-2 border-t border-slate-100 dark:border-slate-800 relative" x-data="{ userMenuOpen: false }">
                 {{-- Pop-up Menu Floating Upward --}}
                 <div x-show="userMenuOpen"
@@ -301,32 +414,12 @@
                             <div class="w-6 h-px bg-slate-100 dark:bg-slate-700"></div>
 
                             {{-- Link Pengaturan Sistem / Profil Saya (ikon saja) --}}
-                            @php
-                                // Unit-admin tidak punya akses ke Pengaturan Sistem (route
-                                // ini di-guard middleware role:master-admin), jadi untuk
-                                // role itu link ini diarahkan ke Profil Saya miliknya
-                                // sendiri (unit.profile.index) supaya tidak berujung 403.
-                                $isUnitAdmin = auth()->user()?->hasRole('unit-admin');
-
-                                if ($isUnitAdmin) {
-                                    $settingsLabel = 'Profil Saya';
-                                    $hasSettingsRoute = Route::has('unit.profile.index');
-                                    $settingsUrl = $hasSettingsRoute
-                                        ? route('unit.profile.index', ['unit' => auth()->user()->unit?->slug])
-                                        : '#';
-                                    $isActive = request()->routeIs('unit.profile.*');
-                                } else {
-                                    $settingsLabel = 'Pengaturan Sistem';
-                                    $hasSettingsRoute = Route::has('master.settings.index');
-                                    $settingsUrl = $hasSettingsRoute ? route('master.settings.index') : '#';
-                                    $isActive = request()->routeIs('master.settings.*');
-                                }
-                            @endphp
-                            <a href="{{ $settingsUrl }}"
+                            <a wire:navigate href="{{ $settingsUrl }}"
                                data-tour="settings-link"
                                @click="userMenuOpen = false; mobileSidebarOpen = false"
                                title="{{ $settingsLabel }}"
-                               class="flex items-center justify-center w-8 h-8 rounded-lg transition-all {{ $isActive ? 'bg-slate-900 dark:bg-slate-700 text-white shadow-xs' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100' }}">
+                               class="flex items-center justify-center w-8 h-8 rounded-lg transition-all"
+                               :class="settingsOn ? 'bg-slate-900 dark:bg-slate-700 text-white shadow-xs' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100'">
                                 <x-heroicon-o-cog-6-tooth class="w-4 h-4" />
                             </a>
 
@@ -360,33 +453,14 @@
                             </div>
 
                             {{-- Link Pengaturan Sistem / Profil Saya --}}
-                            @php
-                                // Unit-admin tidak punya akses ke Pengaturan Sistem (route
-                                // ini di-guard middleware role:master-admin), jadi untuk
-                                // role itu link ini diarahkan ke Profil Saya miliknya
-                                // sendiri (unit.profile.index) supaya tidak berujung 403.
-                                $isUnitAdmin = auth()->user()?->hasRole('unit-admin');
 
-                                if ($isUnitAdmin) {
-                                    $settingsLabel = 'Profil Saya';
-                                    $hasSettingsRoute = Route::has('unit.profile.index');
-                                    $settingsUrl = $hasSettingsRoute
-                                        ? route('unit.profile.index', ['unit' => auth()->user()->unit?->slug])
-                                        : '#';
-                                    $isActive = request()->routeIs('unit.profile.*');
-                                } else {
-                                    $settingsLabel = 'Pengaturan Sistem';
-                                    $hasSettingsRoute = Route::has('master.settings.index');
-                                    $settingsUrl = $hasSettingsRoute ? route('master.settings.index') : '#';
-                                    $isActive = request()->routeIs('master.settings.*');
-                                }
-                            @endphp
-
-                            <a href="{{ $settingsUrl }}"
+                            <a wire:navigate href="{{ $settingsUrl }}"
                             data-tour="settings-link"
                             @click="userMenuOpen = false; mobileSidebarOpen = false"
-                            class="flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs transition-all {{ $isActive ? 'bg-slate-900 dark:bg-slate-700 text-white font-semibold shadow-xs' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100/80 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100 font-medium' }}">
-                                <x-heroicon-o-cog-6-tooth class="w-3.5 h-3.5 {{ $isActive ? 'text-white' : 'text-slate-400 dark:text-slate-500' }}" />
+                            class="flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs transition-all"
+                               :class="settingsOn ? 'bg-slate-900 dark:bg-slate-700 text-white font-semibold shadow-xs' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100/80 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100 font-medium'">
+                                <x-heroicon-o-cog-6-tooth class="w-3.5 h-3.5"
+                               x-bind:class="settingsOn ? 'text-white' : 'text-slate-400 dark:text-slate-500'" />
                                 <span>{{ $settingsLabel }}</span>
                             </a>
 
@@ -437,6 +511,7 @@
                 </button>
             </div>
         </aside>
+        </div>{{-- /x-persist sidebar --}}
 
         {{-- Main Content Area --}}
         <div class="flex-1 flex flex-col overflow-hidden bg-[#f8f9fa] dark:bg-slate-950 min-w-0">
@@ -449,13 +524,43 @@
 
                     {{-- Tombol Buka Sidebar (mobile only) --}}
                     <button
-                        @click="mobileSidebarOpen = true"
+                        @click="$dispatch('sidebar-open')"
                         type="button"
                         title="Buka menu"
                         class="md:hidden shrink-0 p-1.5 -ml-1 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors focus:outline-none">
                         <x-heroicon-o-bars-3 class="w-5 h-5" />
                     </button>
 
+                    @php
+                        // Breadcrumb bertingkat: kalau halaman ini sub-halaman dari sebuah menu
+                        // (mis. Dokumen > Buat Dokumen Resmi), tampilkan menu induknya sebagai
+                        // link. Bisa dioverride dari halaman lewat variabel layout $parent
+                        // (label) dan $parentUrl.
+                        $crumbParent = null;
+                        $crumbParentUrl = null;
+                        if (isset($parent) && $parent) {
+                            $crumbParent = ['label' => $parent];
+                            $crumbParentUrl = $parentUrl ?? null;
+                        } elseif ($sidebarCurrentRoute && ! in_array($sidebarCurrentRoute, $sidebarMenuRoutes, true)) {
+                            $crumbParent = collect(config('menu'))
+                                ->flatMap(fn ($m) => isset($m['children']) ? $m['children'] : [$m])
+                                ->first(function ($m) {
+                                    $r = $m['route'] ?? null;
+                                    return $r
+                                        && true
+                                        && str_ends_with($r, '.index')
+                                        && ! str_contains(strtolower($r), 'settings')
+                                        && request()->routeIs(\Illuminate\Support\Str::beforeLast($r, '.index').'.*');
+                                });
+                            if ($crumbParent) {
+                                $r = $crumbParent['route'];
+                                $crumbParentUrl = Route::has($r) ? route($r, (str_starts_with($r, 'unit.') ? ['unit' => auth()->user()?->unit?->slug] : [])) : null;
+                            }
+                        }
+                        if ($crumbParent && ($crumbParent['label'] ?? null) === ($title ?? null)) {
+                            $crumbParent = null;
+                        }
+                    @endphp
                     <div class="flex items-center gap-2 text-xs font-medium text-slate-500 dark:text-slate-400 min-w-0">
 
                         {{-- Parent / Kategori --}}
@@ -466,6 +571,23 @@
 
                         {{-- Separator Slash --}}
                         <span class="hidden sm:inline text-slate-300 dark:text-slate-600 font-normal">/</span>
+
+                        {{-- Menu induk (hanya muncul di sub-halaman, mis. Dokumen > Buat Dokumen Resmi) --}}
+                        @if($crumbParent)
+                            @if($crumbParentUrl)
+                                <a wire:navigate href="{{ $crumbParentUrl }}" class="hidden sm:flex items-center gap-1.5 px-2 py-1 rounded-md text-slate-500 dark:text-slate-400 font-semibold shrink-0 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100 transition-colors">
+                                    @if(isset($crumbParent['icon']))
+                                        <x-dynamic-component :component="'heroicon-o-'.$crumbParent['icon']" class="w-3.5 h-3.5" />
+                                    @endif
+                                    <span>{{ $crumbParent['label'] }}</span>
+                                </a>
+                            @else
+                                <div class="hidden sm:flex items-center gap-1.5 px-2 py-1 text-slate-500 dark:text-slate-400 font-semibold shrink-0">
+                                    <span>{{ $crumbParent['label'] }}</span>
+                                </div>
+                            @endif
+                            <span class="hidden sm:inline text-slate-300 dark:text-slate-600 font-normal">/</span>
+                        @endif
 
                         {{-- Current Page Title --}}
                         <div class="flex items-center gap-1.5 text-slate-900 dark:text-white font-bold min-w-0">
@@ -531,6 +653,10 @@
 
             {{-- Main Scroll Content Area --}}
             <main class="no-scrollbar flex-1 overflow-y-auto p-2 bg-slate-50/60 dark:bg-slate-950">
+                {{-- Dibaca sidebar (persist) setelah tiap navigasi untuk menyorot menu aktif --}}
+                <span id="sidebar-state" hidden
+                      data-active="{{ json_encode($sidebarActive) }}"
+                      data-settings="{{ $settingsActive ? 1 : 0 }}"></span>
                 <x-alert />
                 {{ $slot }}
             </main>

@@ -24,7 +24,7 @@
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                    <label for="type" class="block text-xs font-medium text-neutral-600 dark:text-neutral-300 mb-1">Jenis Dokumen</label>
+                    <label for="type" class="block text-xs font-medium text-neutral-600 dark:text-neutral-300 mb-1">Jenis Dokumen <span class="text-red-500">*</span></label>
                     <select id="type" wire:model.live="type"
                         class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400">
                         <option value="">-- Pilih Jenis Dokumen --</option>
@@ -32,12 +32,12 @@
                             <option value="{{ $value }}">{{ $label }}</option>
                         @endforeach
                     </select>
-                    @error('type') <span class="text-[11px] text-rose-500 mt-0.5 block">{{ $message }}</span> @enderror
+                    @error('type') <x-form-error :message="$message" :field="'type'" /> @enderror
                 </div>
 
                 <div>
                     <label for="templateId" class="flex items-center gap-1 text-xs font-medium text-neutral-600 dark:text-neutral-300 mb-1">
-                        Template
+                        Template <span class="text-red-500">*</span>
                         <x-help-tip text="Format/susunan isi dokumen untuk jenis dokumen yang dipilih. Kalau daftarnya kosong, buat dulu templatenya lewat menu Kelola Template." />
                     </label>
                     <select id="templateId" wire:model="templateId" @disabled(!$type)
@@ -55,7 +55,7 @@
                             @endif
                         </p>
                     @endif
-                    @error('templateId') <span class="text-[11px] text-rose-500 mt-0.5 block">{{ $message }}</span> @enderror
+                    @error('templateId') <x-form-error :message="$message" :field="'templateId'" /> @enderror
                 </div>
             </div>
         </div>
@@ -67,7 +67,7 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                     <label for="signatureId" class="flex items-center gap-1 text-xs font-medium text-neutral-600 dark:text-neutral-300 mb-1">
-                        Tanda Tangan
+                        Tanda Tangan <span class="text-red-500">*</span>
                         <x-help-tip text="Profil pejabat (nama, jabatan, & gambar tanda tangan) yang akan dibubuhkan di dokumen ini. Kelola daftarnya lewat menu Tanda Tangan sebelum membuat dokumen." />
                     </label>
                     <select id="signatureId" wire:model="signatureId"
@@ -85,11 +85,14 @@
                             @endif
                         </p>
                     @endif
-                    @error('signatureId') <span class="text-[11px] text-rose-500 mt-0.5 block">{{ $message }}</span> @enderror
+                    @error('signatureId') <x-form-error :message="$message" :field="'signatureId'" /> @enderror
                 </div>
 
                 <div>
                     <label for="unit_id" class="block text-xs font-medium text-neutral-600 dark:text-neutral-300 mb-1">Unit</label>
+                    @if(! empty($lockedUnitId) && $units->count() === 1)
+                        <x-locked-field :value="$units->first()->name" class="px-3.5 py-2 text-xs font-medium" />
+                    @else
                     <select id="unit_id" wire:model="unit_id"
                         class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400">
                         <option value="">-- Pilih Unit --</option>
@@ -97,7 +100,8 @@
                             <option value="{{ $unit->id }}">{{ $unit->name }}</option>
                         @endforeach
                     </select>
-                    @error('unit_id') <span class="text-[11px] text-rose-500 mt-0.5 block">{{ $message }}</span> @enderror
+                    @endif
+                    @error('unit_id') <x-form-error :message="$message" :field="'unit_id'" /> @enderror
                 </div>
             </div>
         </div>
@@ -111,13 +115,13 @@
                     <label for="title" class="block text-xs font-medium text-neutral-600 dark:text-neutral-300 mb-1">Judul / Perihal Singkat</label>
                     <input type="text" id="title" wire:model="title"
                         class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400">
-                    @error('title') <span class="text-[11px] text-rose-500 mt-0.5 block">{{ $message }}</span> @enderror
+                    @error('title') <x-form-error :message="$message" :field="'title'" /> @enderror
                 </div>
                 <div>
                     <label for="subject" class="block text-xs font-medium text-neutral-600 dark:text-neutral-300 mb-1">Subjek</label>
                     <input type="text" id="subject" wire:model="subject"
                         class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400">
-                    @error('subject') <span class="text-[11px] text-rose-500 mt-0.5 block">{{ $message }}</span> @enderror
+                    @error('subject') <x-form-error :message="$message" :field="'subject'" /> @enderror
                 </div>
             </div>
 
@@ -126,19 +130,19 @@
                     <label for="recipient" class="block text-xs font-medium text-neutral-600 dark:text-neutral-300 mb-1">Penerima / Ditujukan Kepada</label>
                     <input type="text" id="recipient" wire:model="recipient"
                         class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400">
-                    @error('recipient') <span class="text-[11px] text-rose-500 mt-0.5 block">{{ $message }}</span> @enderror
+                    @error('recipient') <x-form-error :message="$message" :field="'recipient'" /> @enderror
                 </div>
                 <div>
                     <label for="start_date" class="block text-xs font-medium text-neutral-600 dark:text-neutral-300 mb-1">Tanggal Mulai</label>
                     <input type="date" id="start_date" wire:model="start_date"
                         class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400">
-                    @error('start_date') <span class="text-[11px] text-rose-500 mt-0.5 block">{{ $message }}</span> @enderror
+                    @error('start_date') <x-form-error :message="$message" :field="'start_date'" /> @enderror
                 </div>
                 <div>
                     <label for="end_date" class="block text-xs font-medium text-neutral-600 dark:text-neutral-300 mb-1">Tanggal Selesai</label>
                     <input type="date" id="end_date" wire:model="end_date"
                         class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400">
-                    @error('end_date') <span class="text-[11px] text-rose-500 mt-0.5 block">{{ $message }}</span> @enderror
+                    @error('end_date') <x-form-error :message="$message" :field="'end_date'" /> @enderror
                 </div>
             </div>
         </div>
@@ -158,31 +162,31 @@
                         <label for="nama_penerima" class="block text-xs font-medium text-neutral-600 dark:text-neutral-300 mb-1">Nama Penerima</label>
                         <input type="text" id="nama_penerima" wire:model="nama_penerima"
                             class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400">
-                        @error('nama_penerima') <span class="text-[11px] text-rose-500 mt-0.5 block">{{ $message }}</span> @enderror
+                        @error('nama_penerima') <x-form-error :message="$message" :field="'nama_penerima'" /> @enderror
                     </div>
                     <div>
                         <label for="jabatan_penerima" class="block text-xs font-medium text-neutral-600 dark:text-neutral-300 mb-1">Jabatan Penerima</label>
                         <input type="text" id="jabatan_penerima" wire:model="jabatan_penerima"
                             class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400">
-                        @error('jabatan_penerima') <span class="text-[11px] text-rose-500 mt-0.5 block">{{ $message }}</span> @enderror
+                        @error('jabatan_penerima') <x-form-error :message="$message" :field="'jabatan_penerima'" /> @enderror
                     </div>
                     <div>
                         <label for="nip_penerima" class="block text-xs font-medium text-neutral-600 dark:text-neutral-300 mb-1">NIP Penerima</label>
                         <input type="text" id="nip_penerima" wire:model="nip_penerima" inputmode="numeric" oninput="onlyDigits(event)"
                             class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400">
-                        @error('nip_penerima') <span class="text-[11px] text-rose-500 mt-0.5 block">{{ $message }}</span> @enderror
+                        @error('nip_penerima') <x-form-error :message="$message" :field="'nip_penerima'" /> @enderror
                     </div>
                     <div>
                         <label for="keperluan" class="block text-xs font-medium text-neutral-600 dark:text-neutral-300 mb-1">Keperluan</label>
                         <input type="text" id="keperluan" wire:model="keperluan"
                             class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400">
-                        @error('keperluan') <span class="text-[11px] text-rose-500 mt-0.5 block">{{ $message }}</span> @enderror
+                        @error('keperluan') <x-form-error :message="$message" :field="'keperluan'" /> @enderror
                     </div>
                     <div class="sm:col-span-2">
                         <label for="isi_keterangan" class="block text-xs font-medium text-neutral-600 dark:text-neutral-300 mb-1">Isi Keterangan</label>
                         <textarea id="isi_keterangan" wire:model="isi_keterangan" rows="4"
                             class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400"></textarea>
-                        @error('isi_keterangan') <span class="text-[11px] text-rose-500 mt-0.5 block">{{ $message }}</span> @enderror
+                        @error('isi_keterangan') <x-form-error :message="$message" :field="'isi_keterangan'" /> @enderror
                     </div>
                 </div>
             </div>
@@ -201,7 +205,7 @@
                         @endforeach
                     </select>
                     <p class="text-[11px] text-neutral-400 mt-1">Tahan Ctrl (atau Cmd di Mac) untuk memilih lebih dari satu aset.</p>
-                    @error('asset_ids') <span class="text-[11px] text-rose-500 mt-0.5 block">{{ $message }}</span> @enderror
+                    @error('asset_ids') <x-form-error :message="$message" :field="'asset_ids'" /> @enderror
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -209,25 +213,25 @@
                         <label for="pihak_pertama_nama" class="block text-xs font-medium text-neutral-600 dark:text-neutral-300 mb-1">Nama Pihak Pertama</label>
                         <input type="text" id="pihak_pertama_nama" wire:model="pihak_pertama_nama"
                             class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400">
-                        @error('pihak_pertama_nama') <span class="text-[11px] text-rose-500 mt-0.5 block">{{ $message }}</span> @enderror
+                        @error('pihak_pertama_nama') <x-form-error :message="$message" :field="'pihak_pertama_nama'" /> @enderror
                     </div>
                     <div>
                         <label for="pihak_pertama_jabatan" class="block text-xs font-medium text-neutral-600 dark:text-neutral-300 mb-1">Jabatan Pihak Pertama</label>
                         <input type="text" id="pihak_pertama_jabatan" wire:model="pihak_pertama_jabatan"
                             class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400">
-                        @error('pihak_pertama_jabatan') <span class="text-[11px] text-rose-500 mt-0.5 block">{{ $message }}</span> @enderror
+                        @error('pihak_pertama_jabatan') <x-form-error :message="$message" :field="'pihak_pertama_jabatan'" /> @enderror
                     </div>
                     <div>
                         <label for="pihak_kedua_nama" class="block text-xs font-medium text-neutral-600 dark:text-neutral-300 mb-1">Nama Pihak Kedua</label>
                         <input type="text" id="pihak_kedua_nama" wire:model="pihak_kedua_nama"
                             class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400">
-                        @error('pihak_kedua_nama') <span class="text-[11px] text-rose-500 mt-0.5 block">{{ $message }}</span> @enderror
+                        @error('pihak_kedua_nama') <x-form-error :message="$message" :field="'pihak_kedua_nama'" /> @enderror
                     </div>
                     <div>
                         <label for="pihak_kedua_jabatan" class="block text-xs font-medium text-neutral-600 dark:text-neutral-300 mb-1">Jabatan Pihak Kedua</label>
                         <input type="text" id="pihak_kedua_jabatan" wire:model="pihak_kedua_jabatan"
                             class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400">
-                        @error('pihak_kedua_jabatan') <span class="text-[11px] text-rose-500 mt-0.5 block">{{ $message }}</span> @enderror
+                        @error('pihak_kedua_jabatan') <x-form-error :message="$message" :field="'pihak_kedua_jabatan'" /> @enderror
                     </div>
                 </div>
             </div>
@@ -237,7 +241,9 @@
         <div class="flex items-center justify-end gap-2.5 pt-1">
             @if ($lastGeneratedId)
                 <button type="button" wire:click="download"
-                    class="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-neutral-600 dark:text-neutral-300 bg-neutral-100 dark:bg-slate-700 rounded-sm hover:bg-neutral-200 dark:hover:bg-slate-600 transition-all">
+                    wire:loading.attr="disabled"
+                    wire:target="download"
+                    class="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-neutral-600 dark:text-neutral-300 bg-neutral-100 dark:bg-slate-700 rounded-sm hover:bg-neutral-200 dark:hover:bg-slate-600 transition-all disabled:opacity-60 disabled:cursor-not-allowed">
                     <x-heroicon-o-arrow-down-tray class="w-3.5 h-3.5" />
                     Unduh Dokumen
                 </button>

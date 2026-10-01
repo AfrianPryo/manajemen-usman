@@ -36,7 +36,7 @@
     menghasilkan tampilan apapun (kosong) -- yang tampil ke user adalah
     popup dari panel global ini.
 
-    Tipe yang didukung: 'success' (hijau, check-circle) & 'error'
+    Tipe yang didukung: 'success' (biru, check-circle) & 'error'
     (merah, x-circle).
 --}}
 @php
@@ -77,18 +77,15 @@
             x-transition:leave-end="opacity-0 sm:translate-x-4"
             @mouseenter="$store.toast.pause(item.id)"
             @mouseleave="$store.toast.resume(item.id)"
-            class="pointer-events-auto w-full sm:w-96 max-w-full bg-white dark:bg-slate-800 rounded-xl shadow-2xl border overflow-hidden"
-            :class="item.type === 'error'
-                ? 'border-rose-200 dark:border-rose-800'
-                : 'border-emerald-200 dark:border-emerald-800'"
+            class="pointer-events-auto w-full sm:w-96 max-w-full bg-white dark:bg-slate-800 rounded-sm shadow-lg shadow-black/5 border border-neutral-200 dark:border-slate-700 overflow-hidden"
             role="alert"
         >
             <div class="flex items-start gap-3 p-3.5">
                 <div
-                    class="h-8 w-8 shrink-0 rounded-full flex items-center justify-center"
+                    class="h-8 w-8 shrink-0 rounded-sm flex items-center justify-center"
                     :class="item.type === 'error'
                         ? 'bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400'
-                        : 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400'"
+                        : 'bg-blue-50 dark:bg-blue-950/50 text-blue-900 dark:text-blue-400'"
                 >
                     <span x-show="item.type === 'error'">
                         <x-heroicon-s-x-circle class="size-5 fill-current" />
@@ -104,7 +101,7 @@
                 <button
                     type="button"
                     @click="$store.toast.dismiss(item.id)"
-                    class="shrink-0 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 -m-1 p-1 rounded-md transition-colors cursor-pointer"
+                    class="shrink-0 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 -m-1 p-1 rounded-sm transition-colors cursor-pointer"
                     aria-label="Tutup notifikasi"
                 >
                     <x-heroicon-o-x-mark class="size-4" stroke-width="2" />
@@ -113,7 +110,7 @@
             <div class="h-0.5 w-full bg-neutral-100 dark:bg-slate-700/60">
                 <div
                     class="h-full"
-                    :class="item.type === 'error' ? 'bg-rose-500' : 'bg-emerald-500'"
+                    :class="item.type === 'error' ? 'bg-rose-500' : 'bg-blue-900 dark:bg-blue-500'"
                     :style="`width: ${item.remaining}%; transition: width ${item.paused ? '0ms' : '80ms'} linear`"
                 ></div>
             </div>

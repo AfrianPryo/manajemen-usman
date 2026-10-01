@@ -64,10 +64,10 @@
                 <span class="font-bold text-sky-300">{{ count($selectedRows) }}</span> item dipilih
             </div>
             <div class="flex items-center gap-2">
-                <button wire:click="bulkUpdateStatus('active')" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 rounded-sm font-semibold transition-colors cursor-pointer">
+                <button wire:click="bulkUpdateStatus('active')" class="px-3 py-1.5 bg-blue-500 hover:bg-blue-400 rounded-sm font-semibold transition-colors cursor-pointer">
                     Tandai Aktif
                 </button>
-                <button wire:click="bulkUpdateStatus('paused')" class="px-3 py-1.5 bg-amber-600 hover:bg-amber-500 rounded-sm font-semibold transition-colors cursor-pointer">
+                <button wire:click="bulkUpdateStatus('paused')" class="px-3 py-1.5 bg-white/10 hover:bg-white/20 ring-1 ring-inset ring-white/15 rounded-sm font-semibold transition-colors cursor-pointer">
                     Tandai Dijeda
                 </button>
                 <button type="button" x-on:click.prevent="$store.confirmDialog.open({
@@ -246,15 +246,18 @@
                     {{-- Judul Transaksi --}}
                     <div>
                         <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Judul Transaksi <span class="text-rose-500">*</span></label>
-                        <input type="text" wire:model="title" placeholder="Contoh: Biaya Sewa Kantin Bulanan" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400">
-                        @error('title') <span class="text-[11px] text-rose-500 mt-0.5 block">{{ $message }}</span> @enderror
+                        <input type="text" wire:model="title" placeholder="Contoh: Biaya Sewa Kantin Bulanan" class="@error('title') !border-rose-400 !focus:border-rose-500 !focus:ring-rose-500/10 @enderror w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400" aria-invalid="@error('title') true @else false @enderror" aria-required="true">
+                        @error('title') <x-form-error :message="$message" :field="'title'" /> @enderror
                     </div>
 
                     {{-- Row: Unit Usaha & Tipe Transaksi --}}
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Unit Usaha <span class="text-rose-500">*</span></label>
-                            <select wire:model.live="unit_id" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400">
+                            @if(! empty($lockedUnitId) && $units->count() === 1)
+                                <x-locked-field :value="$units->first()->name" class="px-3.5 py-2 text-xs font-medium" />
+                            @else
+                            <select wire:model.live="unit_id" class="@error('unit_id') !border-rose-400 !focus:border-rose-500 !focus:ring-rose-500/10 @enderror w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400" aria-invalid="@error('unit_id') true @else false @enderror" aria-required="true">
                                 @if($units->count() > 1)
                                     <option value="">-- Pilih Unit Usaha --</option>
                                 @endif
@@ -262,12 +265,13 @@
                                     <option value="{{ $unit->id }}">{{ $unit->name }}</option>
                                 @endforeach
                             </select>
-                            @error('unit_id') <span class="text-[11px] text-rose-500 mt-0.5 block">{{ $message }}</span> @enderror
+                            @endif
+                            @error('unit_id') <x-form-error :message="$message" :field="'unit_id'" /> @enderror
                         </div>
 
                         <div>
                             <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Tipe Transaksi <span class="text-rose-500">*</span></label>
-                            <select wire:model.live="type" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400">
+                            <select wire:model.live="type" class="@error('type') !border-rose-400 !focus:border-rose-500 !focus:ring-rose-500/10 @enderror w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400" aria-invalid="@error('type') true @else false @enderror" aria-required="true">
                                 <option value="income">Pendapatan (Income)</option>
                                 <option value="expense">Pengeluaran (Expense)</option>
                             </select>
@@ -279,7 +283,7 @@
                         <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Kategori Keuangan <span class="text-rose-500">*</span></label>
                         <select wire:model="finance_category_id"
                             @if(!$unit_id) disabled @endif
-                            class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400 disabled:opacity-50 disabled:cursor-not-allowed">
+                            class="@error('finance_category_id') !border-rose-400 !focus:border-rose-500 !focus:ring-rose-500/10 @enderror w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400 disabled:opacity-50 disabled:cursor-not-allowed" aria-invalid="@error('finance_category_id') true @else false @enderror" aria-required="true">
                             <option value="">
                                 {{ $unit_id ? '-- Pilih Kategori Keuangan --' : '-- Pilih Unit Usaha terlebih dahulu --' }}
                             </option>
@@ -292,7 +296,7 @@
                                 Belum ada kategori {{ $type === 'income' ? 'pendapatan' : 'pengeluaran' }} untuk unit ini.
                             </span>
                         @endif
-                        @error('finance_category_id') <span class="text-[11px] text-rose-500 mt-0.5 block">{{ $message }}</span> @enderror
+                        @error('finance_category_id') <x-form-error :message="$message" :field="'finance_category_id'" /> @enderror
                     </div>
 
                     </x-slot:tab1>
@@ -301,13 +305,13 @@
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Nominal (Rp) <span class="text-rose-500">*</span></label>
-                            <input type="text" inputmode="decimal" wire:model="amount" oninput="onlyDecimal(event)" placeholder="0" class="w-full px-3.5 py-2 text-xs font-bold border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400">
-                            @error('amount') <span class="text-[11px] text-rose-500 mt-0.5 block">{{ $message }}</span> @enderror
+                            <input type="text" inputmode="decimal" wire:model="amount" oninput="onlyDecimal(event)" placeholder="0" class="@error('amount') !border-rose-400 !focus:border-rose-500 !focus:ring-rose-500/10 @enderror w-full px-3.5 py-2 text-xs font-bold border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400" aria-invalid="@error('amount') true @else false @enderror" aria-required="true">
+                            @error('amount') <x-form-error :message="$message" :field="'amount'" /> @enderror
                         </div>
 
                         <div>
                             <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Frekuensi Berulang <span class="text-rose-500">*</span></label>
-                            <select wire:model="frequency" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400">
+                            <select wire:model="frequency" class="@error('frequency') !border-rose-400 !focus:border-rose-500 !focus:ring-rose-500/10 @enderror w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400" aria-invalid="@error('frequency') true @else false @enderror" aria-required="true">
                                 <option value="daily">Harian</option>
                                 <option value="weekly">Mingguan</option>
                                 <option value="monthly">Bulanan</option>
@@ -323,13 +327,13 @@
                                 Tanggal Mulai <span class="text-rose-500">*</span>
                                 <x-help-tip text="Transaksi pertama akan dibuat otomatis pada tanggal ini, lalu diulang lagi sesuai Frekuensi Berulang yang dipilih (mis. tiap bulan pada tanggal yang sama)." />
                             </label>
-                            <input type="date" wire:model="start_date" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400">
-                            @error('start_date') <span class="text-[11px] text-rose-500 mt-0.5 block">{{ $message }}</span> @enderror
+                            <input type="date" wire:model="start_date" class="@error('start_date') !border-rose-400 !focus:border-rose-500 !focus:ring-rose-500/10 @enderror w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400" aria-invalid="@error('start_date') true @else false @enderror" aria-required="true">
+                            @error('start_date') <x-form-error :message="$message" :field="'start_date'" /> @enderror
                         </div>
 
                         <div>
                             <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Tanggal Selesai <span class="text-xs text-neutral-400 font-normal">(opsional)</span></label>
-                            <input type="date" wire:model="end_date" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400">
+                            <input type="date" wire:model="end_date" class="@error('end_date') !border-rose-400 !focus:border-rose-500 !focus:ring-rose-500/10 @enderror w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400" aria-invalid="@error('end_date') true @else false @enderror">
                         </div>
                     </div>
 
@@ -352,7 +356,7 @@
                     {{-- Catatan Tambahan --}}
                     <div>
                         <label class="block text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-1">Catatan Tambahan</label>
-                        <textarea wire:model="notes" rows="2" placeholder="Keterangan tambahan..." class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400"></textarea>
+                        <textarea wire:model="notes" rows="2" placeholder="Keterangan tambahan..." class="@error('notes') !border-rose-400 !focus:border-rose-500 !focus:ring-rose-500/10 @enderror w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400" aria-invalid="@error('notes') true @else false @enderror"></textarea>
                     </div>
                     </x-slot:tab2>
                     <x-slot:submit>

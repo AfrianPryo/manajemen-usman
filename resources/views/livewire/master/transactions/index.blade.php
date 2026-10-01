@@ -17,12 +17,6 @@
 
         {{-- Tombol Aksi Cepat: dipaksa satu baris (nowrap), scroll horizontal kalau ruangnya sempit --}}
         <div class="flex flex-nowrap items-center gap-2 overflow-x-auto shrink-0 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-            {{-- Tombol Export --}}
-            <button type="button" wire:click="exportData" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-semibold text-[#0d3b74] dark:text-sky-300 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 rounded-sm hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-all cursor-pointer shrink-0 whitespace-nowrap">
-                <x-heroicon-o-arrow-down-tray class="w-3.5 h-3.5" stroke-width="2" />
-                <span>Export Excel</span>
-            </button>
-
             {{-- Tombol Kelola Kategori (modul kategori transaksi, menyatu di menu Transaksi) --}}
             <x-tour-replay tour="transactions.index" />
             <button type="button" wire:click="openCategoryModal" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-semibold text-neutral-700 dark:text-neutral-200 bg-white dark:bg-slate-800 border border-neutral-200 dark:border-slate-700 rounded-sm hover:bg-neutral-50 dark:hover:bg-slate-700 transition-all cursor-pointer shadow-sm shadow-black/[0.02] shrink-0 whitespace-nowrap">
@@ -30,8 +24,14 @@
                 <span>Kelola Kategori</span>
             </button>
 
+            {{-- Tombol Export --}}
+            <button type="button" wire:click="exportData" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-semibold text-[#0d3b74] dark:text-sky-300 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 rounded-sm hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-all cursor-pointer shrink-0 whitespace-nowrap">
+                <x-heroicon-o-arrow-down-tray class="w-3.5 h-3.5" stroke-width="2" />
+                <span>Export Excel</span>
+            </button>
+
             {{-- Tombol Import Excel --}}
-            <button type="button" wire:click="openImportModal" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-sm hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition-all cursor-pointer shrink-0 whitespace-nowrap">
+            <button type="button" wire:click="openImportModal" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-semibold text-[#0d3b74] dark:text-sky-300 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 rounded-sm hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-all cursor-pointer shrink-0 whitespace-nowrap">
                 <x-heroicon-o-arrow-up-tray class="w-3.5 h-3.5" stroke-width="2" />
                 <span>Import Excel</span>
             </button>
@@ -95,6 +95,9 @@
             </div>
 
             <div>
+                @if(! empty($lockedUnitId) && $units->count() === 1)
+                    <x-locked-field :value="$units->first()->name" class="px-3.5 py-2.5 text-xs font-medium" />
+                @else
                 <select wire:model.live="unitFilter" class="w-full px-3.5 py-2.5 text-xs font-medium text-neutral-600 dark:text-neutral-300 bg-white dark:bg-slate-900 border border-neutral-200 dark:border-slate-700 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400 cursor-pointer">
                     {{-- Placeholder "semua unit" hanya relevan kalau ada lebih dari 1 unit
                          untuk dipilih (konteks Master). Saat $units cuma berisi 1 unit
@@ -108,6 +111,7 @@
                         <option value="{{ $u->id }}">{{ $u->name }}</option>
                     @endforeach
                 </select>
+                @endif
             </div>
 
             <div>
@@ -153,13 +157,13 @@
                 <span class="font-bold text-sky-300">{{ count($selectedRows) }}</span> item dipilih
             </div>
             <div class="flex items-center gap-2">
-                <button type="button" wire:click="bulkUpdateStatus('completed')" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 rounded-sm font-semibold transition-colors cursor-pointer">
+                <button type="button" wire:click="bulkUpdateStatus('completed')" class="px-3 py-1.5 bg-blue-500 hover:bg-blue-400 rounded-sm font-semibold transition-colors cursor-pointer">
                     Tandai Selesai
                 </button>
-                <button type="button" wire:click="bulkUpdateStatus('pending')" class="px-3 py-1.5 bg-sky-600 hover:bg-sky-500 rounded-sm font-semibold transition-colors cursor-pointer">
+                <button type="button" wire:click="bulkUpdateStatus('pending')" class="px-3 py-1.5 bg-white/10 hover:bg-white/20 ring-1 ring-inset ring-white/15 rounded-sm font-semibold transition-colors cursor-pointer">
                     Tandai Menunggu
                 </button>
-                <button type="button" wire:click="bulkUpdateStatus('cancelled')" class="px-3 py-1.5 bg-amber-600 hover:bg-amber-500 rounded-sm font-semibold transition-colors cursor-pointer">
+                <button type="button" wire:click="bulkUpdateStatus('cancelled')" class="px-3 py-1.5 bg-white/10 hover:bg-white/20 ring-1 ring-inset ring-white/15 rounded-sm font-semibold transition-colors cursor-pointer">
                     Batalkan
                 </button>
                 <button type="button" x-on:click.prevent="$store.confirmDialog.open({
@@ -323,7 +327,7 @@
                         <label class="block text-xs font-medium text-neutral-500 dark:text-neutral-400 mb-2">TIPE TRANSAKSI</label>
                         <div class="grid grid-cols-2 gap-3 p-1 bg-neutral-100 dark:bg-slate-900 rounded-sm">
                             <button type="button" wire:click="$set('form_type', 'income')"
-                                    class="py-2.5 text-xs font-bold rounded-sm transition-all flex items-center justify-center gap-2 {{ $form_type === 'income' ? 'bg-emerald-600 text-white shadow-sm' : 'text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200' }}">
+                                    class="py-2.5 text-xs font-bold rounded-sm transition-all flex items-center justify-center gap-2 {{ $form_type === 'income' ? 'bg-blue-900 text-white shadow-sm' : 'text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200' }}">
                                 <x-heroicon-o-arrow-down class="w-4 h-4" stroke-width="2.5" />
                                 Pemasukan (Income)
                             </button>
@@ -338,8 +342,11 @@
                     {{-- Row 1: Unit & Kategori --}}
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-xs font-medium text-neutral-600 dark:text-neutral-300 mb-1">Unit Usaha</label>
-                            <select wire:model.live="form_unit_id" class="w-full px-3 py-2.5 border rounded-sm text-sm bg-white dark:bg-slate-900 border-neutral-200 dark:border-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400 cursor-pointer">
+                            <label class="block text-xs font-medium text-neutral-600 dark:text-neutral-300 mb-1">Unit Usaha <span class="text-red-500">*</span></label>
+                            @if(! empty($lockedUnitId) && $units->count() === 1)
+                                <x-locked-field :value="$units->first()->name" class="px-3 py-2.5 text-sm" />
+                            @else
+                            <select wire:model.live="form_unit_id" class="@error('form_unit_id') !border-rose-400 !focus:border-rose-500 !focus:ring-rose-500/10 @enderror w-full px-3 py-2.5 border rounded-sm text-sm bg-white dark:bg-slate-900 border-neutral-200 dark:border-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400 cursor-pointer" aria-invalid="@error('form_unit_id') true @else false @enderror" aria-required="true">
                                 @if($units->count() > 1)
                                     <option value="">-- Pilih Unit Usaha --</option>
                                 @endif
@@ -347,11 +354,12 @@
                                     <option value="{{ $u->id }}">{{ $u->name }}</option>
                                 @endforeach
                             </select>
-                            @error('form_unit_id') <span class="text-xs text-red-500 mt-0.5 block">{{ $message }}</span> @enderror
+                            @endif
+                            @error('form_unit_id') <x-form-error :message="$message" :field="'form_unit_id'" /> @enderror
                         </div>
                         <div>
                             <div class="flex items-center justify-between mb-1">
-                                <label class="block text-xs font-medium text-neutral-600 dark:text-neutral-300">Kategori Transaksi</label>
+                                <label class="block text-xs font-medium text-neutral-600 dark:text-neutral-300">Kategori Transaksi <span class="text-red-500">*</span></label>
                                 <button type="button" wire:click="openCategoryModal" class="inline-flex items-center gap-0.5 text-[11px] font-semibold text-[#0d3b74] dark:text-blue-400 hover:underline cursor-pointer">
                                     <x-heroicon-o-plus class="w-3 h-3" stroke-width="2.5" />
                                     Tambah Kategori
@@ -359,30 +367,30 @@
                             </div>
                             <select wire:key="select-category-{{ $form_unit_id }}-{{ $form_type }}"
                                     wire:model="form_finance_category_id"
-                                    class="w-full px-3 py-2.5 border rounded-sm text-sm bg-white dark:bg-slate-900 border-neutral-200 dark:border-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400 cursor-pointer">
+                                    class="@error('form_finance_category_id') !border-rose-400 !focus:border-rose-500 !focus:ring-rose-500/10 @enderror w-full px-3 py-2.5 border rounded-sm text-sm bg-white dark:bg-slate-900 border-neutral-200 dark:border-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400 cursor-pointer" aria-invalid="@error('form_finance_category_id') true @else false @enderror" aria-required="true">
                                 <option value="">-- Pilih Kategori --</option>
                                 @foreach($categories as $cat)
                                     <option value="{{ $cat->id }}">{{ $cat->name }}{{ $cat->scope === 'all' ? ' (Semua Unit)' : '' }}</option>
                                 @endforeach
                             </select>
-                            @error('form_finance_category_id') <span class="text-xs text-red-500 mt-0.5 block">{{ $message }}</span> @enderror
+                            @error('form_finance_category_id') <x-form-error :message="$message" :field="'form_finance_category_id'" /> @enderror
                         </div>
                     </div>
 
                     {{-- Row 2: Nominal & Tanggal --}}
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-xs font-medium text-neutral-600 dark:text-neutral-300 mb-1">Jumlah Nominal (Rp)</label>
+                            <label class="block text-xs font-medium text-neutral-600 dark:text-neutral-300 mb-1">Jumlah Nominal (Rp) <span class="text-red-500">*</span></label>
                             <input type="text" inputmode="decimal" wire:model="form_amount" oninput="onlyDecimal(event)" placeholder="0"
-                                class="w-full px-3 py-2.5 border rounded-sm text-sm font-semibold bg-white dark:bg-slate-900 border-neutral-200 dark:border-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400">
-                            @error('form_amount') <span class="text-xs text-red-500 mt-0.5 block">{{ $message }}</span> @enderror
+                                class="@error('form_amount') !border-rose-400 !focus:border-rose-500 !focus:ring-rose-500/10 @enderror w-full px-3 py-2.5 border rounded-sm text-sm font-semibold bg-white dark:bg-slate-900 border-neutral-200 dark:border-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400" aria-invalid="@error('form_amount') true @else false @enderror" aria-required="true">
+                            @error('form_amount') <x-form-error :message="$message" :field="'form_amount'" /> @enderror
                         </div>
 
                         <div>
-                            <label class="block text-xs font-medium text-neutral-600 dark:text-neutral-300 mb-1">Tanggal Transaksi</label>
+                            <label class="block text-xs font-medium text-neutral-600 dark:text-neutral-300 mb-1">Tanggal Transaksi <span class="text-red-500">*</span></label>
                             <input type="date" wire:model="form_transaction_date"
-                                class="w-full px-3 py-2.5 border rounded-sm text-sm bg-white dark:bg-slate-900 border-neutral-200 dark:border-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400">
-                            @error('form_transaction_date') <span class="text-xs text-red-500 mt-0.5 block">{{ $message }}</span> @enderror
+                                class="@error('form_transaction_date') !border-rose-400 !focus:border-rose-500 !focus:ring-rose-500/10 @enderror w-full px-3 py-2.5 border rounded-sm text-sm bg-white dark:bg-slate-900 border-neutral-200 dark:border-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400" aria-invalid="@error('form_transaction_date') true @else false @enderror" aria-required="true">
+                            @error('form_transaction_date') <x-form-error :message="$message" :field="'form_transaction_date'" /> @enderror
                         </div>
                     </div>
 
@@ -397,14 +405,14 @@
                             <input type="text"
                                 wire:model="form_reference_no"
                                 readonly
-                                class="w-full px-3 py-2.5 border rounded-sm text-sm bg-neutral-100 dark:bg-slate-800/60 border-neutral-200 dark:border-slate-700 text-neutral-500 dark:text-neutral-400 cursor-not-allowed focus:outline-none"
-                                placeholder="Otomatis diset sistem">
-                            @error('form_reference_no') <span class="text-xs text-red-500 mt-0.5 block">{{ $message }}</span> @enderror
+                                class="@error('form_reference_no') !border-rose-400 !focus:border-rose-500 !focus:ring-rose-500/10 @enderror w-full px-3 py-2.5 border rounded-sm text-sm bg-neutral-100 dark:bg-slate-800/60 border-neutral-200 dark:border-slate-700 text-neutral-500 dark:text-neutral-400 cursor-not-allowed focus:outline-none"
+                                placeholder="Otomatis diset sistem" aria-invalid="@error('form_reference_no') true @else false @enderror">
+                            @error('form_reference_no') <x-form-error :message="$message" :field="'form_reference_no'" /> @enderror
                         </div>
 
                         <div>
-                            <label class="block text-xs font-medium text-neutral-600 dark:text-neutral-300 mb-1">Metode Pembayaran</label>
-                            <select wire:model="form_payment_method" class="w-full px-3 py-2.5 border rounded-sm text-sm bg-white dark:bg-slate-900 border-neutral-200 dark:border-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400 cursor-pointer">
+                            <label class="block text-xs font-medium text-neutral-600 dark:text-neutral-300 mb-1">Metode Pembayaran <span class="text-red-500">*</span></label>
+                            <select wire:model="form_payment_method" class="@error('form_payment_method') !border-rose-400 !focus:border-rose-500 !focus:ring-rose-500/10 @enderror w-full px-3 py-2.5 border rounded-sm text-sm bg-white dark:bg-slate-900 border-neutral-200 dark:border-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400 cursor-pointer" aria-invalid="@error('form_payment_method') true @else false @enderror" aria-required="true">
                                 <option value="cash">Tunai (Cash)</option>
                                 <option value="transfer">Transfer Bank</option>
                                 <option value="qris">QRIS</option>
@@ -416,8 +424,8 @@
                             <label class="flex items-center gap-1 text-xs font-medium text-neutral-600 dark:text-neutral-300 mb-1">
                                 Status
                                 <x-help-tip text="Hanya transaksi berstatus 'Selesai' yang dihitung ke Total Pemasukan/Pengeluaran dan Arus Kas. 'Menunggu' dan 'Dibatalkan' tidak ikut dihitung sampai statusnya diubah ke Selesai." />
-                            </label>
-                            <select wire:model="form_status" class="w-full px-3 py-2.5 border rounded-sm text-sm bg-white dark:bg-slate-900 border-neutral-200 dark:border-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400 cursor-pointer">
+                             <span class="text-red-500">*</span></label>
+                            <select wire:model="form_status" class="@error('form_status') !border-rose-400 !focus:border-rose-500 !focus:ring-rose-500/10 @enderror w-full px-3 py-2.5 border rounded-sm text-sm bg-white dark:bg-slate-900 border-neutral-200 dark:border-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400 cursor-pointer" aria-invalid="@error('form_status') true @else false @enderror" aria-required="true">
                                 <option value="completed">Selesai (Completed)</option>
                                 <option value="pending">Menunggu (Pending)</option>
                                 <option value="cancelled">Dibatalkan (Cancelled)</option>
@@ -429,7 +437,7 @@
                     <div>
                         <label class="block text-xs font-medium text-neutral-600 dark:text-neutral-300 mb-1">Deskripsi / Catatan</label>
                         <textarea wire:model="form_description" rows="2" placeholder="Masukkan rincian keterangan transaksi..."
-                                class="w-full px-3 py-2.5 border rounded-sm text-sm bg-white dark:bg-slate-900 border-neutral-200 dark:border-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400"></textarea>
+                                class="@error('form_description') !border-rose-400 !focus:border-rose-500 !focus:ring-rose-500/10 @enderror w-full px-3 py-2.5 border rounded-sm text-sm bg-white dark:bg-slate-900 border-neutral-200 dark:border-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400" aria-invalid="@error('form_description') true @else false @enderror"></textarea>
                     </div>
 
                     {{-- Bukti Transaksi --}}
@@ -453,13 +461,13 @@
                         <input type="file"
                             wire:model="form_proof_file"
                             accept="image/png, image/jpeg, image/jpg, application/pdf"
-                            class="w-full text-xs border border-neutral-200 dark:border-slate-700 rounded-sm p-1.5 bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100">
+                            class="@error('form_proof_file') !border-rose-400 !focus:border-rose-500 !focus:ring-rose-500/10 @enderror w-full text-xs border border-neutral-200 dark:border-slate-700 rounded-sm p-1.5 bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100" aria-invalid="@error('form_proof_file') true @else false @enderror">
 
                         {{-- Indikator Upload --}}
                         <x-upload-progress label="Mengunggah berkas..." />
 
                         @error('form_proof_file')
-                            <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span>
+                            <x-form-error :message="$message" :field="'form_proof_file'" />
                         @enderror
                     </div>
                     </x-slot:tab2>
@@ -479,20 +487,20 @@
     {{-- ================= MODAL KELOLA KATEGORI TRANSAKSI ================= --}}
     @if($showCategoryModal)
         <div class="fixed inset-0 z-[60] overflow-y-auto bg-neutral-900/50 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-150">
-            <div class="bg-white dark:bg-slate-800 w-full max-w-2xl rounded-sm shadow-2xl border border-neutral-200 dark:border-slate-700 overflow-hidden">
+            <div class="bg-white dark:bg-slate-800 w-full max-w-4xl rounded-sm shadow-2xl border border-neutral-200 dark:border-slate-700 overflow-hidden">
 
                 {{-- Modal Header --}}
-                <div class="p-5 border-b border-neutral-100 dark:border-slate-700 flex items-center justify-between bg-neutral-50/50 dark:bg-slate-900/50">
-                    <div>
-                        <h3 class="text-lg font-bold text-neutral-900 dark:text-white">Kelola Kategori Transaksi</h3>
-                        <p class="text-xs text-neutral-400 mt-0.5">Tambah, ubah, atau hapus kategori pemasukan & pengeluaran</p>
+                <div class="px-5 py-3 border-b border-neutral-100 dark:border-slate-700 flex items-center justify-between gap-3 bg-neutral-50/50 dark:bg-slate-900/50">
+                    <div class="flex items-baseline gap-2 min-w-0">
+                        <h3 class="text-sm font-bold text-neutral-900 dark:text-white">Kelola Kategori Transaksi</h3>
+                        <p class="hidden sm:block text-[11px] text-neutral-400 truncate">Kategori pemasukan & pengeluaran</p>
                     </div>
-                    <button type="button" wire:click="closeCategoryModal" class="text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 cursor-pointer">
+                    <button type="button" wire:click="closeCategoryModal" class="text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 cursor-pointer" aria-label="Tutup">
                         <x-heroicon-o-x-mark class="w-5 h-5" stroke-width="2" />
                     </button>
                 </div>
 
-                <div class="p-6 space-y-5">
+                <div class="p-4">
                     {{-- Flash Notifications (toast) --}}
                     @if (session()->has('category_success'))
                         <div wire:key="toast-category-success-{{ md5(session('category_success')) }}" x-data x-init="$store.toast.push('success', @js(session('category_success')))"></div>
@@ -501,107 +509,94 @@
                         <div wire:key="toast-category-error-{{ md5(session('category_error')) }}" x-data x-init="$store.toast.push('error', @js(session('category_error')))"></div>
                     @endif
 
-                    {{-- Form Input / Edit Inline --}}
-                    <form wire:submit="saveCategory" class="p-4 bg-neutral-50/80 dark:bg-slate-900/60 border border-neutral-200/80 dark:border-slate-700/80 rounded-sm space-y-4">
-                        {{-- Header Form & Status Mode --}}
-                        <div class="flex items-center justify-between pb-2 border-b border-neutral-200/60 dark:border-slate-800">
-                            <div class="flex items-center gap-2">
-                                <span class="w-2 h-2 rounded-sm {{ $isEditingCategory ? 'bg-amber-500' : 'bg-blue-600' }}"></span>
-                                <span class="text-xs font-bold text-neutral-800 dark:text-neutral-200">
-                                    {{ $isEditingCategory ? 'Edit Kategori' : 'Tambah Kategori Baru' }}
+                    {{-- Layar lebar: form di kiri, tabel di kanan (sejajar, tidak bertumpuk) --}}
+                    <div class="grid grid-cols-1 lg:grid-cols-[18rem_minmax(0,1fr)] gap-4 items-start">
+
+                        {{-- Form Input / Edit --}}
+                        <form wire:submit="saveCategory" class="p-3 bg-neutral-50/80 dark:bg-slate-900/60 border border-neutral-200/80 dark:border-slate-700/80 rounded-sm space-y-3">
+                            <div class="flex items-center justify-between">
+                                <span class="flex items-center gap-2 text-xs font-bold text-neutral-800 dark:text-neutral-200">
+                                    <span class="w-2 h-2 rounded-sm {{ $isEditingCategory ? 'bg-amber-500' : 'bg-blue-900' }}"></span>
+                                    {{ $isEditingCategory ? 'Edit Kategori' : 'Tambah Kategori' }}
                                 </span>
+
+                                @if($isEditingCategory)
+                                    <button type="button" wire:click="resetCategoryForm" class="inline-flex items-center gap-1 text-[11px] font-medium text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200 px-2 py-0.5 rounded-sm hover:bg-neutral-200/60 dark:hover:bg-slate-800 transition-colors cursor-pointer">
+                                        <x-heroicon-o-x-mark class="w-3 h-3" stroke-width="2" />
+                                        Batal
+                                    </button>
+                                @endif
                             </div>
 
-                            @if($isEditingCategory)
-                                <button type="button" wire:click="resetCategoryForm" class="inline-flex items-center gap-1 text-[11px] font-medium text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200 px-2 py-0.5 rounded-sm hover:bg-neutral-200/60 dark:hover:bg-slate-800 transition-colors cursor-pointer">
-                                    <x-heroicon-o-x-mark class="w-3 h-3" stroke-width="2" />
-                                    Batal Edit
-                                </button>
-                            @endif
-                        </div>
-
-                        {{-- Baris 1: Nama & Tipe --}}
-                        <div class="grid grid-cols-1 sm:grid-cols-12 gap-3 items-start">
                             {{-- Nama Kategori --}}
-                            <div class="sm:col-span-7 space-y-1">
-                                <label class="block text-[11px] font-semibold text-neutral-600 dark:text-neutral-300">
-                                    Nama Kategori
-                                </label>
-                                <input type="text" wire:model="category_name" placeholder="Contoh: Penjualan Produk, Biaya Listrik..." class="w-full h-9 text-xs rounded-sm border border-neutral-200 dark:border-slate-700 dark:bg-slate-900 px-3 text-neutral-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400 placeholder:text-neutral-400 dark:placeholder:text-neutral-500 transition-all">
-                                @error('category_name') <span class="text-[10px] text-red-500 block font-medium">{{ $message }}</span> @enderror
+                            <div class="space-y-1">
+                                <label class="block text-[11px] font-semibold text-neutral-600 dark:text-neutral-300">Nama Kategori <span class="text-red-500">*</span></label>
+                                <input type="text" wire:model="category_name" placeholder="Contoh: Penjualan Produk" class="@error('category_name') !border-rose-400 !focus:border-rose-500 !focus:ring-rose-500/10 @enderror w-full h-9 text-xs rounded-sm border border-neutral-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-neutral-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400 placeholder:text-neutral-400 dark:placeholder:text-neutral-500 transition-all" aria-invalid="@error('category_name') true @else false @enderror">
+                                @error('category_name') <x-form-error :message="$message" :field="'category_name'" /> @enderror
                             </div>
 
                             {{-- Tipe: Income / Expense --}}
-                            <div class="sm:col-span-5 space-y-1">
-                                <label class="block text-[11px] font-semibold text-neutral-600 dark:text-neutral-300">
-                                    Tipe
-                                </label>
-                                <div class="grid grid-cols-2 gap-1.5 p-1 bg-neutral-100 dark:bg-slate-900 rounded-sm">
+                            <div class="space-y-1">
+                                <label class="block text-[11px] font-semibold text-neutral-600 dark:text-neutral-300">Tipe <span class="text-red-500">*</span></label>
+                                <div class="grid grid-cols-2 gap-1 p-1 bg-neutral-100 dark:bg-slate-900 rounded-sm">
                                     <button type="button" wire:click="$set('category_type', 'income')"
-                                            class="h-7 text-[11px] font-bold rounded-sm transition-all {{ $category_type === 'income' ? 'bg-emerald-600 text-white shadow-sm' : 'text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200' }}">
+                                            class="h-7 text-[11px] font-bold rounded-sm transition-all cursor-pointer {{ $category_type === 'income' ? 'bg-blue-900 text-white shadow-sm' : 'text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200' }}">
                                         Pemasukan
                                     </button>
                                     <button type="button" wire:click="$set('category_type', 'expense')"
-                                            class="h-7 text-[11px] font-bold rounded-sm transition-all {{ $category_type === 'expense' ? 'bg-rose-600 text-white shadow-sm' : 'text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200' }}">
+                                            class="h-7 text-[11px] font-bold rounded-sm transition-all cursor-pointer {{ $category_type === 'expense' ? 'bg-rose-600 text-white shadow-sm' : 'text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200' }}">
                                         Pengeluaran
                                     </button>
                                 </div>
-                                @error('category_type') <span class="text-[10px] text-red-500 block font-medium">{{ $message }}</span> @enderror
+                                @error('category_type') <x-form-error :message="$message" :field="'category_type'" /> @enderror
                             </div>
-                        </div>
 
-                        {{--
-                            Baris 2: Cakupan Unit Usaha.
+                            {{--
+                                Cakupan Unit Usaha.
 
-                            Untuk Master Admin ($units berisi LEBIH dari 1 unit): tampilkan
-                            pilihan penuh "Semua Unit" vs "Unit Tertentu" + daftar checklist
-                            unit. Untuk Admin Unit ($units cuma berisi unit-nya sendiri,
-                            lihat Unit\Transactions\Index::render()): sembunyikan pilihan ini
-                            sama sekali -- cakupannya SUDAH otomatis dikunci ke unit sendiri
-                            lewat Unit\Transactions\Index::lockCategoryScope(), cukup
-                            ditampilkan sebagai catatan info saja.
-                        --}}
-                        @if($units->count() > 1)
-                            <div class="space-y-2 pt-1 border-t border-neutral-200/60 dark:border-slate-800">
-                                <label class="block text-[11px] font-semibold text-neutral-600 dark:text-neutral-300">
-                                    Cakupan Unit Usaha
-                                </label>
-                                <div class="grid grid-cols-2 gap-1.5 p-1 bg-neutral-100 dark:bg-slate-900 rounded-sm">
-                                    <button type="button" wire:click="$set('category_scope', 'all')"
-                                            class="h-8 text-[11px] font-bold rounded-sm transition-all {{ $category_scope === 'all' ? 'bg-blue-900 text-white shadow-sm' : 'text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200' }}">
-                                        Semua Unit Usaha
-                                    </button>
-                                    <button type="button" wire:click="$set('category_scope', 'specific')"
-                                            class="h-8 text-[11px] font-bold rounded-sm transition-all {{ $category_scope === 'specific' ? 'bg-blue-900 text-white shadow-sm' : 'text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200' }}">
-                                        Unit Tertentu (Custom)
-                                    </button>
-                                </div>
-                                @error('category_scope') <span class="text-[10px] text-red-500 block font-medium">{{ $message }}</span> @enderror
-
-                                @if($category_scope === 'specific')
-                                    <div class="max-h-32 overflow-y-auto grid grid-cols-2 sm:grid-cols-3 gap-x-3 gap-y-1.5 p-2.5 bg-white dark:bg-slate-800 border border-neutral-200 dark:border-slate-700 rounded-sm">
-                                        @foreach($units as $u)
-                                            <label class="flex items-center gap-1.5 text-[11px] text-neutral-700 dark:text-neutral-300 cursor-pointer">
-                                                <input type="checkbox" wire:model="category_unit_ids" value="{{ $u->id }}" class="rounded-sm border-neutral-300 dark:border-slate-600 text-blue-900 focus:ring-blue-500/20">
-                                                {{ $u->name }}
-                                            </label>
-                                        @endforeach
+                                Master Admin ($units berisi LEBIH dari 1 unit): pilihan "Semua Unit"
+                                vs "Unit Tertentu" + daftar checklist unit. Admin Unit ($units cuma
+                                berisi unit-nya sendiri, lihat Unit\Transactions\Index::render()):
+                                pilihan disembunyikan -- cakupan SUDAH dikunci ke unit sendiri lewat
+                                Unit\Transactions\Index::lockCategoryScope(), cukup ditampilkan
+                                sebagai kotak read-only.
+                            --}}
+                            @if($units->count() > 1)
+                                <div class="space-y-1">
+                                    <label class="block text-[11px] font-semibold text-neutral-600 dark:text-neutral-300">Cakupan Unit Usaha <span class="text-red-500">*</span></label>
+                                    <div class="grid grid-cols-2 gap-1 p-1 bg-neutral-100 dark:bg-slate-900 rounded-sm">
+                                        <button type="button" wire:click="$set('category_scope', 'all')"
+                                                class="h-7 text-[11px] font-bold rounded-sm transition-all cursor-pointer {{ $category_scope === 'all' ? 'bg-blue-900 text-white shadow-sm' : 'text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200' }}">
+                                            Semua Unit
+                                        </button>
+                                        <button type="button" wire:click="$set('category_scope', 'specific')"
+                                                class="h-7 text-[11px] font-bold rounded-sm transition-all cursor-pointer {{ $category_scope === 'specific' ? 'bg-blue-900 text-white shadow-sm' : 'text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200' }}">
+                                            Unit Tertentu
+                                        </button>
                                     </div>
-                                    @error('category_unit_ids') <span class="text-[10px] text-red-500 block font-medium">{{ $message }}</span> @enderror
-                                @endif
-                            </div>
-                        @else
-                            <div class="pt-1 border-t border-neutral-200/60 dark:border-slate-800">
-                                <p class="text-[11px] text-neutral-500 dark:text-neutral-400 bg-neutral-100 dark:bg-slate-900 rounded-sm px-2.5 py-2">
-                                    Kategori ini akan berlaku khusus untuk unit Anda:
-                                    <span class="font-semibold text-neutral-700 dark:text-neutral-200">{{ $units->first()->name ?? '-' }}</span>
-                                </p>
-                            </div>
-                        @endif
+                                    @error('category_scope') <x-form-error :message="$message" :field="'category_scope'" /> @enderror
 
-                        {{-- Tombol Submit --}}
-                        <div class="flex justify-end pt-1">
-                            <button type="submit" wire:loading.attr="disabled" class="px-5 h-9 inline-flex items-center justify-center gap-1.5 bg-blue-900 hover:bg-blue-950 active:bg-blue-950 text-white text-xs font-semibold rounded-sm transition-all shadow-sm shadow-blue-900/20 cursor-pointer disabled:opacity-50">
+                                    @if($category_scope === 'specific')
+                                        <div class="max-h-24 overflow-y-auto grid grid-cols-2 gap-x-3 gap-y-1.5 p-2 bg-white dark:bg-slate-800 border border-neutral-200 dark:border-slate-700 rounded-sm">
+                                            @foreach($units as $u)
+                                                <label class="flex items-center gap-1.5 text-[11px] text-neutral-700 dark:text-neutral-300 cursor-pointer min-w-0">
+                                                    <input type="checkbox" wire:model="category_unit_ids" value="{{ $u->id }}" aria-invalid="@error('category_unit_ids') true @else false @enderror" class="rounded-sm border-neutral-300 dark:border-slate-600 text-blue-900 focus:ring-blue-500/20 shrink-0">
+                                                    <span class="truncate" title="{{ $u->name }}">{{ $u->name }}</span>
+                                                </label>
+                                            @endforeach
+                                        </div>
+                                        @error('category_unit_ids') <x-form-error :message="$message" :field="'category_unit_ids'" /> @enderror
+                                    @endif
+                                </div>
+                            @else
+                                <div class="space-y-1">
+                                    <label class="block text-[11px] font-semibold text-neutral-600 dark:text-neutral-300">Berlaku untuk Unit</label>
+                                    <x-locked-field :value="$units->first()->name ?? '-'" class="h-9 px-3 text-xs font-medium" />
+                                </div>
+                            @endif
+
+                            {{-- Tombol Submit --}}
+                            <button type="submit" wire:loading.attr="disabled" class="w-full h-9 inline-flex items-center justify-center gap-1.5 bg-blue-900 hover:bg-blue-950 active:bg-blue-950 text-white text-xs font-semibold rounded-sm transition-all shadow-sm shadow-blue-900/20 cursor-pointer disabled:opacity-50">
                                 <span wire:loading.remove wire:target="saveCategory">
                                     {{ $isEditingCategory ? 'Update' : 'Simpan' }}
                                 </span>
@@ -612,117 +607,115 @@
                                     </svg>
                                 </span>
                             </button>
-                        </div>
-                    </form>
+                        </form>
 
-                    {{-- Tabel List Kategori --}}
-                    <div class="border border-neutral-200 dark:border-slate-700 rounded-sm overflow-hidden">
-                        <div class="max-h-64 overflow-y-auto">
-                            <table class="w-full text-left text-xs">
-                                <thead class="bg-neutral-50/70 dark:bg-slate-900/50 text-neutral-400 uppercase tracking-wider font-semibold sticky top-0 border-b border-neutral-100 dark:border-slate-700">
-                                    <tr>
-                                        <th class="px-4 py-3">Kategori</th>
-                                        <th class="px-4 py-3">Tipe</th>
-                                        <th class="px-4 py-3">Cakupan Unit</th>
-                                        <th class="px-4 py-3 text-center">Transaksi</th>
-                                        <th class="px-4 py-3 text-center">Aksi</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="divide-y divide-neutral-100 dark:divide-slate-700">
-                                    {{--
-                                        Sumber data: kategori yang BERLAKU untuk konteks halaman
-                                        ini -- pakai variabel $units yang sudah konsisten di-scope
-                                        di seluruh halaman ini (SEMUA unit untuk Master Admin, 1
-                                        unit untuk Admin Unit yang sedang membuka halamannya
-                                        sendiri), sama seperti pola di Master\Inventory\Index.
-                                        Kategori berscope 'all' selalu ikut tampil (berlaku ke
-                                        semua unit termasuk unit dalam $units).
-                                    --}}
-                                    @php
-                                        $categoriesTableData = \App\Models\FinanceCategory::with('units')
-                                            ->withCount('transactions')
-                                            ->where(function ($q) use ($units) {
-                                                $q->where('scope', 'all')
-                                                  ->orWhereHas('units', fn ($u) => $u->whereIn('units.id', $units->pluck('id')));
-                                            })
-                                            ->latest()
-                                            ->get();
-
-                                        // Kategori hanya bisa diedit/dihapus dari sini kalau:
-                                        // - Master Admin ($units berisi lebih dari 1 unit -> boleh kelola semuanya), ATAU
-                                        // - Admin Unit ($units cuma 1 unit) DAN kategori itu scope 'specific'
-                                        //   yang SATU-SATUNYA unit terhubung adalah unit ini sendiri (bukan
-                                        //   kategori "Semua Unit" atau kategori 'specific' yang dibagi Master
-                                        //   Admin ke beberapa unit termasuk unit ini).
-                                        $isMasterContext = $units->count() > 1;
-                                    @endphp
-                                    @forelse($categoriesTableData as $cat)
-                                        @php
-                                            $catUnitIds = $cat->units->pluck('id')->sort()->values();
-                                            $canManage = $isMasterContext || (
-                                                $cat->scope === 'specific'
-                                                && $catUnitIds->count() === 1
-                                                && $catUnitIds->first() === (int) ($units->first()->id ?? null)
-                                            );
-                                        @endphp
-                                        <tr class="hover:bg-neutral-50/60 dark:hover:bg-slate-700/30 transition-colors">
-                                            <td class="px-4 py-2.5 font-semibold text-neutral-800 dark:text-neutral-200">
-                                                {{ $cat->name }}
-                                            </td>
-                                            <td class="px-4 py-2.5">
-                                                @if($cat->type === 'income')
-                                                    <span class="px-2 py-0.5 text-[10px] font-semibold rounded-sm bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300">Pemasukan</span>
-                                                @else
-                                                    <span class="px-2 py-0.5 text-[10px] font-semibold rounded-sm bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300">Pengeluaran</span>
-                                                @endif
-                                            </td>
-                                            <td class="px-4 py-2.5 text-neutral-500 dark:text-neutral-400">
-                                                @if($cat->scope === 'all')
-                                                    <span class="px-2 py-0.5 text-[10px] font-semibold rounded-sm bg-blue-50 dark:bg-blue-950/40 text-[#0d3b74] dark:text-blue-300">Semua Unit</span>
-                                                @else
-                                                    <span title="{{ $cat->units->pluck('name')->join(', ') }}">
-                                                        {{ $cat->units->pluck('name')->join(', ') ?: '-' }}
-                                                    </span>
-                                                @endif
-                                            </td>
-                                            <td class="px-4 py-2.5 text-center">
-                                                <span class="px-2 py-0.5 text-[10px] font-mono rounded-sm bg-neutral-100 dark:bg-slate-700 text-neutral-600 dark:text-neutral-300">
-                                                    {{ $cat->transactions_count }} transaksi
-                                                </span>
-                                            </td>
-                                            <td class="px-4 py-2.5 text-center">
-                                                @if($canManage)
-                                                    <div class="flex items-center justify-center gap-1">
-                                                        <button type="button" wire:click="editCategory({{ $cat->id }})" class="p-1 text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950/40 rounded-sm transition-colors cursor-pointer" title="Edit">
-                                                            <x-heroicon-o-pencil-square class="w-4 h-4" stroke-width="2" />
-                                                        </button>
-                                                        <button type="button" x-on:click.prevent="$store.confirmDialog.open({
-                                                                message: 'Apakah Anda yakin ingin menghapus kategori \'{{ $cat->name }}\'?',
-                                                                confirmText: 'Ya, Hapus',
-                                                                onConfirm: () => $wire.deleteCategory({{ $cat->id }})
-                                                            })" class="p-1 text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-sm transition-colors cursor-pointer" title="Hapus">
-                                                            <x-heroicon-o-trash class="w-4 h-4" stroke-width="2" />
-                                                        </button>
-                                                    </div>
-                                                @else
-                                                    <span class="text-[10px] text-neutral-400 italic">Milik Master</span>
-                                                @endif
-                                            </td>
-                                        </tr>
-                                    @empty
+                        {{-- Tabel List Kategori (tinggi dibatasi ke tinggi layar, baru scroll kalau memang banyak) --}}
+                        <div class="border border-neutral-200 dark:border-slate-700 rounded-sm overflow-hidden min-w-0">
+                            <div class="max-h-72 lg:max-h-[calc(100vh-12rem)] overflow-y-auto">
+                                <table class="w-full text-left text-xs">
+                                    <thead class="bg-neutral-50 dark:bg-slate-900 text-neutral-400 uppercase tracking-wider text-[10px] font-semibold sticky top-0 border-b border-neutral-100 dark:border-slate-700">
                                         <tr>
-                                            <td colspan="5" class="px-4 py-6 text-center text-neutral-400 text-xs">Belum ada kategori terdaftar.</td>
+                                            <th class="px-3 py-2">Kategori</th>
+                                            <th class="px-3 py-2">Tipe</th>
+                                            <th class="px-3 py-2">Cakupan</th>
+                                            <th class="px-3 py-2 text-center" title="Jumlah transaksi yang memakai kategori ini">Trx</th>
+                                            <th class="px-3 py-2 text-center">Aksi</th>
                                         </tr>
-                                    @endforelse
-                                </tbody>
-                            </table>
+                                    </thead>
+                                    <tbody class="divide-y divide-neutral-100 dark:divide-slate-700">
+                                        {{--
+                                            Sumber data: kategori yang BERLAKU untuk konteks halaman
+                                            ini -- pakai variabel $units yang sudah konsisten di-scope
+                                            di seluruh halaman ini (SEMUA unit untuk Master Admin, 1
+                                            unit untuk Admin Unit yang sedang membuka halamannya
+                                            sendiri), sama seperti pola di Master\Inventory\Index.
+                                            Kategori berscope 'all' selalu ikut tampil (berlaku ke
+                                            semua unit termasuk unit dalam $units).
+                                        --}}
+                                        @php
+                                            $categoriesTableData = \App\Models\FinanceCategory::with('units')
+                                                ->withCount('transactions')
+                                                ->where(function ($q) use ($units) {
+                                                    $q->where('scope', 'all')
+                                                      ->orWhereHas('units', fn ($u) => $u->whereIn('units.id', $units->pluck('id')));
+                                                })
+                                                ->latest()
+                                                ->get();
+
+                                            // Kategori hanya bisa diedit/dihapus dari sini kalau:
+                                            // - Master Admin ($units berisi lebih dari 1 unit -> boleh kelola semuanya), ATAU
+                                            // - Admin Unit ($units cuma 1 unit) DAN kategori itu scope 'specific'
+                                            //   yang SATU-SATUNYA unit terhubung adalah unit ini sendiri (bukan
+                                            //   kategori "Semua Unit" atau kategori 'specific' yang dibagi Master
+                                            //   Admin ke beberapa unit termasuk unit ini).
+                                            $isMasterContext = $units->count() > 1;
+                                        @endphp
+                                        @forelse($categoriesTableData as $cat)
+                                            @php
+                                                $catUnitIds = $cat->units->pluck('id')->sort()->values();
+                                                $canManage = $isMasterContext || (
+                                                    $cat->scope === 'specific'
+                                                    && $catUnitIds->count() === 1
+                                                    && $catUnitIds->first() === (int) ($units->first()->id ?? null)
+                                                );
+                                            @endphp
+                                            <tr class="hover:bg-neutral-50/60 dark:hover:bg-slate-700/30 transition-colors">
+                                                <td class="px-3 py-1.5 font-semibold text-neutral-800 dark:text-neutral-200">
+                                                    <span class="block max-w-[11rem] truncate" title="{{ $cat->name }}">{{ $cat->name }}</span>
+                                                </td>
+                                                <td class="px-3 py-1.5">
+                                                    @if($cat->type === 'income')
+                                                        <span class="px-1.5 py-0.5 text-[10px] font-semibold rounded-sm bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300">Pemasukan</span>
+                                                    @else
+                                                        <span class="px-1.5 py-0.5 text-[10px] font-semibold rounded-sm bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300">Pengeluaran</span>
+                                                    @endif
+                                                </td>
+                                                <td class="px-3 py-1.5 text-neutral-500 dark:text-neutral-400">
+                                                    @if($cat->scope === 'all')
+                                                        <span class="px-1.5 py-0.5 text-[10px] font-semibold rounded-sm bg-blue-50 dark:bg-blue-950/40 text-[#0d3b74] dark:text-blue-300">Semua Unit</span>
+                                                    @else
+                                                        <span class="block max-w-[9rem] truncate" title="{{ $cat->units->pluck('name')->join(', ') }}">
+                                                            {{ $cat->units->pluck('name')->join(', ') ?: '-' }}
+                                                        </span>
+                                                    @endif
+                                                </td>
+                                                <td class="px-3 py-1.5 text-center font-mono text-[11px] text-neutral-500 dark:text-neutral-400">
+                                                    {{ $cat->transactions_count }}
+                                                </td>
+                                                <td class="px-3 py-1.5 text-center whitespace-nowrap">
+                                                    @if($canManage)
+                                                        <div class="flex items-center justify-center gap-0.5">
+                                                            <button type="button" wire:click="editCategory({{ $cat->id }})" class="p-1 text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950/40 rounded-sm transition-colors cursor-pointer" title="Edit">
+                                                                <x-heroicon-o-pencil-square class="w-4 h-4" stroke-width="2" />
+                                                            </button>
+                                                            <button type="button" x-on:click.prevent="$store.confirmDialog.open({
+                                                                    message: 'Apakah Anda yakin ingin menghapus kategori \'{{ $cat->name }}\'?',
+                                                                    confirmText: 'Ya, Hapus',
+                                                                    onConfirm: () => $wire.deleteCategory({{ $cat->id }})
+                                                                })" class="p-1 text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-sm transition-colors cursor-pointer" title="Hapus">
+                                                                <x-heroicon-o-trash class="w-4 h-4" stroke-width="2" />
+                                                            </button>
+                                                        </div>
+                                                    @else
+                                                        <span class="text-[10px] text-neutral-400 italic">Milik Master</span>
+                                                    @endif
+                                                </td>
+                                            </tr>
+                                        @empty
+                                            <tr>
+                                                <td colspan="5" class="px-4 py-6 text-center text-neutral-400 text-xs">Belum ada kategori terdaftar.</td>
+                                            </tr>
+                                        @endforelse
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 </div>
 
                 {{-- Footer --}}
-                <div class="px-5 py-3 bg-neutral-50/40 dark:bg-slate-900/40 border-t border-neutral-100 dark:border-slate-700 flex justify-end">
-                    <button type="button" wire:click="closeCategoryModal" class="px-4 py-2 text-xs font-semibold text-neutral-700 dark:text-neutral-300 bg-white dark:bg-slate-800 border border-neutral-200 dark:border-slate-700 rounded-sm hover:bg-neutral-50 dark:hover:bg-slate-700 transition-colors cursor-pointer">
+                <div class="px-4 py-2.5 bg-neutral-50/40 dark:bg-slate-900/40 border-t border-neutral-100 dark:border-slate-700 flex justify-end">
+                    <button type="button" wire:click="closeCategoryModal" class="px-4 py-1.5 text-xs font-semibold text-neutral-700 dark:text-neutral-300 bg-white dark:bg-slate-800 border border-neutral-200 dark:border-slate-700 rounded-sm hover:bg-neutral-50 dark:hover:bg-slate-700 transition-colors cursor-pointer">
                         Tutup
                     </button>
                 </div>
@@ -821,7 +814,7 @@
                                 x-on:livewire-upload-error="uploading = false"
                                 x-on:livewire-upload-progress="progress = $event.detail.progress"
                             >
-                                <input type="file" wire:model="proofFile" id="proofInput" class="hidden">
+                                <input type="file" wire:model="proofFile" id="proofInput" class="@error('proofFile') !border-rose-400 !focus:border-rose-500 !focus:ring-rose-500/10 @enderror hidden" aria-invalid="@error('proofFile') true @else false @enderror">
                                 <label for="proofInput" class="cursor-pointer block">
                                     <x-heroicon-o-arrow-up-tray class="w-6 h-6 mx-auto text-neutral-400 mb-1" stroke-width="2" />
                                     <span class="text-neutral-600 dark:text-neutral-300 font-medium">Klik untuk memilih file struk</span>
@@ -829,7 +822,7 @@
                                 </label>
 
                                 @error('proofFile')
-                                    <p class="text-red-500 text-[10px] mt-1">{{ $message }}</p>
+                                    <x-form-error :message="$message" :field="'proofFile'" />
                                 @enderror
 
                                 <x-upload-progress label="Memproses berkas..." />
@@ -837,7 +830,7 @@
                                 @if($proofFile)
                                     <div class="mt-3 pt-2 border-t border-neutral-200 dark:border-slate-700 flex items-center justify-between">
                                         <span class="text-[11px] text-neutral-700 dark:text-neutral-300 truncate max-w-[200px]">{{ $proofFile->getClientOriginalName() }}</span>
-                                        <button wire:click="uploadProof" wire:loading.attr="disabled" class="px-3 py-1 bg-emerald-600 text-white rounded-sm text-[11px] font-semibold hover:bg-emerald-700 disabled:opacity-50 cursor-pointer">
+                                        <button wire:click="uploadProof" wire:loading.attr="disabled" class="px-3 py-1 bg-blue-900 text-white rounded-sm text-[11px] font-semibold hover:bg-blue-950 disabled:opacity-50 cursor-pointer">
                                             Simpan Struk
                                         </button>
                                     </div>
@@ -895,7 +888,7 @@
                     </div>
 
                     <div>
-                        <button type="button" wire:click="downloadTemplate" class="w-full inline-flex items-center justify-center gap-2 py-2.5 px-3 text-xs font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-sm hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition cursor-pointer">
+                        <button type="button" wire:click="downloadTemplate" class="w-full inline-flex items-center justify-center gap-2 py-2.5 px-3 text-xs font-semibold text-[#0d3b74] dark:text-sky-300 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 rounded-sm hover:bg-blue-100 dark:hover:bg-blue-900/40 transition cursor-pointer">
                             <x-heroicon-o-arrow-down-tray class="w-4 h-4" stroke-width="2" />
                             Unduh Template (.XLSX)
                         </button>
@@ -909,16 +902,16 @@
                         x-on:livewire-upload-error="uploading = false"
                         x-on:livewire-upload-progress="progress = $event.detail.progress"
                     >
-                        <label class="block text-xs font-medium text-neutral-600 dark:text-neutral-300 mb-1">Unggah Berkas Excel</label>
-                        <input type="file" wire:model="excel_file" accept=".xlsx, .xls" class="w-full text-xs border border-neutral-200 dark:border-slate-700 rounded-sm p-1.5 bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-200">
+                        <label class="block text-xs font-medium text-neutral-600 dark:text-neutral-300 mb-1">Unggah Berkas Excel <span class="text-red-500">*</span></label>
+                        <input type="file" wire:model="excel_file" accept=".xlsx, .xls" class="@error('excel_file') !border-rose-400 !focus:border-rose-500 !focus:ring-rose-500/10 @enderror w-full text-xs border border-neutral-200 dark:border-slate-700 rounded-sm p-1.5 bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-200" aria-invalid="@error('excel_file') true @else false @enderror">
 
                         <x-upload-progress label="Membaca file..." />
-                        @error('excel_file') <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span> @enderror
+                        @error('excel_file') <x-form-error :message="$message" :field="'excel_file'" /> @enderror
                     </div>
 
                     <div class="pt-4 flex justify-end gap-2 border-t border-neutral-100 dark:border-slate-700">
                         <button type="button" wire:click="closeImportModal" class="px-4 py-2.5 border border-neutral-200 dark:border-slate-700 rounded-sm text-sm font-semibold hover:bg-neutral-50 dark:hover:bg-slate-700 dark:text-white transition-colors cursor-pointer">Batal</button>
-                        <button type="submit" wire:loading.attr="disabled" class="px-4 py-2.5 text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-sm transition shadow-sm shadow-emerald-900/20 flex items-center gap-1.5 cursor-pointer">
+                        <button type="submit" wire:loading.attr="disabled" class="px-4 py-2.5 text-sm font-bold text-white bg-blue-900 hover:bg-blue-950 rounded-sm transition shadow-sm shadow-blue-900/20 flex items-center gap-1.5 cursor-pointer">
                             <span wire:loading.remove wire:target="importExcel">Import Data</span>
                             <span wire:loading wire:target="importExcel">Memproses...</span>
                         </button>

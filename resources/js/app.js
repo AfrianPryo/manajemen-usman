@@ -1,6 +1,7 @@
 import { initSmoothScroll } from "./smooth-scroll";
 import { initPageLoader } from "./loader.js"; // 👈 Import module loader
 import "./phone-input.js"; // 👈 Alpine component untuk <x-phone-input>
+import "./form-validation.js"; // 👈 Penanda error state field form (lihat <x-form-error>)
 
 // 👇 Lazy-load module ascii-3d-hero.js (dan Three.js di dalamnya) HANYA saat
 // dibutuhkan, alih-alih di-import secara statis di atas. Three.js adalah
@@ -130,3 +131,30 @@ document.addEventListener('DOMContentLoaded', initGlobalScripts);
 
 // Inisialisasi saat navigasi Livewire v3 SPA Navigation
 document.addEventListener('livewire:navigated', initGlobalScripts);
+
+// ================= Pesan Sesi Kedaluwarsa (Livewire 419) =================
+// Bawaan Livewire menampilkan confirm() berbahasa Inggris ("This page has
+// expired...") saat token CSRF/sesi habis. Diganti dengan toast Indonesia
+// lalu halaman dimuat ulang otomatis. Status selain 419 tidak disentuh.
+document.addEventListener('livewire:init', () => {
+    if (!window.Livewire || typeof window.Livewire.hook !== 'function') {
+        return;
+    }
+
+    window.Livewire.hook('request', ({ fail }) => {
+        fail(({ status, preventDefault }) => {
+            if (status !== 419) {
+                return;
+            }
+
+            preventDefault();
+
+            const pesan = 'Sesi halaman telah berakhir. Halaman akan dimuat ulang.';
+            try {
+                window.Alpine?.store('toast')?.push('error', pesan);
+            } catch (e) {}
+
+            setTimeout(() => window.location.reload(), 1500);
+        });
+    });
+});

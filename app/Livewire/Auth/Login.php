@@ -100,6 +100,10 @@ class Login extends Component
         Auth::login($user);
         session()->regenerate();
 
+        // Progres tutorial dashboard hanya berlaku dalam SATU sesi login; sisa dari
+        // sesi/login sebelumnya tidak boleh memunculkan tutorial lagi.
+        session()->forget(\App\Livewire\Master\Dashboard::ONBOARDING_SESSION);
+
         // Simpan last login info & ID Sesi Aktif untuk Single Session Check
         $user->update([
             'last_login_at'      => now(),

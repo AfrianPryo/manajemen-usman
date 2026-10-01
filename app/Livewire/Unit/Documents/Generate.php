@@ -7,6 +7,7 @@ use App\Models\Asset;
 use App\Services\Documents\OfficialDocumentGenerator;
 use App\Support\DocumentTypes;
 use App\Models\SignatureProfile;
+use App\Models\Unit;
 use Illuminate\Support\Facades\Auth;
 use App\Livewire\Unit\Concerns\ScopedToUnit;
 use Livewire\Attributes\Layout;
@@ -36,6 +37,9 @@ class Generate extends MasterGenerate
 
     public function mount(): void
     {
+        // Mulai sesi dokumen baru (lihat Master\Documents\Generate::mount()).
+        parent::mount();
+
         // Kunci unit_id ke unit milik user yang sedang login.
         // Form tidak menampilkan dropdown pemilihan unit untuk role ini
         // (lihat guard @role di blade generate.blade.php).
@@ -51,8 +55,9 @@ class Generate extends MasterGenerate
                 ? Asset::where('unit_id', $this->currentUnitId())->orderBy('name')->get()
                 : collect(),
             'signatures' => SignatureProfile::where('user_id', Auth::id())->get(),
-            // 'units' sengaja tidak dikirim: blade menyembunyikan
-            // dropdown unit untuk role unit-admin (lihat catatan blade).
+            // Hanya unit ini; blade menampilkannya sebagai kotak teks
+            // read-only (x-locked-field), bukan dropdown.
+            'units'      => Unit::where('id', $this->currentUnitId())->get(),
         ]);
     }
 

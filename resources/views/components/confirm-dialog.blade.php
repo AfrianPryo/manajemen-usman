@@ -54,7 +54,7 @@
 >
     {{-- Backdrop --}}
     <div
-        class="absolute inset-0 bg-neutral-900/50 backdrop-blur-[2px]"
+        class="absolute inset-0 bg-neutral-900/50 backdrop-blur-sm"
         x-show="$store.confirmDialog.show"
         x-transition.opacity
         @click="$store.confirmDialog.cancel()"
@@ -62,7 +62,7 @@
 
     {{-- Panel --}}
     <div
-        class="relative bg-white dark:bg-slate-800 rounded-xl shadow-2xl w-full max-w-sm border border-neutral-200 dark:border-slate-700 p-5 space-y-4"
+        class="relative bg-white dark:bg-slate-800 rounded-sm shadow-2xl w-full max-w-sm border border-neutral-200 dark:border-slate-700 p-5 space-y-4"
         x-show="$store.confirmDialog.show"
         x-transition:enter="ease-out duration-150"
         x-transition:enter-start="opacity-0 scale-95"
@@ -73,10 +73,10 @@
     >
         <div class="flex items-start gap-3">
             <div
-                class="h-9 w-9 shrink-0 rounded-full flex items-center justify-center text-base"
+                class="h-9 w-9 shrink-0 rounded-sm flex items-center justify-center text-base"
                 :class="$store.confirmDialog.variant === 'danger'
                     ? 'bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400'
-                    : 'bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-400'"
+                    : 'bg-blue-50 dark:bg-blue-950/50 text-blue-900 dark:text-blue-400'"
             >
             <span x-show="$store.confirmDialog.variant === 'danger'">
                 <x-heroicon-s-exclamation-triangle class="size-5 fill-current" />
@@ -95,16 +95,16 @@
             <button
                 type="button"
                 @click="$store.confirmDialog.cancel()"
-                class="px-3.5 py-2 text-xs font-semibold rounded-md text-neutral-600 dark:text-neutral-300 bg-neutral-100 dark:bg-slate-700 hover:bg-neutral-200 dark:hover:bg-slate-600 transition-colors"
+                class="px-3.5 py-2 text-xs font-semibold rounded-sm text-neutral-600 dark:text-neutral-300 bg-white dark:bg-slate-800 border border-neutral-200 dark:border-slate-700 hover:bg-neutral-50 dark:hover:bg-slate-700 transition-colors cursor-pointer"
                 x-text="$store.confirmDialog.cancelText"
             ></button>
             <button
                 type="button"
                 @click="$store.confirmDialog.confirm()"
-                class="px-3.5 py-2 text-xs font-bold rounded-md text-white transition-colors shadow-sm"
+                class="px-3.5 py-2 text-xs font-bold rounded-sm text-white transition-colors shadow-sm cursor-pointer"
                 :class="$store.confirmDialog.variant === 'danger'
-                    ? 'bg-rose-600 hover:bg-rose-700'
-                    : 'bg-blue-900 hover:bg-blue-950'"
+                    ? 'bg-rose-600 hover:bg-rose-700 shadow-rose-600/20'
+                    : 'bg-blue-900 hover:bg-blue-950 shadow-blue-900/20'"
                 x-text="$store.confirmDialog.confirmText"
             ></button>
         </div>

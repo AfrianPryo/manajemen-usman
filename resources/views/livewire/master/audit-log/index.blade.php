@@ -19,7 +19,7 @@
             @endif
 
             {{-- Tombol Export Audit Log --}}
-            <button wire:click="exportLog" wire:loading.attr="disabled" class="px-3.5 py-2 text-xs font-semibold text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800 rounded-[3px] hover:bg-sky-100 dark:hover:bg-sky-900/40 transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-60">
+            <button wire:click="exportLog" wire:loading.attr="disabled" class="px-3.5 py-2 text-xs font-semibold text-[#0d3b74] dark:text-sky-300 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 rounded-sm hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-60">
                 <x-heroicon-o-arrow-down-tray wire:loading.remove wire:target="exportLog" class="w-4 h-4" />
                 <span wire:loading.remove wire:target="exportLog">Export Log</span>
                 <span wire:loading wire:target="exportLog">Memproses...</span>

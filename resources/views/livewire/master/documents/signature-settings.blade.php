@@ -36,14 +36,14 @@
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-                <label class="block text-xs font-medium text-neutral-600 dark:text-neutral-300 mb-1">Nama Tercetak</label>
-                <input type="text" wire:model="name" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400">
-                @error('name') <span class="text-[11px] text-rose-500 mt-0.5 block">{{ $message }}</span> @enderror
+                <label class="block text-xs font-medium text-neutral-600 dark:text-neutral-300 mb-1">Nama Tercetak <span class="text-red-500">*</span></label>
+                <input type="text" wire:model="name" class="@error('name') !border-rose-400 !focus:border-rose-500 !focus:ring-rose-500/10 @enderror w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400" aria-invalid="@error('name') true @else false @enderror">
+                @error('name') <x-form-error :message="$message" :field="'name'" /> @enderror
             </div>
             <div>
-                <label class="block text-xs font-medium text-neutral-600 dark:text-neutral-300 mb-1">Jabatan</label>
-                <input type="text" wire:model="position" placeholder="Contoh: Kepala TEFA" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400">
-                @error('position') <span class="text-[11px] text-rose-500 mt-0.5 block">{{ $message }}</span> @enderror
+                <label class="block text-xs font-medium text-neutral-600 dark:text-neutral-300 mb-1">Jabatan <span class="text-red-500">*</span></label>
+                <input type="text" wire:model="position" placeholder="Contoh: Kepala TEFA" class="@error('position') !border-rose-400 !focus:border-rose-500 !focus:ring-rose-500/10 @enderror w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400" aria-invalid="@error('position') true @else false @enderror">
+                @error('position') <x-form-error :message="$message" :field="'position'" /> @enderror
             </div>
         </div>
 
@@ -56,10 +56,10 @@
             x-on:livewire-upload-progress="progress = $event.detail.progress"
         >
             <label class="block text-xs font-medium text-neutral-600 dark:text-neutral-300 mb-1">Gambar Tanda Tangan</label>
-            <input type="file" wire:model="signatureImage" accept="image/*" class="w-full text-xs border border-neutral-200 dark:border-slate-700 rounded-sm p-1.5 bg-neutral-50 dark:bg-slate-900 text-neutral-800 dark:text-neutral-200">
+            <input type="file" wire:model="signatureImage" accept="image/*" class="@error('signatureImage') !border-rose-400 !focus:border-rose-500 !focus:ring-rose-500/10 @enderror w-full text-xs border border-neutral-200 dark:border-slate-700 rounded-sm p-1.5 bg-neutral-50 dark:bg-slate-900 text-neutral-800 dark:text-neutral-200" aria-invalid="@error('signatureImage') true @else false @enderror">
             <p class="text-[11px] text-neutral-400 mt-1">Gunakan PNG transparan agar hasil di dokumen lebih rapi. Maks. 1 MB.</p>
             <x-upload-progress />
-            @error('signatureImage') <span class="text-[11px] text-rose-500 mt-0.5 block">{{ $message }}</span> @enderror
+            @error('signatureImage') <x-form-error :message="$message" :field="'signatureImage'" /> @enderror
             @if ($signatureImage)
                 <img src="{{ $signatureImage->temporaryUrl() }}" class="h-16 mt-2 border border-neutral-200 dark:border-slate-700 rounded-sm p-1 bg-white">
             @endif
