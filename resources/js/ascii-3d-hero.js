@@ -26,6 +26,207 @@ HTMLCanvasElement.prototype.getContext = function (type, attributes) {
     return originalGetContext.call(this, type, attributes);
 };
 
+/**
+ * Render gambar (logo/foto unggahan admin) sebagai teks ASCII di dalam
+ * container, sebagai pengganti model 3D. Dipakai initAsciiHero() saat
+ * opsi imageUrl diisi. onFail dipanggil jika gambar gagal dimuat/dibaca
+ * supaya pemanggil bisa kembali ke model 3D bawaan.
+ */
+function renderAsciiImage(container, imageUrl, characters, onFail, tilt) {
+    const FONT_SIZE = 6; // px; sel karakter monospace ~0.6 x 1 em
+    const CELL_W = FONT_SIZE * 0.6;
+    const SS = 4; // supersampling per sel supaya hasil downscale halus
+
+    const pre = document.createElement("pre");
+    pre.style.cssText =
+        "margin:0;padding:0;width:100%;height:100%;display:flex;align-items:center;" +
+        "justify-content:center;overflow:hidden;white-space:pre;font-family:monospace;" +
+        `font-size:${FONT_SIZE}px;line-height:${FONT_SIZE}px;letter-spacing:0;` +
+        "pointer-events:none;user-select:none;background:transparent;";
+    const inner = document.createElement("span");
+    pre.appendChild(inner);
+
+    let densities = null; // [rows][cols] -> {a, l} (alpha & luminance 0..1)
+    let cols = 0;
+    let rows = 0;
+    let destroyed = false;
+    let themeObserver = null;
+    let tiltCleanup = null;
+
+    const paint = () => {
+        if (!densities) return;
+        const isDark = document.documentElement.classList.contains("dark");
+        pre.style.color = isDark ? "#e2e8f0" : "#0f172a";
+        const ramp = characters;
+        const last = ramp.length - 1;
+        let out = "";
+        for (let y = 0; y < rows; y++) {
+            for (let x = 0; x < cols; x++) {
+                const { a, l } = densities[y][x];
+                if (a < 0.08) {
+                    out += " ";
+                    continue;
+                }
+                // Gelap-di-terang / terang-di-gelap mengikuti tema, dengan
+                // batas bawah supaya bagian logo yang warnanya sama dengan
+                // latar tetap terlihat.
+                const tone = isDark ? l : 1 - l;
+                const d = a * Math.max(0.35, tone);
+                out += ramp[Math.max(1, Math.min(last, Math.round(d * last)))];
+            }
+            out += "\n";
+        }
+        inner.textContent = out;
+    };
+
+    const img = new Image();
+    img.decoding = "async";
+    img.onload = () => {
+        if (destroyed) return;
+        try {
+            const W = container.clientWidth || 180;
+            const H = container.clientHeight || 180;
+            cols = Math.max(8, Math.floor(W / CELL_W));
+            rows = Math.max(8, Math.floor(H / FONT_SIZE));
+
+            // Gambar dimuat 'contain' di dalam kotak container, lalu
+            // diskalakan ke grid sel (dengan koreksi rasio sel yang tinggi).
+            const iw = img.naturalWidth || 1;
+            const ih = img.naturalHeight || 1;
+            const s = Math.min(W / iw, H / ih);
+            const dwCells = (iw * s) / CELL_W;
+            const dhCells = (ih * s) / FONT_SIZE;
+            const offX = (cols - dwCells) / 2;
+            const offY = (rows - dhCells) / 2;
+
+            const canvas = document.createElement("canvas");
+            canvas.width = cols * SS;
+            canvas.height = rows * SS;
+            const ctx = canvas.getContext("2d", { willReadFrequently: true });
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = "high";
+            ctx.drawImage(img, offX * SS, offY * SS, dwCells * SS, dhCells * SS);
+            const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+
+            densities = [];
+            for (let y = 0; y < rows; y++) {
+                const row = [];
+                for (let x = 0; x < cols; x++) {
+                    let aSum = 0, lSum = 0;
+                    for (let sy = 0; sy < SS; sy++) {
+                        for (let sx = 0; sx < SS; sx++) {
+                            const i = (((y * SS + sy) * canvas.width) + (x * SS + sx)) * 4;
+                            const a = data[i + 3] / 255;
+                            aSum += a;
+                            // Luminansi hanya dibobotkan oleh piksel yang terlihat.
+                            lSum += a * ((0.2126 * data[i] + 0.7152 * data[i + 1] + 0.0722 * data[i + 2]) / 255);
+                        }
+                    }
+                    const n = SS * SS;
+                    row.push({ a: aSum / n, l: aSum > 0 ? lSum / aSum : 0 });
+                }
+                densities.push(row);
+            }
+
+            container.appendChild(pre);
+            paint();
+
+            themeObserver = new MutationObserver(paint);
+            themeObserver.observe(document.documentElement, {
+                attributes: true,
+                attributeFilter: ["class"],
+            });
+
+            // Tilt parallax mengikuti kursor -- meniru perilaku model 3D
+            // (sudut maksimal, damping, dan geser parallax yang sama), tapi
+            // lewat CSS 3D transform karena gambar ini berupa teks, bukan mesh.
+            if (tilt && tilt.enabled) {
+                const target = { x: 0, y: 0 };
+                const current = { x: 0, y: 0 };
+                let mouseX = 0, mouseY = 0;
+                let rafId = null;
+                const EPSILON = 0.0005;
+                // 1 satuan dunia 3D ~ (tinggi container / 3.78) px pada kamera hero.
+                const parallaxPx = (tilt.parallax || 0) * ((container.clientHeight || 180) / 3.78);
+
+                const step = () => {
+                    rafId = null;
+                    if (destroyed) return;
+                    current.x += (target.x - current.x) * tilt.damping;
+                    current.y += (target.y - current.y) * tilt.damping;
+                    const settled =
+                        Math.abs(target.x - current.x) < EPSILON &&
+                        Math.abs(target.y - current.y) < EPSILON;
+                    if (settled) {
+                        current.x = target.x;
+                        current.y = target.y;
+                    }
+                    pre.style.transform =
+                        `perspective(700px) translate(${(current.x * parallaxPx).toFixed(2)}px, ${(-current.y * parallaxPx).toFixed(2)}px) ` +
+                        `rotateX(${(current.y * tilt.maxAngle).toFixed(4)}rad) rotateY(${(current.x * tilt.maxAngle).toFixed(4)}rad)`;
+                    if (!settled) rafId = requestAnimationFrame(step);
+                };
+                const kick = () => {
+                    if (rafId === null) rafId = requestAnimationFrame(step);
+                };
+
+                const onMove = (e) => {
+                    mouseX = e.clientX;
+                    mouseY = e.clientY;
+                    let nx, ny;
+                    if (tilt.cursorSource === "container") {
+                        const rect = container.getBoundingClientRect();
+                        nx = ((mouseX - rect.left) / rect.width) * 2 - 1;
+                        ny = -((mouseY - rect.top) / rect.height) * 2 + 1;
+                    } else {
+                        nx = (mouseX / window.innerWidth) * 2 - 1;
+                        ny = -(mouseY / window.innerHeight) * 2 + 1;
+                    }
+                    target.x = Math.max(-1, Math.min(1, nx));
+                    target.y = Math.max(-1, Math.min(1, ny));
+                    kick();
+                };
+                const onLeave = () => {
+                    target.x = 0;
+                    target.y = 0;
+                    kick();
+                };
+
+                pre.style.willChange = "transform";
+                const src = tilt.cursorSource === "container" ? container : window;
+                src.addEventListener("mousemove", onMove);
+                if (tilt.cursorSource === "container") container.addEventListener("mouseleave", onLeave);
+
+                tiltCleanup = () => {
+                    src.removeEventListener("mousemove", onMove);
+                    container.removeEventListener("mouseleave", onLeave);
+                    if (rafId !== null) cancelAnimationFrame(rafId);
+                    rafId = null;
+                };
+            }
+
+            resolveModelLoaded?.();
+        } catch (err) {
+            console.warn("[ascii-3d-hero] gagal memproses gambar, kembali ke model 3D:", err);
+            if (!destroyed) onFail();
+        }
+    };
+    img.onerror = () => {
+        console.warn("[ascii-3d-hero] gagal memuat gambar, kembali ke model 3D");
+        if (!destroyed) onFail();
+    };
+    img.src = imageUrl;
+
+    return {
+        destroy: () => {
+            destroyed = true;
+            themeObserver?.disconnect();
+            tiltCleanup?.();
+            pre.remove();
+        },
+    };
+}
+
 export function initAsciiHero({
     containerSelector,
     modelUrl,
@@ -42,7 +243,10 @@ export function initAsciiHero({
     frontOffsetX = Math.PI / 2,
     frontOffsetY = 0,
     frontOffsetZ = 0,
+    imageUrl = null,
 } = {}) {
+    // Simpan opsi asli untuk fallback (lihat blok imageUrl di bawah).
+    const originalOptions = arguments[0] || {};
     const container = document.querySelector(containerSelector);
     if (!container) {
         console.warn(`[ascii-3d-hero] container "${containerSelector}" tidak ditemukan`);
@@ -54,6 +258,30 @@ export function initAsciiHero({
         console.info("[ascii-3d-hero] container hidden (mobile), skip inisialisasi");
         resolveModelLoaded?.(); // <-- Tambahkan baris ini
         return { destroy: () => {} };
+    }
+
+    // Logo/foto custom dari admin: tampil sebagai ASCII menggantikan model 3D.
+    // Jika gambar gagal dimuat, otomatis kembali ke model 3D bawaan.
+    if (imageUrl) {
+        let fallback = null;
+        let destroyedEarly = false;
+        const imageHandle = renderAsciiImage(container, imageUrl, characters, () => {
+            if (destroyedEarly || fallback) return;
+            fallback = initAsciiHero({ ...originalOptions, imageUrl: null });
+        }, {
+            enabled: tiltCursor && !window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+            cursorSource,
+            damping: tiltDamping,
+            maxAngle: tiltMaxAngle,
+            parallax: parallaxAmount,
+        });
+        return {
+            destroy: () => {
+                destroyedEarly = true;
+                imageHandle.destroy();
+                fallback?.destroy();
+            },
+        };
     }
 
     const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;

@@ -23,6 +23,41 @@
     $__heroTitleTopLines    = explode("\n", $__heroTitleTop);
     $__heroTitleBottomLines = explode("\n", $__heroTitleBottom);
 
+    // Jarak vertikal (rem) judul atas-bawah hero di desktop, diatur lewat
+    // Pengaturan > Landing Page > Hero. Dibatasi 0-8 supaya nilai aneh di
+    // database tidak merusak layout; bawaan 2 = tampilan asli (my-[2rem]).
+    $__heroTitleGap = max(0, min(8, (float) $__landingText('landing_hero_title_gap')));
+    $__heroTitleGap = rtrim(rtrim(number_format($__heroTitleGap, 2, '.', ''), '0'), '.');
+    $__heroTitleGap = $__heroTitleGap === '' ? '0' : $__heroTitleGap;
+
+    // Lebar antar kurung (rem) & pergeseran elemen ASCII (px) di hero, diatur
+    // lewat Pengaturan > Landing Page > Hero. Dibatasi sama seperti validasi
+    // form; bawaan (14 / 0 / 0) = tampilan asli sebelum bisa diatur.
+    $__heroNum = function (string $key, float $min, float $max): string {
+        $n = max($min, min($max, (float) \App\Models\Setting::get($key, \App\Models\Setting::LANDING_DEFAULTS[$key])));
+        $n = rtrim(rtrim(number_format($n, 2, '.', ''), '0'), '.');
+        return ($n === '' || $n === '-0') ? '0' : $n;
+    };
+    $__heroBracketWidth = $__heroNum('landing_hero_bracket_width', 4, 40);
+    $__heroAsciiX       = $__heroNum('landing_hero_ascii_x', -300, 300);
+    $__heroAsciiY       = $__heroNum('landing_hero_ascii_y', -300, 300);
+
+    // Logo/foto custom elemen ASCII di hero -- diatur admin lewat Pengaturan >
+    // Landing Page > Hero. Dipakai berupa path relatif (same-origin) supaya
+    // canvas di ascii-3d-hero.js tidak terblokir CORS. Kosong = model 3D bawaan.
+    $__heroLogo = \App\Models\Setting::get('landing_hero_logo');
+    $__heroLogoUrl = $__heroLogo
+        ? (parse_url(asset('storage/' . $__heroLogo), PHP_URL_PATH) ?: null)
+        : null;
+
+    // Logo/ikon custom loading screen -- diatur admin lewat Pengaturan >
+    // Landing Page > Hero. Fallback ke asset bawaan (images/LogoLoading.png)
+    // SELAMA admin belum pernah mengunggah logo sendiri.
+    $__loaderLogo = \App\Models\Setting::get('landing_loader_logo');
+    $__loaderLogoUrl = $__loaderLogo
+        ? asset('storage/' . $__loaderLogo)
+        : asset('images/LogoLoading.png');
+
     // Foto custom section "Tentang" -- diatur admin lewat Pengaturan >
     // Landing Page > Tentang. Fallback ke asset bawaan (images/images (1).jpg)
     // SELAMA admin belum pernah mengunggah foto sendiri.
@@ -110,7 +145,7 @@
             </a>
 
             {{-- Nav Links dengan indikator "rolling" ala cantor8 (desktop) --}}
-            <div id="nav-pill" class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 hidden md:flex items-center gap-1 rounded-[2px] bg-black/70 dark:bg-blue-950/70 backdrop-blur px-1 py-1">
+            <div id="nav-pill" class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 hidden md:flex items-center gap-1 rounded-[2px] bg-black/70 dark:bg-blue-950/70 px-1 py-1">
                 <span
                     id="nav-indicator"
                     class="absolute top-1 left-0 h-[calc(93%-0.3rem)] rounded-[1px] bg-white pointer-events-none will-change-transform"
@@ -158,7 +193,7 @@
 
             {{-- Grup kanan (tablet ke atas) --}}
             <div
-                class="hidden sm:flex items-center gap-1 rounded-[2px] bg-black/70 dark:bg-blue-900/70 backdrop-blur border border-white/10 p-0.5"
+                class="hidden sm:flex items-center gap-1 rounded-[2px] bg-black/70 dark:bg-blue-900/70 border border-white/10 p-0.5"
             >
                 {{-- Dark/Light Mode Toggle --}}
                 <button
@@ -228,7 +263,7 @@
                 aria-label="Buka menu navigasi"
                 aria-expanded="false"
                 aria-controls="mobile-menu"
-                class="sm:hidden flex h-9 w-9 items-center justify-center rounded-[3px] bg-black/70 dark:bg-blue-900/70 backdrop-blur border border-white/10 text-white/90"
+                class="sm:hidden flex h-9 w-9 items-center justify-center rounded-[3px] bg-black/70 dark:bg-blue-900/70 border border-white/10 text-white/90"
             >
                 <svg id="mobile-menu-icon-open" class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M3 6h18M3 12h18M3 18h18"/>
@@ -242,7 +277,7 @@
         {{-- Panel Menu Mobile --}}
         <div
             id="mobile-menu"
-            class="sm:hidden hidden flex-col gap-1 mx-4 mt-1 mb-2 rounded-[4px] bg-black/85 dark:bg-blue-950/85 backdrop-blur border border-white/10 p-2"
+            class="sm:hidden hidden flex-col gap-1 mx-4 mt-1 mb-2 rounded-[4px] bg-black/85 dark:bg-blue-950/85 border border-white/10 p-2"
         >
             <a href="#home" class="mobile-nav-link px-4 py-2 rounded-[2px] text-[13px] font-semibold tracking-tight text-white/90 hover:bg-white/10">Home</a>
             @if ($__showCaraKerjaSection)
@@ -316,12 +351,17 @@
                         di dalamnya — sehingga posisi ASCII selalu mengikuti kurung ini
                         (yang sudah otomatis center via mx-auto), bukan lagi terikat
                         offset pixel manual terhadap section. --}}
-                    <span class="hidden lg:flex relative justify-between w-full max-w-[14rem] mx-auto my-[2rem] leading-none">
+                    <span class="hidden lg:flex relative justify-between w-full mx-auto leading-none" style="max-width: {{ $__heroBracketWidth }}rem; margin-top: {{ $__heroTitleGap }}rem; margin-bottom: {{ $__heroTitleGap }}rem;">
                         <span>(</span>
                         <div
                             id="ascii-3d-container"
                             data-animate="hero-visual"
-                            class="pointer-events-none absolute inset-0 left-[24px] m-auto w-[180px] h-[180px] text-blue-900 dark:text-slate-200"
+                            @if ($__heroLogoUrl) data-ascii-image="{{ $__heroLogoUrl }}" @endif
+                            class="pointer-events-none absolute w-[180px] h-[180px] text-blue-900 dark:text-slate-200"
+                            {{-- Posisi: titik tengah kurung (50%/50%) dikurangi setengah ukuran elemen (90px),
+                                 +12px = offset horizontal bawaan desain asli, lalu ditambah geseran admin.
+                                 Memakai margin (bukan transform) karena transform dipakai animasi GSAP. --}}
+                            style="left: 50%; top: 50%; margin-left: calc(-78px + {{ $__heroAsciiX }}px); margin-top: calc(-90px + {{ $__heroAsciiY }}px);"
                         ></div>
 
                         <span>)</span>
@@ -816,7 +856,7 @@
     <div id="loader-screen" class="absolute inset-0 z-10 flex items-center justify-center bg-[#0a1128]">
         <div class="relative flex items-center justify-center">
             <img 
-                src="{{ asset('images/symbol-gold.png') }}" 
+                src="{{ $__loaderLogoUrl }}" 
                 alt="Symbol" 
                 class="w-16 h-16 object-contain"
             />

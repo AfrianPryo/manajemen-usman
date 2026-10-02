@@ -89,6 +89,8 @@ function initGlobalScripts() {
             initAsciiHero({
                 containerSelector: "#ascii-3d-container",
                 modelUrl: "/models/hero.glb",
+                // Logo/foto custom dari Pengaturan > Landing Page (kosong = model 3D).
+                imageUrl: landingContainer.dataset.asciiImage || null,
             });
         });
     }

@@ -170,6 +170,7 @@ class Index extends Component
         );
 
         session()->flash('message', 'Akses berhasil diblokir.');
+        BlockedAccess::flushBlockedCache($blocked->type, $blocked->value);
         $this->closeBlockModal();
     }
 
@@ -197,7 +198,10 @@ class Index extends Component
             oldValues: $blocked->getAttributes()
         );
 
+        $type  = $blocked->type;
+        $value = $blocked->value;
         $blocked->delete();
+        BlockedAccess::flushBlockedCache($type, $value);
 
         session()->flash('message', 'Blokir berhasil dibuka.');
     }

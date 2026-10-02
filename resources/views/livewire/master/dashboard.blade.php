@@ -1,7 +1,7 @@
 @push('apexcharts')
 <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 @endpush
-<div class="w-full max-w-[1500px] mx-auto space-y-5 text-neutral-800 dark:text-neutral-100 px-4 py-4 sm:px-6 font-sans"
+<div class="w-full max-w-[1670px] mx-auto space-y-5 text-neutral-800 dark:text-neutral-100 px-4 py-4 sm:px-6 font-sans"
     x-data="{ showAdminModal: false, showUnitModal: false }"
     @show-admin-form-modal.window="showAdminModal = true"
     @show-unit-form-modal.window="showUnitModal = true">
@@ -364,7 +364,7 @@
                             labels: this.labels,
                             chart: {
                                 type: 'donut',
-                                height: 310,
+                                height: 280,
                                 fontFamily: 'Plus Jakarta Sans, Inter, sans-serif'
                             },
                             colors: ['#0d3b74', '#2563EB', '#38BDF8', '#64748B', '#94A3B8'],

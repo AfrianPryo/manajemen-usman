@@ -21,6 +21,14 @@ class SignatureProfile extends Model
     ];
 
     /**
+     * Batas ukuran file tanda tangan yang boleh di-encode ke base64 untuk
+     * data URI. File lebih besar dari ini tidak di-encode supaya tidak
+     * menyebabkan memory spike, terutama saat accessor dipanggil dalam loop.
+     * Nilai 2 MB sudah lebih dari cukup untuk file tanda tangan (gambar kecil).
+     */
+    private const MAX_SIGNATURE_BYTES = 2 * 1024 * 1024; // 2 MB
+
+    /**
      * Gambar tanda tangan disimpan di disk PRIVAT 'local' (tidak ada di
      * public/storage), jadi tidak bisa dipanggil lewat Storage::url().
      * Untuk pratinjau di UI, sajikan sebagai data URI.
@@ -34,6 +42,11 @@ class SignatureProfile extends Model
         $disk = Storage::disk('local');
 
         if (! $disk->exists($this->signature_path)) {
+            return null;
+        }
+
+        // Cegah memory spike: jangan encode file terlalu besar
+        if ($disk->size($this->signature_path) > self::MAX_SIGNATURE_BYTES) {
             return null;
         }
 

@@ -31,6 +31,15 @@
     </script>
 
     <style>
+        /* Tampilan panel dibuat terlihat seperti zoom browser 90%, padahal zoom
+           browser tetap 100%, supaya area kerja lebih luas. Ubah angka di bawah
+           untuk mengatur tingkat pengecilan. Dipasang di root: seluruh ukuran Tailwind berbasis
+           rem (spacing, teks, lebar sidebar, ikon) ikut mengecil seragam.
+           Hanya berlaku di layout ini, tidak menyentuh halaman login/landing. */
+        html {
+            font-size: 90%;
+        }
+
         #main-content:not(.is-ready) {
             opacity: 0 !important;
             visibility: hidden !important;

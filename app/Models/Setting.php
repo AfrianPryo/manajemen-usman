@@ -36,6 +36,16 @@ class Setting extends Model
         'landing_hero_title_top'    => "Kelola Unit\nUsaha Sekolah",
         'landing_hero_title_bottom' => "dalam Satu\nPortal.",
         'landing_hero_scroll_text'  => 'SCROLL',
+        // Jarak vertikal (rem) antara judul baris atas & bawah hero di desktop,
+        // yaitu margin atas+bawah pada kurung tempat elemen ASCII berada.
+        // Nilai bawaan 2 = tampilan asli sebelum jarak ini bisa diatur.
+        'landing_hero_title_gap'    => '2',
+        // Lebar jarak antar tanda kurung ( ) di hero (rem, desktop) &
+        // pergeseran elemen ASCII dari posisi bawaannya (px; X positif =
+        // ke kanan, Y positif = ke bawah). Bawaan = tampilan asli.
+        'landing_hero_bracket_width' => '14',
+        'landing_hero_ascii_x'       => '0',
+        'landing_hero_ascii_y'       => '0',
 
         'landing_mitra_title'       => "Dipercaya oleh\nMitra Unit Usaha Sekolah.",
         'landing_mitra_description' => "Kolaborasi kami tidak berhenti di sistem. Kami bekerja bersama unit usaha, penyedia layanan, dan mitra sekolah untuk memastikan setiap transaksi tercatat rapi dan dapat dipertanggungjawabkan.",

@@ -131,6 +131,27 @@ class Index extends Component
     public string $landingHeroTitleTop = '';
     public string $landingHeroTitleBottom = '';
     public string $landingHeroScrollText = '';
+    // Jarak vertikal judul atas-bawah hero (satuan rem). Sengaja tanpa tipe
+    // (seperti $logRetentionDays): input form mengirim string dan validasi
+    // 'numeric' di saveLanding() yang menjaga nilainya.
+    public $landingHeroTitleGap = '2';
+    // Lebar jarak antar kurung (rem) & pergeseran elemen ASCII (px) -- juga
+    // tanpa tipe karena input number mengirim string; divalidasi 'numeric'.
+    public $landingHeroBracketWidth = '14';
+    public $landingHeroAsciiX = '0';
+    public $landingHeroAsciiY = '0';
+    // Logo/foto elemen ASCII di tengah judul hero. Selama admin belum
+    // mengunggah apa pun, hero tetap memakai model 3D bawaan (hero.glb).
+    // Lihat removeHeroLogo() & resources/js/ascii-3d-hero.js (opsi imageUrl).
+    public $landingHeroLogo;
+    public ?string $existingLandingHeroLogo = null;
+    // Logo/ikon di tengah loading screen landing page (di atas counter [0]).
+    // Selama admin belum mengunggah, loading screen memakai gambar bawaan
+    // (images/LogoLoading.png). Lihat removeHeroLoaderLogo() & landing.blade.php
+    // bagian Loading Screen Layer. Nama diawali "landingHero" supaya error
+    // validasinya ikut terhitung di section Hero pada navigasi tab.
+    public $landingHeroLoaderLogo;
+    public ?string $existingLandingHeroLoaderLogo = null;
 
     public bool $showUnitsOnLanding = true;
     public string $landingMitraTitle = '';
@@ -250,6 +271,12 @@ class Index extends Component
         $this->landingHeroTitleTop    = Setting::get('landing_hero_title_top', $defaults['landing_hero_title_top']);
         $this->landingHeroTitleBottom = Setting::get('landing_hero_title_bottom', $defaults['landing_hero_title_bottom']);
         $this->landingHeroScrollText  = Setting::get('landing_hero_scroll_text', $defaults['landing_hero_scroll_text']);
+        $this->landingHeroTitleGap    = Setting::get('landing_hero_title_gap', $defaults['landing_hero_title_gap']);
+        $this->landingHeroBracketWidth = Setting::get('landing_hero_bracket_width', $defaults['landing_hero_bracket_width']);
+        $this->landingHeroAsciiX      = Setting::get('landing_hero_ascii_x', $defaults['landing_hero_ascii_x']);
+        $this->landingHeroAsciiY      = Setting::get('landing_hero_ascii_y', $defaults['landing_hero_ascii_y']);
+        $this->existingLandingHeroLogo = Setting::get('landing_hero_logo');
+        $this->existingLandingHeroLoaderLogo = Setting::get('landing_loader_logo');
 
         $this->showUnitsOnLanding     = (bool) Setting::get('show_units_on_landing', true);
         $this->landingMitraTitle       = Setting::get('landing_mitra_title', $defaults['landing_mitra_title']);
@@ -857,6 +884,62 @@ class Index extends Component
     }
 
     /**
+     * Hapus logo/foto custom elemen ASCII di hero landing page, kembali
+     * memakai model 3D bawaan -- lihat resources/views/landing.blade.php
+     * bagian HERO SECTION.
+     */
+    public function removeHeroLogo(): void
+    {
+        if (! $this->canAccessLandingTab()) {
+            abort(403);
+        }
+
+        if ($this->existingLandingHeroLogo && Storage::disk('public')->exists($this->existingLandingHeroLogo)) {
+            Storage::disk('public')->delete($this->existingLandingHeroLogo);
+        }
+
+        Setting::set('landing_hero_logo', null);
+        $this->existingLandingHeroLogo = null;
+        $this->reset('landingHeroLogo');
+
+        AuditLog::record(
+            event: 'SETTINGS_UPDATED',
+            identifier: Auth::user()->username ?? null,
+            description: 'Admin master menghapus logo/foto ASCII hero di landing page (kembali ke model 3D default).',
+        );
+
+        session()->flash('success', 'Logo hero berhasil dihapus, kembali memakai model 3D default.');
+    }
+
+    /**
+     * Hapus logo/ikon custom loading screen landing page, kembali memakai
+     * gambar bawaan (images/LogoLoading.png) -- lihat
+     * resources/views/landing.blade.php bagian Loading Screen Layer.
+     */
+    public function removeHeroLoaderLogo(): void
+    {
+        if (! $this->canAccessLandingTab()) {
+            abort(403);
+        }
+
+        if ($this->existingLandingHeroLoaderLogo && Storage::disk('public')->exists($this->existingLandingHeroLoaderLogo)) {
+            Storage::disk('public')->delete($this->existingLandingHeroLoaderLogo);
+        }
+
+        Setting::set('landing_loader_logo', null);
+        $this->existingLandingHeroLoaderLogo = null;
+        $this->reset('landingHeroLoaderLogo');
+
+        AuditLog::record(
+            event: 'SETTINGS_UPDATED',
+            identifier: Auth::user()->username ?? null,
+            description: 'Admin master menghapus logo loading screen landing page (kembali ke default).',
+        );
+
+        session()->flash('success', 'Logo loading screen berhasil dihapus, kembali memakai logo default.');
+    }
+
+    /**
      * Hapus foto custom section "Tentang" di landing page, kembali memakai
      * foto bawaan (images/images (1).jpg) -- lihat resources/views/landing.blade.php
      * bagian ABOUT SECTION.
@@ -1068,6 +1151,12 @@ class Index extends Component
             'landingHeroTitleTop'    => 'required|string|max:60',
             'landingHeroTitleBottom' => 'required|string|max:60',
             'landingHeroScrollText'  => 'required|string|max:20',
+            'landingHeroTitleGap'    => 'required|numeric|min:0|max:8',
+            'landingHeroBracketWidth' => 'required|numeric|min:4|max:40',
+            'landingHeroAsciiX'      => 'required|numeric|min:-300|max:300',
+            'landingHeroAsciiY'      => 'required|numeric|min:-300|max:300',
+            'landingHeroLogo'        => 'nullable|image|max:2048',
+            'landingHeroLoaderLogo'  => 'nullable|image|max:2048',
 
             'showUnitsOnLanding' => 'boolean',
             'landingMitraTitle'       => 'required|string|max:150',
@@ -1109,6 +1198,26 @@ class Index extends Component
 
         $user = Auth::user();
 
+        // Proses ganti logo/foto ASCII hero (kalau ada file baru diupload).
+        // File lama dihapus dari disk -- pola sama dengan foto Tentang.
+        if ($this->landingHeroLogo) {
+            if ($this->existingLandingHeroLogo && Storage::disk('public')->exists($this->existingLandingHeroLogo)) {
+                Storage::disk('public')->delete($this->existingLandingHeroLogo);
+            }
+            $this->existingLandingHeroLogo = $this->landingHeroLogo->store('landing', 'public');
+            $this->reset('landingHeroLogo');
+        }
+
+        // Proses ganti logo/ikon loading screen (kalau ada file baru diupload).
+        // File lama dihapus dari disk -- pola sama dengan logo hero.
+        if ($this->landingHeroLoaderLogo) {
+            if ($this->existingLandingHeroLoaderLogo && Storage::disk('public')->exists($this->existingLandingHeroLoaderLogo)) {
+                Storage::disk('public')->delete($this->existingLandingHeroLoaderLogo);
+            }
+            $this->existingLandingHeroLoaderLogo = $this->landingHeroLoaderLogo->store('landing', 'public');
+            $this->reset('landingHeroLoaderLogo');
+        }
+
         // Proses ganti foto section "Tentang" (kalau ada file baru
         // diupload). Foto lama dihapus dari disk supaya tidak menumpuk
         // file yatim -- pola sama dengan removeLogo()/logo di saveFeatures().
@@ -1146,6 +1255,16 @@ class Index extends Component
 
         $oldValues['landing_selected_unit_ids'] = json_decode(Setting::get('landing_selected_unit_ids', '[]'), true) ?: [];
         $newValues['landing_selected_unit_ids'] = $selectedUnitIds;
+
+        // Logo hero -- disimpan terpisah dari landingSettingsMap() dengan
+        // alasan yang sama seperti foto Tentang di bawah.
+        $oldValues['landing_hero_logo'] = Setting::get('landing_hero_logo');
+        $newValues['landing_hero_logo'] = $this->existingLandingHeroLogo;
+
+        // Logo loading screen -- disimpan terpisah dari landingSettingsMap()
+        // dengan alasan yang sama seperti logo hero di atas.
+        $oldValues['landing_loader_logo'] = Setting::get('landing_loader_logo');
+        $newValues['landing_loader_logo'] = $this->existingLandingHeroLoaderLogo;
 
         // Foto Tentang -- disimpan terpisah dari landingSettingsMap() karena
         // path file bukan properti bertipe string biasa yang bisa di-trim()
@@ -1188,6 +1307,10 @@ class Index extends Component
             'landing_hero_title_top'    => 'landingHeroTitleTop',
             'landing_hero_title_bottom' => 'landingHeroTitleBottom',
             'landing_hero_scroll_text'  => 'landingHeroScrollText',
+            'landing_hero_title_gap'    => 'landingHeroTitleGap',
+            'landing_hero_bracket_width' => 'landingHeroBracketWidth',
+            'landing_hero_ascii_x'      => 'landingHeroAsciiX',
+            'landing_hero_ascii_y'      => 'landingHeroAsciiY',
 
             'show_units_on_landing'          => 'showUnitsOnLanding',
             'landing_mitra_title'             => 'landingMitraTitle',

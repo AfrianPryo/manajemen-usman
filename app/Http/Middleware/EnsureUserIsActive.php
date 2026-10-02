@@ -17,6 +17,8 @@ class EnsureUserIsActive
 
         if ($user && !$user->is_active) {
             Auth::logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
             AuthLog::log('login.failed', null, $user->email, 'Akun nonaktif');
 
             return redirect()->route('login')
