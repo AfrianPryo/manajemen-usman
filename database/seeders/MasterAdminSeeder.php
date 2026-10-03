@@ -29,6 +29,10 @@ class MasterAdminSeeder extends Seeder
             $initialPassword = Str::password(16);
         }
 
+        if (filter_var(env('MASTER_ADMIN_RESET', false), FILTER_VALIDATE_BOOLEAN)) {
+            User::onlyTrashed()->where('username', 'admin.master')->first()?->restore();
+        }
+
         $masterAdmin = User::firstOrCreate(
             ['username' => 'admin.master'], // 🟢 Disesuaikan menggunakan username login
             [
@@ -58,6 +62,24 @@ class MasterAdminSeeder extends Seeder
         if ($masterAdmin->wasRecentlyCreated && $generated) {
             $this->command?->warn("Akun Master Admin dibuat. Username: admin.master | Password sementara: {$initialPassword}");
             $this->command?->warn('Catat sekarang -- password ini tidak akan ditampilkan lagi dan wajib diganti saat login pertama.');
+        }
+
+        // RESET DARURAT (lupa password / akun lama sudah ada). Hanya aktif bila
+        // MASTER_ADMIN_RESET=true DAN MASTER_ADMIN_PASSWORD diisi eksplisit.
+        // Matikan lagi flag-nya setelah berhasil login.
+        $resetRequested = filter_var(env('MASTER_ADMIN_RESET', false), FILTER_VALIDATE_BOOLEAN);
+
+        if ($resetRequested && ! $generated && ! $masterAdmin->wasRecentlyCreated) {
+            $masterAdmin->forceFill([
+                'password'             => Hash::make($initialPassword),
+                'must_change_password' => true,
+                'is_active'            => true,
+                'current_session_id'   => null,
+            ])->save();
+
+            $this->command?->warn('Password admin.master DIRESET sesuai MASTER_ADMIN_PASSWORD. Wajib diganti saat login. Segera hapus MASTER_ADMIN_RESET dari .env.');
+        } elseif ($resetRequested && $generated) {
+            $this->command?->warn('MASTER_ADMIN_RESET diabaikan: isi MASTER_ADMIN_PASSWORD dulu.');
         }
 
         $masterAdmin->assignRole('master-admin');
