@@ -1,19 +1,21 @@
 <div class="w-full max-w-[1500px] mx-auto space-y-5 text-neutral-800 dark:text-neutral-100 px-4 py-4 sm:px-6 font-sans">
+    <livewire:page-tour tour="exports.index" />
 
     {{-- Flash Notification (toast) --}}
     @if (session()->has('message'))
         <div wire:key="toast-message-{{ md5(session('message')) }}" x-data x-init="$store.toast.push('success', @js(session('message')))"></div>
     @endif
 
+    {{-- Header Section --}}
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-white dark:bg-slate-800 p-5 rounded-sm border border-neutral-100 dark:border-slate-700 shadow-sm shadow-black/[0.02]">
+        <div>
+            <h1 class="text-md font-bold tracking-tight text-neutral-900 dark:text-white">Export Data</h1>
+            <p class="text-[12px] tracking-tight text-neutral-400 mt-1">Centang beberapa jenis data untuk export sekaligus, atau unduh satu per satu.</p>
+        </div>
+    </div>
+
     {{-- ============ SECTION: EXPORT DATA (TABLE LAYOUT) ============ --}}
     <div class="space-y-3">
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
-            <div>
-                <h2 class="text-lg font-bold text-neutral-900 dark:text-white tracking-tight">Export Data</h2>
-                <p class="text-xs text-neutral-400 mt-0.5">Centang beberapa jenis data untuk export sekaligus</p>
-            </div>
-        </div>
-
         {{-- Bulk Action Bar --}}
         @if(count($bulkSelected) > 0)
             <div class="flex items-center justify-between bg-blue-900 dark:bg-blue-950 text-white p-3.5 rounded-sm shadow-sm shadow-blue-900/20 text-xs">
@@ -40,7 +42,7 @@
                 <table class="w-full text-sm text-left">
                     <thead class="bg-neutral-50/70 dark:bg-slate-900/50 text-[11px] font-semibold uppercase tracking-wider text-neutral-400 border-b border-neutral-100 dark:border-slate-700">
                         <tr>
-                            <th class="p-4 w-10 text-center">
+                            <th class="px-5 py-3.5 w-10 text-center">
                                 <input type="checkbox"
                                     onclick="this.checked
                                         ? @this.set('bulkSelected', ['trx','prod','asset','stock','fin','authlog','auditlog','dash'])
@@ -48,32 +50,32 @@
                                     @checked(count($bulkSelected) === $totalExportTypes)
                                     class="rounded border-neutral-300 text-blue-900 focus:ring-blue-500/20 cursor-pointer">
                             </th>
-                            <th class="px-4 py-3.5">Jenis Data</th>
-                            <th class="px-4 py-3.5">Deskripsi</th>
-                            <th class="px-4 py-3.5 text-center">Filter</th>
-                            <th class="px-4 py-3.5 text-center">Aksi</th>
+                            <th class="px-5 py-3.5">Jenis Data</th>
+                            <th class="px-5 py-3.5">Deskripsi</th>
+                            <th class="px-5 py-3.5 text-center">Filter</th>
+                            <th class="px-5 py-3.5 text-center">Aksi</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-neutral-100 dark:divide-slate-700">
 
                         {{-- ROW: Transaksi --}}
                         <tr class="hover:bg-neutral-50/60 dark:hover:bg-slate-700/30 transition-colors">
-                            <td class="p-4 text-center align-top">
+                            <td class="px-5 py-3.5 text-center align-top">
                                 <input type="checkbox" wire:model.live="bulkSelected" value="trx" class="rounded border-neutral-300 text-blue-900 focus:ring-blue-500/20 cursor-pointer">
                             </td>
-                            <td class="px-4 py-3.5 align-top whitespace-nowrap">
+                            <td class="px-5 py-3.5 align-top whitespace-nowrap">
                                 <span class="font-semibold text-neutral-900 dark:text-white text-xs">Data Transaksi</span>
                             </td>
-                            <td class="px-4 py-3.5 align-top text-[11px] text-neutral-400">
+                            <td class="px-5 py-3.5 align-top text-[11px] text-neutral-400">
                                 Rekap pemasukan &amp; pengeluaran seluruh unit usaha
                             </td>
-                            <td class="px-4 py-3.5 align-top text-center">
+                            <td class="px-5 py-3.5 align-top text-center">
                                 <button type="button" wire:click="togglePanel('trx')"
                                     class="px-3 py-1.5 text-[11px] font-semibold rounded-sm transition-all {{ $openPanel === 'trx' ? 'bg-blue-900 text-white dark:bg-blue-800' : 'text-neutral-600 dark:text-neutral-300 bg-neutral-100 dark:bg-slate-700 hover:bg-neutral-200 dark:hover:bg-slate-600' }}">
                                     Filter
                                 </button>
                             </td>
-                            <td class="px-4 py-3.5 align-top text-center whitespace-nowrap">
+                            <td class="px-5 py-3.5 align-top text-center whitespace-nowrap">
                                 <button wire:click="exportTransactions" wire:loading.attr="disabled"
                                     class="px-3.5 py-1.5 text-xs font-semibold text-[#0d3b74] dark:text-sky-300 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 rounded-sm hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-all inline-flex items-center gap-1.5 cursor-pointer">
                                     <x-heroicon-o-arrow-down-tray class="w-3.5 h-3.5" />
@@ -84,7 +86,7 @@
                         @if($openPanel === 'trx')
                             <tr class="bg-neutral-50/70 dark:bg-slate-900/50">
                                 <td></td>
-                                <td colspan="4" class="px-4 pb-4 pt-1">
+                                <td colspan="4" class="px-5 pb-4 pt-1">
                                     <div class="rounded-sm p-3 grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
                                         <div>
                                             <label class="block font-medium text-neutral-600 dark:text-neutral-300 mb-1">Cari (Ref/Deskripsi)</label>
@@ -129,22 +131,22 @@
 
                         {{-- ROW: Inventaris --}}
                         <tr class="hover:bg-neutral-50/60 dark:hover:bg-slate-700/30 transition-colors">
-                            <td class="p-4 text-center align-top">
+                            <td class="px-5 py-3.5 text-center align-top">
                                 <input type="checkbox" wire:model.live="bulkSelected" value="prod" class="rounded border-neutral-300 text-blue-900 focus:ring-blue-500/20 cursor-pointer">
                             </td>
-                            <td class="px-4 py-3.5 align-top whitespace-nowrap">
+                            <td class="px-5 py-3.5 align-top whitespace-nowrap">
                                 <span class="font-semibold text-neutral-900 dark:text-white text-xs">Data Inventaris</span>
                             </td>
-                            <td class="px-4 py-3.5 align-top text-[11px] text-neutral-400">
+                            <td class="px-5 py-3.5 align-top text-[11px] text-neutral-400">
                                 Data produk, stok, dan estimasi nilai inventaris
                             </td>
-                            <td class="px-4 py-3.5 align-top text-center">
+                            <td class="px-5 py-3.5 align-top text-center">
                                 <button type="button" wire:click="togglePanel('prod')"
                                     class="px-3 py-1.5 text-[11px] font-semibold rounded-sm transition-all {{ $openPanel === 'prod' ? 'bg-blue-900 text-white dark:bg-blue-800' : 'text-neutral-600 dark:text-neutral-300 bg-neutral-100 dark:bg-slate-700 hover:bg-neutral-200 dark:hover:bg-slate-600' }}">
                                     Filter
                                 </button>
                             </td>
-                            <td class="px-4 py-3.5 align-top text-center whitespace-nowrap">
+                            <td class="px-5 py-3.5 align-top text-center whitespace-nowrap">
                                 <button wire:click="exportProducts" wire:loading.attr="disabled"
                                     class="px-3.5 py-1.5 text-xs font-semibold text-[#0d3b74] dark:text-sky-300 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 rounded-sm hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-all inline-flex items-center gap-1.5 cursor-pointer">
                                     <x-heroicon-o-arrow-down-tray class="w-3.5 h-3.5" />
@@ -155,7 +157,7 @@
                         @if($openPanel === 'prod')
                             <tr class="bg-neutral-50/70 dark:bg-slate-900/50">
                                 <td></td>
-                                <td colspan="4" class="px-4 pb-4 pt-1">
+                                <td colspan="4" class="px-5 pb-4 pt-1">
                                     <div class="rounded-sm p-3 grid grid-cols-1 sm:grid-cols-4 gap-3 text-xs">
                                         <div>
                                             <label class="block font-medium text-neutral-600 dark:text-neutral-300 mb-1">Cari Produk</label>
@@ -191,22 +193,22 @@
 
                         {{-- ROW: Aset --}}
                         <tr class="hover:bg-neutral-50/60 dark:hover:bg-slate-700/30 transition-colors">
-                            <td class="p-4 text-center align-top">
+                            <td class="px-5 py-3.5 text-center align-top">
                                 <input type="checkbox" wire:model.live="bulkSelected" value="asset" class="rounded border-neutral-300 text-blue-900 focus:ring-blue-500/20 cursor-pointer">
                             </td>
-                            <td class="px-4 py-3.5 align-top whitespace-nowrap">
+                            <td class="px-5 py-3.5 align-top whitespace-nowrap">
                                 <span class="font-semibold text-neutral-900 dark:text-white text-xs">Data Aset</span>
                             </td>
-                            <td class="px-4 py-3.5 align-top text-[11px] text-neutral-400">
+                            <td class="px-5 py-3.5 align-top text-[11px] text-neutral-400">
                                 Data aset, status, kondisi, dan penanggung jawab
                             </td>
-                            <td class="px-4 py-3.5 align-top text-center">
+                            <td class="px-5 py-3.5 align-top text-center">
                                 <button type="button" wire:click="togglePanel('asset')"
                                     class="px-3 py-1.5 text-[11px] font-semibold rounded-sm transition-all {{ $openPanel === 'asset' ? 'bg-blue-900 text-white dark:bg-blue-800' : 'text-neutral-600 dark:text-neutral-300 bg-neutral-100 dark:bg-slate-700 hover:bg-neutral-200 dark:hover:bg-slate-600' }}">
                                     Filter
                                 </button>
                             </td>
-                            <td class="px-4 py-3.5 align-top text-center whitespace-nowrap">
+                            <td class="px-5 py-3.5 align-top text-center whitespace-nowrap">
                                 <button wire:click="exportAssets" wire:loading.attr="disabled"
                                     class="px-3.5 py-1.5 text-xs font-semibold text-[#0d3b74] dark:text-sky-300 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 rounded-sm hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-all inline-flex items-center gap-1.5 cursor-pointer">
                                     <x-heroicon-o-arrow-down-tray class="w-3.5 h-3.5" />
@@ -217,7 +219,7 @@
                         @if($openPanel === 'asset')
                             <tr class="bg-neutral-50/70 dark:bg-slate-900/50">
                                 <td></td>
-                                <td colspan="4" class="px-4 pb-4 pt-1">
+                                <td colspan="4" class="px-5 pb-4 pt-1">
                                     <div class="rounded-sm p-3 grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
                                         <div>
                                             <label class="block font-medium text-neutral-600 dark:text-neutral-300 mb-1">Cari Aset</label>
@@ -247,22 +249,22 @@
 
                         {{-- ROW: Stok --}}
                         <tr class="hover:bg-neutral-50/60 dark:hover:bg-slate-700/30 transition-colors">
-                            <td class="p-4 text-center align-top">
+                            <td class="px-5 py-3.5 text-center align-top">
                                 <input type="checkbox" wire:model.live="bulkSelected" value="stock" class="rounded border-neutral-300 text-blue-900 focus:ring-blue-500/20 cursor-pointer">
                             </td>
-                            <td class="px-4 py-3.5 align-top whitespace-nowrap">
+                            <td class="px-5 py-3.5 align-top whitespace-nowrap">
                                 <span class="font-semibold text-neutral-900 dark:text-white text-xs">Data Stok Barang</span>
                             </td>
-                            <td class="px-4 py-3.5 align-top text-[11px] text-neutral-400">
+                            <td class="px-5 py-3.5 align-top text-[11px] text-neutral-400">
                                 Status stok saat ini beserta estimasi nilai persediaan
                             </td>
-                            <td class="px-4 py-3.5 align-top text-center">
+                            <td class="px-5 py-3.5 align-top text-center">
                                 <button type="button" wire:click="togglePanel('stock')"
                                     class="px-3 py-1.5 text-[11px] font-semibold rounded-sm transition-all {{ $openPanel === 'stock' ? 'bg-blue-900 text-white dark:bg-blue-800' : 'text-neutral-600 dark:text-neutral-300 bg-neutral-100 dark:bg-slate-700 hover:bg-neutral-200 dark:hover:bg-slate-600' }}">
                                     Filter
                                 </button>
                             </td>
-                            <td class="px-4 py-3.5 align-top text-center whitespace-nowrap">
+                            <td class="px-5 py-3.5 align-top text-center whitespace-nowrap">
                                 <button wire:click="exportStockReport" wire:loading.attr="disabled"
                                     class="px-3.5 py-1.5 text-xs font-semibold text-[#0d3b74] dark:text-sky-300 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 rounded-sm hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-all inline-flex items-center gap-1.5 cursor-pointer">
                                     <x-heroicon-o-arrow-down-tray class="w-3.5 h-3.5" />
@@ -273,7 +275,7 @@
                         @if($openPanel === 'stock')
                             <tr class="bg-neutral-50/70 dark:bg-slate-900/50">
                                 <td></td>
-                                <td colspan="4" class="px-4 pb-4 pt-1">
+                                <td colspan="4" class="px-5 pb-4 pt-1">
                                     <div class="rounded-sm p-3 grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
                                         <div>
                                             <label class="block font-medium text-neutral-600 dark:text-neutral-300 mb-1">Unit Usaha</label>
@@ -305,22 +307,22 @@
 
                         {{-- ROW: Keuangan --}}
                         <tr class="hover:bg-neutral-50/60 dark:hover:bg-slate-700/30 transition-colors">
-                            <td class="p-4 text-center align-top">
+                            <td class="px-5 py-3.5 text-center align-top">
                                 <input type="checkbox" wire:model.live="bulkSelected" value="fin" class="rounded border-neutral-300 text-blue-900 focus:ring-blue-500/20 cursor-pointer">
                             </td>
-                            <td class="px-4 py-3.5 align-top whitespace-nowrap">
+                            <td class="px-5 py-3.5 align-top whitespace-nowrap">
                                 <span class="font-semibold text-neutral-900 dark:text-white text-xs">Data Keuangan</span>
                             </td>
-                            <td class="px-4 py-3.5 align-top text-[11px] text-neutral-400">
+                            <td class="px-5 py-3.5 align-top text-[11px] text-neutral-400">
                                 Ringkasan arus kas &amp; rincian per kategori (2 sheet)
                             </td>
-                            <td class="px-4 py-3.5 align-top text-center">
+                            <td class="px-5 py-3.5 align-top text-center">
                                 <button type="button" wire:click="togglePanel('fin')"
                                     class="px-3 py-1.5 text-[11px] font-semibold rounded-sm transition-all {{ $openPanel === 'fin' ? 'bg-blue-900 text-white dark:bg-blue-800' : 'text-neutral-600 dark:text-neutral-300 bg-neutral-100 dark:bg-slate-700 hover:bg-neutral-200 dark:hover:bg-slate-600' }}">
                                     Filter
                                 </button>
                             </td>
-                            <td class="px-4 py-3.5 align-top text-center whitespace-nowrap">
+                            <td class="px-5 py-3.5 align-top text-center whitespace-nowrap">
                                 <button wire:click="exportFinanceReport" wire:loading.attr="disabled"
                                     class="px-3.5 py-1.5 text-xs font-semibold text-[#0d3b74] dark:text-sky-300 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 rounded-sm hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-all inline-flex items-center gap-1.5 cursor-pointer">
                                     <x-heroicon-o-arrow-down-tray class="w-3.5 h-3.5" />
@@ -331,7 +333,7 @@
                         @if($openPanel === 'fin')
                             <tr class="bg-neutral-50/70 dark:bg-slate-900/50">
                                 <td></td>
-                                <td colspan="4" class="px-4 pb-4 pt-1">
+                                <td colspan="4" class="px-5 pb-4 pt-1">
                                     <div class="rounded-sm p-3 grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
                                         <div>
                                             <label class="block font-medium text-neutral-600 dark:text-neutral-300 mb-1">Unit Usaha</label>
@@ -355,22 +357,22 @@
 
                         {{-- ROW: Log Aktivitas Login --}}
                         <tr class="hover:bg-neutral-50/60 dark:hover:bg-slate-700/30 transition-colors">
-                            <td class="p-4 text-center align-top">
+                            <td class="px-5 py-3.5 text-center align-top">
                                 <input type="checkbox" wire:model.live="bulkSelected" value="authlog" class="rounded border-neutral-300 text-blue-900 focus:ring-blue-500/20 cursor-pointer">
                             </td>
-                            <td class="px-4 py-3.5 align-top whitespace-nowrap">
+                            <td class="px-5 py-3.5 align-top whitespace-nowrap">
                                 <span class="font-semibold text-neutral-900 dark:text-white text-xs">Log Aktivitas Login</span>
                             </td>
-                            <td class="px-4 py-3.5 align-top text-[11px] text-neutral-400">
+                            <td class="px-5 py-3.5 align-top text-[11px] text-neutral-400">
                                 Riwayat login, logout, dan aktivitas keamanan akun
                             </td>
-                            <td class="px-4 py-3.5 align-top text-center">
+                            <td class="px-5 py-3.5 align-top text-center">
                                 <button type="button" wire:click="togglePanel('authlog')"
                                     class="px-3 py-1.5 text-[11px] font-semibold rounded-sm transition-all {{ $openPanel === 'authlog' ? 'bg-blue-900 text-white dark:bg-blue-800' : 'text-neutral-600 dark:text-neutral-300 bg-neutral-100 dark:bg-slate-700 hover:bg-neutral-200 dark:hover:bg-slate-600' }}">
                                     Filter
                                 </button>
                             </td>
-                            <td class="px-4 py-3.5 align-top text-center whitespace-nowrap">
+                            <td class="px-5 py-3.5 align-top text-center whitespace-nowrap">
                                 <button wire:click="exportAuthLogs" wire:loading.attr="disabled"
                                     class="px-3.5 py-1.5 text-xs font-semibold text-[#0d3b74] dark:text-sky-300 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 rounded-sm hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-all inline-flex items-center gap-1.5 cursor-pointer">
                                     <x-heroicon-o-arrow-down-tray class="w-3.5 h-3.5" />
@@ -381,7 +383,7 @@
                         @if($openPanel === 'authlog')
                             <tr class="bg-neutral-50/70 dark:bg-slate-900/50">
                                 <td></td>
-                                <td colspan="4" class="px-4 pb-4 pt-1">
+                                <td colspan="4" class="px-5 pb-4 pt-1">
                                     <div class="rounded-sm p-3 grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
                                         <div>
                                             <label class="block font-medium text-neutral-600 dark:text-neutral-300 mb-1">Cari (Identifier/Deskripsi)</label>
@@ -403,22 +405,22 @@
 
                         {{-- ROW: Audit Log Sistem --}}
                         <tr class="hover:bg-neutral-50/60 dark:hover:bg-slate-700/30 transition-colors">
-                            <td class="p-4 text-center align-top">
+                            <td class="px-5 py-3.5 text-center align-top">
                                 <input type="checkbox" wire:model.live="bulkSelected" value="auditlog" class="rounded border-neutral-300 text-blue-900 focus:ring-blue-500/20 cursor-pointer">
                             </td>
-                            <td class="px-4 py-3.5 align-top whitespace-nowrap">
+                            <td class="px-5 py-3.5 align-top whitespace-nowrap">
                                 <span class="font-semibold text-neutral-900 dark:text-white text-xs">Audit Log Sistem</span>
                             </td>
-                            <td class="px-4 py-3.5 align-top text-[11px] text-neutral-400">
+                            <td class="px-5 py-3.5 align-top text-[11px] text-neutral-400">
                                 Rekam jejak perubahan data (dibuat, diubah, dihapus)
                             </td>
-                            <td class="px-4 py-3.5 align-top text-center">
+                            <td class="px-5 py-3.5 align-top text-center">
                                 <button type="button" wire:click="togglePanel('auditlog')"
                                     class="px-3 py-1.5 text-[11px] font-semibold rounded-sm transition-all {{ $openPanel === 'auditlog' ? 'bg-blue-900 text-white dark:bg-blue-800' : 'text-neutral-600 dark:text-neutral-300 bg-neutral-100 dark:bg-slate-700 hover:bg-neutral-200 dark:hover:bg-slate-600' }}">
                                     Filter
                                 </button>
                             </td>
-                            <td class="px-4 py-3.5 align-top text-center whitespace-nowrap">
+                            <td class="px-5 py-3.5 align-top text-center whitespace-nowrap">
                                 <button wire:click="exportAuditLogs" wire:loading.attr="disabled"
                                     class="px-3.5 py-1.5 text-xs font-semibold text-[#0d3b74] dark:text-sky-300 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 rounded-sm hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-all inline-flex items-center gap-1.5 cursor-pointer">
                                     <x-heroicon-o-arrow-down-tray class="w-3.5 h-3.5" />
@@ -429,7 +431,7 @@
                         @if($openPanel === 'auditlog')
                             <tr class="bg-neutral-50/70 dark:bg-slate-900/50">
                                 <td></td>
-                                <td colspan="4" class="px-4 pb-4 pt-1">
+                                <td colspan="4" class="px-5 pb-4 pt-1">
                                     <div class="rounded-sm p-3 grid grid-cols-1 sm:grid-cols-4 gap-3 text-xs">
                                         <div>
                                             <label class="block font-medium text-neutral-600 dark:text-neutral-300 mb-1">Cari (Identifier/Deskripsi)</label>
@@ -459,22 +461,22 @@
 
                         {{-- ROW: Dashboard Master Admin --}}
                         <tr class="hover:bg-neutral-50/60 dark:hover:bg-slate-700/30 transition-colors">
-                            <td class="p-4 text-center align-top">
+                            <td class="px-5 py-3.5 text-center align-top">
                                 <input type="checkbox" wire:model.live="bulkSelected" value="dash" class="rounded border-neutral-300 text-blue-900 focus:ring-blue-500/20 cursor-pointer">
                             </td>
-                            <td class="px-4 py-3.5 align-top whitespace-nowrap">
+                            <td class="px-5 py-3.5 align-top whitespace-nowrap">
                                 <span class="font-semibold text-neutral-900 dark:text-white text-xs">Dashboard Master Admin</span>
                             </td>
-                            <td class="px-4 py-3.5 align-top text-[11px] text-neutral-400">
+                            <td class="px-5 py-3.5 align-top text-[11px] text-neutral-400">
                                 Ringkasan, kontribusi omzet, unit, admin &amp; aktivitas (multi-sheet)
                             </td>
-                            <td class="px-4 py-3.5 align-top text-center">
+                            <td class="px-5 py-3.5 align-top text-center">
                                 <button type="button" wire:click="togglePanel('dash')"
                                     class="px-3 py-1.5 text-[11px] font-semibold rounded-sm transition-all {{ $openPanel === 'dash' ? 'bg-blue-900 text-white dark:bg-blue-800' : 'text-neutral-600 dark:text-neutral-300 bg-neutral-100 dark:bg-slate-700 hover:bg-neutral-200 dark:hover:bg-slate-600' }}">
                                     Filter
                                 </button>
                             </td>
-                            <td class="px-4 py-3.5 align-top text-center whitespace-nowrap">
+                            <td class="px-5 py-3.5 align-top text-center whitespace-nowrap">
                                 <button wire:click="exportDashboardReport" wire:loading.attr="disabled"
                                     class="px-3.5 py-1.5 text-xs font-semibold text-[#0d3b74] dark:text-sky-300 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 rounded-sm hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-all inline-flex items-center gap-1.5 cursor-pointer">
                                     <x-heroicon-o-arrow-down-tray class="w-3.5 h-3.5" />
@@ -485,7 +487,7 @@
                         @if($openPanel === 'dash')
                             <tr class="bg-neutral-50/70 dark:bg-slate-900/50">
                                 <td></td>
-                                <td colspan="4" class="px-4 pb-4 pt-1">
+                                <td colspan="4" class="px-5 pb-4 pt-1">
                                     <div class="rounded-sm p-3 grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
                                         <div>
                                             <label class="block font-medium text-neutral-600 dark:text-neutral-300 mb-1">Periode Omzet</label>
@@ -522,30 +524,26 @@
 
     {{-- ============ SECTION: TEMPLATE IMPORT (TABLE LAYOUT) ============ --}}
     <div class="space-y-3">
-        <div>
-            <h2 class="text-lg font-bold text-neutral-900 dark:text-white tracking-tight">Template Import</h2>
-            <p class="text-xs text-neutral-400 mt-0.5">Unduh format kolom siap pakai untuk import data massal</p>
-        </div>
 
         <div class="bg-white dark:bg-slate-800 rounded-sm border border-neutral-100 dark:border-slate-700 overflow-hidden shadow-sm shadow-black/[0.02]">
             <div class="overflow-x-auto">
                 <table class="w-full text-sm text-left">
                     <thead class="bg-neutral-50/70 dark:bg-slate-900/50 text-[11px] font-semibold uppercase tracking-wider text-neutral-400 border-b border-neutral-100 dark:border-slate-700">
                         <tr>
-                            <th class="px-4 py-3.5">Jenis Template</th>
-                            <th class="px-4 py-3.5">Deskripsi</th>
-                            <th class="px-4 py-3.5 text-center">Aksi</th>
+                            <th class="px-5 py-3.5">Jenis Template</th>
+                            <th class="px-5 py-3.5">Deskripsi</th>
+                            <th class="px-5 py-3.5 text-center">Aksi</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-neutral-100 dark:divide-slate-700">
                         <tr class="hover:bg-neutral-50/60 dark:hover:bg-slate-700/30 transition-colors">
-                            <td class="px-4 py-3.5 whitespace-nowrap font-semibold text-neutral-900 dark:text-white text-xs">
+                            <td class="px-5 py-3.5 whitespace-nowrap font-semibold text-neutral-900 dark:text-white text-xs">
                                 Template Data Transaksi
                             </td>
-                            <td class="px-4 py-3.5 text-[11px] text-neutral-400">
+                            <td class="px-5 py-3.5 text-[11px] text-neutral-400">
                                 Format kolom untuk import transaksi massal
                             </td>
-                            <td class="px-4 py-3.5 text-center whitespace-nowrap">
+                            <td class="px-5 py-3.5 text-center whitespace-nowrap">
                                 <button wire:click="downloadTransactionTemplate" class="px-3.5 py-1.5 text-xs font-semibold text-neutral-600 dark:text-neutral-300 bg-neutral-100 dark:bg-slate-700 hover:bg-neutral-200 dark:hover:bg-slate-600 rounded-sm transition-all inline-flex items-center gap-1.5 cursor-pointer">
                                     <x-heroicon-o-arrow-down-tray class="w-3.5 h-3.5" />
                                     <span>Unduh (.xlsx)</span>
@@ -553,13 +551,13 @@
                             </td>
                         </tr>
                         <tr class="hover:bg-neutral-50/60 dark:hover:bg-slate-700/30 transition-colors">
-                            <td class="px-4 py-3.5 whitespace-nowrap font-semibold text-neutral-900 dark:text-white text-xs">
+                            <td class="px-5 py-3.5 whitespace-nowrap font-semibold text-neutral-900 dark:text-white text-xs">
                                 Template Data Produk
                             </td>
-                            <td class="px-4 py-3.5 text-[11px] text-neutral-400">
+                            <td class="px-5 py-3.5 text-[11px] text-neutral-400">
                                 Format kolom untuk import produk/inventaris
                             </td>
-                            <td class="px-4 py-3.5 text-center whitespace-nowrap">
+                            <td class="px-5 py-3.5 text-center whitespace-nowrap">
                                 <button wire:click="downloadProductTemplate" class="px-3.5 py-1.5 text-xs font-semibold text-neutral-600 dark:text-neutral-300 bg-neutral-100 dark:bg-slate-700 hover:bg-neutral-200 dark:hover:bg-slate-600 rounded-sm transition-all inline-flex items-center gap-1.5 cursor-pointer">
                                     <x-heroicon-o-arrow-down-tray class="w-3.5 h-3.5" />
                                     <span>Unduh (.xlsx)</span>
@@ -567,13 +565,13 @@
                             </td>
                         </tr>
                         <tr class="hover:bg-neutral-50/60 dark:hover:bg-slate-700/30 transition-colors">
-                            <td class="px-4 py-3.5 whitespace-nowrap font-semibold text-neutral-900 dark:text-white text-xs">
+                            <td class="px-5 py-3.5 whitespace-nowrap font-semibold text-neutral-900 dark:text-white text-xs">
                                 Template Data Aset
                             </td>
-                            <td class="px-4 py-3.5 text-[11px] text-neutral-400">
+                            <td class="px-5 py-3.5 text-[11px] text-neutral-400">
                                 Format kolom untuk import aset massal
                             </td>
-                            <td class="px-4 py-3.5 text-center whitespace-nowrap">
+                            <td class="px-5 py-3.5 text-center whitespace-nowrap">
                                 <button wire:click="downloadAssetTemplate" class="px-3.5 py-1.5 text-xs font-semibold text-neutral-600 dark:text-neutral-300 bg-neutral-100 dark:bg-slate-700 hover:bg-neutral-200 dark:hover:bg-slate-600 rounded-sm transition-all inline-flex items-center gap-1.5 cursor-pointer">
                                     <x-heroicon-o-arrow-down-tray class="w-3.5 h-3.5" />
                                     <span>Unduh (.xlsx)</span>

@@ -42,6 +42,12 @@
     $__heroAsciiX       = $__heroNum('landing_hero_ascii_x', -300, 300);
     $__heroAsciiY       = $__heroNum('landing_hero_ascii_y', -300, 300);
 
+    // Atribut style hero dirakit di sini (bukan echo Blade di dalam atribut style) supaya
+    // validator CSS di editor tidak menandai merah. Semua nilainya angka hasil
+    // $__heroNum()/pembatasan di atas, jadi aman dicetak apa adanya.
+    $__heroBracketStyleAttr = 'style="max-width: ' . $__heroBracketWidth . 'rem; margin-top: ' . $__heroTitleGap . 'rem; margin-bottom: ' . $__heroTitleGap . 'rem;"';
+    $__heroAsciiStyleAttr   = 'style="left: 50%; top: 50%; margin-left: calc(-78px + ' . $__heroAsciiX . 'px); margin-top: calc(-90px + ' . $__heroAsciiY . 'px);"';
+
     // Logo/foto custom elemen ASCII di hero -- diatur admin lewat Pengaturan >
     // Landing Page > Hero. Dipakai berupa path relatif (same-origin) supaya
     // canvas di ascii-3d-hero.js tidak terblokir CORS. Kosong = model 3D bawaan.
@@ -351,17 +357,18 @@
                         di dalamnya — sehingga posisi ASCII selalu mengikuti kurung ini
                         (yang sudah otomatis center via mx-auto), bukan lagi terikat
                         offset pixel manual terhadap section. --}}
-                    <span class="hidden lg:flex relative justify-between w-full mx-auto leading-none" style="max-width: {{ $__heroBracketWidth }}rem; margin-top: {{ $__heroTitleGap }}rem; margin-bottom: {{ $__heroTitleGap }}rem;">
+                    <span class="hidden lg:flex relative justify-between w-full mx-auto leading-none" {!! $__heroBracketStyleAttr !!}>
                         <span>(</span>
+                        {{-- Posisi: titik tengah kurung (50%/50%) dikurangi setengah ukuran elemen (90px),
+                             +12px = offset horizontal bawaan desain asli, lalu ditambah geseran admin.
+                             Memakai margin (bukan transform) karena transform dipakai animasi GSAP.
+                             data-ascii-image kosong = model 3D bawaan (dibaca sebagai null di app.js). --}}
                         <div
                             id="ascii-3d-container"
                             data-animate="hero-visual"
-                            @if ($__heroLogoUrl) data-ascii-image="{{ $__heroLogoUrl }}" @endif
+                            data-ascii-image="{{ $__heroLogoUrl }}"
                             class="pointer-events-none absolute w-[180px] h-[180px] text-blue-900 dark:text-slate-200"
-                            {{-- Posisi: titik tengah kurung (50%/50%) dikurangi setengah ukuran elemen (90px),
-                                 +12px = offset horizontal bawaan desain asli, lalu ditambah geseran admin.
-                                 Memakai margin (bukan transform) karena transform dipakai animasi GSAP. --}}
-                            style="left: 50%; top: 50%; margin-left: calc(-78px + {{ $__heroAsciiX }}px); margin-top: calc(-90px + {{ $__heroAsciiY }}px);"
+                            {!! $__heroAsciiStyleAttr !!}
                         ></div>
 
                         <span>)</span>
@@ -423,7 +430,7 @@
     @endphp
     @if ($__showUnitsSection && $__landingUnits->isNotEmpty())
     <section class="py-32 bg-slate-50 dark:bg-slate-950 transition-colors duration-300">
-        <div class="max-w-[100vw]mx-auto px-6 lg:px-8 text-center">
+        <div class="max-w-[100vw] mx-auto px-6 lg:px-8 text-center">
 
             <h2 data-reveal-text data-animate="bento" class="mt-20 font-display text-3xl lg:text-5xl font-medium text-blue-950 leading-none tracking-tighter dark:text-white">
                 {!! nl2br(e($__landingText('landing_mitra_title'))) !!}
@@ -499,9 +506,9 @@
             {{-- List fitur, tersusun menyerong (staggered) — jumlah & isi
                  diatur admin lewat Pengaturan > Landing Page > Fitur Unggulan. --}}
             <div class="mt-24 lg:mt-52 flex flex-col gap-20 lg:gap-48">
-                @foreach ($__fiturItems as $__fiturItem)
-                    @php $__layout = $__fiturLayout[$loop->index % count($__fiturLayout)]; @endphp
-                    <div class="{{ $__layout['ml'] }} {{ $__layout['w'] }} flex items-start gap-3" data-animate="fitur-item">
+                @foreach ($__fiturItems as $__fiturIndex => $__fiturItem)
+                    @php $__layout = $__fiturLayout[$__fiturIndex % count($__fiturLayout)]; @endphp
+                    <div id="fitur-{{ $__fiturIndex + 1 }}" class="scroll-mt-24 {{ $__layout['ml'] }} {{ $__layout['w'] }} flex items-start gap-3" data-animate="fitur-item">
                         <span class="mt-2.5 h-1.5 w-1.5 shrink-0 {{ $__layout['dot'] }} dark:bg-white blink-dot"></span>
                         <div>
                             <h3 data-reveal-text class="font-display text-2xl lg:text-3xl font-medium tracking-tighter text-blue-950 dark:text-white">
@@ -537,7 +544,7 @@
             <div class="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
 
                 {{-- Heading kiri --}}
-                <h2 data-reveal-text class="font-medium tracking-tighter leading-none self-start text-4xl lg:text-6xl font-bold text-white lg:max-w-sm">
+                <h2 data-reveal-text class="tracking-tighter leading-none self-start text-4xl lg:text-6xl font-bold text-white lg:max-w-sm">
                     {{ $__landingText('landing_cara_kerja_title') }}
                 </h2>
 
@@ -583,9 +590,9 @@
                      Landing Page > Cara Kerja. Offset vertikal & lebar kartu
                      diputar (cycle) lewat $__caraKerjaLayout supaya tampilan
                      tetap dinamis untuk jumlah langkah berapa pun. --}}
-                @foreach ($__caraKerjaItems as $__step)
+                @foreach ($__caraKerjaItems as $__stepIndex => $__step)
                     @php
-                        $__stepLayout = $__caraKerjaLayout[$loop->index % count($__caraKerjaLayout)];
+                        $__stepLayout = $__caraKerjaLayout[$__stepIndex % count($__caraKerjaLayout)];
                         $__stepIconKey = $__step['icon'] ?? 'unit';
                         $__stepIcon = $__caraKerjaIcons[$__stepIconKey] ?? $__caraKerjaIcons['unit'];
                     @endphp
@@ -635,7 +642,7 @@
             {{-- Kiri: Gambar (60%) -- diatur admin lewat Pengaturan > Landing
                  Page > Tentang. Fallback ke asset bawaan SELAMA admin belum
                  pernah mengunggah foto sendiri. --}}
-            <div class="relative w-full lg:w-[60%] h-72 lg:h-[100vh] bg-slate-800 flex-shrink-0 overflow-hidden">
+            <div class="relative w-full lg:w-[60%] h-72 lg:h-[100vh] bg-slate-800 shrink-0 overflow-hidden">
                 <img
                     src="{{ $__tentangPhoto ? asset('storage/' . $__tentangPhoto) : asset('images/images (1).jpg') }}"
                     alt="About"
@@ -648,7 +655,7 @@
 
                 {{-- Heading + deskripsi --}}
                 <div>
-                    <h2 data-reveal-text class="font-display text-2xl lg:text-4xl font-medium text-white leading-tighter tracking-tighter">
+                    <h2 data-reveal-text class="font-display text-2xl lg:text-4xl font-medium text-white tracking-tighter">
                         {{ $__landingText('landing_tentang_title') }}
                     </h2>
                 </div>
@@ -701,7 +708,7 @@
         data-accent-light="rgb(230, 241, 255)"
         data-accent-dark="rgb(52, 64, 82)"
         data-prev-light="#172554"
-        data-prev-dark="rgb(15, 23, 42)""
+        data-prev-dark="rgb(15, 23, 42)"
     ></div>
 
     {{-- ===================== FAQ ===================== --}}
@@ -714,9 +721,9 @@
                 <span data-reveal-text class="text-xs font-semibold uppercase tracking-tight text-blue-900 dark:text-slate-400">
                     FAQ
                 </span>
-                <div class="flex justicy-start gap-3">
+                <div class="flex justify-start gap-3">
                     <span class="blink-dot mt-2.5 h-2 w-2 shrink-0 bg-blue-950"></span>
-                    <h2 data-reveal-text class="font-display text-3xl lg:text-5xl font-medium leading-tighter tracking-tighter text-blue-900 dark:text-white">
+                    <h2 data-reveal-text class="font-display text-3xl lg:text-5xl font-medium tracking-tighter text-blue-900 dark:text-white">
                         {{ $__landingText('landing_faq_title') }}
                     </h2>
                 </div>
@@ -776,9 +783,11 @@
                         {!! nl2br(e($__landingText('landing_footer_title'))) !!}
                     </h2>
 
-                    <form class="mt-6 flex flex-col sm:flex-row gap-2 max-w-md">
+                    <form id="contact-form" class="mt-6 flex flex-col sm:flex-row gap-2 max-w-md">
                         <input
                             type="email"
+                            name="email"
+                            required
                             placeholder="Alamat E-mail"
                             class="flex-1 rounded-[1px] border border-white/15 bg-transparent px-4 py-2 text-xs text-white placeholder:text-slate-500 focus:outline-none focus:border-white/40 transition-colors"
                         />
@@ -814,11 +823,13 @@
                                 Fitur
                             </p>
                             <ul class="space-y-1 text-[12px] font-medium tracking-tighter">
-                                <li><a href="#fitur-transaksi" class="text-white/90 hover:text-white transition-colors">Pencatatan Transaksi</a></li>
-                                <li><a href="#fitur-laporan" class="text-white/90 hover:text-white transition-colors">Laporan Keuangan</a></li>
-                                <li><a href="#fitur" class="text-white/90 hover:text-white transition-colors">Manajemen Unit Usaha</a></li>
-                                <li><a href="#fitur-multiadmin" class="text-white/90 hover:text-white transition-colors">Multi Admin</a></li>
-                                <li><a href="#fitur-keamanan" class="text-white/90 hover:text-white transition-colors">Keamanan Data</a></li>
+                                {{-- Daftar fitur mengikuti judul fitur di section Fitur Unggulan
+                                     (diatur admin master), tiap link menuju kartu fitur terkait. --}}
+                                @if ($__showFiturSection)
+                                    @foreach ($__fiturItems as $__fiturIndex => $__fiturItem)
+                                        <li><a href="#fitur-{{ $__fiturIndex + 1 }}" class="text-white/90 hover:text-white transition-colors">{{ $__fiturItem['title'] ?? '' }}</a></li>
+                                    @endforeach
+                                @endif
                             </ul>
                         </div>
                     </div>
@@ -830,7 +841,7 @@
                                 Bantuan
                             </p>
                             <ul class="space-y-1 text-[12px] font-medium tracking-tighter">
-                                <li><a href="#" class="text-white/90 hover:text-white transition-colors">Panduan Penggunaan</a></li>
+                                <li><a href="#cara-kerja" class="text-white/90 hover:text-white transition-colors">Panduan Penggunaan</a></li>
                                 <li><a href="#kontak" class="text-white/90 hover:text-white transition-colors">Hubungi Admin</a></li>
                             </ul>
                         </div>
@@ -883,6 +894,19 @@
     ></div>
 </div>
 
+{{-- Loader hanya sekali per sesi: kalau sudah pernah tampil, sembunyikan
+     overlay sebelum sempat terlihat. Logika utamanya ada di resources/js/loader.js. --}}
+<script>
+    (function () {
+        try {
+            if (sessionStorage.getItem('sims-loader-seen') === '1') {
+                var el = document.getElementById('page-loader');
+                if (el) el.style.display = 'none';
+            }
+        } catch (e) {}
+    })();
+</script>
+
 <script>
     (function () {
         const toggleBtn   = document.getElementById('mobile-menu-toggle');
@@ -920,6 +944,34 @@
 
         window.addEventListener('resize', function () {
             if (window.innerWidth >= 768) closeMenu();
+        });
+    })();
+</script>
+
+<script>
+    // Form "Hubungi": setelah pengguna mengisi email lalu klik Hubungi,
+    // arahkan ke compose Gmail untuk menghubungi email developer.
+    (function () {
+        const form = document.getElementById('contact-form');
+        if (!form) return;
+
+        const DEVELOPER_EMAIL = 'annosulistyanno@gmail.com';
+
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+            const input = form.querySelector('input[type="email"]');
+            const userEmail = input ? input.value.trim() : '';
+            if (!userEmail) return;
+
+            const params = new URLSearchParams({
+                view: 'cm',
+                fs: '1',
+                to: DEVELOPER_EMAIL,
+                su: 'Hubungi Admin Manajemen USMAN',
+                body: 'Halo Admin,\n\nSaya ingin menghubungi Anda terkait Manajemen USMAN.\n\nEmail saya: ' + userEmail + '\n'
+            });
+
+            window.open('https://mail.google.com/mail/?' + params.toString(), '_blank', 'noopener');
         });
     })();
 </script>

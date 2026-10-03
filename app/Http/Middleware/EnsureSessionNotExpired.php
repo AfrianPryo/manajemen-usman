@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use App\Models\AuthLog;
 use App\Models\Setting;
+use Carbon\Carbon;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -30,16 +31,17 @@ use Symfony\Component\HttpFoundation\Response;
  * satu kali baca Setting::get() (yang sudah di-cache forever oleh
  * App\Models\Setting), jadi overhead-nya bisa diabaikan.
  *
- * CATATAN: request Livewire (mis. wire:click, wire:model.live) ikut
- * dihitung sebagai aktivitas -- jadi selama user benar-benar berinteraksi
- * dengan halaman, sesi tidak akan timeout meski tab dibiarkan terbuka lama.
- * wire:poll di suatu komponen (kalau ada) akan ikut menghitung sebagai
- * aktivitas juga, karena middleware ini tidak bisa membedakan polling
- * otomatis dari interaksi asli -- ini keterbatasan yang wajar untuk
- * pendekatan idle-timeout berbasis request, bukan bug.
+ * CATATAN: middleware ini didaftarkan sebagai persistent middleware Livewire
+ * (lihat AppServiceProvider), sehingga request aksi Livewire (wire:click,
+ * wire:model.live) juga dicek & dihitung sebagai aktivitas. wire:poll di
+ * suatu komponen (kalau ada) ikut menghitung sebagai aktivitas, karena
+ * middleware ini tidak bisa membedakan polling otomatis dari interaksi
+ * asli -- keterbatasan wajar pada idle-timeout berbasis request.
  */
 class EnsureSessionNotExpired
 {
+    use RejectsLivewireRequests;
+
     public function handle(Request $request, Closure $next): Response
     {
         if (! Auth::check()) {
@@ -65,7 +67,14 @@ class EnsureSessionNotExpired
 
         $lastActivity = $request->session()->get('last_activity_at');
 
-        if ($lastActivity && now()->diffInMinutes($lastActivity) >= $timeoutMinutes) {
+        // Bandingkan timestamp (detik) -- diffInMinutes() bertanda di Carbon 3
+        // (negatif bila argumen ada di masa lalu) sehingga timeout tidak
+        // pernah terpicu; selisih timestamp aman di semua versi Carbon.
+        $idleSeconds = $lastActivity
+            ? now()->getTimestamp() - Carbon::parse($lastActivity)->getTimestamp()
+            : 0;
+
+        if ($lastActivity && $idleSeconds >= $timeoutMinutes * 60) {
             AuthLog::log(
                 'session.timeout',
                 $user->id,
@@ -76,6 +85,10 @@ class EnsureSessionNotExpired
             Auth::logout();
             $request->session()->invalidate();
             $request->session()->regenerateToken();
+
+            if ($this->isLivewireRequest($request)) {
+                return $this->rejectLivewire();
+            }
 
             return redirect()->route('login')
                 ->with('error', 'Sesi Anda telah berakhir karena tidak ada aktivitas. Silakan login kembali.');

@@ -1,31 +1,35 @@
 <div class="w-full max-w-[1500px] mx-auto space-y-5 text-neutral-800 dark:text-neutral-100 px-4 py-4 sm:px-6 font-sans">
+    <livewire:page-tour tour="exports.index" />
 
     {{-- Flash Notification (toast) --}}
     @if (session()->has('message'))
         <div wire:key="toast-message-{{ md5(session('message')) }}" x-data x-init="$store.toast.push('success', @js(session('message')))"></div>
     @endif
 
+    {{-- Header Section --}}
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-white dark:bg-slate-800 p-5 rounded-sm border border-neutral-100 dark:border-slate-700 shadow-sm shadow-black/[0.02]">
+        <div>
+            <h1 class="text-md font-bold tracking-tight text-neutral-900 dark:text-white">Export Data</h1>
+            <p class="text-[12px] tracking-tight text-neutral-400 mt-1">Centang beberapa jenis data untuk export sekaligus, atau unduh satu per satu.</p>
+        </div>
+    </div>
+
     {{-- ============ SECTION: EXPORT DATA (TABLE LAYOUT) ============ --}}
     <div class="space-y-3">
-        <div class="flex items-center justify-between">
-            <h2 class="text-xs font-semibold text-neutral-400 uppercase tracking-wider">Export Data</h2>
-            <span class="text-[11px] text-neutral-400">Centang beberapa jenis data untuk export sekaligus</span>
-        </div>
-
         {{-- Bulk Action Bar --}}
         @if(count($bulkSelected) > 0)
-            <div class="flex items-center justify-between bg-neutral-900 dark:bg-slate-950 text-white p-3.5 rounded-md shadow-md text-xs">
+            <div class="flex items-center justify-between bg-blue-900 dark:bg-blue-950 text-white p-3.5 rounded-sm shadow-sm shadow-blue-900/20 text-xs">
                 <div class="flex items-center gap-2">
-                    <span class="font-bold text-red-400">{{ count($bulkSelected) }}</span> jenis data dipilih
+                    <span class="font-bold text-sky-300">{{ count($bulkSelected) }}</span> jenis data dipilih
                 </div>
                 <div class="flex items-center gap-2">
                     <button wire:click="bulkExport" wire:loading.attr="disabled" wire:target="bulkExport"
-                        class="px-3.5 py-1.5 bg-blue-500 hover:bg-blue-400 rounded font-semibold transition-colors flex items-center gap-1.5 disabled:opacity-60">
-                        <x-heroicon-o-arrow-down-tray wire:loading.remove wire:target="bulkExport" class="w-3.5 h-3.5" />
+                        class="px-3.5 py-1.5 bg-white text-blue-900 hover:bg-blue-50 rounded-sm font-semibold transition-colors flex items-center gap-1.5 disabled:opacity-60">
+                        <x-heroicon-o-arrow-down-tray stroke-width="2.5" wire:loading.remove wire:target="bulkExport" class="w-3.5 h-3.5" />
                         <span wire:loading.remove wire:target="bulkExport">Export Terpilih (.zip)</span>
                         <span wire:loading wire:target="bulkExport">Memproses...</span>
                     </button>
-                    <button wire:click="$set('bulkSelected', [])" class="px-3 py-1.5 bg-neutral-700 hover:bg-neutral-600 rounded font-semibold transition-colors">
+                    <button wire:click="$set('bulkSelected', [])" class="px-3 py-1.5 bg-blue-800/70 hover:bg-blue-800 rounded-sm font-semibold transition-colors">
                         Batal
                     </button>
                 </div>
@@ -33,45 +37,45 @@
         @endif
 
         {{-- Tabel Opsi Export --}}
-        <div class="bg-white dark:bg-slate-800 rounded-md border border-neutral-100 dark:border-slate-700 overflow-hidden shadow-sm shadow-black/[0.02]">
+        <div class="bg-white dark:bg-slate-800 rounded-sm border border-neutral-100 dark:border-slate-700 overflow-hidden shadow-sm shadow-black/[0.02]">
             <div class="overflow-x-auto">
                 <table class="w-full text-sm text-left">
                     <thead class="bg-neutral-50/70 dark:bg-slate-900/50 text-[11px] font-semibold uppercase tracking-wider text-neutral-400 border-b border-neutral-100 dark:border-slate-700">
                         <tr>
-                            <th class="p-4 w-10 text-center">
+                            <th class="px-5 py-3.5 w-10 text-center">
                                 <input type="checkbox"
                                     onclick="this.checked
                                         ? @this.set('bulkSelected', ['trx','prod','asset','stock','fin'])
                                         : @this.set('bulkSelected', [])"
                                     @checked(count($bulkSelected) === $totalExportTypes)
-                                    class="rounded border-neutral-300 text-blue-900 focus:ring-red-500/20 cursor-pointer">
+                                    class="rounded border-neutral-300 text-blue-900 focus:ring-blue-500/20 cursor-pointer">
                             </th>
-                            <th class="px-4 py-3.5">Jenis Data</th>
-                            <th class="px-4 py-3.5">Deskripsi</th>
-                            <th class="px-4 py-3.5 text-center">Filter</th>
-                            <th class="px-4 py-3.5 text-center">Aksi</th>
+                            <th class="px-5 py-3.5">Jenis Data</th>
+                            <th class="px-5 py-3.5">Deskripsi</th>
+                            <th class="px-5 py-3.5 text-center">Filter</th>
+                            <th class="px-5 py-3.5 text-center">Aksi</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-neutral-100 dark:divide-slate-700">
 
                         {{-- ROW: Transaksi --}}
                         <tr class="hover:bg-neutral-50/60 dark:hover:bg-slate-700/30 transition-colors">
-                            <td class="p-4 text-center align-top">
-                                <input type="checkbox" wire:model.live="bulkSelected" value="trx" class="rounded border-neutral-300 text-blue-900 focus:ring-red-500/20 cursor-pointer">
+                            <td class="px-5 py-3.5 text-center align-top">
+                                <input type="checkbox" wire:model.live="bulkSelected" value="trx" class="rounded border-neutral-300 text-blue-900 focus:ring-blue-500/20 cursor-pointer">
                             </td>
-                            <td class="px-4 py-3.5 align-top whitespace-nowrap">
+                            <td class="px-5 py-3.5 align-top whitespace-nowrap">
                                 <span class="font-semibold text-neutral-900 dark:text-white text-xs">Data Transaksi</span>
                             </td>
-                            <td class="px-4 py-3.5 align-top text-[11px] text-neutral-400">
+                            <td class="px-5 py-3.5 align-top text-[11px] text-neutral-400">
                                 Rekap pemasukan &amp; pengeluaran unit ini
                             </td>
-                            <td class="px-4 py-3.5 align-top text-center">
+                            <td class="px-5 py-3.5 align-top text-center">
                                 <button type="button" wire:click="togglePanel('trx')"
-                                    class="px-3 py-1.5 text-[11px] font-semibold rounded-full transition-all {{ $openPanel === 'trx' ? 'bg-neutral-800 text-white dark:bg-slate-600' : 'text-neutral-600 dark:text-neutral-300 bg-neutral-100 dark:bg-slate-700 hover:bg-neutral-200 dark:hover:bg-slate-600' }}">
+                                    class="px-3 py-1.5 text-[11px] font-semibold rounded-sm transition-all {{ $openPanel === 'trx' ? 'bg-blue-900 text-white dark:bg-blue-800' : 'text-neutral-600 dark:text-neutral-300 bg-neutral-100 dark:bg-slate-700 hover:bg-neutral-200 dark:hover:bg-slate-600' }}">
                                     Filter
                                 </button>
                             </td>
-                            <td class="px-4 py-3.5 align-top text-center whitespace-nowrap">
+                            <td class="px-5 py-3.5 align-top text-center whitespace-nowrap">
                                 <button wire:click="exportTransactions" wire:loading.attr="disabled"
                                     class="px-3.5 py-1.5 text-xs font-semibold text-[#0d3b74] dark:text-sky-300 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 rounded-sm hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-all inline-flex items-center gap-1.5 cursor-pointer">
                                     <x-heroicon-o-arrow-down-tray class="w-3.5 h-3.5" />
@@ -82,23 +86,23 @@
                         @if($openPanel === 'trx')
                             <tr class="bg-neutral-50/70 dark:bg-slate-900/50">
                                 <td></td>
-                                <td colspan="4" class="px-4 pb-4 pt-1">
-                                    <div class="rounded-md p-3 grid grid-cols-1 sm:grid-cols-4 gap-3 text-xs">
+                                <td colspan="4" class="px-5 pb-4 pt-1">
+                                    <div class="rounded-sm p-3 grid grid-cols-1 sm:grid-cols-4 gap-3 text-xs">
                                         <div>
-                                            <label class="block font-medium text-neutral-400 mb-1">Cari (Ref/Deskripsi)</label>
-                                            <input type="text" wire:model="trx_search" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-full bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-red-500/10 focus:border-red-400">
+                                            <label class="block font-medium text-neutral-600 dark:text-neutral-300 mb-1">Cari (Ref/Deskripsi)</label>
+                                            <input type="text" wire:model="trx_search" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400">
                                         </div>
                                         <div>
-                                            <label class="block font-medium text-neutral-400 mb-1">Tipe</label>
-                                            <select wire:model="trx_typeFilter" class="w-full px-3.5 py-2 text-xs font-semibold text-neutral-600 dark:text-neutral-300 bg-white dark:bg-slate-900 border border-neutral-200 dark:border-slate-700 rounded-full focus:outline-none focus:ring-2 focus:ring-red-500/10 focus:border-red-400 cursor-pointer">
+                                            <label class="block font-medium text-neutral-600 dark:text-neutral-300 mb-1">Tipe</label>
+                                            <select wire:model="trx_typeFilter" class="w-full px-3.5 py-2 text-xs font-semibold text-neutral-600 dark:text-neutral-300 bg-white dark:bg-slate-900 border border-neutral-200 dark:border-slate-700 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400 cursor-pointer">
                                                 <option value="">Semua Tipe</option>
                                                 <option value="income">Pemasukan</option>
                                                 <option value="expense">Pengeluaran</option>
                                             </select>
                                         </div>
                                         <div>
-                                            <label class="block font-medium text-neutral-400 mb-1">Status</label>
-                                            <select wire:model="trx_statusFilter" class="w-full px-3.5 py-2 text-xs font-semibold text-neutral-600 dark:text-neutral-300 bg-white dark:bg-slate-900 border border-neutral-200 dark:border-slate-700 rounded-full focus:outline-none focus:ring-2 focus:ring-red-500/10 focus:border-red-400 cursor-pointer">
+                                            <label class="block font-medium text-neutral-600 dark:text-neutral-300 mb-1">Status</label>
+                                            <select wire:model="trx_statusFilter" class="w-full px-3.5 py-2 text-xs font-semibold text-neutral-600 dark:text-neutral-300 bg-white dark:bg-slate-900 border border-neutral-200 dark:border-slate-700 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400 cursor-pointer">
                                                 <option value="">Semua Status</option>
                                                 <option value="completed">Selesai</option>
                                                 <option value="pending">Menunggu</option>
@@ -107,12 +111,12 @@
                                         </div>
                                         <div></div>
                                         <div>
-                                            <label class="block font-medium text-neutral-400 mb-1">Dari Tanggal</label>
-                                            <input type="date" wire:model="trx_startDate" class="w-full px-3.5 py-2 text-xs border border-neutral-200 dark:border-slate-700 rounded-full bg-white dark:bg-slate-900 text-neutral-700 dark:text-neutral-300 focus:outline-none focus:border-red-400">
+                                            <label class="block font-medium text-neutral-600 dark:text-neutral-300 mb-1">Dari Tanggal</label>
+                                            <input type="date" wire:model="trx_startDate" class="w-full px-3.5 py-2 text-xs border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-700 dark:text-neutral-300 focus:outline-none focus:border-blue-400">
                                         </div>
                                         <div>
-                                            <label class="block font-medium text-neutral-400 mb-1">Sampai Tanggal</label>
-                                            <input type="date" wire:model="trx_endDate" class="w-full px-3.5 py-2 text-xs border border-neutral-200 dark:border-slate-700 rounded-full bg-white dark:bg-slate-900 text-neutral-700 dark:text-neutral-300 focus:outline-none focus:border-red-400">
+                                            <label class="block font-medium text-neutral-600 dark:text-neutral-300 mb-1">Sampai Tanggal</label>
+                                            <input type="date" wire:model="trx_endDate" class="w-full px-3.5 py-2 text-xs border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-700 dark:text-neutral-300 focus:outline-none focus:border-blue-400">
                                         </div>
                                     </div>
                                 </td>
@@ -121,22 +125,22 @@
 
                         {{-- ROW: Inventaris --}}
                         <tr class="hover:bg-neutral-50/60 dark:hover:bg-slate-700/30 transition-colors">
-                            <td class="p-4 text-center align-top">
-                                <input type="checkbox" wire:model.live="bulkSelected" value="prod" class="rounded border-neutral-300 text-blue-900 focus:ring-red-500/20 cursor-pointer">
+                            <td class="px-5 py-3.5 text-center align-top">
+                                <input type="checkbox" wire:model.live="bulkSelected" value="prod" class="rounded border-neutral-300 text-blue-900 focus:ring-blue-500/20 cursor-pointer">
                             </td>
-                            <td class="px-4 py-3.5 align-top whitespace-nowrap">
+                            <td class="px-5 py-3.5 align-top whitespace-nowrap">
                                 <span class="font-semibold text-neutral-900 dark:text-white text-xs">Data Inventaris</span>
                             </td>
-                            <td class="px-4 py-3.5 align-top text-[11px] text-neutral-400">
+                            <td class="px-5 py-3.5 align-top text-[11px] text-neutral-400">
                                 Data produk, stok, dan estimasi nilai inventaris unit ini
                             </td>
-                            <td class="px-4 py-3.5 align-top text-center">
+                            <td class="px-5 py-3.5 align-top text-center">
                                 <button type="button" wire:click="togglePanel('prod')"
-                                    class="px-3 py-1.5 text-[11px] font-semibold rounded-full transition-all {{ $openPanel === 'prod' ? 'bg-neutral-800 text-white dark:bg-slate-600' : 'text-neutral-600 dark:text-neutral-300 bg-neutral-100 dark:bg-slate-700 hover:bg-neutral-200 dark:hover:bg-slate-600' }}">
+                                    class="px-3 py-1.5 text-[11px] font-semibold rounded-sm transition-all {{ $openPanel === 'prod' ? 'bg-blue-900 text-white dark:bg-blue-800' : 'text-neutral-600 dark:text-neutral-300 bg-neutral-100 dark:bg-slate-700 hover:bg-neutral-200 dark:hover:bg-slate-600' }}">
                                     Filter
                                 </button>
                             </td>
-                            <td class="px-4 py-3.5 align-top text-center whitespace-nowrap">
+                            <td class="px-5 py-3.5 align-top text-center whitespace-nowrap">
                                 <button wire:click="exportProducts" wire:loading.attr="disabled"
                                     class="px-3.5 py-1.5 text-xs font-semibold text-[#0d3b74] dark:text-sky-300 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 rounded-sm hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-all inline-flex items-center gap-1.5 cursor-pointer">
                                     <x-heroicon-o-arrow-down-tray class="w-3.5 h-3.5" />
@@ -147,22 +151,22 @@
                         @if($openPanel === 'prod')
                             <tr class="bg-neutral-50/70 dark:bg-slate-900/50">
                                 <td></td>
-                                <td colspan="4" class="px-4 pb-4 pt-1">
-                                    <div class="rounded-md p-3 grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+                                <td colspan="4" class="px-5 pb-4 pt-1">
+                                    <div class="rounded-sm p-3 grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
                                         <div>
-                                            <label class="block font-medium text-neutral-400 mb-1">Cari Produk</label>
-                                            <input type="text" wire:model="prod_search" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-full bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-red-500/10 focus:border-red-400">
+                                            <label class="block font-medium text-neutral-600 dark:text-neutral-300 mb-1">Cari Produk</label>
+                                            <input type="text" wire:model="prod_search" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400">
                                         </div>
                                         <div>
-                                            <label class="block font-medium text-neutral-400 mb-1">Kategori</label>
-                                            <select wire:model="prod_categoryFilter" class="w-full px-3.5 py-2 text-xs font-semibold text-neutral-600 dark:text-neutral-300 bg-white dark:bg-slate-900 border border-neutral-200 dark:border-slate-700 rounded-full focus:outline-none focus:ring-2 focus:ring-red-500/10 focus:border-red-400 cursor-pointer">
+                                            <label class="block font-medium text-neutral-600 dark:text-neutral-300 mb-1">Kategori</label>
+                                            <select wire:model="prod_categoryFilter" class="w-full px-3.5 py-2 text-xs font-semibold text-neutral-600 dark:text-neutral-300 bg-white dark:bg-slate-900 border border-neutral-200 dark:border-slate-700 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400 cursor-pointer">
                                                 <option value="">Semua Kategori</option>
                                                 @foreach($productCategories as $cat)<option value="{{ $cat->id }}">{{ $cat->name }}</option>@endforeach
                                             </select>
                                         </div>
                                         <div>
-                                            <label class="block font-medium text-neutral-400 mb-1">Status Stok</label>
-                                            <select wire:model="prod_stockFilter" class="w-full px-3.5 py-2 text-xs font-semibold text-neutral-600 dark:text-neutral-300 bg-white dark:bg-slate-900 border border-neutral-200 dark:border-slate-700 rounded-full focus:outline-none focus:ring-2 focus:ring-red-500/10 focus:border-red-400 cursor-pointer">
+                                            <label class="block font-medium text-neutral-600 dark:text-neutral-300 mb-1">Status Stok</label>
+                                            <select wire:model="prod_stockFilter" class="w-full px-3.5 py-2 text-xs font-semibold text-neutral-600 dark:text-neutral-300 bg-white dark:bg-slate-900 border border-neutral-200 dark:border-slate-700 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400 cursor-pointer">
                                                 <option value="">Semua Status</option>
                                                 <option value="normal">Stok Aman</option>
                                                 <option value="low">Stok Menipis</option>
@@ -176,22 +180,22 @@
 
                         {{-- ROW: Aset --}}
                         <tr class="hover:bg-neutral-50/60 dark:hover:bg-slate-700/30 transition-colors">
-                            <td class="p-4 text-center align-top">
-                                <input type="checkbox" wire:model.live="bulkSelected" value="asset" class="rounded border-neutral-300 text-blue-900 focus:ring-red-500/20 cursor-pointer">
+                            <td class="px-5 py-3.5 text-center align-top">
+                                <input type="checkbox" wire:model.live="bulkSelected" value="asset" class="rounded border-neutral-300 text-blue-900 focus:ring-blue-500/20 cursor-pointer">
                             </td>
-                            <td class="px-4 py-3.5 align-top whitespace-nowrap">
+                            <td class="px-5 py-3.5 align-top whitespace-nowrap">
                                 <span class="font-semibold text-neutral-900 dark:text-white text-xs">Data Aset</span>
                             </td>
-                            <td class="px-4 py-3.5 align-top text-[11px] text-neutral-400">
+                            <td class="px-5 py-3.5 align-top text-[11px] text-neutral-400">
                                 Daftar aset unit ini beserta status &amp; kondisinya
                             </td>
-                            <td class="px-4 py-3.5 align-top text-center">
+                            <td class="px-5 py-3.5 align-top text-center">
                                 <button type="button" wire:click="togglePanel('asset')"
-                                    class="px-3 py-1.5 text-[11px] font-semibold rounded-full transition-all {{ $openPanel === 'asset' ? 'bg-neutral-800 text-white dark:bg-slate-600' : 'text-neutral-600 dark:text-neutral-300 bg-neutral-100 dark:bg-slate-700 hover:bg-neutral-200 dark:hover:bg-slate-600' }}">
+                                    class="px-3 py-1.5 text-[11px] font-semibold rounded-sm transition-all {{ $openPanel === 'asset' ? 'bg-blue-900 text-white dark:bg-blue-800' : 'text-neutral-600 dark:text-neutral-300 bg-neutral-100 dark:bg-slate-700 hover:bg-neutral-200 dark:hover:bg-slate-600' }}">
                                     Filter
                                 </button>
                             </td>
-                            <td class="px-4 py-3.5 align-top text-center whitespace-nowrap">
+                            <td class="px-5 py-3.5 align-top text-center whitespace-nowrap">
                                 <button wire:click="exportAssets" wire:loading.attr="disabled"
                                     class="px-3.5 py-1.5 text-xs font-semibold text-[#0d3b74] dark:text-sky-300 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 rounded-sm hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-all inline-flex items-center gap-1.5 cursor-pointer">
                                     <x-heroicon-o-arrow-down-tray class="w-3.5 h-3.5" />
@@ -202,15 +206,15 @@
                         @if($openPanel === 'asset')
                             <tr class="bg-neutral-50/70 dark:bg-slate-900/50">
                                 <td></td>
-                                <td colspan="4" class="px-4 pb-4 pt-1">
-                                    <div class="rounded-md p-3 grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+                                <td colspan="4" class="px-5 pb-4 pt-1">
+                                    <div class="rounded-sm p-3 grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
                                         <div>
-                                            <label class="block font-medium text-neutral-400 mb-1">Cari Aset</label>
-                                            <input type="text" wire:model="asset_search" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-full bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-red-500/10 focus:border-red-400">
+                                            <label class="block font-medium text-neutral-600 dark:text-neutral-300 mb-1">Cari Aset</label>
+                                            <input type="text" wire:model="asset_search" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400">
                                         </div>
                                         <div>
-                                            <label class="block font-medium text-neutral-400 mb-1">Status</label>
-                                            <select wire:model="asset_statusFilter" class="w-full px-3.5 py-2 text-xs font-semibold text-neutral-600 dark:text-neutral-300 bg-white dark:bg-slate-900 border border-neutral-200 dark:border-slate-700 rounded-full focus:outline-none focus:ring-2 focus:ring-red-500/10 focus:border-red-400 cursor-pointer">
+                                            <label class="block font-medium text-neutral-600 dark:text-neutral-300 mb-1">Status</label>
+                                            <select wire:model="asset_statusFilter" class="w-full px-3.5 py-2 text-xs font-semibold text-neutral-600 dark:text-neutral-300 bg-white dark:bg-slate-900 border border-neutral-200 dark:border-slate-700 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400 cursor-pointer">
                                                 <option value="">Semua Status</option>
                                                 <option value="available">Tersedia</option>
                                                 <option value="assigned">Ditugaskan</option>
@@ -219,8 +223,8 @@
                                             </select>
                                         </div>
                                         <div>
-                                            <label class="block font-medium text-neutral-400 mb-1">Kategori</label>
-                                            <select wire:model="asset_categoryFilter" class="w-full px-3.5 py-2 text-xs font-semibold text-neutral-600 dark:text-neutral-300 bg-white dark:bg-slate-900 border border-neutral-200 dark:border-slate-700 rounded-full focus:outline-none focus:ring-2 focus:ring-red-500/10 focus:border-red-400 cursor-pointer">
+                                            <label class="block font-medium text-neutral-600 dark:text-neutral-300 mb-1">Kategori</label>
+                                            <select wire:model="asset_categoryFilter" class="w-full px-3.5 py-2 text-xs font-semibold text-neutral-600 dark:text-neutral-300 bg-white dark:bg-slate-900 border border-neutral-200 dark:border-slate-700 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400 cursor-pointer">
                                                 <option value="">Semua Kategori</option>
                                                 @foreach($assetCategories as $cat)<option value="{{ $cat }}">{{ $cat }}</option>@endforeach
                                             </select>
@@ -232,22 +236,22 @@
 
                         {{-- ROW: Stok --}}
                         <tr class="hover:bg-neutral-50/60 dark:hover:bg-slate-700/30 transition-colors">
-                            <td class="p-4 text-center align-top">
-                                <input type="checkbox" wire:model.live="bulkSelected" value="stock" class="rounded border-neutral-300 text-blue-900 focus:ring-red-500/20 cursor-pointer">
+                            <td class="px-5 py-3.5 text-center align-top">
+                                <input type="checkbox" wire:model.live="bulkSelected" value="stock" class="rounded border-neutral-300 text-blue-900 focus:ring-blue-500/20 cursor-pointer">
                             </td>
-                            <td class="px-4 py-3.5 align-top whitespace-nowrap">
+                            <td class="px-5 py-3.5 align-top whitespace-nowrap">
                                 <span class="font-semibold text-neutral-900 dark:text-white text-xs">Data Stok Barang</span>
                             </td>
-                            <td class="px-4 py-3.5 align-top text-[11px] text-neutral-400">
+                            <td class="px-5 py-3.5 align-top text-[11px] text-neutral-400">
                                 Status stok saat ini beserta estimasi nilai persediaan
                             </td>
-                            <td class="px-4 py-3.5 align-top text-center">
+                            <td class="px-5 py-3.5 align-top text-center">
                                 <button type="button" wire:click="togglePanel('stock')"
-                                    class="px-3 py-1.5 text-[11px] font-semibold rounded-full transition-all {{ $openPanel === 'stock' ? 'bg-neutral-800 text-white dark:bg-slate-600' : 'text-neutral-600 dark:text-neutral-300 bg-neutral-100 dark:bg-slate-700 hover:bg-neutral-200 dark:hover:bg-slate-600' }}">
+                                    class="px-3 py-1.5 text-[11px] font-semibold rounded-sm transition-all {{ $openPanel === 'stock' ? 'bg-blue-900 text-white dark:bg-blue-800' : 'text-neutral-600 dark:text-neutral-300 bg-neutral-100 dark:bg-slate-700 hover:bg-neutral-200 dark:hover:bg-slate-600' }}">
                                     Filter
                                 </button>
                             </td>
-                            <td class="px-4 py-3.5 align-top text-center whitespace-nowrap">
+                            <td class="px-5 py-3.5 align-top text-center whitespace-nowrap">
                                 <button wire:click="exportStockReport" wire:loading.attr="disabled"
                                     class="px-3.5 py-1.5 text-xs font-semibold text-[#0d3b74] dark:text-sky-300 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 rounded-sm hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-all inline-flex items-center gap-1.5 cursor-pointer">
                                     <x-heroicon-o-arrow-down-tray class="w-3.5 h-3.5" />
@@ -258,18 +262,18 @@
                         @if($openPanel === 'stock')
                             <tr class="bg-neutral-50/70 dark:bg-slate-900/50">
                                 <td></td>
-                                <td colspan="4" class="px-4 pb-4 pt-1">
-                                    <div class="rounded-md p-3 grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+                                <td colspan="4" class="px-5 pb-4 pt-1">
+                                    <div class="rounded-sm p-3 grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
                                         <div>
-                                            <label class="block font-medium text-neutral-400 mb-1">Kategori</label>
-                                            <select wire:model="stock_categoryFilter" class="w-full px-3.5 py-2 text-xs font-semibold text-neutral-600 dark:text-neutral-300 bg-white dark:bg-slate-900 border border-neutral-200 dark:border-slate-700 rounded-full focus:outline-none focus:ring-2 focus:ring-red-500/10 focus:border-red-400 cursor-pointer">
+                                            <label class="block font-medium text-neutral-600 dark:text-neutral-300 mb-1">Kategori</label>
+                                            <select wire:model="stock_categoryFilter" class="w-full px-3.5 py-2 text-xs font-semibold text-neutral-600 dark:text-neutral-300 bg-white dark:bg-slate-900 border border-neutral-200 dark:border-slate-700 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400 cursor-pointer">
                                                 <option value="">Semua Kategori</option>
                                                 @foreach($productCategories as $cat)<option value="{{ $cat->id }}">{{ $cat->name }}</option>@endforeach
                                             </select>
                                         </div>
                                         <div>
-                                            <label class="block font-medium text-neutral-400 mb-1">Status Stok</label>
-                                            <select wire:model="stock_stockFilter" class="w-full px-3.5 py-2 text-xs font-semibold text-neutral-600 dark:text-neutral-300 bg-white dark:bg-slate-900 border border-neutral-200 dark:border-slate-700 rounded-full focus:outline-none focus:ring-2 focus:ring-red-500/10 focus:border-red-400 cursor-pointer">
+                                            <label class="block font-medium text-neutral-600 dark:text-neutral-300 mb-1">Status Stok</label>
+                                            <select wire:model="stock_stockFilter" class="w-full px-3.5 py-2 text-xs font-semibold text-neutral-600 dark:text-neutral-300 bg-white dark:bg-slate-900 border border-neutral-200 dark:border-slate-700 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400 cursor-pointer">
                                                 <option value="">Semua Status</option>
                                                 <option value="normal">Stok Aman</option>
                                                 <option value="low">Stok Menipis</option>
@@ -283,22 +287,22 @@
 
                         {{-- ROW: Keuangan --}}
                         <tr class="hover:bg-neutral-50/60 dark:hover:bg-slate-700/30 transition-colors">
-                            <td class="p-4 text-center align-top">
-                                <input type="checkbox" wire:model.live="bulkSelected" value="fin" class="rounded border-neutral-300 text-blue-900 focus:ring-red-500/20 cursor-pointer">
+                            <td class="px-5 py-3.5 text-center align-top">
+                                <input type="checkbox" wire:model.live="bulkSelected" value="fin" class="rounded border-neutral-300 text-blue-900 focus:ring-blue-500/20 cursor-pointer">
                             </td>
-                            <td class="px-4 py-3.5 align-top whitespace-nowrap">
+                            <td class="px-5 py-3.5 align-top whitespace-nowrap">
                                 <span class="font-semibold text-neutral-900 dark:text-white text-xs">Data Keuangan</span>
                             </td>
-                            <td class="px-4 py-3.5 align-top text-[11px] text-neutral-400">
+                            <td class="px-5 py-3.5 align-top text-[11px] text-neutral-400">
                                 Ringkasan arus kas &amp; rincian per kategori unit ini (2 sheet)
                             </td>
-                            <td class="px-4 py-3.5 align-top text-center">
+                            <td class="px-5 py-3.5 align-top text-center">
                                 <button type="button" wire:click="togglePanel('fin')"
-                                    class="px-3 py-1.5 text-[11px] font-semibold rounded-full transition-all {{ $openPanel === 'fin' ? 'bg-neutral-800 text-white dark:bg-slate-600' : 'text-neutral-600 dark:text-neutral-300 bg-neutral-100 dark:bg-slate-700 hover:bg-neutral-200 dark:hover:bg-slate-600' }}">
+                                    class="px-3 py-1.5 text-[11px] font-semibold rounded-sm transition-all {{ $openPanel === 'fin' ? 'bg-blue-900 text-white dark:bg-blue-800' : 'text-neutral-600 dark:text-neutral-300 bg-neutral-100 dark:bg-slate-700 hover:bg-neutral-200 dark:hover:bg-slate-600' }}">
                                     Filter
                                 </button>
                             </td>
-                            <td class="px-4 py-3.5 align-top text-center whitespace-nowrap">
+                            <td class="px-5 py-3.5 align-top text-center whitespace-nowrap">
                                 <button wire:click="exportFinanceReport" wire:loading.attr="disabled"
                                     class="px-3.5 py-1.5 text-xs font-semibold text-[#0d3b74] dark:text-sky-300 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 rounded-sm hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-all inline-flex items-center gap-1.5 cursor-pointer">
                                     <x-heroicon-o-arrow-down-tray class="w-3.5 h-3.5" />
@@ -309,15 +313,15 @@
                         @if($openPanel === 'fin')
                             <tr class="bg-neutral-50/70 dark:bg-slate-900/50">
                                 <td></td>
-                                <td colspan="4" class="px-4 pb-4 pt-1">
-                                    <div class="rounded-md p-3 grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+                                <td colspan="4" class="px-5 pb-4 pt-1">
+                                    <div class="rounded-sm p-3 grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
                                         <div>
-                                            <label class="block font-medium text-neutral-400 mb-1">Dari Tanggal</label>
-                                            <input type="date" wire:model="fin_startDate" class="w-full px-3.5 py-2 text-xs border border-neutral-200 dark:border-slate-700 rounded-full bg-white dark:bg-slate-900 text-neutral-700 dark:text-neutral-300 focus:outline-none focus:border-red-400">
+                                            <label class="block font-medium text-neutral-600 dark:text-neutral-300 mb-1">Dari Tanggal</label>
+                                            <input type="date" wire:model="fin_startDate" class="w-full px-3.5 py-2 text-xs border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-700 dark:text-neutral-300 focus:outline-none focus:border-blue-400">
                                         </div>
                                         <div>
-                                            <label class="block font-medium text-neutral-400 mb-1">Sampai Tanggal</label>
-                                            <input type="date" wire:model="fin_endDate" class="w-full px-3.5 py-2 text-xs border border-neutral-200 dark:border-slate-700 rounded-full bg-white dark:bg-slate-900 text-neutral-700 dark:text-neutral-300 focus:outline-none focus:border-red-400">
+                                            <label class="block font-medium text-neutral-600 dark:text-neutral-300 mb-1">Sampai Tanggal</label>
+                                            <input type="date" wire:model="fin_endDate" class="w-full px-3.5 py-2 text-xs border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-700 dark:text-neutral-300 focus:outline-none focus:border-blue-400">
                                         </div>
                                     </div>
                                 </td>
@@ -332,56 +336,55 @@
 
     {{-- ============ SECTION: TEMPLATE IMPORT (TABLE LAYOUT) ============ --}}
     <div class="space-y-3">
-        <h2 class="text-xs font-semibold text-neutral-400 uppercase tracking-wider">Template Import</h2>
 
-        <div class="bg-white dark:bg-slate-800 rounded-md border border-neutral-100 dark:border-slate-700 overflow-hidden shadow-sm shadow-black/[0.02]">
+        <div class="bg-white dark:bg-slate-800 rounded-sm border border-neutral-100 dark:border-slate-700 overflow-hidden shadow-sm shadow-black/[0.02]">
             <div class="overflow-x-auto">
                 <table class="w-full text-sm text-left">
                     <thead class="bg-neutral-50/70 dark:bg-slate-900/50 text-[11px] font-semibold uppercase tracking-wider text-neutral-400 border-b border-neutral-100 dark:border-slate-700">
                         <tr>
-                            <th class="px-4 py-3.5">Jenis Template</th>
-                            <th class="px-4 py-3.5">Deskripsi</th>
-                            <th class="px-4 py-3.5 text-center">Aksi</th>
+                            <th class="px-5 py-3.5">Jenis Template</th>
+                            <th class="px-5 py-3.5">Deskripsi</th>
+                            <th class="px-5 py-3.5 text-center">Aksi</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-neutral-100 dark:divide-slate-700">
                         <tr class="hover:bg-neutral-50/60 dark:hover:bg-slate-700/30 transition-colors">
-                            <td class="px-4 py-3.5 whitespace-nowrap font-semibold text-neutral-900 dark:text-white text-xs">
+                            <td class="px-5 py-3.5 whitespace-nowrap font-semibold text-neutral-900 dark:text-white text-xs">
                                 Template Data Transaksi
                             </td>
-                            <td class="px-4 py-3.5 text-[11px] text-neutral-400">
+                            <td class="px-5 py-3.5 text-[11px] text-neutral-400">
                                 Format kolom untuk import transaksi massal
                             </td>
-                            <td class="px-4 py-3.5 text-center whitespace-nowrap">
-                                <button wire:click="downloadTransactionTemplate" class="px-3.5 py-1.5 text-xs font-semibold text-neutral-600 dark:text-neutral-300 bg-neutral-100 dark:bg-slate-700 hover:bg-neutral-200 dark:hover:bg-slate-600 rounded-full transition-all inline-flex items-center gap-1.5 cursor-pointer">
+                            <td class="px-5 py-3.5 text-center whitespace-nowrap">
+                                <button wire:click="downloadTransactionTemplate" class="px-3.5 py-1.5 text-xs font-semibold text-neutral-600 dark:text-neutral-300 bg-neutral-100 dark:bg-slate-700 hover:bg-neutral-200 dark:hover:bg-slate-600 rounded-sm transition-all inline-flex items-center gap-1.5 cursor-pointer">
                                     <x-heroicon-o-arrow-down-tray class="w-3.5 h-3.5" />
                                     <span>Unduh (.xlsx)</span>
                                 </button>
                             </td>
                         </tr>
                         <tr class="hover:bg-neutral-50/60 dark:hover:bg-slate-700/30 transition-colors">
-                            <td class="px-4 py-3.5 whitespace-nowrap font-semibold text-neutral-900 dark:text-white text-xs">
+                            <td class="px-5 py-3.5 whitespace-nowrap font-semibold text-neutral-900 dark:text-white text-xs">
                                 Template Data Produk
                             </td>
-                            <td class="px-4 py-3.5 text-[11px] text-neutral-400">
+                            <td class="px-5 py-3.5 text-[11px] text-neutral-400">
                                 Format kolom untuk import produk/inventaris
                             </td>
-                            <td class="px-4 py-3.5 text-center whitespace-nowrap">
-                                <button wire:click="downloadProductTemplate" class="px-3.5 py-1.5 text-xs font-semibold text-neutral-600 dark:text-neutral-300 bg-neutral-100 dark:bg-slate-700 hover:bg-neutral-200 dark:hover:bg-slate-600 rounded-full transition-all inline-flex items-center gap-1.5 cursor-pointer">
+                            <td class="px-5 py-3.5 text-center whitespace-nowrap">
+                                <button wire:click="downloadProductTemplate" class="px-3.5 py-1.5 text-xs font-semibold text-neutral-600 dark:text-neutral-300 bg-neutral-100 dark:bg-slate-700 hover:bg-neutral-200 dark:hover:bg-slate-600 rounded-sm transition-all inline-flex items-center gap-1.5 cursor-pointer">
                                     <x-heroicon-o-arrow-down-tray class="w-3.5 h-3.5" />
                                     <span>Unduh (.xlsx)</span>
                                 </button>
                             </td>
                         </tr>
                         <tr class="hover:bg-neutral-50/60 dark:hover:bg-slate-700/30 transition-colors">
-                            <td class="px-4 py-3.5 whitespace-nowrap font-semibold text-neutral-900 dark:text-white text-xs">
+                            <td class="px-5 py-3.5 whitespace-nowrap font-semibold text-neutral-900 dark:text-white text-xs">
                                 Template Data Aset
                             </td>
-                            <td class="px-4 py-3.5 text-[11px] text-neutral-400">
+                            <td class="px-5 py-3.5 text-[11px] text-neutral-400">
                                 Format kolom untuk import aset massal
                             </td>
-                            <td class="px-4 py-3.5 text-center whitespace-nowrap">
-                                <button wire:click="downloadAssetTemplate" class="px-3.5 py-1.5 text-xs font-semibold text-neutral-600 dark:text-neutral-300 bg-neutral-100 dark:bg-slate-700 hover:bg-neutral-200 dark:hover:bg-slate-600 rounded-full transition-all inline-flex items-center gap-1.5 cursor-pointer">
+                            <td class="px-5 py-3.5 text-center whitespace-nowrap">
+                                <button wire:click="downloadAssetTemplate" class="px-3.5 py-1.5 text-xs font-semibold text-neutral-600 dark:text-neutral-300 bg-neutral-100 dark:bg-slate-700 hover:bg-neutral-200 dark:hover:bg-slate-600 rounded-sm transition-all inline-flex items-center gap-1.5 cursor-pointer">
                                     <x-heroicon-o-arrow-down-tray class="w-3.5 h-3.5" />
                                     <span>Unduh (.xlsx)</span>
                                 </button>

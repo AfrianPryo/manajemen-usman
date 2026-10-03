@@ -114,8 +114,13 @@ class User extends Authenticatable
             return;
         }
 
+        // Baca ulang dari database (bukan dari atribut model di memori) supaya dua
+        // tutorial yang dicatat hampir bersamaan tidak saling menimpa.
+        $fresh = static::query()->whereKey($this->getKey())->value('completed_tours');
+        $tours = is_array($fresh) ? $fresh : ($this->completed_tours ?? []);
+
         $this->forceFill([
-            'completed_tours' => array_values(array_unique([...($this->completed_tours ?? []), $key])),
+            'completed_tours' => array_values(array_unique([...$tours, $key])),
         ])->save();
     }
 

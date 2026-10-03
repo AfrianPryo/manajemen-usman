@@ -66,6 +66,7 @@ class RecurringTransactionService
                 $query->whereNull('end_date')
                       ->orWhereDate('end_date', '>=', $today);
             })
+            ->with('unit:id,slug')
             ->get();
 
         if ($dueTransactions->isEmpty()) {
@@ -78,10 +79,21 @@ class RecurringTransactionService
         // BATCH PRELOAD -- dijalankan SEKALI untuk seluruh batch item due,
         // bukan di dalam loop per item seperti implementasi lama:
         // -------------------------------------------------------------
-        $targetUsers = User::all();
+        // Penerima notifikasi: Master Admin aktif + Admin Unit aktif milik
+        // unit terkait saja (dulu User::all() -> semua akun, termasuk unit
+        // lain & akun nonaktif, ikut menerima judul & nominal transaksi).
+        $masterAdmins = User::query()->where('is_active', true)->role('master-admin')->get();
+        $unitAdminsByUnit = User::query()
+            ->where('is_active', true)
+            ->whereIn('unit_id', $dueTransactions->pluck('unit_id')->filter()->unique()->all())
+            ->role('unit-admin')
+            ->get()
+            ->groupBy('unit_id');
         $pendingConfirmationMap = $this->pendingConfirmationMap($manualItems);
 
         foreach ($dueTransactions as $item) {
+            $targetUsers = $masterAdmins->merge($unitAdminsByUnit->get($item->unit_id, collect()))->unique('id');
+
             if ($item->auto_approve) {
                 $this->processAutoApprove($item, $targetUsers);
             } else {
@@ -105,13 +117,7 @@ class RecurringTransactionService
         DB::transaction(function () use ($item, $targetUsers) {
             $locked = RecurringTransaction::whereKey($item->id)->lockForUpdate()->first();
 
-            // Sudah diproses proses lain tepat sebelum lock ini didapat
-            // (mis. command & halaman berjalan nyaris bersamaan) -- next_run_date
-            // sudah dimajukan, jadi item ini tidak lagi due. Lewati saja.
-            if (! $locked
-                || $locked->status !== 'active'
-                || $locked->next_run_date > now()->toDateString()
-            ) {
+            if (! $locked || $locked->status !== 'active') {
                 return;
             }
 
@@ -125,45 +131,73 @@ class RecurringTransactionService
                 return;
             }
 
-            $trx = FinanceTransaction::create([
-                'unit_id'             => $locked->unit_id,
-                'finance_category_id' => $categoryId,
-                'user_id'             => Auth::id() ?? 1,
-                'reference_no'        => 'TRX-REC-' . time() . '-' . $locked->id,
-                'type'                => $locked->type,
-                'status'              => 'completed',
-                'amount'              => $locked->amount,
-                'description'         => $locked->title . ' (Otomatis dibuat dari Transaksi Berulang)',
-                'transaction_date'    => now(),
-            ]);
+            $today = now()->toDateString();
+            $endDate = $locked->end_date ? Carbon::parse($locked->end_date)->toDateString() : null;
 
-            AuditLog::record(
-                'RECURRING_TRANSACTION_AUTO_RUN',
-                $locked->title,
-                "Transaksi otomatis dibuat dari transaksi berulang '{$locked->title}' sejumlah Rp " . number_format($locked->amount, 0, ',', '.') . ".",
-                null,
-                $trx->toArray()
-            );
+            // Proses SETIAP periode yang sudah jatuh tempo sampai terkejar
+            // (mis. scheduler sempat mati beberapa hari). Batas 62 periode
+            // per eksekusi sebagai pengaman dari loop tak berujung.
+            for ($i = 0; $i < 62; $i++) {
+                // Bandingkan sebagai TANGGAL (bukan Carbon vs string, yang
+                // membuat item jatuh tempo hari ini dianggap belum jatuh tempo).
+                $runDate = Carbon::parse($locked->next_run_date)->toDateString();
 
-            // Kirim notifikasi pengingat (bukan konfirmasi) bahwa transaksi
-            // sudah diproses otomatis -- $targetUsers sudah di-preload SEKALI
-            // untuk seluruh batch, bukan diambil ulang di sini.
-            foreach ($targetUsers as $user) {
-                $user->notify(new SystemNotification(
-                    title: 'Transaksi Berulang Diproses Otomatis',
-                    message: "Transaksi '{$locked->title}' (Rp " . number_format($locked->amount, 0, ',', '.') . ") telah dibuat otomatis ke Transaksi Keuangan.",
-                    badge: 'Otomatis',
-                    actionable: false,
-                    url: route('master.recurring-transactions.index'),
-                    extraData: [
-                        'recurring_transaction_id' => $locked->id,
-                    ]
-                ));
+                if ($runDate > $today || ($endDate !== null && $runDate > $endDate)) {
+                    break;
+                }
+
+                $trx = FinanceTransaction::create([
+                    'unit_id'             => $locked->unit_id,
+                    'finance_category_id' => $categoryId,
+                    // null bila dijalankan scheduler (bukan hard-coded user 1)
+                    'user_id'             => Auth::id(),
+                    'reference_no'        => 'TRX-REC-' . time() . '-' . $locked->id . ($i > 0 ? "-{$i}" : ''),
+                    'type'                => $locked->type,
+                    'status'              => 'completed',
+                    'amount'              => $locked->amount,
+                    'description'         => $locked->title . ' (Otomatis dibuat dari Transaksi Berulang)',
+                    'transaction_date'    => $runDate === $today ? now() : Carbon::parse($runDate)->startOfDay(),
+                ]);
+
+                AuditLog::record(
+                    'RECURRING_TRANSACTION_AUTO_RUN',
+                    $locked->title,
+                    "Transaksi otomatis dibuat dari transaksi berulang '{$locked->title}' sejumlah Rp " . number_format($locked->amount, 0, ',', '.') . ".",
+                    null,
+                    $trx->toArray()
+                );
+
+                foreach ($targetUsers as $user) {
+                    $user->notify(new SystemNotification(
+                        title: 'Transaksi Berulang Diproses Otomatis',
+                        message: "Transaksi '{$locked->title}' (Rp " . number_format($locked->amount, 0, ',', '.') . ") telah dibuat otomatis ke Transaksi Keuangan.",
+                        badge: 'Otomatis',
+                        actionable: false,
+                        url: $this->urlFor($user, $item),
+                        extraData: [
+                            'recurring_transaction_id' => $locked->id,
+                        ]
+                    ));
+                }
+
+                $locked->next_run_date = $this->calculateNextRunDate($locked->next_run_date, $locked->frequency);
             }
 
-            $locked->next_run_date = $this->calculateNextRunDate($locked->next_run_date, $locked->frequency);
             $locked->save();
         });
+    }
+
+    /**
+     * Tautan notifikasi sesuai role penerima (Master Admin -> halaman master,
+     * Admin Unit -> halaman unitnya sendiri) agar tidak berujung 403.
+     */
+    private function urlFor(User $user, RecurringTransaction $item): string
+    {
+        if (! $user->isMasterAdmin() && $item->unit?->slug) {
+            return route('unit.recurring-transactions.index', $item->unit->slug);
+        }
+
+        return route('master.recurring-transactions.index');
     }
 
     /**
@@ -185,7 +219,7 @@ class RecurringTransactionService
                 message: "Transaksi '{$item->title}' (Rp " . number_format($item->amount, 0, ',', '.') . ") telah jatuh tempo dan butuh konfirmasi.",
                 badge: 'Jatuh Tempo',
                 actionable: true,
-                url: route('master.recurring-transactions.index'),
+                url: $this->urlFor($user, $item),
                 extraData: [
                     'recurring_transaction_id' => $item->id,
                 ]
@@ -244,9 +278,9 @@ class RecurringTransactionService
         return (match ($frequency) {
             'daily'   => $date->addDay(),
             'weekly'  => $date->addWeek(),
-            'monthly' => $date->addMonth(),
-            'yearly'  => $date->addYear(),
-            default   => $date->addMonth(),
+            'monthly' => $date->addMonthNoOverflow(),
+            'yearly'  => $date->addYearNoOverflow(),
+            default   => $date->addMonthNoOverflow(),
         })->toDateString();
     }
 }

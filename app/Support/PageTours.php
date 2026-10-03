@@ -64,6 +64,15 @@ class PageTours
         return Route::has($routeName) ? route($routeName) : null;
     }
 
+    /**
+     * Kolom pencarian umum: atribut wire:model-nya bervariasi antar halaman
+     * (debounce 300ms / 400ms), jadi dicocokkan lewat daftar selector.
+     */
+    private static function searchBox(): string
+    {
+        return '[wire\\:model\\.live\\.debounce\\.300ms="search"], [wire\\:model\\.live\\.debounce\\.400ms="search"]';
+    }
+
     private static function step(?string $target, string $title, string $body, array $extra = []): array
     {
         return array_filter(array_merge([
@@ -273,6 +282,254 @@ class PageTours
                     // Toggle: input aslinya sr-only (1px, tak terlihat), jadi sorot <label> pembungkusnya.
                     static::step('label:has(' . static::model('auto_approve') . ')', 'Persetujuan otomatis',
                         'Kalau diaktifkan, transaksi langsung berstatus final saat dicatat sistem, tanpa menunggu tindakan Anda.'),
+                ],
+            ],
+
+            // =================== MENU DASHBOARD (MASTER & UNIT) ===================
+            // Tutorial tingkat-menu: tampil otomatis SEKALI saat akun pertama kali
+            // membuka menunya (lihat App\Livewire\PageTour), bisa diputar ulang manual.
+
+            'units.index' => [
+                'title' => 'Panduan Unit Usaha',
+                'steps' => [
+                    static::step(static::click('openCreateModal'), 'Tambah Unit Usaha',
+                        'Daftarkan unit usaha baru (nama, kategori, dan detailnya). Unit harus ada dulu sebelum Admin Unit, transaksi, atau produk bisa dibuat untuknya.'),
+                    static::step(static::searchBox(), 'Cari dan saring unit',
+                        'Cari unit berdasarkan nama, lalu saring menurut kategori atau status lewat pilihan di sebelahnya.'),
+                    static::step('[wire\\:click^="toggleUnitStatus"]', 'Aktifkan atau nonaktifkan',
+                        'Tombol di baris unit ini mengubah status aktif unit tanpa menghapus datanya. Unit yang nonaktif membuat admin unitnya tidak bisa masuk.'),
+                    static::step('[wire\\:click^="openEditModal"]', 'Ubah data unit',
+                        'Perbarui nama, kategori, logo, dan detail unit kapan saja lewat tombol edit di baris unit.'),
+                ],
+            ],
+
+            'users.index' => [
+                'title' => 'Panduan Manajemen Admin',
+                'steps' => [
+                    static::step(static::click('openCreateModal'), 'Tambah Admin Unit',
+                        'Buat akun admin untuk sebuah unit usaha. Nomor WhatsApp aktif wajib diisi karena dipakai untuk notifikasi dan kredensial awal.'),
+                    static::step(static::searchBox(), 'Cari admin',
+                        'Temukan admin berdasarkan nama, username, atau email.'),
+                    static::step('table', 'Daftar admin',
+                        'Setiap baris menampilkan admin beserta unit dan statusnya. Admin yang dinonaktifkan tidak bisa masuk, tetapi datanya tetap tersimpan.'),
+                    static::step('[wire\\:click^="toggleUserStatus"]', 'Aktifkan atau nonaktifkan akun',
+                        'Gunakan tombol ini untuk menonaktifkan admin yang tidak lagi bertugas, atau mengaktifkannya kembali.'),
+                ],
+            ],
+
+            'vendors.index' => [
+                'title' => 'Panduan Vendor & Supplier',
+                'steps' => [
+                    static::step(static::click('openModal'), 'Tambah vendor',
+                        'Daftarkan vendor atau supplier beserta kontaknya. Vendor yang sudah terdaftar bisa dipilih saat mencatat pembelian.'),
+                    static::step(static::searchBox(), 'Cari vendor',
+                        'Cari berdasarkan nama, kontak, atau email.'),
+                    static::step(static::model('filterType', true), 'Saring vendor',
+                        'Persempit daftar menurut tipe dan kategori vendor.'),
+                    static::step('table', 'Daftar vendor',
+                        'Lihat kontak dan detail tiap vendor, lalu ubah atau hapus dari kolom aksi di baris vendor.'),
+                ],
+            ],
+
+            'customers.index' => [
+                'title' => 'Panduan Pelanggan',
+                'steps' => [
+                    static::step(static::click('openCreateModal'), 'Tambah pelanggan',
+                        'Catat pelanggan beserta kontak dan kategorinya supaya riwayatnya mudah dilacak.'),
+                    static::step(static::searchBox(), 'Cari pelanggan',
+                        'Cari berdasarkan nama, telepon, atau email.'),
+                    static::step(static::model('categoryFilter', true), 'Saring per kategori',
+                        'Tampilkan hanya pelanggan dari kategori tertentu.'),
+                    static::step('[wire\\:click^="openEditModal"]', 'Ubah data pelanggan',
+                        'Perbarui data pelanggan lewat tombol edit di barisnya.'),
+                ],
+            ],
+
+            'unit.customers' => [
+                'title' => 'Panduan Pelanggan',
+                'steps' => [
+                    static::step(static::click('openCreateModal'), 'Tambah pelanggan',
+                        'Catat pelanggan unit Anda beserta kontak dan kategorinya.'),
+                    static::step(static::searchBox(), 'Cari pelanggan',
+                        'Cari berdasarkan nama, telepon, atau email.'),
+                    static::step('[wire\\:click^="recordVisit"]', 'Catat kunjungan',
+                        'Tekan tombol ini di baris pelanggan setiap kali ia berkunjung atau bertransaksi.'),
+                    static::step('[wire\\:click^="openEditModal"]', 'Ubah data pelanggan',
+                        'Perbarui data pelanggan lewat tombol edit di barisnya.'),
+                ],
+            ],
+
+            'assets.index' => [
+                'title' => 'Panduan Manajemen Aset',
+                'steps' => [
+                    static::step(static::click('openModal'), 'Tambah aset',
+                        'Catat aset (peralatan, perangkat, dan sebagainya) beserta tag, kategori, unit, dan statusnya.'),
+                    static::step(static::click('openImportModal'), 'Import banyak aset',
+                        'Punya banyak aset sekaligus? Import dari Excel memakai template dari sistem.'),
+                    static::step(static::click('exportData'), 'Export data aset',
+                        'Unduh daftar aset sesuai penyaringan yang sedang aktif.'),
+                    static::step(static::searchBox(), 'Cari aset',
+                        'Cari berdasarkan tag aset, nama, nomor seri, atau pengguna. Saring lebih lanjut dengan status dan kategori.'),
+                ],
+            ],
+
+            'exports.index' => [
+                'title' => 'Panduan Export Data',
+                'steps' => [
+                    static::step('table', 'Pilih data yang diekspor',
+                        'Tiap baris adalah satu jenis data (transaksi, produk, aset, dan lainnya) dengan tombol unduh sendiri.'),
+                    static::step('[wire\\:click^="togglePanel"]', 'Atur filter',
+                        'Buka panel filter di baris data untuk membatasi isi file, misalnya periode, unit, atau status.'),
+                    static::step(static::click('bulkExport'), 'Export sekaligus',
+                        'Centang beberapa jenis data, lalu unduh semuanya dalam satu file.'),
+                ],
+            ],
+
+            'service-orders.index' => [
+                'title' => 'Panduan Pesanan Layanan',
+                'steps' => [
+                    static::step(static::click('openCreateModal'), 'Catat pesanan layanan',
+                        'Tambahkan pesanan baru: pelanggan, jenis layanan, petugas, harga, dan jadwalnya.'),
+                    static::step(static::searchBox(), 'Cari pesanan',
+                        'Cari berdasarkan pelanggan, layanan, atau petugas.'),
+                    static::step(static::model('statusFilter', true), 'Saring per status',
+                        'Pantau pesanan yang masih berjalan atau yang sudah selesai.'),
+                    static::step('[wire\\:click^="openEditModal"]', 'Perbarui pesanan',
+                        'Ubah detail atau status pesanan lewat tombol edit di barisnya.'),
+                ],
+            ],
+
+            'analytics.master' => [
+                'title' => 'Panduan Analytics',
+                'steps' => [
+                    static::step(static::model('selectedUnit', true), 'Pilih unit',
+                        'Lihat statistik seluruh unit sekaligus, atau pilih satu unit untuk dianalisis.'),
+                    static::step(static::model('periodFilter', true), 'Atur periode',
+                        'Semua angka dan grafik mengikuti periode yang dipilih. Pilih rentang tanggal sendiri bila perlu.'),
+                    static::step('[x-ref="chart"]', 'Baca grafik',
+                        'Arahkan kursor ke grafik untuk melihat nilai tepatnya. Bagian bawah halaman membandingkan performa tiap unit usaha.'),
+                ],
+            ],
+
+            'analytics.unit' => [
+                'title' => 'Panduan Analytics',
+                'steps' => [
+                    static::step(static::model('periodFilter', true), 'Atur periode',
+                        'Semua angka dan grafik mengikuti periode yang dipilih. Pilih rentang tanggal sendiri bila perlu.'),
+                    static::step('[x-ref="chart"]', 'Baca grafik',
+                        'Arahkan kursor ke grafik untuk melihat nilai tepatnya, mulai dari kontribusi pendapatan hingga tren arus kas.'),
+                ],
+            ],
+
+            'activities.index' => [
+                'title' => 'Panduan Aktivitas Login',
+                'steps' => [
+                    static::step('table', 'Pantau aktivitas akun',
+                        'Halaman ini mencatat percobaan dan sesi login beserta alamat IP dan perangkatnya, berguna untuk mendeteksi akses yang mencurigakan.'),
+                    static::step(static::searchBox(), 'Cari dan saring',
+                        'Cari berdasarkan email, nama pengguna, atau alamat IP, lalu saring menurut jenis kejadian.'),
+                    static::step(static::click('exportLog'), 'Export log',
+                        'Unduh catatan aktivitas untuk arsip atau pemeriksaan lebih lanjut.'),
+                ],
+            ],
+
+            'audit-logs.index' => [
+                'title' => 'Panduan Audit Log',
+                'steps' => [
+                    static::step('#search_log', 'Cari catatan',
+                        'Audit log merekam siapa mengubah apa di sistem. Cari berdasarkan kata kunci pada catatan.'),
+                    static::step('#event_filter', 'Saring jenis kejadian',
+                        'Tampilkan hanya jenis perubahan tertentu, misalnya pembuatan, perubahan, atau penghapusan data.'),
+                    static::step('#start_date', 'Batasi tanggal',
+                        'Isi tanggal mulai dan selesai untuk menyempitkan catatan ke periode tertentu.'),
+                    static::step('[wire\\:click^="openDetail"]', 'Lihat detail',
+                        'Buka detail satu catatan untuk melihat data sebelum dan sesudah perubahan.'),
+                    static::step(static::click('exportLog'), 'Export audit log',
+                        'Unduh catatan sesuai penyaringan yang sedang aktif.'),
+                ],
+            ],
+
+            'log-archives.index' => [
+                'title' => 'Panduan Arsip Log',
+                'steps' => [
+                    static::step('#retention_input', 'Masa simpan log',
+                        'Atur berapa lama log aktif disimpan sebelum diarsipkan otomatis oleh sistem.'),
+                    static::step('#type_filter', 'Saring arsip',
+                        'Cari arsip berdasarkan jenis log dan tahunnya.'),
+                    static::step('[wire\\:click^="download"]', 'Unduh arsip',
+                        'Unduh arsip log lama kapan pun dibutuhkan.'),
+                ],
+            ],
+
+            'announcements.index' => [
+                'title' => 'Panduan Pengumuman',
+                'steps' => [
+                    static::step(static::click('openCreateModal'), 'Buat pengumuman',
+                        'Tulis pengumuman untuk semua admin unit atau hanya admin tertentu. Pengumuman juga bisa dikirim lewat WhatsApp.'),
+                    static::step('table', 'Riwayat pengumuman',
+                        'Semua pengumuman yang pernah dikirim tercatat di sini.'),
+                ],
+            ],
+
+            'notifications.index' => [
+                'title' => 'Panduan Notifikasi',
+                'steps' => [
+                    static::step(static::model('badgeFilter', true), 'Saring notifikasi',
+                        'Tampilkan notifikasi menurut jenisnya agar yang penting mudah ditemukan.'),
+                    static::step('[wire\\:click^="markAsRead"], [wire\\:click^="markAsUnread"]', 'Tandai dibaca',
+                        'Tandai satu notifikasi sebagai sudah dibaca, atau kembalikan menjadi belum dibaca.'),
+                    static::step(static::click('markAllAsRead'), 'Tandai semua dibaca',
+                        'Bersihkan seluruh notifikasi belum dibaca sekaligus.'),
+                ],
+            ],
+
+            'settings.index' => [
+                'title' => 'Panduan Pengaturan Sistem',
+                'steps' => [
+                    static::step(static::click('setTab(\'profile\')'), 'Profil Admin',
+                        'Ubah nama, foto, nomor WhatsApp, dan password akun Anda. Foto dan nama tampil di sidebar.'),
+                    static::step(static::click('setTab(\'features\')'), 'Fitur & Modul',
+                        'Aktifkan atau matikan fitur sistem sesuai kebutuhan sekolah.'),
+                    static::step(static::click('setTab(\'landing\')'), 'Landing Page',
+                        'Atur tampilan halaman depan aplikasi.'),
+                ],
+            ],
+
+            'profile.account' => [
+                'title' => 'Panduan Profil Saya',
+                'steps' => [
+                    static::step(static::model('name'), 'Data akun',
+                        'Perbarui nama, username, dan email akun Anda. Foto dan nama tampil di sidebar.'),
+                    static::step(static::model('newPhone'), 'Nomor WhatsApp',
+                        'Nomor ini dipakai untuk notifikasi. Mengubahnya memerlukan password dan kode OTP demi keamanan.'),
+                    static::step(static::model('currentPassword'), 'Ganti password',
+                        'Isi password lama dan password baru. Gunakan kombinasi yang sulit ditebak.'),
+                ],
+            ],
+
+            'documents.history' => [
+                'title' => 'Panduan Riwayat Dokumen',
+                'steps' => [
+                    static::step(static::searchBox(), 'Cari dokumen',
+                        'Cari berdasarkan nomor surat, judul, atau penerima.'),
+                    static::step(static::model('typeFilter', true), 'Saring jenis dokumen',
+                        'Tampilkan hanya jenis dokumen tertentu.'),
+                    static::step('[wire\\:click^="download"]', 'Unduh kembali',
+                        'Setiap dokumen yang pernah dibuat bisa diunduh lagi dari sini.'),
+                ],
+            ],
+
+            'unit.dashboard' => [
+                'title' => 'Panduan Dashboard Unit',
+                'steps' => [
+                    static::step(static::model('periodFilter', true), 'Atur periode',
+                        'Seluruh ringkasan dan grafik di dashboard mengikuti periode yang dipilih.'),
+                    static::step('[x-ref="chart"]', 'Pantau tren',
+                        'Grafik menampilkan perkembangan omzet unit Anda. Arahkan kursor untuk melihat nilai tepatnya.'),
+                    static::step('[wire\\:model\\.live\\.debounce\\.400ms="searchTransaction"]', 'Transaksi terkini',
+                        'Cari transaksi terbaru langsung dari dashboard. Catat transaksi baru lewat menu Transaksi di sidebar.'),
+                    static::step(static::click('export'), 'Export dashboard',
+                        'Unduh ringkasan dashboard sebagai file Excel.'),
                 ],
             ],
         ];

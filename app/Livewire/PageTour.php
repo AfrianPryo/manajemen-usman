@@ -5,6 +5,7 @@ namespace App\Livewire;
 use App\Models\User;
 use App\Support\PageTours;
 use Illuminate\Support\Facades\Auth;
+use Livewire\Attributes\Renderless;
 use Livewire\Component;
 
 /**
@@ -31,20 +32,34 @@ class PageTour extends Component
         /** @var User|null $user */
         $user = Auth::user();
 
+        // Server HANYA memutuskan "perlu tampil otomatis atau tidak". Status selesai
+        // TIDAK dicatat di sini: kalau dicatat saat mount, tutorial ikut "terpakai"
+        // pada render server yang tidak pernah sampai tampil di layar (prefetch
+        // wire:navigate, render ulang, JS belum siap), dan user tidak pernah melihatnya.
+        // Pencatatan dilakukan browser lewat shown() begitu kartu benar-benar tampil.
         $this->autoStart = PageTours::has($tour)
             && $user
             && ! $user->hasCompletedTour($tour);
-
-        // Tampil otomatis SEKALI saja: dicatat begitu pertama kali muncul, bukan
-        // menunggu user menekan Selesai/Lewati -- kalau tab ditutup di tengah
-        // jalan, tutorial tidak muncul lagi di kunjungan berikutnya. Putar ulang
-        // manual lewat tombol "Panduan" tetap bisa kapan saja.
-        if ($this->autoStart) {
-            $user->markTourCompleted($tour);
-        }
     }
 
+    /**
+     * Dipanggil browser SEKALI, tepat saat kartu tutorial otomatis benar-benar sudah
+     * tampil. Sejak itu tutorial tidak muncul otomatis lagi (walau tab ditutup di
+     * tengah jalan); putar ulang manual lewat tombol "Panduan" tetap bisa.
+     */
+    #[Renderless]
+    public function shown(): void
+    {
+        $this->markDone();
+    }
+
+    #[Renderless]
     public function complete(): void
+    {
+        $this->markDone();
+    }
+
+    private function markDone(): void
     {
         if (! PageTours::has($this->tour)) {
             return;
@@ -62,6 +77,10 @@ class PageTour extends Component
         return view('livewire.page-tour', [
             'steps' => PageTours::steps($this->tour),
             'title' => PageTours::title($this->tour),
+            // Hanya saat URL memakai ?tourdebug=1: tampilkan status tutorial di pojok layar.
+            'debug' => request()->boolean('tourdebug')
+                ? ['completed' => Auth::user()?->completed_tours ?? []]
+                : null,
         ]);
     }
 }

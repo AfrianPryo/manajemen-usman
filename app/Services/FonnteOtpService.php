@@ -280,6 +280,19 @@ class FonnteOtpService
                 return false;
             }
 
+            // Fonnte tetap membalas HTTP 200 walau token invalid / perangkat
+            // putus, jadi sukses-gagal HARUS dibaca dari field 'status' di
+            // body (sama seperti pada testConnection()).
+            $data = $response->json();
+
+            if (! is_array($data) || ! ($data['status'] ?? false)) {
+                Log::error('FonnteOtpService: Fonnte menolak pengiriman pesan WA', [
+                    'reason' => is_array($data) ? ($data['reason'] ?? null) : null,
+                    'body'   => $response->body(),
+                ]);
+                return false;
+            }
+
             return true;
         } catch (\Throwable $e) {
             Log::error('FonnteOtpService: exception saat kirim pesan WA - ' . $e->getMessage());

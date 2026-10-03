@@ -140,24 +140,27 @@ class RoutineReportService
         $now       = Carbon::now();
         $frequency = Setting::get('report_routine_frequency', 'daily');
 
+        $time = Setting::get('report_routine_time', '07:00');
+        [$hour, $minute] = array_pad(array_map('intval', explode(':', (string) $time)), 2, 0);
+
+        // Waktu terjadwal untuk PERIODE BERJALAN. Pengecekan memakai ">="
+        // (bukan "tepat di hari terjadwal") sehingga bila scheduler sempat
+        // mati di hari terjadwal, laporan tetap terkirim begitu scheduler
+        // hidup lagi selama masih dalam periode yang sama. Pengiriman dobel
+        // tetap dicegah oleh penanda periode (last_period_key) di bawah.
         if ($frequency === 'weekly') {
-            $dayOfWeek = (int) Setting::get('report_routine_day_of_week', 1);
-            if ($now->dayOfWeek !== $dayOfWeek) {
-                return false;
-            }
+            // 0 = Minggu ... 6 = Sabtu; minggu ISO dimulai Senin.
+            $dayOfWeek   = (int) Setting::get('report_routine_day_of_week', 1);
+            $scheduledAt = $now->copy()->startOfWeek()->addDays(($dayOfWeek + 6) % 7)->setTime($hour, $minute, 0);
         } elseif ($frequency === 'monthly') {
             $dayOfMonth = (int) Setting::get('report_routine_day_of_month', 1);
             // Clamp ke hari terakhir bulan berjalan supaya tanggal seperti
             // 31 tetap bisa terkirim di bulan yang cuma 28/29/30 hari.
-            $targetDay = min($dayOfMonth, $now->daysInMonth);
-            if ($now->day !== $targetDay) {
-                return false;
-            }
+            $targetDay   = max(1, min($dayOfMonth, $now->daysInMonth));
+            $scheduledAt = $now->copy()->startOfMonth()->addDays($targetDay - 1)->setTime($hour, $minute, 0);
+        } else {
+            $scheduledAt = $now->copy()->setTime($hour, $minute, 0);
         }
-
-        $time = Setting::get('report_routine_time', '07:00');
-        [$hour, $minute] = array_pad(array_map('intval', explode(':', $time)), 2, 0);
-        $scheduledAt = $now->copy()->setTime($hour, $minute, 0);
 
         if ($now->lt($scheduledAt)) {
             return false;

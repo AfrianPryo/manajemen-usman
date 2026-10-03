@@ -115,8 +115,16 @@
                         inputmode="numeric"
                         autocomplete="one-time-code"
                         maxlength="6"
-                        x-data
-                        x-on:input="$el.value = $el.value.replace(/\D/g, '').slice(0, 6)"
+                        x-data="{ busy: false }"
+                        x-on:input="
+                            $el.value = $el.value.replace(/\D/g, '').slice(0, 6);
+                            if ($el.value.length === 6 && !busy) {
+                                busy = true;
+                                $wire.otp = $el.value;
+                                $wire.verifyOtp().finally(() => { busy = false });
+                            }
+                        "
+                        autofocus
                         class="@error('otp') !border-rose-400 !focus:border-rose-500 !focus:ring-rose-500/10 @enderror w-full rounded-sm border border-neutral-200 bg-white px-3 py-2.5 text-center text-lg font-semibold tracking-[0.5em] text-neutral-900 placeholder-neutral-300 transition-colors focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/10 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
                         placeholder="------"
                         aria-invalid="@error('otp') true @else false @enderror"
@@ -173,7 +181,7 @@
 
     {{-- Tombol Submit --}}
     <div class="mt-6">
-        <x-auth-submit form="changePasswordForm" target="{{ $submitTarget }}" label="{{ $submitLabel }}" />
+        <x-auth-submit form="changePasswordForm" :target="$submitTarget" :label="$submitLabel" />
 
         @if ($step === 2)
             <button

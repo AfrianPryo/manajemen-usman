@@ -1,4 +1,5 @@
 <div class="w-full max-w-[1500px] mx-auto space-y-5 text-neutral-800 dark:text-neutral-100 px-4 py-4 sm:px-6 font-sans">
+    <livewire:page-tour tour="notifications.index" />
 
     {{-- Toast untuk hasil aksi (approve/reject/detail gagal dibuka, dst) --}}
     <x-notifications.flash />

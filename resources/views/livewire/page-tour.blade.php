@@ -31,6 +31,7 @@
         _scrolled: false,
         _snap: null,
         _fz: null,
+        _auto: false,
         get cur() { return this.steps[this.step - 1] || {}; },
         visible(e) {
             if (!e || !e.isConnected) return false;
@@ -179,6 +180,8 @@
             // Kunci posisi gulir: apa pun yang mencoba menggulir halaman akan dikembalikan (lihat guard).
             this._snap = { x: window.scrollX, y: window.scrollY, els: this._parents.map((q) => [q, q.scrollTop, q.scrollLeft]) };
             if (!this.ready) this.ready = true;
+            // Kartu otomatis sudah benar-benar tampil: baru sekarang dicatat ke server.
+            if (this._auto) { this._auto = false; console.info('[tour] kartu tampil, status dicatat:', this.tour); this.$wire.shown(); }
         },
         // Ukur target SEKALI lalu pasang sorotan + kartu. Karena semua transisi/animasi dimatikan
         // selama tutorial (lihat freeze), sidebar / modal / tab sudah di posisi akhir, jadi hasil
@@ -330,8 +333,10 @@
             if (this._raf) { cancelAnimationFrame(this._raf); this._raf = null; }
         },
         destroy() { this.stop(); },
-        start() {
-            if (!this.steps.length) return;
+        start(auto = false) {
+            if (!this.steps.length || !this.$el.isConnected) return;
+            this._auto = auto === true;
+            console.info('[tour] mulai:', this.tour, auto === true ? '(otomatis)' : '(manual)');
             window.dispatchEvent(new CustomEvent('tour-opened', { detail: { tour: this.tour } }));
             this.step = 1;
             this.reset();
@@ -351,13 +356,20 @@
         },
     }"
     x-init="
-        @if ($autoStart) start(); @endif
+        {{-- Tunda sebentar supaya navigasi (wire:navigate) & layout sidebar selesai dulu. --}}
+        console.info('[tour] siap:', tour, '| server autoStart =', {{ $autoStart ? 'true' : 'false' }});
+        @if ($autoStart) setTimeout(() => start(true), 300); @endif
         $watch('step', () => { reset(); $nextTick(() => settle()); });
     "
     @start-tour.window="if ($event.detail.tour === tour) start()"
     @tour-opened.window="if ($event.detail.tour !== tour) finish()"
     @keydown.escape.window="finish()"
 >
+    @if ($debug)
+        <div class="fixed bottom-2 left-2 z-[80] max-w-md rounded bg-black/85 px-2 py-1 font-mono text-[10px] leading-snug text-white pointer-events-none"
+             x-text="'tour=' + tour + ' | autoStart(server)={{ $autoStart ? 'YA' : 'TIDAK' }} | open=' + open + ' | ready=' + ready + ' | selesai di DB=' + JSON.stringify(@js($debug['completed']))"></div>
+    @endif
+
     <template x-if="open">
         {{-- wire:ignore: cegah morph Livewire menghapus style inline sorotan & kartu. --}}
         <div wire:ignore>

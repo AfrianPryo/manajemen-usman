@@ -3,7 +3,10 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\Log;
 
 class Setting extends Model
 {
@@ -12,6 +15,32 @@ class Setting extends Model
     protected $keyType = 'string';
 
     protected $fillable = ['key', 'value'];
+
+    /**
+     * Key berisi kredensial: nilainya dienkripsi (Crypt, APP_KEY) saat
+     * disimpan ke tabel & cache, dan didekripsi otomatis saat dibaca lewat
+     * get()/getMany(). Nilai lama yang masih plaintext tetap terbaca dan
+     * otomatis terenkripsi saat pengaturannya disimpan ulang.
+     */
+    protected const ENCRYPTED_KEYS = ['wa_api_key'];
+    protected const ENCRYPTED_PREFIX = 'enc:v1:';
+
+    protected static function decodeValue(string $key, mixed $value): mixed
+    {
+        if (! in_array($key, static::ENCRYPTED_KEYS, true)
+            || ! is_string($value)
+            || ! str_starts_with($value, static::ENCRYPTED_PREFIX)) {
+            return $value;
+        }
+
+        try {
+            return Crypt::decryptString(substr($value, strlen(static::ENCRYPTED_PREFIX)));
+        } catch (DecryptException $e) {
+            Log::error("Setting: gagal mendekripsi '{$key}' (APP_KEY berubah?). Isi ulang di Pengaturan.");
+
+            return null;
+        }
+    }
 
     /**
      * Teks bawaan tiap section landing page (halaman depan publik),
@@ -129,33 +158,35 @@ class Setting extends Model
     ];
 
     /**
-     * Ambil nilai pengaturan berdasarkan key (dengan Cache)
+     * Ambil nilai pengaturan berdasarkan key (dengan Cache).
+     *
+     * Yang di-cache HANYA kondisi baris di tabel: ['v' => nilai] bila baris
+     * ada, atau ['missing' => true] bila belum ada. Nilai $default TIDAK
+     * pernah ikut di-cache -- dulu default dari pemanggil pertama "menang"
+     * selamanya untuk semua pemanggil lain (mis. app_name punya beberapa
+     * default berbeda), dan null yang ter-cache bisa memicu TypeError pada
+     * properti bertipe string. Penanda 'missing' tetap mencegah query
+     * berulang untuk key yang belum pernah disimpan.
      */
     public static function get(string $key, mixed $default = null): mixed
     {
-        // OPTIMASI: nilai dibungkus ['v' => ...] sebelum masuk cache. Tanpa
-        // pembungkus, nilai null (mis. 'app_logo' yang belum pernah diupload)
-        // dianggap "tidak ada di cache" oleh Laravel, sehingga TIAP pemanggilan
-        // menembak query ke tabel settings. Dengan pembungkus, null pun
-        // tersimpan. Semantik lain tidak berubah: default (bila baris belum
-        // ada) tetap ikut di-cache seperti sebelumnya.
-        $entry = Cache::rememberForever(static::cacheKey($key), function () use ($key, $default) {
+        $entry = Cache::rememberForever(static::cacheKey($key), function () use ($key) {
             $item = static::find($key);
 
-            return ['v' => $item !== null ? $item->value : $default];
+            return $item !== null ? ['v' => $item->value] : ['missing' => true];
         });
 
-        return $entry['v'];
+        return is_array($entry) && array_key_exists('v', $entry) ? static::decodeValue($key, $entry['v']) : $default;
     }
 
     /**
-     * Key cache setting. Prefix "setting_v2_" (bukan "setting_" lama) sengaja
-     * dibedakan karena format isinya berubah (dibungkus array): entri lama
-     * yang masih tersisa di cache tidak akan pernah terbaca salah format.
+     * Key cache setting. Prefix "setting_v3_" sengaja dibedakan dari "v2"
+     * karena entri lama bisa berisi nilai DEFAULT yang ikut ter-cache
+     * (perilaku lama yang sudah diperbaiki) -- entri itu tidak boleh terbaca.
      */
     protected static function cacheKey(string $key): string
     {
-        return "setting_v2_{$key}";
+        return "setting_v3_{$key}";
     }
 
     /**
@@ -181,9 +212,13 @@ class Setting extends Model
         foreach ($defaults as $key => $default) {
             $entry = $cached[$cacheKeys[$key]] ?? null;
 
-            $result[$key] = is_array($entry) && array_key_exists('v', $entry)
-                ? $entry['v']
-                : static::get($key, $default);
+            if (is_array($entry) && array_key_exists('v', $entry)) {
+                $result[$key] = static::decodeValue($key, $entry['v']);
+            } elseif (is_array($entry) && ($entry['missing'] ?? false)) {
+                $result[$key] = $default;
+            } else {
+                $result[$key] = static::get($key, $default);
+            }
         }
 
         return $result;
@@ -225,12 +260,19 @@ class Setting extends Model
             $value = $value ? '1' : '0';
         }
 
+        $value = (string) $value;
+
+        if (in_array($key, static::ENCRYPTED_KEYS, true) && $value !== '') {
+            $value = static::ENCRYPTED_PREFIX . Crypt::encryptString($value);
+        }
+
         static::updateOrCreate(
             ['key' => $key],
-            ['value' => (string) $value]
+            ['value' => $value]
         );
 
         Cache::forget(static::cacheKey($key));
+        Cache::forget("setting_v2_{$key}"); // sisa key format sebelumnya, jika masih ada
         Cache::forget("setting_{$key}"); // sisa key format lama, jika masih ada
     }
 }

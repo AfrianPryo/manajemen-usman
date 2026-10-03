@@ -57,7 +57,7 @@
             </div>
             <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">No. HP</label>
-                <input type="text" wire:model="phone" inputmode="numeric" oninput="onlyDigits(event)" class="@error('phone') !border-rose-400 !focus:border-rose-500 !focus:ring-rose-500/10 @enderror w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-900 text-sm" aria-invalid="@error('phone') true @else false @enderror">
+                <input type="text" wire:model="phone" inputmode="numeric" readonly title="Ubah nomor WhatsApp lewat menu Pengaturan (dengan verifikasi OTP)" class="cursor-not-allowed opacity-70 @error('phone') !border-rose-400 !focus:border-rose-500 !focus:ring-rose-500/10 @enderror w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-900 text-sm" aria-invalid="@error('phone') true @else false @enderror">
                 @error('phone') <x-form-error :message="$message" :field="'phone'" /> @enderror
             </div>
         </div>

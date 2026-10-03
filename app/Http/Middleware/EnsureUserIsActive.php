@@ -11,6 +11,8 @@ use Symfony\Component\HttpFoundation\Response;
 
 class EnsureUserIsActive
 {
+    use RejectsLivewireRequests;
+
     public function handle(Request $request, Closure $next): Response
     {
         $user = Auth::user();
@@ -20,6 +22,10 @@ class EnsureUserIsActive
             $request->session()->invalidate();
             $request->session()->regenerateToken();
             AuthLog::log('login.failed', null, $user->email, 'Akun nonaktif');
+
+            if ($this->isLivewireRequest($request)) {
+                return $this->rejectLivewire();
+            }
 
             return redirect()->route('login')
                 ->withErrors(['email' => 'Akun tidak aktif. Silakan hubungi Master Admin.']);
@@ -39,6 +45,10 @@ class EnsureUserIsActive
             $request->session()->regenerateToken();
 
             AuthLog::log('login.failed', $user->id, $user->email, 'Akses ditolak: IP/perangkat diblokir Master Admin');
+
+            if ($this->isLivewireRequest($request)) {
+                return $this->rejectLivewire();
+            }
 
             return redirect()->route('login')
                 ->withErrors(['email' => 'Akses dari perangkat/IP ini telah diblokir oleh Master Admin.']);

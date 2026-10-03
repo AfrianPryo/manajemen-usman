@@ -2,6 +2,9 @@
 
 namespace App\Providers;
 
+use App\Http\Middleware\EnsureSessionNotExpired;
+use App\Http\Middleware\EnsureUserIsActive;
+use App\Http\Middleware\SingleActiveSession;
 use App\Models\Setting;
 use App\Support\ValidationMessages;
 use Illuminate\Support\Facades\Cache;
@@ -9,6 +12,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
+use Livewire\Livewire;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -22,6 +26,17 @@ class AppServiceProvider extends ServiceProvider
         // Pesan validasi/error bawaan framework (lang/id/validation.php) tampil
         // dalam bahasa Indonesia, apa pun nilai APP_LOCALE di .env.
         $this->app->setLocale('id');
+
+        // Request aksi Livewire (/livewire/update) hanya menjalankan ulang
+        // middleware yang didaftarkan sebagai "persistent". Tanpa ini, cek
+        // akun nonaktif, blokir IP/perangkat, sesi tunggal & idle timeout
+        // hanya berlaku saat halaman penuh dimuat -- tab yang sudah terbuka
+        // tetap bisa menjalankan aksi.
+        Livewire::addPersistentMiddleware([
+            EnsureUserIsActive::class,
+            SingleActiveSession::class,
+            EnsureSessionNotExpired::class,
+        ]);
 
         // Pesan error validasi form yang seragam & profesional (Bahasa
         // Indonesia) beserta label field yang ramah pengguna. Dipasang sebagai

@@ -1,4 +1,5 @@
 <div class="w-full max-w-[1500px] mx-auto space-y-5 text-neutral-800 dark:text-neutral-100 px-4 py-4 sm:px-6 font-sans">
+    <livewire:page-tour tour="activities.index" />
 
     {{-- Flash Notification (toast) --}}
     @if (session()->has('message'))

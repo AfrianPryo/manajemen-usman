@@ -366,24 +366,41 @@ class Index extends Component
             return;
         }
 
-        DB::transaction(function () use ($purchase) {
+        $cancelled = DB::transaction(function () use ($purchase) {
+            // Kunci baris PO lalu cek ulang statusnya DI DALAM transaksi,
+            // supaya klik ganda / dua request bersamaan tidak mengurangi
+            // stok dua kali.
+            $purchase = PurchaseOrder::whereKey($purchase->id)->lockForUpdate()->first();
+
+            if (! $purchase || $purchase->isCancelled()) {
+                return false;
+            }
+
             foreach ($purchase->items as $item) {
                 if (empty($item['product_id'])) {
                     continue;
                 }
 
-                $product = Product::where('unit_id', $purchase->unit_id)->find($item['product_id']);
+                $product = Product::where('unit_id', $purchase->unit_id)
+                    ->lockForUpdate()
+                    ->find($item['product_id']);
                 if (!$product) {
                     continue;
                 }
 
-                $qty = (int) $item['qty'];
-                $product->decrement('stock', min($qty, $product->stock));
+                // Stok hanya dikurangi sebesar yang benar-benar tersedia,
+                // dan buku stok mencatat jumlah yang SAMA (bukan qty penuh).
+                $reduced = min((int) $item['qty'], max(0, (int) $product->stock));
+                if ($reduced <= 0) {
+                    continue;
+                }
+
+                $product->decrement('stock', $reduced);
 
                 StockMovement::create([
                     'product_id' => $product->id,
                     'type'       => 'out',
-                    'quantity'   => $qty,
+                    'quantity'   => $reduced,
                     'note'       => "Pembatalan pembelian {$purchase->po_number}",
                     'user_id'    => auth()->id(),
                 ]);
@@ -399,9 +416,16 @@ class Index extends Component
                 oldValues: ['status' => 'completed'],
                 newValues: ['status' => 'cancelled']
             );
+
+            return true;
         });
 
         $this->closeDetailModal();
+
+        if (! $cancelled) {
+            return;
+        }
+
         session()->flash('message', 'Pembelian berhasil dibatalkan.');
     }
 

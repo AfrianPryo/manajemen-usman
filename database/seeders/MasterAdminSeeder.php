@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 class MasterAdminSeeder extends Seeder
 {
@@ -18,13 +19,22 @@ class MasterAdminSeeder extends Seeder
         // production), password & flag must_change_password TIDAK akan
         // ditimpa lagi -- mencegah admin yang sudah lama aktif jadi
         // terkunci ulang ke alur ganti password / password-nya kembali ke
-        // 'Password123!' begitu saja.
+        // password awal begitu saja.
+        // Password awal TIDAK lagi tertulis di kode. Ambil dari
+        // MASTER_ADMIN_PASSWORD di .env; bila kosong, dibuat acak dan
+        // ditampilkan SEKALI di console saat akun benar-benar baru dibuat.
+        $initialPassword = (string) env('MASTER_ADMIN_PASSWORD', '');
+        $generated = $initialPassword === '';
+        if ($generated) {
+            $initialPassword = Str::password(16);
+        }
+
         $masterAdmin = User::firstOrCreate(
             ['username' => 'admin.master'], // 🟢 Disesuaikan menggunakan username login
             [
                 'name'                 => 'Master Admin',
                 'email'                => 'admin@sekolah.sch.id',
-                'password'             => Hash::make('Password123!'),
+                'password'             => Hash::make($initialPassword),
                 'unit_id'              => null,
                 'is_active'            => true,
                 // Akun Master Admin awal ini adalah kredensial "dari dev"
@@ -44,6 +54,11 @@ class MasterAdminSeeder extends Seeder
                 'onboarding_completed_at' => null,
             ]
         );
+
+        if ($masterAdmin->wasRecentlyCreated && $generated) {
+            $this->command?->warn("Akun Master Admin dibuat. Username: admin.master | Password sementara: {$initialPassword}");
+            $this->command?->warn('Catat sekarang -- password ini tidak akan ditampilkan lagi dan wajib diganti saat login pertama.');
+        }
 
         $masterAdmin->assignRole('master-admin');
     }

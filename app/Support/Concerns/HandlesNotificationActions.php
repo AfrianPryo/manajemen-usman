@@ -207,7 +207,7 @@ trait HandlesNotificationActions
                 FinanceTransaction::create([
                     'unit_id'             => $recurring->unit_id,
                     'finance_category_id' => $categoryId,
-                    'user_id'             => Auth::id() ?? 1,
+                    'user_id'             => Auth::id(),
                     'reference_no'        => 'TRX-REC-' . time() . '-' . $recurring->id,
                     'type'                => $recurring->type,
                     'status'              => 'completed',
@@ -329,8 +329,8 @@ trait HandlesNotificationActions
         return (match ($frequency) {
             'daily'   => $date->addDay(),
             'weekly'  => $date->addWeek(),
-            'yearly'  => $date->addYear(),
-            default   => $date->addMonth(),
+            'yearly'  => $date->addYearNoOverflow(),
+            default   => $date->addMonthNoOverflow(),
         })->toDateString();
     }
 }

@@ -2,6 +2,7 @@
 <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 @endpush
 <div class="w-full max-w-[1500px] mx-auto space-y-5 text-neutral-800 dark:text-neutral-100 px-4 py-4 sm:px-6 font-sans">
+    <livewire:page-tour tour="analytics.unit" />
 
     {{-- Flash Notification (toast) --}}
     @if (session()->has('message'))
@@ -9,30 +10,30 @@
     @endif
 
     {{-- ================= HEADER & FILTER ================= --}}
-    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 bg-white dark:bg-slate-800 p-6 rounded-md border border-neutral-100 dark:border-slate-700 shadow-sm shadow-black/[0.02]">
+    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 bg-white dark:bg-slate-800 p-5 rounded-none border border-neutral-100 dark:border-slate-700">
         <div>
-            <div class="flex items-center gap-2.5">
-                <h1 class="text-2xl font-bold text-neutral-900 dark:text-white tracking-tight">Statistik Usaha</h1>
-            </div>
-            <p class="text-xs text-neutral-400 mt-1">
+            <h1 class="text-md font-bold tracking-tight text-neutral-900 dark:text-white">Analytics & Statistik Usaha</h1>
+            <p class="text-[12px] tracking-tight text-neutral-400 mt-1">
                 Ringkasan performa finansial dan operasional unit usaha {{ $unit->name }}.
             </p>
         </div>
 
         {{-- Filter Rentang Waktu --}}
-        <div class="flex flex-wrap items-center gap-2.5">
-            <select wire:model.live="periodFilter" class="px-2 py-2 text-xs font-semibold text-neutral-600 dark:text-neutral-300 bg-white dark:bg-slate-900 border border-neutral-200 dark:border-slate-700 rounded-[2px] transition-all shadow-sm shadow-black/[0.02] focus:outline-none focus:ring-2 focus:ring-blue-900/10 focus:border-blue-900 cursor-pointer">
-                <option value="this_month">Bulan Ini</option>
-                <option value="last_month">Bulan Lalu</option>
-                <option value="this_year">Tahun Ini</option>
-                <option value="custom">Kustom Rentang Tanggal</option>
-            </select>
+        <div class="flex flex-wrap items-center justify-end gap-2">
+            <div class="flex items-stretch border border-neutral-200 dark:border-slate-700 divide-x divide-neutral-200 dark:divide-slate-700 shrink-0">
+                <select wire:model.live="periodFilter" class="px-3 py-2 text-xs font-medium text-neutral-600 dark:text-neutral-300 bg-white dark:bg-slate-900 focus:outline-none focus:bg-neutral-50 dark:focus:bg-slate-800 cursor-pointer">
+                    <option value="this_month">Bulan Ini</option>
+                    <option value="last_month">Bulan Lalu</option>
+                    <option value="this_year">Tahun Ini</option>
+                    <option value="custom">Kustom Rentang Tanggal</option>
+                </select>
+            </div>
 
             @if($periodFilter === 'custom')
-                <div class="flex items-center gap-1.5">
-                    <input type="date" wire:model.live="startDate" class="px-3 py-1.5 text-xs font-semibold text-neutral-600 dark:text-neutral-300 bg-white dark:bg-slate-900 border border-neutral-200 dark:border-slate-700 rounded-full focus:outline-none focus:ring-2 focus:ring-red-500/10 focus:border-red-400 shadow-sm shadow-black/[0.02]">
-                    <span class="text-neutral-400 text-xs">s/d</span>
-                    <input type="date" wire:model.live="endDate" class="px-3 py-1.5 text-xs font-semibold text-neutral-600 dark:text-neutral-300 bg-white dark:bg-slate-900 border border-neutral-200 dark:border-slate-700 rounded-full focus:outline-none focus:ring-2 focus:ring-red-500/10 focus:border-red-400 shadow-sm shadow-black/[0.02]">
+                <div class="flex items-center gap-1.5 border border-neutral-200 dark:border-slate-700 px-3 py-2 shrink-0">
+                    <input type="date" wire:model.live="startDate" class="text-xs font-medium text-neutral-600 dark:text-neutral-300 bg-transparent focus:outline-none">
+                    <span class="text-neutral-300 dark:text-neutral-600 text-xs">–</span>
+                    <input type="date" wire:model.live="endDate" class="text-xs font-medium text-neutral-600 dark:text-neutral-300 bg-transparent focus:outline-none">
                 </div>
             @endif
         </div>
@@ -42,61 +43,45 @@
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
 
         {{-- Total Pendapatan --}}
-        <div class="bg-white dark:bg-slate-800 rounded-md border border-neutral-100 dark:border-slate-700 p-5 shadow-sm shadow-black/[0.02]">
+        <div class="bg-white dark:bg-slate-800 rounded-none border border-neutral-100 dark:border-slate-700 p-4 flex flex-col justify-between">
             <div class="flex items-center justify-between">
-                <p class="text-xs font-medium text-neutral-400">Total Pendapatan</p>
-                <span class="p-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-500">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                    </svg>
-                </span>
+                <p class="text-xs text-neutral-400">Total Pendapatan</p>
+                <x-heroicon-o-currency-dollar stroke-width="1.5" class="w-4 h-4 text-neutral-300 dark:text-neutral-600" />
             </div>
-            <p class="mt-4 text-2xl font-bold text-neutral-900 dark:text-white tracking-tight">Rp {{ number_format($totalRevenue, 0, ',', '.') }}</p>
-            <p class="mt-2 text-[11px] text-neutral-400">Bruto akumulasi pendapatan</p>
+            <p class="mt-2 text-2xl font-bold text-neutral-900 dark:text-white tracking-tight">Rp {{ number_format($totalRevenue, 0, ',', '.') }}</p>
+            <p class="mt-1 text-[11px] text-neutral-400">Bruto akumulasi pendapatan</p>
         </div>
 
         {{-- Total Pengeluaran --}}
-        <div class="bg-white dark:bg-slate-800 rounded-md border border-neutral-100 dark:border-slate-700 p-5 shadow-sm shadow-black/[0.02]">
+        <div class="bg-white dark:bg-slate-800 rounded-none border border-neutral-100 dark:border-slate-700 p-4 flex flex-col justify-between">
             <div class="flex items-center justify-between">
-                <p class="text-xs font-medium text-neutral-400">Total Pengeluaran</p>
-                <span class="p-2 rounded-xl bg-rose-50 dark:bg-rose-950/50 text-rose-500">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5h16.5a1.5 1.5 0 011.5 1.5v9.75a1.5 1.5 0 01-1.5 1.5H3.75a1.5 1.5 0 01-1.5-1.5V6a1.5 1.5 0 011.5-1.5zm10.5 6a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"/>
-                    </svg>
-                </span>
+                <p class="text-xs text-neutral-400">Total Pengeluaran</p>
+                <x-heroicon-o-banknotes stroke-width="1.5" class="w-4 h-4 text-neutral-300 dark:text-neutral-600" />
             </div>
-            <p class="mt-4 text-2xl font-bold text-neutral-900 dark:text-white tracking-tight">Rp {{ number_format($totalExpense, 0, ',', '.') }}</p>
-            <p class="mt-2 text-[11px] text-neutral-400">Total biaya operasional</p>
+            <p class="mt-2 text-2xl font-bold text-neutral-900 dark:text-white tracking-tight">Rp {{ number_format($totalExpense, 0, ',', '.') }}</p>
+            <p class="mt-1 text-[11px] text-neutral-400">Total biaya operasional</p>
         </div>
 
         {{-- Laba Bersih --}}
-        <div class="bg-white dark:bg-slate-800 rounded-md border border-neutral-100 dark:border-slate-700 p-5 shadow-sm shadow-black/[0.02]">
+        <div class="bg-white dark:bg-slate-800 rounded-none border border-neutral-100 dark:border-slate-700 p-4 flex flex-col justify-between">
             <div class="flex items-center justify-between">
-                <p class="text-xs font-medium text-neutral-400">Laba Bersih</p>
-                <span class="p-2 rounded-xl bg-blue-50 dark:bg-blue-950/50 text-blue-500">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18L9 11.25l4.306 4.307a.5.5 0 00.71 0L21.75 6M21.75 6v5.25m0-5.25h-5.25"/>
-                    </svg>
-                </span>
+                <p class="text-xs text-neutral-400">Laba Bersih</p>
+                <x-heroicon-o-arrow-trending-up stroke-width="1.5" class="w-4 h-4 text-neutral-300 dark:text-neutral-600" />
             </div>
-            <p class="mt-4 text-2xl font-bold tracking-tight {{ $netProfit >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400' }}">
+            <p class="mt-2 text-2xl font-bold tracking-tight {{ $netProfit >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400' }}">
                 Rp {{ number_format($netProfit, 0, ',', '.') }}
             </p>
-            <p class="mt-2 text-[11px] text-neutral-400">Margin bersih operasional</p>
+            <p class="mt-1 text-[11px] text-neutral-400">Margin bersih operasional</p>
         </div>
 
         {{-- Total Transaksi --}}
-        <div class="bg-white dark:bg-slate-800 rounded-md border border-neutral-100 dark:border-slate-700 p-5 shadow-sm shadow-black/[0.02]">
+        <div class="bg-white dark:bg-slate-800 rounded-none border border-neutral-100 dark:border-slate-700 p-4 flex flex-col justify-between">
             <div class="flex items-center justify-between">
-                <p class="text-xs font-medium text-neutral-400">Total Transaksi</p>
-                <span class="p-2 rounded-xl bg-violet-50 dark:bg-violet-950/50 text-violet-500">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"/>
-                    </svg>
-                </span>
+                <p class="text-xs text-neutral-400">Total Transaksi</p>
+                <x-heroicon-o-shopping-bag stroke-width="1.5" class="w-4 h-4 text-neutral-300 dark:text-neutral-600" />
             </div>
-            <p class="mt-4 text-2xl font-bold text-neutral-900 dark:text-white tracking-tight">{{ number_format($totalTransactions, 0, ',', '.') }}</p>
-            <p class="mt-2 text-[11px] text-neutral-400">Jumlah transaksi berhasil</p>
+            <p class="mt-2 text-2xl font-bold text-neutral-900 dark:text-white tracking-tight">{{ number_format($totalTransactions, 0, ',', '.') }}</p>
+            <p class="mt-1 text-[11px] text-neutral-400">Jumlah transaksi berhasil</p>
         </div>
     </div>
 
@@ -104,7 +89,7 @@
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
 
         {{-- Widget Chart Donut ApexCharts --}}
-        <div class="lg:col-span-2 bg-white dark:bg-slate-800 rounded-md border border-neutral-100 dark:border-slate-700 p-6 shadow-sm shadow-black/[0.02] flex flex-col justify-between">
+        <div class="lg:col-span-2 bg-white dark:bg-slate-800 rounded-none border border-neutral-100 dark:border-slate-700 p-4 shadow-sm shadow-black/[0.02] flex flex-col justify-between">
             <div class="flex items-center justify-between mb-4">
                 <div>
                     <h2 class="text-base font-extrabold text-neutral-900 dark:text-white tracking-tight">Kontribusi Pendapatan per Kategori</h2>
@@ -127,7 +112,7 @@
                                 height: 310,
                                 fontFamily: 'Plus Jakarta Sans, Inter, sans-serif'
                             },
-                            colors: ['#2563EB', '#38BDF8', '#F43F5E', '#8B5CF6', '#F59E0B'],
+                            colors: ['#0d3b74', '#2563EB', '#38BDF8', '#64748B', '#94A3B8'],
                             stroke: { width: 3, colors: ['#ffffff'] },
                             legend: {
                                 position: 'bottom',
@@ -199,14 +184,14 @@
         </div>
 
         {{-- Widget Rincian & Peringkat Pendapatan per Kategori --}}
-        <div class="bg-white dark:bg-slate-800 rounded-md border border-neutral-100 dark:border-slate-700 p-6 shadow-sm shadow-black/[0.02] flex flex-col justify-between">
+        <div class="bg-white dark:bg-slate-800 rounded-none border border-neutral-100 dark:border-slate-700 p-4 shadow-sm shadow-black/[0.02] flex flex-col justify-between">
             <div>
                 <div class="flex items-center justify-between mb-5">
                     <div>
                         <h2 class="text-base font-extrabold text-neutral-900 dark:text-white tracking-tight">Peringkat Kategori</h2>
                         <p class="text-xs text-neutral-400 mt-0.5">Kontribusi kategori pendapatan</p>
                     </div>
-                    <span class="text-[11px] font-bold text-neutral-500 dark:text-neutral-400 bg-neutral-100/80 dark:bg-slate-900/80 px-2.5 py-1 rounded-[2px] border border-neutral-200/50 dark:border-slate-700">
+                    <span class="text-[11px] font-bold text-[#0d3b74] dark:text-neutral-400 bg-blue-50 dark:bg-slate-900/80 px-2.5 py-1 rounded-none border border-blue-100 dark:border-slate-700">
                         Top 5
                     </span>
                 </div>
@@ -214,11 +199,11 @@
                 <div class="space-y-3.5">
                     @php
                         $colors = [
+                            ['bg' => 'bg-[#0d3b74]', 'badge' => 'bg-blue-50 dark:bg-blue-950/50 text-[#0d3b74] dark:text-blue-400'],
                             ['bg' => 'bg-blue-600', 'badge' => 'bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-400'],
                             ['bg' => 'bg-sky-400', 'badge' => 'bg-sky-50 dark:bg-sky-950/50 text-sky-700 dark:text-sky-400'],
-                            ['bg' => 'bg-rose-500', 'badge' => 'bg-rose-50 dark:bg-rose-950/50 text-rose-700 dark:text-rose-400'],
-                            ['bg' => 'bg-purple-500', 'badge' => 'bg-purple-50 dark:bg-purple-950/50 text-purple-700 dark:text-purple-400'],
-                            ['bg' => 'bg-amber-500', 'badge' => 'bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-400'],
+                            ['bg' => 'bg-slate-400', 'badge' => 'bg-slate-50 dark:bg-slate-900/50 text-slate-600 dark:text-slate-400'],
+                            ['bg' => 'bg-slate-300', 'badge' => 'bg-slate-50 dark:bg-slate-900/50 text-slate-500 dark:text-slate-400'],
                         ];
                     @endphp
 
@@ -228,14 +213,14 @@
                             $percent = $revenueContribution['percentages'][$index];
                             $colorScheme = $colors[$index % count($colors)];
                         @endphp
-                        <div class="group p-2 rounded-2xl hover:bg-neutral-50 dark:hover:bg-slate-900/50 transition-all">
+                        <div class="group p-2 rounded-none hover:bg-neutral-50 dark:hover:bg-slate-900/50 transition-all">
                             <div class="flex items-center justify-between text-xs mb-2">
                                 <div class="flex items-center gap-2.5 truncate max-w-[60%]">
-                                    <span class="w-2.5 h-2.5 rounded-full {{ $colorScheme['bg'] }} shrink-0"></span>
+                                    <span class="w-2.5 h-2.5 rounded-none {{ $colorScheme['bg'] }} shrink-0"></span>
                                     <span class="font-bold text-neutral-800 dark:text-neutral-200 truncate group-hover:text-neutral-900 dark:group-hover:text-white">{{ $label }}</span>
                                 </div>
                                 <div class="flex items-center gap-2 shrink-0">
-                                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-md {{ $colorScheme['badge'] }}">
+                                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-none {{ $colorScheme['badge'] }}">
                                         {{ $percent }}%
                                     </span>
                                     <span class="font-extrabold text-neutral-900 dark:text-white text-xs">
@@ -244,8 +229,8 @@
                                 </div>
                             </div>
 
-                            <div class="w-full bg-neutral-100 dark:bg-slate-700 h-2 rounded-full overflow-hidden">
-                                <div class="{{ $colorScheme['bg'] }} h-full rounded-full transition-all duration-700" style="width: {{ $percent }}%"></div>
+                            <div class="w-full bg-neutral-100 dark:bg-slate-700 h-2 rounded-none overflow-hidden">
+                                <div class="{{ $colorScheme['bg'] }} h-full rounded-none transition-all duration-700" style="width: {{ $percent }}%"></div>
                             </div>
                         </div>
                     @empty
@@ -256,33 +241,25 @@
         </div>
     </div>
 
-    {{-- ================= SECTION GRAFIK TREN ARUS KAS ================= --}}
-    <div class="bg-white dark:bg-slate-800 rounded-md border border-slate-100 dark:border-slate-700/60 p-6 shadow-sm transition-all">
+    {{-- ================= GRAFIK TREN ARUS KAS ================= --}}
+    <div class="bg-white dark:bg-slate-800 rounded-none border border-neutral-100 dark:border-slate-700/60 overflow-hidden shadow-sm shadow-black/[0.02]">
 
-        {{-- Header & Filter Grafik Arus Kas --}}
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+        {{-- Header & Filter Rentang Waktu --}}
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-5 border-b border-neutral-100 dark:border-slate-700">
             <div>
-                <h2 class="text-lg font-extrabold text-slate-900 dark:text-white tracking-tight">Statistics</h2>
-                <p class="text-xs text-slate-400 mt-0.5">Grafik Tren Arus Kas Masuk & Keluar</p>
+                <h2 class="text-base font-bold text-neutral-900 dark:text-white">Tren Arus Kas</h2>
+                <p class="text-xs text-neutral-400 mt-0.5">Grafik tren arus kas masuk & keluar unit usaha ini</p>
             </div>
 
-            <div class="flex flex-wrap items-center gap-4 sm:gap-6">
-                {{-- Legend Minimalis --}}
-                <div class="flex items-center gap-4 text-xs font-bold text-slate-600 dark:text-slate-300">
-                    <div class="flex items-center gap-2">
-                        <span class="w-2.5 h-2.5 rounded-full bg-blue-600"></span>
-                        <span>Pendapatan</span>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <span class="w-2.5 h-2.5 rounded-full bg-sky-300"></span>
-                        <span>Pengeluaran</span>
-                    </div>
+            <div class="flex flex-wrap items-center gap-4">
+                <div class="flex items-center gap-4 text-xs font-semibold text-neutral-500 dark:text-neutral-300">
+                    <div class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-none bg-[#0d3b74]"></span><span>Pendapatan</span></div>
+                    <div class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-none bg-sky-400"></span><span>Pengeluaran</span></div>
                 </div>
 
-                {{-- Select Filter Waktu & Custom Date --}}
                 <div class="flex items-center gap-2">
                     <div class="relative">
-                        <select wire:model.live="cashflowPeriod" class="appearance-none bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold py-2 pl-3.5 pr-8 rounded-[2px] focus:outline-none focus:ring-2 focus:ring-blue-500/20 cursor-pointer">
+                        <select wire:model.live="cashflowPeriod" class="appearance-none bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold py-2 pl-3.5 pr-8 rounded-none focus:outline-none focus:ring-2 focus:ring-blue-500/20 cursor-pointer">
                             <option value="this_week">Minggu ini</option>
                             <option value="this_month">Bulan ini</option>
                             <option value="last_30_days">30 Hari Terakhir</option>
@@ -290,144 +267,126 @@
                             <option value="custom">Kustom Tanggal</option>
                         </select>
                         <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2.5 text-slate-400">
-                            <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 20 20">
-                                <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/>
-                            </svg>
+                            <x-heroicon-m-chevron-down class="w-3.5 h-3.5" />
                         </div>
                     </div>
 
                     @if($cashflowPeriod === 'custom')
                         <div class="flex items-center gap-1.5">
-                            <input type="date" wire:model.live="cfStartDate" class="px-2.5 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none">
+                            <input type="date" wire:model.live="cfStartDate" class="px-2.5 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-none focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400">
                             <span class="text-slate-400 text-xs font-bold">-</span>
-                            <input type="date" wire:model.live="cfEndDate" class="px-2.5 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none">
+                            <input type="date" wire:model.live="cfEndDate" class="px-2.5 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-none focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400">
                         </div>
                     @endif
                 </div>
             </div>
         </div>
 
-        {{-- Container Chart --}}
+        {{-- Wrapper interaksi: chart terkunci sampai diklik, agar tidak mengganggu scroll halaman --}}
         <div
-            wire:ignore
-            x-data="{
-                chart: null,
-                renderChart() {
-                    const labels = Array.from($wire.chartLabels || []);
-                    const revenue = Array.from($wire.revenueChartData || []);
-                    const expense = Array.from($wire.expenseChartData || []);
-
-                    if (!labels.length) return;
-
-                    const ctx = document.getElementById('cashflowChart');
-                    if (!ctx) return;
-
-                    if (this.chart) {
-                        this.chart.destroy();
-                    }
-
-                    const isDark = document.documentElement.classList.contains('dark');
-                    const gridColor = isDark ? 'rgba(255, 255, 255, 0.05)' : '#f1f5f9';
-                    const textColor = isDark ? '#94a3b8' : '#64748b';
-
-                    this.chart = new Chart(ctx, {
-                        type: 'bar',
-                        data: {
-                            labels: labels,
-                            datasets: [
-                                {
-                                    label: 'Pendapatan',
-                                    data: revenue,
-                                    backgroundColor: '#2563eb',
-                                    hoverBackgroundColor: '#1d4ed8',
-                                    borderRadius: 10,
-                                    borderSkipped: false,
-                                    barPercentage: 0.55,
-                                    categoryPercentage: 0.65
-                                },
-                                {
-                                    label: 'Pengeluaran',
-                                    data: expense,
-                                    backgroundColor: '#7dd3fc',
-                                    hoverBackgroundColor: '#38bdf8',
-                                    borderRadius: 10,
-                                    borderSkipped: false,
-                                    barPercentage: 0.55,
-                                    categoryPercentage: 0.65
-                                }
-                            ]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            interaction: {
-                                mode: 'index',
-                                intersect: false,
-                            },
-                            plugins: {
-                                legend: { display: false },
-                                tooltip: {
-                                    backgroundColor: '#0f172a',
-                                    titleColor: '#94a3b8',
-                                    bodyColor: '#ffffff',
-                                    titleFont: { family: 'Plus Jakarta Sans', size: 10, weight: '500' },
-                                    bodyFont: { family: 'Plus Jakarta Sans', size: 13, weight: 'bold' },
-                                    padding: { top: 8, bottom: 8, left: 12, right: 12 },
-                                    cornerRadius: 8,
-                                    displayColors: false,
-                                    caretSize: 5,
-                                    callbacks: {
-                                        title: function(context) {
-                                            return context[0].label;
-                                        },
-                                        label: function(context) {
-                                            let label = context.dataset.label || '';
-                                            let val = context.parsed.y !== null ? 'Rp ' + new Intl.NumberFormat('id-ID').format(context.parsed.y) : 'Rp 0';
-                                            return `${label}: ${val}`;
-                                        }
-                                    }
-                                }
-                            },
-                            scales: {
-                                x: {
-                                    grid: { display: false },
-                                    border: { display: false },
-                                    ticks: {
-                                        color: textColor,
-                                        font: { family: 'Plus Jakarta Sans, sans-serif', size: 11, weight: '600' },
-                                        maxRotation: 0,
-                                        autoSkip: true,
-                                        maxTicksLimit: labels.length > 20 ? 12 : labels.length
-                                    }
-                                },
-                                y: {
-                                    grid: {
-                                        color: gridColor,
-                                        borderDash: [3, 3],
-                                        drawTicks: false
-                                    },
-                                    border: { display: false },
-                                    ticks: {
-                                        color: textColor,
-                                        padding: 10,
-                                        font: { family: 'Plus Jakarta Sans, sans-serif', size: 11 },
-                                        callback: function(value) {
-                                            if (value >= 1000000000) return 'Rp ' + (value / 1000000000).toFixed(1) + 'M';
-                                            if (value >= 1000000) return 'Rp ' + (value / 1000000).toFixed(0) + 'Jt';
-                                            if (value >= 1000) return 'Rp ' + (value / 1000).toFixed(0) + 'rb';
-                                            return 'Rp ' + value;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    });
-                }
-            }"
-            x-effect="renderChart()"
-            class="h-80 w-full"
+            x-data="{ active: false }"
+            x-on:keydown.escape.window="active = false"
+            x-on:mouseleave="active = false"
+            x-on:click.outside="active = false"
+            class="relative w-full p-4"
         >
-            <canvas id="cashflowChart"></canvas>
+            {{-- wire:ignore: digambar ApexCharts di browser; data diperbarui reaktif lewat $wire --}}
+            <div
+                wire:ignore
+                x-data="{
+                    renderChart() {
+                        const el      = this.$refs.chart;
+                        const labels  = Array.from($wire.chartLabels || []);
+                        const revenue = Array.from($wire.revenueChartData || []);
+                        const expense = Array.from($wire.expenseChartData || []);
+
+                        if (el._apex) {
+                            el._apex.destroy();
+                            el._apex = null;
+                        }
+
+                        const isDark    = document.documentElement.classList.contains('dark');
+                        const textColor = isDark ? '#94a3b8' : '#94A3B8';
+                        const gridColor = isDark ? 'rgba(255,255,255,0.06)' : '#F1F5F9';
+                        const n         = labels.length;
+                        const compact   = (v) => 'Rp ' + new Intl.NumberFormat('id-ID', { notation: 'compact' }).format(v);
+                        const full      = (v) => 'Rp ' + new Intl.NumberFormat('id-ID').format(v);
+
+                        const options = {
+                            series: [
+                                { name: 'Pendapatan',  data: revenue },
+                                { name: 'Pengeluaran', data: expense },
+                            ],
+                            chart: {
+                                type: 'area',
+                                height: 340,
+                                fontFamily: 'inherit',
+                                background: 'transparent',
+                                animations: { enabled: n <= 120 },
+                                zoom: { enabled: false },
+                                toolbar: { show: false },
+                            },
+                            colors: ['#0d3b74', '#38BDF8'],
+                            stroke: { curve: 'smooth', width: 2 },
+                            fill: {
+                                type: 'gradient',
+                                gradient: { shadeIntensity: 1, opacityFrom: 0.3, opacityTo: 0.02, stops: [0, 90, 100] }
+                            },
+                            markers: { size: n <= 31 ? 3 : 0, strokeWidth: 0, hover: { size: 5 } },
+                            dataLabels: { enabled: false },
+                            legend: { show: false },
+                            grid: { borderColor: gridColor, strokeDashArray: 4, padding: { left: 8, right: 8 } },
+                            noData: { text: 'Belum ada data pada periode ini.', style: { color: textColor, fontSize: '12px' } },
+                            xaxis: {
+                                type: 'category',
+                                categories: labels,
+                                tickAmount: Math.min(Math.max(n - 1, 1), 8),
+                                labels: {
+                                    rotate: 0,
+                                    hideOverlappingLabels: true,
+                                    style: { colors: textColor, fontSize: '10px' }
+                                },
+                                axisBorder: { show: false },
+                                axisTicks: { show: false },
+                                tooltip: { enabled: false },
+                            },
+                            yaxis: {
+                                min: 0,
+                                tickAmount: 5,
+                                labels: { style: { colors: textColor, fontSize: '10px' }, formatter: compact }
+                            },
+                            tooltip: {
+                                theme: isDark ? 'dark' : 'light',
+                                shared: true,
+                                intersect: false,
+                                y: { formatter: full }
+                            },
+                        };
+
+                        const chart = new ApexCharts(el, options);
+                        el._apex = chart;
+                        chart.render();
+                    }
+                }"
+                x-effect="renderChart()"
+                x-on:destroy.window="$refs.chart?._apex?.destroy()"
+                class="w-full">
+                <div x-ref="chart" class="w-full"></div>
+            </div>
+
+            {{-- Overlay pelindung: menangkap sentuhan & scroll roda mouse sampai diklik --}}
+            <div
+                x-show="!active"
+                x-on:click="active = true"
+                x-transition.opacity.duration.150ms
+                class="absolute inset-0 z-10 flex items-center justify-center cursor-pointer bg-transparent hover:bg-neutral-900/[0.03] dark:hover:bg-white/[0.03] transition-colors group"
+                title="Klik untuk berinteraksi dengan grafik"
+            >
+                <span class="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium text-neutral-600 dark:text-neutral-200 bg-white/90 dark:bg-slate-900/90 border border-neutral-200 dark:border-slate-700">
+                    <x-heroicon-o-cursor-arrow-rays class="w-3.5 h-3.5" />
+                    Klik untuk mengaktifkan grafik
+                </span>
+            </div>
         </div>
     </div>
 
@@ -435,7 +394,7 @@
     <div class="flex flex-col gap-5 pt-2">
 
     {{-- Tabel Performa Seluruh Kategori Transaksi --}}
-    <div class="bg-white dark:bg-slate-800 rounded-md border border-neutral-100 dark:border-slate-700/60 overflow-hidden shadow-sm">
+    <div class="bg-white dark:bg-slate-800 rounded-none border border-neutral-100 dark:border-slate-700/60 overflow-hidden shadow-sm shadow-black/[0.02]">
 
         {{-- Header & Filter Rentang Waktu --}}
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-5 border-b border-neutral-100 dark:border-slate-700">
@@ -447,7 +406,7 @@
             {{-- Select Filter Waktu & Custom Date Input --}}
             <div class="flex items-center gap-2">
                 <div class="relative">
-                    <select wire:model.live="categoryPeriod" class="appearance-none bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold py-2 pl-3.5 pr-8 rounded-[2px] focus:outline-none focus:ring-2 focus:ring-blue-500/20 cursor-pointer">
+                    <select wire:model.live="categoryPeriod" class="appearance-none bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold py-2 pl-3.5 pr-8 rounded-none focus:outline-none focus:ring-2 focus:ring-blue-500/20 cursor-pointer">
                         <option value="this_week">Minggu ini</option>
                         <option value="this_month">Bulan ini</option>
                         <option value="last_30_days">30 Hari Terakhir</option>
@@ -455,17 +414,15 @@
                         <option value="custom">Kustom Tanggal</option>
                     </select>
                     <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2.5 text-slate-400">
-                        <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 20 20">
-                            <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/>
-                        </svg>
+                        <x-heroicon-m-chevron-down class="w-3.5 h-3.5" />
                     </div>
                 </div>
 
                 @if($categoryPeriod === 'custom')
                     <div class="flex items-center gap-1.5">
-                        <input type="date" wire:model.live="categoryStartDate" class="px-2.5 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none">
+                        <input type="date" wire:model.live="categoryStartDate" class="px-2.5 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-none focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400">
                         <span class="text-slate-400 text-xs font-bold">-</span>
-                        <input type="date" wire:model.live="categoryEndDate" class="px-2.5 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none">
+                        <input type="date" wire:model.live="categoryEndDate" class="px-2.5 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-none focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400">
                     </div>
                 @endif
             </div>
@@ -502,7 +459,7 @@
                             <td class="px-4 sm:px-5 py-3.5 text-right text-xs font-bold text-rose-600 dark:text-rose-400">
                                 Rp {{ number_format($expense, 0, ',', '.') }}
                             </td>
-                            <td class="px-4 sm:px-5 py-3.5 text-right text-xs font-bold {{ $profit >= 0 ? 'text-blue-600 dark:text-blue-400' : 'text-rose-600 dark:text-rose-400' }}">
+                            <td class="px-4 sm:px-5 py-3.5 text-right text-xs font-bold {{ $profit >= 0 ? 'text-[#0d3b74] dark:text-blue-400' : 'text-rose-600 dark:text-rose-400' }}">
                                 {{ $profit < 0 ? '- Rp ' . number_format(abs($profit), 0, ',', '.') : 'Rp ' . number_format($profit, 0, ',', '.') }}
                             </td>
                         </tr>
@@ -517,7 +474,5 @@
             </table>
         </div>
     </div>
+    </div>
 </div>
-
-{{-- Scripts --}}
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>

@@ -24,7 +24,9 @@ class Login extends Component
     {
         return [
             'identity' => ['required', 'string'],
-            'password' => ['required', 'string', 'min:8'],
+            // Panjang minimum TIDAK dicek saat login (hanya saat membuat/mengganti
+            // password) agar akun lama dengan password pendek tetap bisa masuk.
+            'password' => ['required', 'string'],
         ];
     }
 
@@ -55,6 +57,18 @@ class Login extends Component
 
         $throttleKey = Str::lower($this->identity) . '|' . request()->ip();
 
+        // Batas tambahan PER IP (kunci identitas+IP di atas bisa diputar
+        // dengan mengganti username): 20 kegagalan / 15 menit per IP.
+        $ipThrottleKey = 'login-ip|' . request()->ip();
+        if (RateLimiter::tooManyAttempts($ipThrottleKey, 20)) {
+            $minutes = (int) ceil(RateLimiter::availableIn($ipThrottleKey) / 60);
+
+            AuthLog::log('login.failed', null, $this->identity, 'Rate limit IP tercapai');
+
+            $this->addError('identity', "Terlalu banyak percobaan login dari perangkat/jaringan ini. Silakan coba lagi dalam {$minutes} menit.");
+            return;
+        }
+
         // Rate limiter: 5x kegagalan = kunci 15 menit (900 detik)
         if (RateLimiter::tooManyAttempts($throttleKey, 5)) {
             $seconds = RateLimiter::availableIn($throttleKey);
@@ -75,6 +89,7 @@ class Login extends Component
         // Validasi kredensial
         if (!$user || !Hash::check($this->password, $user->password)) {
             RateLimiter::hit($throttleKey, 900);
+            RateLimiter::hit($ipThrottleKey, 900);
 
             AuthLog::log('login.failed', $user?->id, $this->identity, 'Kredensial salah');
 

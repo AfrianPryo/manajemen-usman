@@ -44,8 +44,10 @@ use App\Livewire\Unit\Purchasing\Index as UnitPurchasingIndex;
 use App\Livewire\Unit\RecurringTransaction\Index as UnitRecurringTransactionIndex;
 use App\Livewire\Unit\ServiceOrder\Index as UnitServiceOrderIndex;
 use App\Livewire\Unit\Transactions\Index as UnitTransactionsIndex;
+use App\Http\Controllers\DashboardRedirectController;
+use App\Http\Controllers\DeployController;
+use App\Http\Controllers\LogoutController;
 use App\Http\Middleware\EnsureSessionNotExpired;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -55,14 +57,12 @@ use Illuminate\Support\Facades\Route;
 */
 
 // 1. Landing Page (Publik)
-Route::get('/', function () {
-    return view('landing');
-})->name('landing');
+Route::view('/', 'landing')->name('landing');
 
-// Standalone deployment page
-Route::get('/deploy', function () {
-    require base_path('deploy.php');
-})->name('deploy');
+// Deploy: WAJIB token rahasia (DEPLOY_TOKEN di .env, lihat config/deploy.php);
+// tanpa token terkonfigurasi route ini mengembalikan 404. Disarankan tetap
+// dihapus / dipindah ke CI/SSH bila tidak dipakai rutin.
+Route::get('/deploy', DeployController::class)->middleware('throttle:5,1')->name('deploy');
 
 // 2. Route Guest (Hanya untuk user yang belum login)
 Route::middleware('guest')->group(function () {
@@ -71,12 +71,7 @@ Route::middleware('guest')->group(function () {
 
 // Route Logout Khusus Development (Hanya Aktif di Lokal)
 if (app()->environment('local', 'testing')) {
-    Route::get('/dev-logout', function () {
-        Auth::logout();
-        request()->session()->invalidate();
-        request()->session()->regenerateToken();
-        return redirect()->route('login');
-    })->name('dev.logout');
+    Route::get('/dev-logout', LogoutController::class)->name('dev.logout');
 }
 
 // 3. Base Authenticated Routes (Butuh Login, Status Aktif, dan Sesi Tunggal)
@@ -88,12 +83,7 @@ if (app()->environment('local', 'testing')) {
 Route::middleware(['auth', 'user.active', 'single.session', EnsureSessionNotExpired::class])->group(function () {
 
     // Logout Action
-    Route::post('/logout', function () {
-        Auth::logout();
-        request()->session()->invalidate();
-        request()->session()->regenerateToken();
-        return redirect()->route('login');
-    })->name('logout');
+    Route::post('/logout', LogoutController::class)->name('logout');
 
     // Halaman Ganti Password (Dapat diakses wajib maupun mandiri)
     Route::get('/password/change', ChangePassword::class)->name('password.change');
@@ -102,31 +92,7 @@ Route::middleware(['auth', 'user.active', 'single.session', EnsureSessionNotExpi
     Route::middleware('password.change')->group(function () {
 
         // Smart Redirect Dashboard
-        Route::get('/dashboard', function () {
-            // Pakai facade Auth::user() (bukan helper auth()->user()) --
-            // facade Auth punya docblock @method resmi yang mendeklarasikan
-            // user(), sedangkan auth() tanpa argumen di-typehint ke
-            // Illuminate\Contracts\Auth\Factory yang TIDAK mendeklarasikan
-            // method user() (itu milik interface Guard), jadi intelephense
-            // menandainya "undefined method". @var di bawah tetap dipakai
-            // supaya method custom (isMasterAdmin/isUnitAdmin/unit) di App\
-            // Models\User juga ter-resolve.
-            /** @var \App\Models\User $user */
-            $user = Auth::user();
-
-            if ($user->isMasterAdmin()) {
-                return redirect()->route('master.dashboard');
-            }
-
-            if ($user->isUnitAdmin()) {
-                if ($user->unit) {
-                    return redirect()->route('unit.dashboard', $user->unit->slug);
-                }
-                abort(403, 'Akun Admin Unit Anda belum terhubung dengan Unit Usaha manapun.');
-            }
-
-            return redirect('/');
-        })->name('dashboard');
+        Route::get('/dashboard', DashboardRedirectController::class)->name('dashboard');
 
         // ================= MASTER ADMIN ROUTES =================
         Route::middleware('role:master-admin')->prefix('master')->name('master.')->group(function () {

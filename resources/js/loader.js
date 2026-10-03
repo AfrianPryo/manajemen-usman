@@ -5,6 +5,30 @@ import { gsap } from "gsap";
 // utama (dan membatalkan lazy-load di app.js) untuk SEMUA halaman, padahal
 // initPageLoader() hanya berjalan jika #page-loader ada (landing page).
 
+// Loading screen hanya tampil SEKALI per sesi pembukaan website (per tab/jendela).
+// Penanda disimpan di sessionStorage: setelah loader selesai, kunjungan berikutnya
+// ke landing page (mis. kembali dari halaman login) langsung menampilkan halaman
+// tanpa loader. Tutup tab/jendela lalu buka lagi = loader tampil kembali.
+// Kunci yang sama dibaca skrip kecil di landing.blade.php agar loader tidak sempat
+// berkedip sebelum JS ini berjalan.
+const LOADER_SEEN_KEY = "sims-loader-seen";
+
+function hasSeenLoader() {
+    try {
+        return sessionStorage.getItem(LOADER_SEEN_KEY) === "1";
+    } catch (e) {
+        return false;
+    }
+}
+
+function markLoaderSeen() {
+    try {
+        sessionStorage.setItem(LOADER_SEEN_KEY, "1");
+    } catch (e) {
+        // Storage diblokir (mis. mode privat ketat) -> loader tampil tiap kunjungan.
+    }
+}
+
 const COUNT_DURATION = 2.5; 
 const PAUSE_BEFORE_WIPE = 0.4; 
 
@@ -21,6 +45,20 @@ export function initPageLoader() {
     // Pre-load modul animasi hero di awal (jauh sebelum tirai terangkat
     // ~3 detik kemudian), supaya playHeroAnimations() siap tanpa jeda.
     const heroAnimationsPromise = import("./landing-animations.js");
+
+    // Sudah pernah tampil di sesi ini -> lewati loading screen sepenuhnya:
+    // buang overlay, langsung munculkan halaman, lalu jalankan animasi hero.
+    if (hasSeenLoader()) {
+        loaderEl.remove();
+        if (mainContent) {
+            mainContent.classList.add("is-ready");
+            gsap.set(mainContent, { autoAlpha: 1 });
+        }
+        heroAnimationsPromise
+            .then(({ playHeroAnimations }) => playHeroAnimations())
+            .catch((err) => console.warn("[loader] playHeroAnimations gagal:", err));
+        return;
+    }
 
     // Kunci Scroll
     document.body.style.overflow = "hidden";
@@ -101,6 +139,7 @@ export function initPageLoader() {
             onComplete: () => {
                 document.body.style.overflow = "";
                 loaderEl.remove();
+                markLoaderSeen();
             },
         });
 

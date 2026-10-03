@@ -1,50 +1,53 @@
 <div class="w-full max-w-[1500px] mx-auto space-y-5 text-neutral-800 dark:text-neutral-100 px-4 py-4 sm:px-6 font-sans">
+    <livewire:page-tour tour="customers.index" />
 
     {{-- Flash Notification (toast) --}}
     @if (session()->has('message'))
         <div wire:key="toast-message-{{ md5(session('message')) }}" x-data x-init="$store.toast.push('success', @js(session('message')))"></div>
     @endif
 
-    {{-- Header Section --}}
-    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-white dark:bg-slate-800 p-5 rounded-sm border border-neutral-100 dark:border-slate-700 shadow-sm shadow-black/[0.02]">
-        <div>
-            <h1 class="text-md font-bold tracking-tight text-neutral-900 dark:text-white">Manajemen Pelanggan</h1>
-            <p class="text-[12px] tracking-tight text-neutral-400 mt-1">Kelola data dan riwayat kunjungan pelanggan di seluruh Unit Usaha.</p>
+    {{-- ================= HEADER & QUICK ACTIONS ================= --}}
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 bg-white dark:bg-slate-800 p-4 rounded-sm border border-neutral-100 dark:border-slate-700 shadow-sm shadow-black/[0.02]">
+        <div class="min-w-0">
+            <h1 class="text-sm font-bold tracking-tight text-neutral-900 dark:text-white">Manajemen Pelanggan</h1>
+            <p class="text-[11px] text-neutral-400 mt-0.5 truncate">
+                Kelola data dan riwayat kunjungan pelanggan di seluruh Unit Usaha.
+            </p>
         </div>
-        <div class="flex items-center gap-2.5 shrink-0">
-            <button type="button"
-                    wire:click="openCreateModal"
-                    class="inline-flex items-center gap-2 px-4 py-2 text-xs font-bold text-white bg-blue-900 hover:bg-blue-950 rounded-sm transition-all shadow-sm shadow-blue-900/20 cursor-pointer">
-                <x-heroicon-o-plus class="w-4 h-4" />
+
+        {{-- Tombol Aksi Cepat: dipaksa satu baris (nowrap), scroll horizontal kalau ruangnya sempit --}}
+        <div class="flex flex-nowrap items-center gap-2 overflow-x-auto shrink-0 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            <button type="button" wire:click="openCreateModal" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-[11px] font-bold text-white bg-blue-900 hover:bg-blue-950 rounded-sm transition-all shadow-sm shadow-blue-900/20 cursor-pointer shrink-0 whitespace-nowrap">
+                <x-heroicon-o-plus class="w-3.5 h-3.5" stroke-width="2.5" />
                 <span>Tambah Pelanggan</span>
             </button>
         </div>
     </div>
 
-    {{-- Ringkasan Cepat --}}
-    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <div class="bg-white dark:bg-slate-800 rounded-sm border border-neutral-100 dark:border-slate-700 p-4 flex flex-col justify-between shadow-sm shadow-black/[0.02]">
+    {{-- KPI Cards --}}
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="bg-white dark:bg-slate-800 rounded-none border border-neutral-100 dark:border-slate-700 p-4 flex flex-col justify-between">
             <div class="flex items-center justify-between">
                 <p class="text-xs text-neutral-400">Total Pelanggan</p>
                 <x-heroicon-o-users stroke-width="1.5" class="w-4 h-4 text-neutral-300 dark:text-neutral-600" />
             </div>
             <p class="mt-2 text-2xl font-bold text-neutral-900 dark:text-white tracking-tight">{{ $totalCustomers }}</p>
         </div>
-        <div class="bg-white dark:bg-slate-800 rounded-sm border border-neutral-100 dark:border-slate-700 p-4 flex flex-col justify-between shadow-sm shadow-black/[0.02]">
+        <div class="bg-white dark:bg-slate-800 rounded-none border border-neutral-100 dark:border-slate-700 p-4 flex flex-col justify-between">
             <div class="flex items-center justify-between">
                 <p class="text-xs text-neutral-400">Pelanggan Baru</p>
                 <x-heroicon-o-user-plus stroke-width="1.5" class="w-4 h-4 text-neutral-300 dark:text-neutral-600" />
             </div>
             <p class="mt-2 text-2xl font-bold text-sky-600 dark:text-sky-400 tracking-tight">{{ $newCount }}</p>
         </div>
-        <div class="bg-white dark:bg-slate-800 rounded-sm border border-neutral-100 dark:border-slate-700 p-4 flex flex-col justify-between shadow-sm shadow-black/[0.02]">
+        <div class="bg-white dark:bg-slate-800 rounded-none border border-neutral-100 dark:border-slate-700 p-4 flex flex-col justify-between">
             <div class="flex items-center justify-between">
                 <p class="text-xs text-neutral-400">Member</p>
                 <x-heroicon-o-identification stroke-width="1.5" class="w-4 h-4 text-neutral-300 dark:text-neutral-600" />
             </div>
             <p class="mt-2 text-2xl font-bold text-violet-600 dark:text-violet-400 tracking-tight">{{ $memberCount }}</p>
         </div>
-        <div class="bg-white dark:bg-slate-800 rounded-sm border border-neutral-100 dark:border-slate-700 p-4 flex flex-col justify-between shadow-sm shadow-black/[0.02]">
+        <div class="bg-white dark:bg-slate-800 rounded-none border border-neutral-100 dark:border-slate-700 p-4 flex flex-col justify-between">
             <div class="flex items-center justify-between">
                 <p class="text-xs text-neutral-400">VIP</p>
                 <x-heroicon-o-star stroke-width="1.5" class="w-4 h-4 text-neutral-300 dark:text-neutral-600" />
@@ -54,7 +57,7 @@
     </div>
 
     {{-- Filter Bar --}}
-    <div class="bg-white dark:bg-slate-800 rounded-sm border border-neutral-100 dark:border-slate-700 p-4 shadow-sm shadow-black/[0.02]">
+    <div class="bg-white dark:bg-slate-800 rounded-sm border border-neutral-100 dark:border-slate-700 p-4 space-y-3 shadow-sm shadow-black/[0.02]">
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
             <div class="sm:col-span-2 md:col-span-2 relative">
                 <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cari nama, telepon, atau email..."
@@ -83,9 +86,17 @@
                 </select>
             </div>
         </div>
+        <div class="flex items-center justify-end pt-2 border-t border-neutral-100 dark:border-slate-700/60 text-xs">
+            {{-- Reset memakai $wire langsung (tanpa method baru di class) --}}
+            <button type="button"
+                    x-on:click="$wire.set('search', '', false); $wire.set('unitFilter', '', false); $wire.set('categoryFilter', '')"
+                    class="px-3.5 py-2 text-xs font-semibold text-neutral-600 dark:text-neutral-300 bg-neutral-100 dark:bg-slate-700 hover:bg-neutral-200 dark:hover:bg-slate-600 rounded-sm transition-all cursor-pointer">
+                Reset Filter
+            </button>
+        </div>
     </div>
 
-    {{-- Tabel Pelanggan --}}
+    {{-- ================= DAFTAR PELANGGAN ================= --}}
     <div class="bg-white dark:bg-slate-800 rounded-sm border border-neutral-100 dark:border-slate-700 overflow-hidden shadow-sm shadow-black/[0.02]">
         <div class="overflow-x-auto">
             <table class="w-full text-sm text-left">

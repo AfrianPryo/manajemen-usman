@@ -31,7 +31,7 @@ class Index extends Component
         $this->name = $user->name ?? '';
         $this->email = $user->email ?? '';
         $this->phone = $user->phone ?? '';
-        $this->existingAvatar = $user->avatar ?? null;
+        $this->existingAvatar = $user->profile_photo_path ?? null;
     }
 
     public function updateProfile(): void
@@ -41,22 +41,24 @@ class Index extends Component
         $this->validate([
             'name'   => 'required|string|max:100',
             'email'  => 'required|email|max:100|unique:users,email,' . $user->id,
-            'phone'  => 'nullable|string|max:20',
             'avatar' => 'nullable|image|max:2048',
         ]);
 
+        // Nomor WhatsApp SENGAJA tidak diubah dari form ini: penggantian
+        // nomor wajib lewat alur OTP di Pengaturan (verifikasi, normalisasi,
+        // cek keunikan).
         $data = [
             'name'  => $this->name,
             'email' => $this->email,
-            'phone' => $this->phone,
         ];
 
         if ($this->avatar) {
-            if ($user->avatar) {
-                Storage::disk('public')->delete($user->avatar);
+            // Kolom foto yang benar: profile_photo_path (sama dengan Pengaturan).
+            if ($user->profile_photo_path) {
+                Storage::disk('public')->delete($user->profile_photo_path);
             }
-            $data['avatar'] = $this->avatar->store('avatars', 'public');
-            $this->existingAvatar = $data['avatar'];
+            $data['profile_photo_path'] = $this->avatar->store('avatars', 'public');
+            $this->existingAvatar = $data['profile_photo_path'];
             $this->reset('avatar');
         }
 

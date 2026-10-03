@@ -10,6 +10,8 @@ use Symfony\Component\HttpFoundation\Response;
 
 class SingleActiveSession
 {
+    use RejectsLivewireRequests;
+
     public function handle(Request $request, Closure $next): Response
     {
         if (Auth::check()) {
@@ -31,6 +33,10 @@ class SingleActiveSession
                 Auth::logout();
                 $request->session()->invalidate();
                 $request->session()->regenerateToken();
+
+                if ($this->isLivewireRequest($request)) {
+                    return $this->rejectLivewire();
+                }
 
                 return redirect()->route('login')
                     ->with('error', 'Sesi Anda telah berakhir karena login di perangkat lain.');

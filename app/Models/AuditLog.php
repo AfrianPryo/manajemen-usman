@@ -86,7 +86,7 @@ class AuditLog extends Model
             'old_values'  => $oldValues,
             'new_values'  => $newValues,
             'ip_address'  => request()->ip(),
-            'user_agent'  => request()->userAgent(),
+            'user_agent'  => ($ua = request()->userAgent()) !== null ? mb_substr($ua, 0, 255) : null, // kolom string(255): potong agar tidak error di MySQL strict
         ];
 
         if (! static::shouldDefer()) {

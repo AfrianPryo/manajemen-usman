@@ -168,10 +168,6 @@
 
     {{-- ================= DAFTAR PRODUK ================= --}}
     <section class="space-y-3 pt-1">
-        <div>
-            <h2 class="text-sm font-bold tracking-tight text-neutral-900 dark:text-white">Daftar Produk</h2>
-            <p class="text-[11px] tracking-tight text-neutral-400 mt-0.5">Rincian seluruh produk dalam katalog inventaris unit usaha</p>
-        </div>
 
         {{-- Products Table --}}
         <div class="bg-white dark:bg-slate-800 rounded-sm border border-neutral-100 dark:border-slate-700 overflow-hidden shadow-sm shadow-black/[0.02]">
