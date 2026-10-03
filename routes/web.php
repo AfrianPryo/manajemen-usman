@@ -62,7 +62,8 @@ Route::view('/', 'landing')->name('landing');
 // Deploy: WAJIB token rahasia (DEPLOY_TOKEN di .env, lihat config/deploy.php);
 // tanpa token terkonfigurasi route ini mengembalikan 404. Disarankan tetap
 // dihapus / dipindah ke CI/SSH bila tidak dipakai rutin.
-Route::get('/deploy', DeployController::class)->middleware('throttle:5,1')->name('deploy');
+Route::get('/deploy', DeployController::class)->middleware('throttle:30,1')->name('deploy');
+Route::post('/deploy/unlock', [DeployController::class, 'unlock'])->middleware('throttle:5,1')->name('deploy.unlock');
 
 // 2. Route Guest (Hanya untuk user yang belum login)
 Route::middleware('guest')->group(function () {
