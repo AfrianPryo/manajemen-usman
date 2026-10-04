@@ -672,6 +672,30 @@
                         </button>
                     </div>
 
+                    {{-- Tombol Tutorial: selalu terlihat di header (bukan hanya di sidebar) supaya
+                         panduan video mudah ditemukan. Titik "Baru" hilang setelah halaman
+                         Tutorial pernah dibuka di browser ini. --}}
+                    @php
+                        $tutorialUrl = (Route::has('unit.tutorials.index') && $slugUnitAktif)
+                            ? route('unit.tutorials.index', ['unit' => $slugUnitAktif])
+                            : (auth()->user()->isMasterAdmin() && Route::has('master.tutorials.index') ? route('master.tutorials.index') : null);
+                        $tutorialActive = request()->routeIs('unit.tutorials.*');
+                    @endphp
+                    @if ($tutorialUrl)
+                        <a wire:navigate href="{{ $tutorialUrl }}" data-tour="tutorial-link"
+                           x-data="{ seen: true }"
+                           x-init="try { seen = localStorage.getItem('usman-tutorial-seen') === '1'; } catch (e) {}; if (@js($tutorialActive)) { try { localStorage.setItem('usman-tutorial-seen', '1'); } catch (e) {}; seen = true; }"
+                           title="Tutorial video panduan"
+                           class="relative inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-semibold rounded-lg transition-colors focus:outline-none {{ $tutorialActive ? 'text-blue-900 dark:text-sky-300 bg-blue-100 dark:bg-blue-950/60' : 'text-blue-900 dark:text-sky-300 bg-blue-50 dark:bg-blue-950/40 hover:bg-blue-100 dark:hover:bg-blue-950/70' }}">
+                            <x-heroicon-o-play-circle class="w-4 h-4" />
+                            <span class="hidden sm:inline">Tutorial</span>
+                            <span x-show="!seen" x-cloak style="display: none;" class="absolute -top-1 -right-1 flex h-2.5 w-2.5">
+                                <span class="absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75 animate-ping"></span>
+                                <span class="relative inline-flex h-2.5 w-2.5 rounded-full bg-rose-500"></span>
+                            </span>
+                        </a>
+                    @endif
+
                     {{-- PEMANGGILAN KOMPONEN LIVEWIRE --}}
                     @php
                         // Sama seperti $viewAllUrl di components.layouts.app: sebelumnya

@@ -2,18 +2,20 @@
     <livewire:page-tour tour="documents.signature" />
 
     @php
-        // PERBAIKAN: sebelumnya dicek dari ROLE user (hasRole('unit-admin')),
-        // yang salah saat Master Admin memantau (membuka) halaman Dokumen
-        // Resmi milik sebuah unit -- Master Admin tidak punya role unit-admin,
-        // jadi kondisi ini akan salah menganggap dia sedang di halaman Master
-        // sendiri. Konteks yang benar adalah ROUTE yang sedang aktif, bukan
-        // role -- karena itu dicek dari request()->routeIs('unit.*').
-        $isUnitAdmin = request()->routeIs('unit.*');
-        $docsPrefix = $isUnitAdmin ? 'unit.documents.' : 'master.documents.';
-        // Slug diambil dari unit yang SEDANG DIBUKA (route-model-binding
-        // {unit:slug}), bukan dari unit milik user login -- supaya tetap
-        // benar saat dibuka Master Admin yang sedang memantau unit lain.
-        $docsParams = $isUnitAdmin ? ['unit' => request()->route('unit')?->slug] : [];
+        // Konteks Master/Unit TIDAK dicek dari role user (Master Admin yang
+        // memantau unit tidak punya role unit-admin).
+        // Konteks ditentukan dari KOMPONEN yang merender view ini (komponen Unit
+        // memakai trait ScopedToUnit), BUKAN dari request()->route(): pada request
+        // aksi Livewire (cari, pilih jenis dokumen, dst.) route yang aktif adalah
+        // /livewire/update sehingga routeIs('unit.*') bernilai false dan tautan
+        // berpindah diam-diam ke route master (403 untuk Admin Unit).
+        // Slug unit diambil dari $lockedUnitId (properti publik yang dipertahankan
+        // Livewire), jadi tetap benar saat Master Admin memantau unit tertentu.
+        $isUnitAdmin = in_array(\App\Livewire\Unit\Concerns\ScopedToUnit::class, class_uses_recursive($this), true);
+        $docsPrefix  = $isUnitAdmin ? 'unit.documents.' : 'master.documents.';
+        $docsParams  = $isUnitAdmin
+            ? ['unit' => \App\Models\Unit::whereKey($this->lockedUnitId)->value('slug')]
+            : [];
     @endphp
 
     <a href="{{ route($docsPrefix.'index', $docsParams) }}" class="inline-flex items-center gap-1 text-xs font-semibold text-neutral-500 hover:text-[#0d3b74] dark:hover:text-sky-400 transition-colors">

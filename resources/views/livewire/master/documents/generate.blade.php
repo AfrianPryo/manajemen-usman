@@ -1,7 +1,26 @@
 <div class="w-full max-w-3xl mx-auto space-y-5 text-neutral-800 dark:text-neutral-100 px-4 py-4 sm:px-6 font-sans">
     <livewire:page-tour tour="documents.generate" />
 
-    <a href="{{ route('master.documents.index') }}" class="inline-flex items-center gap-1 text-xs font-semibold text-neutral-500 hover:text-[#0d3b74] dark:hover:text-sky-400 transition-colors">
+    @php
+        // PERBAIKAN: view ini dipakai bersama oleh Master & Unit, tetapi tautannya
+        // dulu ditulis permanen ke route 'master.documents.*'. Untuk Admin Unit,
+        // route itu ditolak middleware role (403) dan tidak membawa parameter
+        // {unit} -- sehingga sub-halaman Dokumen tidak bisa dibuka. Konteks
+        // Konteks ditentukan dari KOMPONEN yang merender view ini (komponen Unit
+        // memakai trait ScopedToUnit), BUKAN dari request()->route(): pada request
+        // aksi Livewire (cari, pilih jenis dokumen, dst.) route yang aktif adalah
+        // /livewire/update sehingga routeIs('unit.*') bernilai false dan tautan
+        // berpindah diam-diam ke route master (403 untuk Admin Unit).
+        // Slug unit diambil dari $lockedUnitId (properti publik yang dipertahankan
+        // Livewire), jadi tetap benar saat Master Admin memantau unit tertentu.
+        $isUnitAdmin = in_array(\App\Livewire\Unit\Concerns\ScopedToUnit::class, class_uses_recursive($this), true);
+        $docsPrefix  = $isUnitAdmin ? 'unit.documents.' : 'master.documents.';
+        $docsParams  = $isUnitAdmin
+            ? ['unit' => \App\Models\Unit::whereKey($this->lockedUnitId)->value('slug')]
+            : [];
+    @endphp
+
+    <a href="{{ route($docsPrefix.'index', $docsParams) }}" class="inline-flex items-center gap-1 text-xs font-semibold text-neutral-500 hover:text-[#0d3b74] dark:hover:text-sky-400 transition-colors">
         <x-heroicon-o-arrow-left class="w-3.5 h-3.5" />
         Kembali ke Menu Laporan
     </a>
@@ -50,8 +69,8 @@
                     @if ($type && $templates->isEmpty())
                         <p class="text-[11px] text-amber-600 dark:text-amber-400 mt-1">
                             Belum ada template aktif untuk jenis dokumen ini.
-                            @if (Route::has('master.documents.templates'))
-                                <a href="{{ route('master.documents.templates') }}" class="underline hover:text-amber-800 dark:hover:text-amber-300">Kelola template</a>
+                            @if (Route::has($docsPrefix.'templates'))
+                                <a href="{{ route($docsPrefix.'templates', $docsParams) }}" class="underline hover:text-amber-800 dark:hover:text-amber-300">Kelola template</a>
                             @endif
                         </p>
                     @endif
@@ -80,8 +99,8 @@
                     @if ($signatures->isEmpty())
                         <p class="text-[11px] text-amber-600 dark:text-amber-400 mt-1">
                             Anda belum memiliki profil tanda tangan.
-                            @if (Route::has('master.documents.signature'))
-                                <a href="{{ route('master.documents.signature') }}" class="underline hover:text-amber-800 dark:hover:text-amber-300">Buat sekarang</a>
+                            @if (Route::has($docsPrefix.'signature'))
+                                <a href="{{ route($docsPrefix.'signature', $docsParams) }}" class="underline hover:text-amber-800 dark:hover:text-amber-300">Buat sekarang</a>
                             @endif
                         </p>
                     @endif

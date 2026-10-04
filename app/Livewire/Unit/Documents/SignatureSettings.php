@@ -3,6 +3,7 @@
 namespace App\Livewire\Unit\Documents;
 
 use App\Livewire\Master\Documents\SignatureSettings as MasterSignatureSettings;
+use App\Livewire\Unit\Concerns\ScopedToUnit;
 use Livewire\Attributes\Layout;
 
 /**
@@ -22,5 +23,9 @@ use Livewire\Attributes\Layout;
 ])]
 class SignatureSettings extends MasterSignatureSettings
 {
-    //
+    // Trait ini TIDAK mengubah scoping data (profil tanda tangan tetap per
+    // user_id). Dipakai agar view bersama (Master & Unit) bisa mengenali
+    // konteks Unit dan unit yang sedang dibuka, sehingga tautan "Kembali"
+    // tetap menuju route unit.documents.* walau terjadi request Livewire.
+    use ScopedToUnit;
 }

@@ -136,6 +136,18 @@ return [
         ],
     ],
 
+    // ================= BANTUAN (MASTER) =================
+    // Halaman 'Tutorial' berisi video panduan. Master Admin melihat SEMUA
+    // kelompok (Master, Unit, tambahan Jasa); isinya diatur di
+    // config/tutorials.php. Komponen: App\Livewire\Master\Tutorials\Index.
+    [
+        'label' => 'Bantuan',
+        'roles' => ['master-admin'],
+        'children' => [
+            ['label' => 'Tutorial', 'route' => 'master.tutorials.index', 'icon' => 'play-circle', 'roles' => ['master-admin']],
+        ],
+    ],
+
     // ================= SETTINGS (MASTER) =================
     // Catatan: dulu ada 2 item di sini -- "Pengaturan Sistem"
     // (master.settings.index) dan "Profil Saya" (master.profile.index) --
@@ -276,6 +288,19 @@ return [
         'roles' => ['unit-admin'],
         'children' => [
             ['label' => 'Aktivitas', 'route' => 'unit.activities.index', 'icon' => 'clock', 'roles' => ['unit-admin']],
+        ],
+    ],
+
+    // ================= BANTUAN (UNIT-ADMIN) =================
+    // Pasangan 'Tutorial' milik Master. TIDAK diberi key 'unit_category':
+    // menu ini tampil di semua kategori unit; yang disaring per kategori
+    // (mis. tutorial tambahan 'jasa') adalah ISI halamannya, di sisi server
+    // -- lihat App\Livewire\Unit\Tutorials\Index & config/tutorials.php.
+    [
+        'label' => 'Bantuan',
+        'roles' => ['unit-admin'],
+        'children' => [
+            ['label' => 'Tutorial', 'route' => 'unit.tutorials.index', 'icon' => 'play-circle', 'roles' => ['unit-admin']],
         ],
     ],
 

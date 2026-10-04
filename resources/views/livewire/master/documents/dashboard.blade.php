@@ -1,6 +1,25 @@
 <div class="w-full max-w-[1500px] mx-auto space-y-5 text-neutral-800 dark:text-neutral-100 px-4 py-4 sm:px-6 font-sans">
     <livewire:page-tour tour="documents.hub" />
 
+    @php
+        // PERBAIKAN: view ini dipakai bersama oleh Master & Unit, tetapi tautannya
+        // dulu ditulis permanen ke route 'master.documents.*'. Untuk Admin Unit,
+        // route itu ditolak middleware role (403) dan tidak membawa parameter
+        // {unit} -- sehingga sub-halaman Dokumen tidak bisa dibuka. Konteks
+        // Konteks ditentukan dari KOMPONEN yang merender view ini (komponen Unit
+        // memakai trait ScopedToUnit), BUKAN dari request()->route(): pada request
+        // aksi Livewire (cari, pilih jenis dokumen, dst.) route yang aktif adalah
+        // /livewire/update sehingga routeIs('unit.*') bernilai false dan tautan
+        // berpindah diam-diam ke route master (403 untuk Admin Unit).
+        // Slug unit diambil dari $lockedUnitId (properti publik yang dipertahankan
+        // Livewire), jadi tetap benar saat Master Admin memantau unit tertentu.
+        $isUnitAdmin = in_array(\App\Livewire\Unit\Concerns\ScopedToUnit::class, class_uses_recursive($this), true);
+        $docsPrefix  = $isUnitAdmin ? 'unit.documents.' : 'master.documents.';
+        $docsParams  = $isUnitAdmin
+            ? ['unit' => \App\Models\Unit::whereKey($this->lockedUnitId)->value('slug')]
+            : [];
+    @endphp
+
     {{--
         Heading atas DISAMAKAN dengan pola header "Dashboard Master Admin":
         dibungkus kartu putih ber-border + shadow-sm, judul text-md font-bold
@@ -73,8 +92,8 @@
         interaksi "kartu bisa diklik" konsisten dengan kartu Unit Usaha di
         Dashboard Master Admin, bukan cuma ganti warna border.
     --}}
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <a href="{{ route('master.documents.generate') }}" data-tour="docs-card-generate" class="bg-white dark:bg-slate-800 rounded-sm border border-neutral-100 dark:border-slate-700 shadow-sm shadow-black/[0.02] p-5 hover:border-blue-200 dark:hover:border-blue-800/60 hover:shadow-md transition-all">
+    <div class="grid grid-cols-1 sm:grid-cols-2 {{ Route::has($docsPrefix.'templates') ? 'lg:grid-cols-4' : 'lg:grid-cols-3' }} gap-4">
+        <a href="{{ route($docsPrefix.'generate', $docsParams) }}" data-tour="docs-card-generate" class="bg-white dark:bg-slate-800 rounded-sm border border-neutral-100 dark:border-slate-700 shadow-sm shadow-black/[0.02] p-5 hover:border-blue-200 dark:hover:border-blue-800/60 hover:shadow-md transition-all">
             <span class="w-9 h-9 rounded-sm bg-blue-50 dark:bg-blue-950/40 text-[#0d3b74] dark:text-blue-400 flex items-center justify-center">
                 <x-heroicon-o-document-plus class="w-4 h-4" />
             </span>
@@ -82,7 +101,7 @@
             <p class="mt-1 text-[11px] text-neutral-400">Generate dokumen resmi baru dari data sistem.</p>
         </a>
 
-        <a href="{{ route('master.documents.history') }}" data-tour="docs-card-history" class="bg-white dark:bg-slate-800 rounded-sm border border-neutral-100 dark:border-slate-700 shadow-sm shadow-black/[0.02] p-5 hover:border-blue-200 dark:hover:border-blue-800/60 hover:shadow-md transition-all">
+        <a href="{{ route($docsPrefix.'history', $docsParams) }}" data-tour="docs-card-history" class="bg-white dark:bg-slate-800 rounded-sm border border-neutral-100 dark:border-slate-700 shadow-sm shadow-black/[0.02] p-5 hover:border-blue-200 dark:hover:border-blue-800/60 hover:shadow-md transition-all">
             <span class="w-9 h-9 rounded-sm bg-neutral-100 dark:bg-slate-900 text-neutral-500 dark:text-neutral-400 flex items-center justify-center">
                 <x-heroicon-o-clock class="w-4 h-4" />
             </span>
@@ -90,15 +109,17 @@
             <p class="mt-1 text-[11px] text-neutral-400">{{ number_format($totalDocuments) }} dokumen sudah dibuat.</p>
         </a>
 
-        <a href="{{ route('master.documents.templates') }}" data-tour="docs-card-templates" class="bg-white dark:bg-slate-800 rounded-sm border border-neutral-100 dark:border-slate-700 shadow-sm shadow-black/[0.02] p-5 hover:border-blue-200 dark:hover:border-blue-800/60 hover:shadow-md transition-all">
+        @if (Route::has($docsPrefix.'templates'))
+        <a href="{{ route($docsPrefix.'templates', $docsParams) }}" data-tour="docs-card-templates" class="bg-white dark:bg-slate-800 rounded-sm border border-neutral-100 dark:border-slate-700 shadow-sm shadow-black/[0.02] p-5 hover:border-blue-200 dark:hover:border-blue-800/60 hover:shadow-md transition-all">
             <span class="w-9 h-9 rounded-sm bg-neutral-100 dark:bg-slate-900 text-neutral-500 dark:text-neutral-400 flex items-center justify-center">
                 <x-heroicon-o-document-duplicate class="w-4 h-4" />
             </span>
             <h3 class="mt-4 text-sm font-bold text-neutral-900 dark:text-white">Kelola Template</h3>
             <p class="mt-1 text-[11px] text-neutral-400">Atur template Word ber-KOP surat per jenis dokumen.</p>
         </a>
+        @endif
 
-        <a href="{{ route('master.documents.signature') }}" data-tour="docs-card-signature" class="bg-white dark:bg-slate-800 rounded-sm border border-neutral-100 dark:border-slate-700 shadow-sm shadow-black/[0.02] p-5 hover:border-blue-200 dark:hover:border-blue-800/60 hover:shadow-md transition-all">
+        <a href="{{ route($docsPrefix.'signature', $docsParams) }}" data-tour="docs-card-signature" class="bg-white dark:bg-slate-800 rounded-sm border border-neutral-100 dark:border-slate-700 shadow-sm shadow-black/[0.02] p-5 hover:border-blue-200 dark:hover:border-blue-800/60 hover:shadow-md transition-all">
             <span class="w-9 h-9 rounded-sm bg-neutral-100 dark:bg-slate-900 text-neutral-500 dark:text-neutral-400 flex items-center justify-center">
                 <x-heroicon-o-pencil-square class="w-4 h-4" />
             </span>
@@ -120,7 +141,7 @@
                 <h2 class="text-base font-bold text-neutral-900 dark:text-white">Dokumen Terbaru</h2>
                 <p class="text-xs text-neutral-400 mt-0.5">Lima dokumen resmi terakhir yang dibuat</p>
             </div>
-            <a href="{{ route('master.documents.history') }}" class="text-xs font-bold text-[#0d3b74] dark:text-white hover:text-blue-700 dark:hover:text-neutral-300 transition-colors shrink-0">
+            <a href="{{ route($docsPrefix.'history', $docsParams) }}" class="text-xs font-bold text-[#0d3b74] dark:text-white hover:text-blue-700 dark:hover:text-neutral-300 transition-colors shrink-0">
                 Lihat Semua &rarr;
             </a>
         </div>

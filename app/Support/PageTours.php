@@ -65,6 +65,39 @@ class PageTours
     }
 
     /**
+     * Tautan sub-halaman Dokumen Resmi yang sadar konteks: di halaman Unit
+     * (route unit.*) mengarah ke unit.documents.{page} lengkap dengan slug
+     * unit yang sedang dibuka; selain itu tetap ke master.documents.{page}.
+     * Mengembalikan null bila route-nya tidak ada (mis. Kelola Template
+     * yang memang hanya milik Master), sama seperti href().
+     */
+    private static function docsHref(string $page): ?string
+    {
+        if (request()->routeIs('unit.*')) {
+            $unit = request()->route('unit');
+            $slug = is_object($unit) ? ($unit->slug ?? null) : (is_string($unit) ? $unit : null);
+            $name = 'unit.documents.' . $page;
+
+            return ($slug && Route::has($name)) ? route($name, ['unit' => $slug]) : null;
+        }
+
+        return static::href('master.documents.' . $page);
+    }
+
+    /** Tautan halaman Tutorial yang sadar konteks (unit.* butuh slug unit yang sedang dibuka). */
+    private static function tutorialHref(): ?string
+    {
+        if (request()->routeIs('unit.*')) {
+            $unit = request()->route('unit');
+            $slug = is_object($unit) ? ($unit->slug ?? null) : (is_string($unit) ? $unit : null);
+
+            return ($slug && Route::has('unit.tutorials.index')) ? route('unit.tutorials.index', ['unit' => $slug]) : null;
+        }
+
+        return static::href('master.tutorials.index');
+    }
+
+    /**
      * Kolom pencarian umum: atribut wire:model-nya bervariasi antar halaman
      * (debounce 300ms / 400ms), jadi dicocokkan lewat daftar selector.
      */
@@ -96,13 +129,13 @@ class PageTours
                         'Dokumen dibuat dari tiga bahan: template (kop surat), profil tanda tangan, dan data singkat yang Anda isi. Siapkan template dan tanda tangan sekali saja, setelah itu membuat dokumen tinggal beberapa klik.'),
                     static::step('[data-tour="docs-card-templates"]', 'Langkah 1: Siapkan template',
                         'Unggah kop surat (.docx) untuk tiap jenis dokumen. Isi surat dibuat otomatis oleh sistem, jadi file Word cukup berisi kop dan pengaturan halaman.',
-                        ['cta' => 'Kelola Template', 'href' => static::href('master.documents.templates')]),
+                        ['cta' => 'Kelola Template', 'href' => static::docsHref('templates')]),
                     static::step('[data-tour="docs-card-signature"]', 'Langkah 2: Siapkan tanda tangan',
                         'Isi nama, jabatan, dan gambar tanda tangan pejabat. Profil ini dipilih saat membuat dokumen.',
-                        ['cta' => 'Atur Tanda Tangan', 'href' => static::href('master.documents.signature')]),
+                        ['cta' => 'Atur Tanda Tangan', 'href' => static::docsHref('signature')]),
                     static::step('[data-tour="docs-card-generate"]', 'Langkah 3: Buat dokumen',
                         'Pilih jenis dokumen, template, dan penanda tangan, lengkapi datanya, lalu tekan Buat Dokumen. Nomor surat diberikan otomatis.',
-                        ['cta' => 'Buat Dokumen', 'href' => static::href('master.documents.generate')]),
+                        ['cta' => 'Buat Dokumen', 'href' => static::docsHref('generate')]),
                     static::step('[data-tour="docs-card-history"]', 'Langkah 4: Unduh dan arsip',
                         'Setiap dokumen yang dibuat tercatat di Riwayat Dokumen beserta nomor suratnya, dan bisa diunduh kembali kapan saja.'),
                 ],
@@ -530,6 +563,9 @@ class PageTours
                         'Cari transaksi terbaru langsung dari dashboard. Catat transaksi baru lewat menu Transaksi di sidebar.'),
                     static::step(static::click('export'), 'Export dashboard',
                         'Unduh ringkasan dashboard sebagai file Excel.'),
+                    static::step('[data-tour="tutorial-link"]', 'Butuh bantuan? Tonton tutorial',
+                        'Video panduan singkat tersedia kapan saja lewat tombol Tutorial di pojok kanan atas. Mulai dari materi pertama agar tidak ada yang terlewat.',
+                        ['cta' => 'Buka Tutorial', 'href' => static::tutorialHref()]),
                 ],
             ],
         ];

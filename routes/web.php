@@ -203,6 +203,8 @@ Route::middleware(['auth', 'user.active', 'single.session', EnsureSessionNotExpi
             // dengan Aktivitas & Audit Log.
             Route::get('/pengumuman', AnnouncementsIndex::class)->name('announcements.index');
 
+            Route::get('/tutorial', \App\Livewire\Master\Tutorials\Index::class)->name('tutorials.index');
+
             // ================= NOTIFIKASI (PUSAT NOTIFIKASI MASTER ADMIN) =================
             // Menampilkan seluruh notifikasi sistem (App\Notifications\SystemNotification)
             // yang diterima Master Admin -- baik alert otomatis (stok/aset) maupun histori
