@@ -24,10 +24,11 @@ return new class extends Migration
             $table->text('notes')->nullable();
             $table->timestamps();
 
-            // Dipakai syncAllAssetNotifications() untuk mencari aset yang
-            // statusnya/kondisinya alert-worthy (maintenance, damaged, dst).
+            // syncAllAssetNotifications(): aset yang statusnya/kondisinya alert-worthy.
             $table->index('status');
             $table->index('condition');
+            $table->index('category', 'assets_category_idx');
+            $table->index(['unit_id', 'status'], 'assets_unit_status_idx');
         });
     }
 

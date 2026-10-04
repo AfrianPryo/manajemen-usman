@@ -5,13 +5,9 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * Tabel riwayat "Pengumuman" yang dikirim Master Admin ke seluruh Unit
- * Admin. Pengiriman aktualnya tetap memakai infrastruktur notifikasi yang
- * sudah ada (App\Notifications\SystemNotification, kolom database di tabel
- * `notifications` bawaan Laravel) -- tabel ini HANYA menyimpan jejak/
- * riwayat pengumuman itu sendiri (siapa mengirim, kapan, ke berapa admin),
- * supaya Master Admin bisa melihat kembali pengumuman apa saja yang pernah
- * dikirim, mirip halaman "Riwayat" pada modul Dokumen Resmi.
+ * Riwayat "Pengumuman" Master Admin ke seluruh Unit Admin. Pengiriman aktual
+ * memakai SystemNotification (tabel `notifications`); tabel ini HANYA menyimpan
+ * jejak: siapa mengirim, kapan, ke berapa admin.
  */
 return new class extends Migration
 {

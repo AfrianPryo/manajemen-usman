@@ -6,9 +6,6 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('recurring_transactions', function (Blueprint $table) {
@@ -26,12 +23,12 @@ return new class extends Migration
             $table->enum('status', ['active', 'paused'])->default('active');
             $table->text('notes')->nullable();
             $table->timestamps();
+
+            // Job harian recurring:process.
+            $table->index(['status', 'next_run_date'], 'recurring_status_next_run_idx');
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('recurring_transactions');

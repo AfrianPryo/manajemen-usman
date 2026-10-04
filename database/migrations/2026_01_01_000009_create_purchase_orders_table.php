@@ -5,21 +5,15 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * Tabel untuk modul "Pembelian" (Purchase Order ke Vendor/Supplier).
+ * Modul "Pembelian" (Purchase Order ke Vendor/Supplier).
  *
- * Menjembatani gap yang sebelumnya ada antara App\Models\Vendor dan
- * App\Models\FinanceTransaction (tidak ada kolom vendor_id sama sekali di
- * finance_transactions) -- lihat catatan di App\Livewire\Unit\Purchasing\Index.
+ * 'items' disimpan sebagai JSON (bukan tabel purchase_order_items) berisi
+ * baris pembelian: product_id (nullable), name, qty, unit_price, subtotal.
+ * Item tanpa product_id tetap sah (mis. beli jasa/utilitas) -- hanya ikut
+ * ke total FinanceTransaction, tanpa StockMovement.
  *
- * 'items' disimpan sebagai JSON (bukan tabel purchase_order_items terpisah)
- * berisi array baris pembelian: product_id (nullable, untuk item yang
- * memang produk bertsok), name, qty, unit_price, subtotal. Item TANPA
- * product_id tetap sah (mis. beli jasa/utilitas dari vendor) -- baris itu
- * hanya berkontribusi ke total FinanceTransaction, tanpa StockMovement.
- *
- * 'finance_transaction_id' & status memungkinkan pembelian DIBATALKAN
- * (status 'cancelled') dengan tetap menyisakan jejak audit yang jelas,
- * bukan dihapus begitu saja -- lihat cancelPurchase() di komponen Unit.
+ * Pembelian dibatalkan lewat status 'cancelled' (bukan dihapus) supaya
+ * jejak audit tetap ada -- lihat cancelPurchase() di komponen Unit.
  */
 return new class extends Migration
 {
@@ -28,7 +22,7 @@ return new class extends Migration
         Schema::create('purchase_orders', function (Blueprint $table) {
             $table->id();
             $table->foreignId('unit_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('vendor_id')->constrained()->restrictOnDelete();
+            $table->foreignId('vendor_id')->index()->constrained()->restrictOnDelete();
             $table->foreignId('user_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignId('finance_transaction_id')->nullable()->constrained('finance_transactions')->nullOnDelete();
             $table->string('po_number')->unique();
@@ -41,7 +35,9 @@ return new class extends Migration
             $table->timestamps();
 
             $table->index(['unit_id', 'status']);
-            $table->index(['vendor_id']);
+            // Total belanja bulan berjalan & daftar pembelian urut tanggal.
+            $table->index(['status', 'purchased_at'], 'po_status_purchased_at_idx');
+            $table->index(['unit_id', 'purchased_at'], 'po_unit_purchased_at_idx');
         });
     }
 

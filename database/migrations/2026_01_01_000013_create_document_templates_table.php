@@ -10,13 +10,13 @@ return new class extends Migration
     {
         Schema::create('document_templates', function (Blueprint $table) {
             $table->id();
-            // Jenis dokumen: finance_report, surat_keterangan, berita_acara_aset, laporan_konsolidasi
+            // finance_report, surat_keterangan, berita_acara_aset, laporan_konsolidasi
             $table->string('type');
             $table->string('name');
             $table->text('description')->nullable();
-            // Path file .docx yang berisi placeholder ${...}, di-upload Master Admin
+            // Path file .docx berisi placeholder ${...}, di-upload Master Admin.
             $table->string('file_path');
-            // Dokumentasi placeholder yang tersedia untuk jenis ini (untuk ditampilkan di UI)
+            // Dokumentasi placeholder yang tersedia untuk jenis ini (ditampilkan di UI).
             $table->json('placeholders')->nullable();
             // Format penomoran surat, contoh: {nomor}/UN/TEFA/{bulan_romawi}/{tahun}
             $table->string('numbering_format')->default('{nomor}/UN/TEFA/{bulan_romawi}/{tahun}');

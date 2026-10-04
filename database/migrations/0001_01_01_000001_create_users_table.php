@@ -4,6 +4,13 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
+/**
+ * Akun pengguna + sesi login.
+ *
+ * Tabel `password_reset_tokens` bawaan Laravel SENGAJA tidak dibuat: aplikasi
+ * ini tidak memakai password broker (reset password dilakukan lewat
+ * permintaan ke Master Admin / OTP WhatsApp, bukan tautan email).
+ */
 return new class extends Migration
 {
     public function up(): void
@@ -15,33 +22,35 @@ return new class extends Migration
             $table->string('email')->unique()->nullable();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
-            
-            $table->foreignId('unit_id')->nullable()->constrained('units')->nullOnDelete();
-            
-            // Informasi Personel
+
+            $table->foreignId('unit_id')->nullable()->index()->constrained('units')->nullOnDelete();
+
+            // Informasi personel
             $table->string('nip')->nullable()->unique();
             $table->string('phone')->nullable();
             $table->string('employee_status')->default('nip'); // nip, non_nip
             $table->string('profile_photo_path', 2048)->nullable();
-            
-            // Status Akun & Keamanan
+
+            // Status akun & keamanan
             $table->boolean('is_active')->default(true);
             $table->boolean('must_change_password')->default(true);
-            
-            // Session Check & Logging
+
+            // Tutorial/onboarding.
+            //  - onboarding_completed_at: NULL = tutorial setup awal Dashboard Master
+            //    belum pernah ditutup. (MasterAdminSeeder sengaja TIDAK mengisinya.)
+            //  - completed_tours: daftar tutorial kontekstual (PageTours) yang sudah
+            //    selesai/dilewati, mis. ["documents.generate", "documents.signature"].
+            $table->timestamp('onboarding_completed_at')->nullable();
+            $table->json('completed_tours')->nullable();
+
+            // Session check & logging
             $table->string('current_session_id')->nullable();
             $table->timestamp('last_login_at')->nullable();
             $table->string('last_login_ip', 45)->nullable();
-            
+
             $table->rememberToken();
             $table->timestamps();
             $table->softDeletes();
-        });
-
-        Schema::create('password_reset_tokens', function (Blueprint $table) {
-            $table->string('email')->primary();
-            $table->string('token');
-            $table->timestamp('created_at')->nullable();
         });
 
         Schema::create('sessions', function (Blueprint $table) {
@@ -57,7 +66,6 @@ return new class extends Migration
     public function down(): void
     {
         Schema::dropIfExists('sessions');
-        Schema::dropIfExists('password_reset_tokens');
         Schema::dropIfExists('users');
     }
 };

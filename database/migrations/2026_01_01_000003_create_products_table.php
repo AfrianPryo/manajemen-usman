@@ -23,12 +23,13 @@ return new class extends Migration
             $table->string('image')->nullable();
             $table->timestamps();
 
-            // Kode barang unik khusus per unit usaha
+            // Kode barang unik khusus per unit usaha.
             $table->unique(['unit_id', 'code']);
 
-            // Dipakai syncAllStockNotifications() untuk mencari produk yang
-            // stoknya di bawah/​sama dengan ambang batas.
+            // syncAllStockNotifications(): cari produk dengan stok <= ambang batas.
             $table->index('stock');
+            // Daftar produk per unit, urut nama.
+            $table->index(['unit_id', 'name'], 'products_unit_name_idx');
         });
     }
 

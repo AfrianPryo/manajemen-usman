@@ -14,13 +14,13 @@ return new class extends Migration
             $table->string('type');
             $table->string('document_number')->unique();
             $table->string('title');
-            $table->string('subject')->nullable(); // Perihal
+            $table->string('subject')->nullable();   // Perihal
             $table->string('recipient')->nullable(); // Ditujukan kepada
             $table->foreignId('unit_id')->nullable()->constrained('units')->nullOnDelete();
             $table->date('period_start')->nullable();
             $table->date('period_end')->nullable();
-            // Snapshot lengkap data yang digunakan saat generate — untuk audit trail,
-            // supaya nilai di dokumen tidak pernah "berubah sendiri" walau data sumber berubah.
+            // Snapshot lengkap data saat generate (audit trail): nilai di dokumen
+            // tidak "berubah sendiri" walau data sumber berubah.
             $table->json('data_snapshot');
             $table->string('file_path'); // hasil .docx yang sudah jadi
             $table->string('signed_by_name')->nullable();
@@ -31,6 +31,8 @@ return new class extends Migration
             $table->timestamps();
 
             $table->index(['type', 'generated_at']);
+            // Riwayat dokumen urut terbaru.
+            $table->index('generated_at', 'docs_generated_at_idx');
         });
     }
 

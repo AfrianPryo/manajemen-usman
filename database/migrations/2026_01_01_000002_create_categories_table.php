@@ -4,15 +4,18 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
+/**
+ * Kategori produk milik unit ritel. (Kolom `description` lama dibuang:
+ * tidak pernah diisi maupun dibaca oleh kode mana pun.)
+ */
 return new class extends Migration
 {
     public function up(): void
     {
         Schema::create('categories', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('unit_id')->constrained()->cascadeOnDelete(); // Tambahkan ini
+            $table->foreignId('unit_id')->constrained()->cascadeOnDelete();
             $table->string('name');
-            $table->text('description')->nullable();
             $table->timestamps();
         });
     }

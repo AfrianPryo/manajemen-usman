@@ -11,16 +11,18 @@ return new class extends Migration
         Schema::create('audit_logs', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->nullable()->constrained()->nullOnDelete();
-            $table->string('event'); // Contoh: 'PRODUCT_CREATED', 'STOCK_ADJUSTED', 'CATEGORY_DELETED'
-            $table->string('identifier')->nullable(); // Kode/SKU/ID entitas (misal: 'PRD-001')
-            $table->text('description')->nullable(); // Penjelasan aksi
-            $table->json('old_values')->nullable(); // Snapshot data sebelum diubah
-            $table->json('new_values')->nullable(); // Snapshot data setelah diubah
+            $table->string('event');                   // mis. PRODUCT_CREATED, STOCK_ADJUSTED, CATEGORY_DELETED
+            $table->string('identifier')->nullable();  // kode/SKU/ID entitas (mis. PRD-001)
+            $table->text('description')->nullable();   // penjelasan aksi
+            $table->json('old_values')->nullable();    // snapshot sebelum diubah
+            $table->json('new_values')->nullable();    // snapshot setelah diubah
             $table->string('ip_address', 45)->nullable();
             $table->string('user_agent')->nullable();
             $table->timestamps();
 
             $table->index(['event', 'created_at']);
+            // ORDER BY created_at DESC, filter rentang tanggal, dan arsip berdasar retensi.
+            $table->index('created_at', 'audit_created_at_idx');
         });
     }
 

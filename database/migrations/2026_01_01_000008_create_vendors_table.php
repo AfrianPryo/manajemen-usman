@@ -6,9 +6,6 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('vendors', function (Blueprint $table) {
@@ -22,16 +19,13 @@ return new class extends Migration
             $table->string('website')->nullable();
             $table->text('address')->nullable();
             $table->string('id_number')->nullable();
-            $table->date('contract_start_date')->nullable(); // <-- Mulai Kontrak
-            $table->date('contract_end_date')->nullable();   // <-- Selesai Kontrak
+            $table->date('contract_start_date')->nullable();
+            $table->date('contract_end_date')->nullable();
             $table->softDeletes();
             $table->timestamps();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('vendors');

@@ -10,8 +10,10 @@ return new class extends Migration
     {
         Schema::create('auth_logs', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->nullable()->constrained()->nullOnDelete();
-            $table->string('event'); // login.success, login.failed, logout, access.forbidden, password.changed
+            // Di-index eksplisit: dipakai eager load with('user') & filter per user.
+            $table->foreignId('user_id')->nullable()->index()->constrained()->nullOnDelete();
+            // login.success, login.failed, logout, access.forbidden, password.changed
+            $table->string('event');
             $table->string('identifier')->nullable();
             $table->text('description')->nullable();
             $table->string('ip_address', 45)->nullable();
@@ -19,6 +21,7 @@ return new class extends Migration
             $table->timestamp('created_at')->useCurrent();
 
             $table->index(['event', 'created_at']);
+            $table->index('created_at', 'auth_created_at_idx');
         });
     }
 

@@ -12,7 +12,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('document_template_id')->constrained()->cascadeOnDelete();
             $table->unsignedSmallInteger('year');
-            // null jika numbering_reset = 'yearly' atau 'never'
+            // NULL jika numbering_reset = 'yearly' atau 'never'.
             $table->unsignedTinyInteger('month')->nullable();
             $table->unsignedInteger('last_number')->default(0);
             $table->timestamps();
