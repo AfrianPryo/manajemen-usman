@@ -346,7 +346,8 @@ class Index extends Component
             ->latest()
             ->paginate(10);
 
-        $units = Unit::all();
+        // PERF-18: select hanya kolom yang dipakai dropdown, hindari load semua kolom
+        $units = Unit::select('id', 'name')->orderBy('name')->get();
 
         return view('livewire.master.users.index', [
             'users' => $users,

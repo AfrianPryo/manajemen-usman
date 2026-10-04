@@ -44,6 +44,8 @@ use App\Livewire\Unit\Purchasing\Index as UnitPurchasingIndex;
 use App\Livewire\Unit\RecurringTransaction\Index as UnitRecurringTransactionIndex;
 use App\Livewire\Unit\ServiceOrder\Index as UnitServiceOrderIndex;
 use App\Livewire\Unit\Transactions\Index as UnitTransactionsIndex;
+use App\Livewire\Unit\Tutorials\Index as UnitTutorialsIndex;
+use App\Livewire\Master\Tutorials\Index as MasterTutorialsIndex;
 use App\Http\Controllers\DashboardRedirectController;
 use App\Http\Controllers\DeployController;
 use App\Http\Controllers\LogoutController;
@@ -203,7 +205,7 @@ Route::middleware(['auth', 'user.active', 'single.session', EnsureSessionNotExpi
             // dengan Aktivitas & Audit Log.
             Route::get('/pengumuman', AnnouncementsIndex::class)->name('announcements.index');
 
-            Route::get('/tutorial', \App\Livewire\Master\Tutorials\Index::class)->name('tutorials.index');
+            Route::get('/tutorial', MasterTutorialsIndex::class)->name('tutorials.index');
 
             // ================= NOTIFIKASI (PUSAT NOTIFIKASI MASTER ADMIN) =================
             // Menampilkan seluruh notifikasi sistem (App\Notifications\SystemNotification)
@@ -355,6 +357,11 @@ Route::middleware(['auth', 'user.active', 'single.session', EnsureSessionNotExpi
             // 'activities.index' dan sebelum Settings, sejajar posisi 'notifications.index'
             // di grup Master.
             Route::get('/notifications', UnitNotificationsIndex::class)->name('notifications.index');
+
+            // Tutorial (pasangan unit dari 'master.tutorials.index' -- BUG-01 fix:
+            // route ini sebelumnya tidak terdaftar sehingga menu Tutorial Unit Admin
+            // selalu menghasilkan RouteNotFoundException.)
+            Route::get('/tutorial', UnitTutorialsIndex::class)->name('tutorials.index');
 
             // Settings
             Route::get('/profile', UnitProfileIndex::class)->name('profile.index');

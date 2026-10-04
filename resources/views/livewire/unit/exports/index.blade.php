@@ -90,7 +90,7 @@
                                     <div class="rounded-sm p-3 grid grid-cols-1 sm:grid-cols-4 gap-3 text-xs">
                                         <div>
                                             <label class="block font-medium text-neutral-600 dark:text-neutral-300 mb-1">Cari (Ref/Deskripsi)</label>
-                                            <input type="text" wire:model="trx_search" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400">
+                                            <input type="text" wire:model.live.debounce.500ms="trx_search" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400">
                                         </div>
                                         <div>
                                             <label class="block font-medium text-neutral-600 dark:text-neutral-300 mb-1">Tipe</label>
@@ -155,7 +155,7 @@
                                     <div class="rounded-sm p-3 grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
                                         <div>
                                             <label class="block font-medium text-neutral-600 dark:text-neutral-300 mb-1">Cari Produk</label>
-                                            <input type="text" wire:model="prod_search" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400">
+                                            <input type="text" wire:model.live.debounce.500ms="prod_search" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400">
                                         </div>
                                         <div>
                                             <label class="block font-medium text-neutral-600 dark:text-neutral-300 mb-1">Kategori</label>
@@ -210,7 +210,7 @@
                                     <div class="rounded-sm p-3 grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
                                         <div>
                                             <label class="block font-medium text-neutral-600 dark:text-neutral-300 mb-1">Cari Aset</label>
-                                            <input type="text" wire:model="asset_search" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400">
+                                            <input type="text" wire:model.live.debounce.500ms="asset_search" class="w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400">
                                         </div>
                                         <div>
                                             <label class="block font-medium text-neutral-600 dark:text-neutral-300 mb-1">Status</label>

@@ -169,12 +169,15 @@ class Index extends Component
             }
         }
 
+        // PERF-08: simpan count sekali, hindari 3x query count() identik
+        $recipientCount = $recipients->count();
+
         $announcement = Announcement::create([
             'user_id'           => auth()->id(),
             'title'             => $this->title,
             'message'           => $this->message,
             'badge'             => $this->badge,
-            'recipients_count'  => $recipients->count(),
+            'recipients_count'  => $recipientCount,
         ]);
 
         AuditLog::record(
@@ -183,7 +186,7 @@ class Index extends Component
             description: sprintf(
                 "Admin master mengirim pengumuman '%s' ke %d admin unit (%s)%s.",
                 $announcement->title,
-                $recipients->count(),
+                $recipientCount,
                 $this->recipientType === 'specific' ? 'dipilih manual' : 'seluruh admin unit aktif',
                 $this->sendViaWhatsapp ? ", termasuk WhatsApp Fonnte ke {$waSentCount} nomor" : ''
             ),
@@ -196,7 +199,7 @@ class Index extends Component
             ])
         );
 
-        $flashMessage = "Pengumuman berhasil dikirim ke {$recipients->count()} admin unit.";
+        $flashMessage = "Pengumuman berhasil dikirim ke {$recipientCount} admin unit.";
         if ($this->sendViaWhatsapp) {
             $flashMessage .= " WhatsApp (Fonnte) dijadwalkan untuk dikirim ke {$waSentCount} nomor.";
             if (! empty($waSkipped)) {
@@ -227,10 +230,13 @@ class Index extends Component
             ? $activeUnitAdmins->whereIn('id', $this->selectedUserIds)->count()
             : $activeUnitAdmins->count();
 
+        // PERF-08: simpan count sekali untuk render()
+        $adminCount = $activeUnitAdmins->count();
+
         return view('livewire.master.announcements.index', [
             'announcements'     => $announcements,
             'activeUnitAdmins'  => $activeUnitAdmins,
-            'recipientsCount'   => $activeUnitAdmins->count(),
+            'recipientsCount'   => $adminCount,
             'targetCount'       => $targetCount,
         ]);
     }

@@ -76,4 +76,16 @@ class Index extends MasterTutorialsIndex
     {
         return false;
     }
+
+    /**
+     * BUG-02 fix: Override render() diperlukan agar #[Layout('components.layouts.unit')]
+     * yang dideklarasikan di class ini benar-benar aktif di Livewire 3.
+     * Tanpa method render() sendiri, Livewire mewarisi render() dari parent
+     * (Master\Tutorials\Index) yang membawa #[Layout('components.layouts.app')]
+     * sehingga sidebar Master Admin tampil di halaman Unit Admin.
+     */
+    public function render()
+    {
+        return parent::render();
+    }
 }
