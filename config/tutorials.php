@@ -158,24 +158,28 @@ return [
                 ],
             ],
         ],
-    ],
+
         // ------------------------------------------------------------------
-        // SECTION UNIT (scope: 'unit') -- BUG-05 fix: sebelumnya tidak ada
-        // section ber-scope 'unit' sehingga halaman Tutorial Unit Admin
-        // selalu kosong (Unit\Tutorials\Index::sectionAllowed() menolak
-        // semua section yang bukan scope 'unit').
+        // SECTION UNIT (scope: 'unit') -- seri "Manajemen Usman Admin Unit".
+        //
+        // Urutan materi mengikuti urutan video (#1 s.d. #10). Materi yang
+        // hanya relevan untuk satu kategori unit memakai 'categories':
+        //   - Inventaris (#5)       -> ['ritel']
+        //   - Pesanan Layanan (#7)  -> ['jasa']
+        // Admin Unit hanya melihat materi umum + materi kategori unitnya;
+        // Master Admin melihat SEMUA materi.
         // ------------------------------------------------------------------
         [
             'id'      => 'unit-dasar',
             'scope'   => 'unit',
-            'title'   => 'Admin Unit — Dasar',
+            'title'   => 'Admin Unit',
             'summary' => 'Mengelola unit usaha sehari-hari.',
             'lessons' => [
                 [
                     'id'      => 'unit-mulai',
-                    'title'   => 'Login Pertama dan Setup Nomor',
-                    'video'   => 'https://youtu.be/-PwEk74hP7E',
-                    'summary' => 'Proses login dan ganti password, serta mengatur nomor WhatsApp.',
+                    'title'   => 'Login dan Ganti Password',
+                    'video'   => 'https://youtu.be/-juF4AQqcdA',
+                    'summary' => 'Proses login pertama dan ganti password, serta mengatur nomor WhatsApp.',
                     'steps'   => [
                         'Login dengan Username atau NIP',
                         'Membuat password baru',
@@ -186,8 +190,8 @@ return [
                 [
                     'id'      => 'unit-dashboard',
                     'title'   => 'Mengenal Dashboard Unit',
-                    'video'   => 'https://youtu.be/PP25S0vcT-E',
-                    'summary' => 'Kenali tampilan dashboard Unit Admin dan cara membaca ringkasan omzet, stok, dan notifikasi.',
+                    'video'   => 'https://youtu.be/p1IeR_d1uD8',
+                    'summary' => 'Kenali tampilan dashboard Admin Unit dan cara membaca ringkasan omzet, stok, dan notifikasi.',
                     'steps'   => [
                         'Kartu ringkasan omzet, transaksi, dan stok',
                         'Grafik performa unit',
@@ -197,8 +201,8 @@ return [
                 ],
                 [
                     'id'      => 'unit-transaksi',
-                    'title'   => 'Mencatat Transaksi Keuangan',
-                    'video'   => 'https://youtu.be/R5MwuuX-BPo',
+                    'title'   => 'Cara Mencatat Transaksi',
+                    'video'   => 'https://youtu.be/kZrk1eF_YaU',
                     'summary' => 'Pelajari cara mencatat pemasukan dan pengeluaran unit dengan benar.',
                     'steps'   => [
                         'Menambah transaksi pemasukan dan pengeluaran',
@@ -208,21 +212,34 @@ return [
                     'route'   => 'unit.transactions.index',
                 ],
                 [
-                    'id'      => 'unit-inventaris',
-                    'title'   => 'Mengelola Inventaris (Stok Produk)',
-                    'video'   => '',
-                    'summary' => 'Kelola stok produk unit agar selalu akurat dan mudah dipantau.',
+                    'id'      => 'unit-transaksi-berulang',
+                    'title'   => 'Transaksi Berulang Otomatis',
+                    'video'   => 'https://youtu.be/bcNIQb0tcs0',
+                    'summary' => 'Atur transaksi rutin (misalnya biaya bulanan) agar tercatat otomatis sesuai jadwal.',
                     'steps'   => [
+                        'Membuat transaksi berulang baru',
+                        'Mengatur jadwal pengulangan',
+                        'Mengubah atau menghentikan transaksi berulang',
+                    ],
+                    'route'   => 'unit.recurring-transactions.index',
+                ],
+                [
+                    'id'         => 'unit-inventaris',
+                    'title'      => 'Mengelola Inventaris dan Stok',
+                    'video'      => 'https://youtu.be/tNmFgBE0wR4',
+                    'summary'    => 'Kelola stok produk unit ritel agar selalu akurat dan mudah dipantau.',
+                    'steps'      => [
                         'Menambah dan mengedit produk',
                         'Memantau stok dan notifikasi stok rendah',
                         'Mencatat penyesuaian stok manual',
                     ],
-                    'route'   => 'unit.inventory.index',
+                    'categories' => ['ritel'],
+                    'route'      => 'unit.inventory.index',
                 ],
                 [
                     'id'      => 'unit-pembelian',
-                    'title'   => 'Mencatat Pembelian dari Vendor',
-                    'video'   => '',
+                    'title'   => 'Cara Mencatat Pembelian ke Vendor',
+                    'video'   => 'https://youtu.be/Gofomu7m7wg',
                     'summary' => 'Catat pembelian barang dari vendor agar stok dan keuangan otomatis terupdate.',
                     'steps'   => [
                         'Memilih vendor dan mengisi item pembelian',
@@ -232,15 +249,53 @@ return [
                     'route'   => 'unit.purchasing.index',
                 ],
                 [
+                    'id'         => 'unit-pesanan',
+                    'title'      => 'Mengelola Pesanan Layanan',
+                    'video'      => 'https://youtu.be/D6irHN8X7gg',
+                    'summary'    => 'Kelola antrian pesanan layanan dari pelanggan: catat, proses, dan selesaikan.',
+                    'steps'      => [
+                        'Membuat pesanan layanan baru',
+                        'Memperbarui status pesanan',
+                        'Melihat riwayat pesanan selesai',
+                    ],
+                    'categories' => ['jasa'],
+                    'route'      => 'unit.service-orders.index',
+                ],
+                [
                     'id'      => 'unit-pelanggan',
-                    'title'   => 'Mengelola Data Pelanggan',
-                    'video'   => '',
-                    'summary' => 'Simpan dan kelola data pelanggan setia unit usaha.',
+                    'title'   => 'Mengelola Data Pelanggan dan Aset Unit',
+                    'video'   => 'https://youtu.be/DmPshzRS2Uk',
+                    'summary' => 'Simpan dan kelola data pelanggan serta aset milik unit usaha.',
                     'steps'   => [
                         'Menambah dan mengedit data pelanggan',
                         'Melihat riwayat transaksi pelanggan',
+                        'Mencatat dan mengelola aset unit',
                     ],
                     'route'   => 'unit.customers.index',
+                ],
+                [
+                    'id'      => 'unit-statistik',
+                    'title'   => 'Statistik Usaha dan Export Data',
+                    'video'   => 'https://youtu.be/eyg0mEY1On8',
+                    'summary' => 'Baca laporan kinerja unit dan unduh data ke Excel.',
+                    'steps'   => [
+                        'Membaca grafik dan tabel di Statistik Usaha',
+                        'Memilih jenis data dan filter di Export Data',
+                        'Mengunduh laporan ke Excel',
+                    ],
+                    'route'   => 'unit.analytics.index',
+                ],
+                [
+                    'id'      => 'unit-notifikasi-profil',
+                    'title'   => 'Notifikasi, Aktivitas, dan Profil Saya',
+                    'video'   => 'https://youtu.be/TTgm8-IaX-Q',
+                    'summary' => 'Pantau notifikasi dan riwayat aktivitas, serta kelola data profil Anda.',
+                    'steps'   => [
+                        'Membaca dan mengelola notifikasi',
+                        'Melihat riwayat aktivitas unit',
+                        'Mengubah data profil dan password',
+                    ],
+                    'route'   => 'unit.activities.index',
                 ],
                 [
                     'id'      => 'unit-dokumen',
@@ -254,45 +309,8 @@ return [
                     ],
                     'route'   => 'unit.documents.index',
                 ],
-                [
-                    'id'      => 'unit-statistik',
-                    'title'   => 'Statistik dan Export Data',
-                    'video'   => 'https://youtu.be/FOWdvgXnnhk',
-                    'summary' => 'Baca laporan kinerja unit dan unduh data ke Excel.',
-                    'steps'   => [
-                        'Membaca grafik dan tabel di Statistik Usaha',
-                        'Memilih jenis data dan filter di Export Data',
-                        'Mengunduh laporan ke Excel',
-                    ],
-                    'route'   => 'unit.analytics.index',
-                ],
             ],
         ],
 
-        // ------------------------------------------------------------------
-        // Section khusus unit kategori 'jasa' (Bengkel dll.)
-        // ------------------------------------------------------------------
-        [
-            'id'       => 'unit-jasa',
-            'scope'    => 'unit',
-            'category' => 'jasa',
-            'title'    => 'Fitur Khusus Unit Jasa',
-            'summary'  => 'Fitur tambahan untuk unit kategori jasa (mis. bengkel).',
-            'lessons'  => [
-                [
-                    'id'         => 'unit-pesanan',
-                    'title'      => 'Mengelola Pesanan Layanan',
-                    'video'      => '',
-                    'summary'    => 'Kelola antrian pesanan layanan dari pelanggan: catat, proses, dan selesaikan.',
-                    'steps'      => [
-                        'Membuat pesanan layanan baru',
-                        'Memperbarui status pesanan',
-                        'Melihat riwayat pesanan selesai',
-                    ],
-                    'categories' => ['jasa'],
-                    'route'      => 'unit.service-orders.index',
-                ],
-            ],
-        ],
-
+    ],
 ];
