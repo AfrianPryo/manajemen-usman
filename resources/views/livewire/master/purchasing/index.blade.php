@@ -82,7 +82,7 @@
                 <select wire:model.live="unitFilter" class="w-full px-3.5 py-2 text-xs font-semibold text-neutral-600 dark:text-neutral-300 bg-white dark:bg-slate-900 border border-neutral-200 dark:border-slate-700 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400 cursor-pointer">
                     <option value="">Semua Unit Usaha</option>
                     @foreach($units as $unit)
-                        <option value="{{ $unit->id }}">{{ $unit->name }}</option>
+                        <option value="{{ $unit['id'] }}">{{ $unit['name'] }}</option>
                     @endforeach
                 </select>
             </div>
@@ -91,7 +91,7 @@
                 <select wire:model.live="vendorFilter" class="w-full px-3.5 py-2 text-xs font-semibold text-neutral-600 dark:text-neutral-300 bg-white dark:bg-slate-900 border border-neutral-200 dark:border-slate-700 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400 cursor-pointer">
                     <option value="">Semua Vendor</option>
                     @foreach($vendors as $vendor)
-                        <option value="{{ $vendor->id }}">{{ $vendor->name }}</option>
+                        <option value="{{ $vendor['id'] }}">{{ $vendor['name'] }}</option>
                     @endforeach
                 </select>
             </div>
@@ -215,7 +215,7 @@
                                 class="@error('unit_id') !border-rose-400 !focus:border-rose-500 !focus:ring-rose-500/10 @enderror w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-blue-500 cursor-pointer" aria-invalid="@error('unit_id') true @else false @enderror" aria-required="true">
                             <option value="">-- Pilih Unit Usaha --</option>
                             @foreach($units as $unit)
-                                <option value="{{ $unit->id }}">{{ $unit->name }}</option>
+                                <option value="{{ $unit['id'] }}">{{ $unit['name'] }}</option>
                             @endforeach
                         </select>
                         @error('unit_id') <x-form-error :message="$message" :field="'unit_id'" /> @enderror
@@ -228,7 +228,7 @@
                                     class="@error('vendor_id') !border-rose-400 !focus:border-rose-500 !focus:ring-rose-500/10 @enderror w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-blue-500 cursor-pointer" aria-invalid="@error('vendor_id') true @else false @enderror" aria-required="true">
                                 <option value="">-- Pilih Vendor --</option>
                                 @foreach($vendors as $vendor)
-                                    <option value="{{ $vendor->id }}">{{ $vendor->name }}</option>
+                                    <option value="{{ $vendor['id'] }}">{{ $vendor['name'] }}</option>
                                 @endforeach
                             </select>
                             @error('vendor_id') <x-form-error :message="$message" :field="'vendor_id'" /> @enderror

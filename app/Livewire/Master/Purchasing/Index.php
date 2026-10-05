@@ -201,8 +201,9 @@ class Index extends Component
      */
     private function vendorOptions()
     {
-        // PERF-04: cache dropdown vendor (TTL 5 menit)
-        return \Illuminate\Support\Facades\Cache::remember('vendors:dropdown:v2', 300, fn () => Vendor::select('id', 'name', 'category')->orderBy('name')->get());
+        // PERF-04: cache dropdown vendor (TTL 5 menit). Simpan ARRAY biasa, bukan model/Collection:
+        // cache.serializable_classes=false membuat objek hasil unserialize rusak (__PHP_Incomplete_Class).
+        return \Illuminate\Support\Facades\Cache::remember('vendors:dropdown:v3', 300, fn () => Vendor::orderBy('name')->get(['id', 'name', 'category'])->map(fn ($v) => ['id' => $v->id, 'name' => $v->name, 'category' => $v->category])->all());
     }
 
     /**
@@ -475,7 +476,7 @@ class Index extends Component
         return view('livewire.master.purchasing.index', [
             'purchases'      => $purchases,
             // PERF-05: cache dropdown unit (jarang berubah, TTL 5 menit)
-            'units'          => \Illuminate\Support\Facades\Cache::remember('units:dropdown:v2', 300, fn () => Unit::select('id', 'name')->orderBy('name')->get()),
+            'units'          => \Illuminate\Support\Facades\Cache::remember('units:dropdown:v3', 300, fn () => Unit::orderBy('name')->get(['id', 'name'])->map(fn ($u) => ['id' => $u->id, 'name' => $u->name])->all()),
             'vendors'        => $this->vendorOptions(),
             'products'       => $this->productOptions(),
             'vendorRecap'    => $this->vendorRecap(),

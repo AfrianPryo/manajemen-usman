@@ -174,7 +174,7 @@
                                     class="@error('vendor_id') !border-rose-400 !focus:border-rose-500 !focus:ring-rose-500/10 @enderror w-full px-3.5 py-2 text-xs font-medium border border-neutral-200 dark:border-slate-700 rounded-sm bg-white dark:bg-slate-900 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-blue-500 cursor-pointer" aria-invalid="@error('vendor_id') true @else false @enderror" aria-required="true">
                                 <option value="">-- Pilih Vendor --</option>
                                 @foreach($vendors as $vendor)
-                                    <option value="{{ $vendor->id }}">{{ $vendor->name }}</option>
+                                    <option value="{{ $vendor['id'] }}">{{ $vendor['name'] }}</option>
                                 @endforeach
                             </select>
                             @error('vendor_id') <x-form-error :message="$message" :field="'vendor_id'" /> @enderror
