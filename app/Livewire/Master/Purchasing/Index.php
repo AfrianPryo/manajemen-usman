@@ -202,7 +202,7 @@ class Index extends Component
     private function vendorOptions()
     {
         // PERF-04: cache dropdown vendor (TTL 5 menit)
-        return \Illuminate\Support\Facades\Cache::remember('vendors:dropdown', 300, fn () => Vendor::select('id', 'name', 'category')->orderBy('name')->get());
+        return \Illuminate\Support\Facades\Cache::remember('vendors:dropdown:v2', 300, fn () => Vendor::select('id', 'name', 'category')->orderBy('name')->get());
     }
 
     /**
@@ -475,7 +475,7 @@ class Index extends Component
         return view('livewire.master.purchasing.index', [
             'purchases'      => $purchases,
             // PERF-05: cache dropdown unit (jarang berubah, TTL 5 menit)
-            'units'          => \Illuminate\Support\Facades\Cache::remember('units:dropdown', 300, fn () => Unit::select('id', 'name')->orderBy('name')->get()),
+            'units'          => \Illuminate\Support\Facades\Cache::remember('units:dropdown:v2', 300, fn () => Unit::select('id', 'name')->orderBy('name')->get()),
             'vendors'        => $this->vendorOptions(),
             'products'       => $this->productOptions(),
             'vendorRecap'    => $this->vendorRecap(),

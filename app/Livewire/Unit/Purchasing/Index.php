@@ -185,7 +185,7 @@ class Index extends Component
     private function vendorOptions()
     {
         // PERF-04: cache dropdown vendor (TTL 5 menit)
-        return \Illuminate\Support\Facades\Cache::remember('vendors:dropdown', 300, fn () => Vendor::select('id', 'name', 'category')->orderBy('name')->get());
+        return \Illuminate\Support\Facades\Cache::remember('vendors:dropdown:v2', 300, fn () => Vendor::select('id', 'name', 'category')->orderBy('name')->get());
     }
 
     private function productOptions()
