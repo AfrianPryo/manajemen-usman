@@ -19,7 +19,7 @@ use Maatwebsite\Excel\Facades\Excel;
 use Livewire\WithFileUploads;
 use Livewire\Attributes\Title;
 
-#[Layout('layouts.app')]
+#[Layout('components.layouts.app')]
 #[Title('Manajemen Aset Usaha')]
 class Index extends Component
 {

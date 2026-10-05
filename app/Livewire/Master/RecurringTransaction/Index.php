@@ -13,7 +13,7 @@ use App\Services\RecurringTransactionService;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Title;
 
-#[Layout('layouts.app')]
+#[Layout('components.layouts.app')]
 #[Title('Manajemen Transaksi Berulang')]
 class Index extends Component
 {

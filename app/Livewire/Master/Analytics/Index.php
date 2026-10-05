@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Schema;
 use Carbon\CarbonPeriod;
 use Livewire\Attributes\Title;
 
-#[Layout('layouts.app')]
+#[Layout('components.layouts.app')]
 #[Title('Statistik Usaha')]
 class Index extends Component
 {
