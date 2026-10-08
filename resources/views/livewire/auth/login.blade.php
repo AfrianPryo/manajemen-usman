@@ -1,4 +1,4 @@
-<x-auth-card title="Selamat datang kembali">
+<x-auth-card title="Selamat datang!">
     <x-slot:subtitle>Masuk dengan akun Anda untuk melanjutkan.</x-slot:subtitle>
 
     {{-- Alert Error & Status Session (toast) --}}

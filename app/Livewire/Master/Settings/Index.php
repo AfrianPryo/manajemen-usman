@@ -183,6 +183,7 @@ class Index extends Component
     public string $landingTentangDescription = '';
     // 4b. Foto section "Tentang" -- kustomisasi foto sisi kiri section ini.
     // Fallback ke asset bawaan (images/images (1).jpg) SELAMA admin belum
+    // Fallback ke asset bawaan (images/images (1).png) SELAMA admin belum
     // pernah mengunggah foto sendiri. Lihat removeTentangPhoto() & blade.
     public $landingTentangPhoto;
     public ?string $existingLandingTentangPhoto = null;
@@ -942,6 +943,7 @@ class Index extends Component
     /**
      * Hapus foto custom section "Tentang" di landing page, kembali memakai
      * foto bawaan (images/images (1).jpg) -- lihat resources/views/landing.blade.php
+     * foto bawaan (images/images (1).png) -- lihat resources/views/landing.blade.php
      * bagian ABOUT SECTION.
      */
     public function removeTentangPhoto(): void

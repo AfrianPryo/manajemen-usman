@@ -321,6 +321,8 @@ class FonnteOtpService
      * @return bool true jika pesan berhasil DI-DISPATCH ke queue (BUKAN
      *              indikasi pesan sudah benar-benar terkirim ke WhatsApp --
      *              itu baru terjadi di background lewat SendFonnteMessageJob).
+     *              PENGECUALIAN: untuk CATEGORY_CREDENTIALS pesan dikirim
+     *              sinkron, jadi true = benar-benar diterima Fonnte.
      */
     public function sendPlainMessageAsync(string $phone, string $message, string $category): bool
     {
@@ -330,6 +332,18 @@ class FonnteOtpService
 
         if (! $this->channelEnabled($category)) {
             return false;
+        }
+
+        // Kredensial akun (akun admin baru / reset password) dikirim SINKRON,
+        // tidak lewat queue. Hasilnya langsung dipakai pemanggil untuk badge
+        // 'wa_sent' di <x-credentials-modal> ("terkirim" vs "gagal, salin
+        // manual"). Kalau di-dispatch ke queue, nilai true hanya berarti job
+        // masuk antrean: bila queue worker tidak berjalan atau job gagal di
+        // belakang layar, modal tetap menampilkan "sudah terkirim" padahal
+        // WA tidak pernah keluar. Kategori lain (pengumuman, laporan rutin)
+        // tetap lewat queue seperti sebelumnya.
+        if ($category === self::CATEGORY_CREDENTIALS) {
+            return $this->sendPlainMessage($phone, $message);
         }
 
         SendFonnteMessageJob::dispatch($phone, $message);
